@@ -1,0 +1,20 @@
+{
+  "name": "agentos-gateway",
+  "version": "0.1.0",
+  "description": "Node.js gateway for AgentOS REST and streaming requests",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "cluster": "node server.js",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "morgan": "^1.10.0",
+    "ws": "^8.17.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  }
+}

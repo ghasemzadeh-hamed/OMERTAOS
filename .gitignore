@@ -1,0 +1,15 @@
+# Node
+node_modules
+npm-debug.log*
+
+# Python
+core/.venv
+__pycache__
+*.pyc
+
+# Rust
+/target
+rust_modules/processor/target
+
+# Misc
+.DS_Store
