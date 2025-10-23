@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [ work ]
+  pull_request:
+    branches: [ work ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install gateway deps
+        run: pnpm install
+        working-directory: gateway
+
+      - name: Gateway lint
+        run: pnpm lint
+        working-directory: gateway
+
+      - name: Gateway tests
+        run: pnpm test
+        working-directory: gateway
+
+      - name: Install web deps
+        run: pnpm install
+        working-directory: web
+
+      - name: Web tests
+        run: pnpm test
+        working-directory: web
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install control deps
+        run: pip install -r control/requirements.txt
+
+      - name: Control tests
+        run: pytest
+        working-directory: control
+
+      - name: Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+
+      - name: Cargo check
+        run: cargo test
+        working-directory: execution

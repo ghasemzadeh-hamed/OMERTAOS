@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String
+  role         String   @default("user")
+  image        String?
+  passwordHash String?
+  provider     String?
+  providerId   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  projects     Project[]
+  tasks        Task[]    @relation("TaskAssignee")
+  activityLogs ActivityLog[]
+}
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  owner       User     @relation(fields: [ownerId], references: [id])
+  ownerId     Int
+  createdAt   DateTime @default(now())
+  tasks       Task[]
+  files       File[]
+}
+
+model Task {
+  id          Int      @id @default(autoincrement())
+  project     Project  @relation(fields: [projectId], references: [id])
+  projectId   Int
+  title       String
+  description String?
+  status      TaskStatus @default(todo)
+  priority    TaskPriority @default(medium)
+  assignee    User?     @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  assigneeId  Int?
+  dueDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  activity    ActivityLog[]
+  files       File[]
+}
+
+enum TaskStatus {
+  todo
+  doing
+  done
+}
+
+enum TaskPriority {
+  low
+  medium
+  high
+}
+
+model ActivityLog {
+  id         Int      @id @default(autoincrement())
+  actor      User     @relation(fields: [actorId], references: [id])
+  actorId    Int
+  entityType String
+  entityId   Int
+  action     String
+  meta       Json?
+  createdAt  DateTime @default(now())
+}
+
+model File {
+  id        Int      @id @default(autoincrement())
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId Int?
+  task      Task?    @relation(fields: [taskId], references: [id])
+  taskId    Int?
+  key       String
+  url       String
+  size      Int
+  mime      String
+  createdAt DateTime @default(now())
+}

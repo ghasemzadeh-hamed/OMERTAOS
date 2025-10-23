@@ -1,0 +1,46 @@
+{
+  "name": "aion-web",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "format": "prettier --write .",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.3.4",
+    "@prisma/client": "^5.10.2",
+    "@tanstack/react-query": "^5.17.7",
+    "@tanstack/react-query-devtools": "^5.17.7",
+    "@total-typescript/ts-reset": "^0.5.1",
+    "axios": "^1.6.7",
+    "framer-motion": "^11.0.3",
+    "lucide-react": "^0.308.0",
+    "next": "14.1.0",
+    "next-auth": "^4.24.5",
+    "next-themes": "^0.2.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-hook-form": "^7.49.3",
+    "sonner": "^1.4.0",
+    "zod": "^3.22.4",
+    "zustand": "^4.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "^14.1.0",
+    "jsdom": "^27.0.1",
+    "postcss": "^8.4.32",
+    "prettier": "^3.1.1",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  }
+}

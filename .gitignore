@@ -1,0 +1,21 @@
+# General
+node_modules/
+.env
+.env.local
+__pycache__/
+*.pyc
+.idea/
+.vscode/
+dist/
+build/
+.sass-cache
+.next/
+.DS_Store
+coverage/
+.pytest_cache/
+.mypy_cache/
+target/
+.venv/
+**/pnpm-lock.yaml
+**/package-lock.json
+**/yarn.lock

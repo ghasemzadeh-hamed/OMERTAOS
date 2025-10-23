@@ -1,0 +1,92 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: aion
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - '6379:6379'
+
+  minio:
+    image: minio/minio:RELEASE.2023-12-14T18-51-57Z
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+
+  qdrant:
+    image: qdrant/qdrant:v1.7.1
+    ports:
+      - '6333:6333'
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    environment:
+      GATEWAY_PORT: 8080
+      CONTROL_PLANE_URL: http://control:8000
+      GATEWAY_JWT_SECRET: supersecret
+      INTERNAL_BRIDGE_TOKEN: bridge-secret
+    depends_on:
+      - control
+      - redis
+    ports:
+      - '8080:8080'
+
+  control:
+    build:
+      context: ./control
+      dockerfile: Dockerfile
+    environment:
+      CONTROL_DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/aion
+      CONTROL_REDIS_URL: redis://redis:6379/0
+      CONTROL_GATEWAY_URL: http://gateway:8080
+      CONTROL_BRIDGE_TOKEN: bridge-secret
+      CONTROL_GRPC_ENDPOINT: http://execution:50051
+    depends_on:
+      - postgres
+      - redis
+      - execution
+    ports:
+      - '8000:8000'
+
+  execution:
+    build:
+      context: ./execution
+      dockerfile: Dockerfile
+    ports:
+      - '50051:50051'
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    environment:
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: supersecret
+      GOOGLE_CLIENT_ID: placeholder
+      GOOGLE_CLIENT_SECRET: placeholder
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/aion
+    depends_on:
+      - postgres
+      - gateway
+      - control
+    ports:
+      - '3000:3000'
+
+volumes:
+  postgres-data:

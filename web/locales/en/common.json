@@ -1,0 +1,16 @@
+{
+  "dashboard": {
+    "title": "Mission Control",
+    "subtitle": "Monitor agents, tasks, and telemetry in real time.",
+    "tasks": "Active Tasks",
+    "agents": "Live Agents"
+  },
+  "tasks": {
+    "status": {
+      "todo": "Planned",
+      "doing": "In Progress",
+      "done": "Completed"
+    },
+    "assignee": "Assigned to {name}"
+  }
+}

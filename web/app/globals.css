@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  @apply bg-slate-900 text-slate-100 font-display min-h-screen;
+  background-image: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1), transparent 60%),
+    radial-gradient(circle at 80% 0%, rgba(127, 90, 240, 0.25), transparent 55%);
+}
+
+a {
+  @apply text-accent hover:text-white transition-colors;
+}
+
+.glass-panel {
+  @apply bg-glass/80 backdrop-blur-xl border border-white/10 rounded-glass-lg shadow-glass;
+}
+
+.glass-panel-dark {
+  @apply bg-glass-dark/80 backdrop-blur-xl border border-white/10 rounded-glass-lg shadow-glass;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
