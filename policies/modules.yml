@@ -1,0 +1,11 @@
+modules:
+  summarize_text:
+    manifest: ../modules/summarize_text/manifest.yaml
+    checksum: sha256:1234567890abcdef
+    intents:
+      - summarize
+  invoice_ocr:
+    manifest: ../modules/invoice_ocr/manifest.yaml
+    checksum: sha256:fedcba0987654321
+    intents:
+      - invoice_ocr

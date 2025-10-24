@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "name": "AuditActivity",
+  "namespace": "aion.events",
+  "fields": [
+    { "name": "actor_id", "type": "string" },
+    { "name": "tenant_id", "type": ["null", "string"], "default": null },
+    { "name": "action", "type": "string" },
+    { "name": "resource", "type": ["null", "string"], "default": null },
+    { "name": "result", "type": ["null", "string"], "default": null },
+    { "name": "timestamp", "type": "string" },
+    { "name": "context", "type": ["null", "string"], "default": null }
+  ]
+}

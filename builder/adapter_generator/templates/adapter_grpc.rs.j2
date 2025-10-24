@@ -1,0 +1,12 @@
+use tonic::transport::Channel;
+use tonic::Request;
+
+pub async fn index(params: serde_json::Value) -> Result<serde_json::Value, tonic::Status> {
+    let endpoint = "{{ spec.endpoint }}";
+    let mut channel = Channel::from_shared(endpoint.to_string())?
+        .connect()
+        .await?;
+    let mut map = params.as_object().cloned().unwrap_or_default();
+    map.insert("endpoint".into(), serde_json::Value::String(endpoint.into()));
+    Ok(serde_json::Value::Object(map))
+}

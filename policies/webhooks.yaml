@@ -1,0 +1,13 @@
+outbound:
+  - url: http://localhost:9500/webhooks
+    secret: change-me
+    topics:
+      - task.status.changed
+      - chat.session.created
+    max_retries: 3
+    backoff_seconds: 5
+inbound:
+  allowlist:
+    - approve_kernel_proposal
+    - reject_kernel_proposal
+    - install_module

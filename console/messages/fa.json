@@ -1,0 +1,49 @@
+{
+  "auth": {
+    "title": "ورود به آيون‌اواس",
+    "email": "ایمیل",
+    "password": "رمز عبور",
+    "submit": "ورود",
+    "signin_google": "ادامه با گوگل",
+    "back_home": "بازگشت به خانه",
+    "loading": "در حال بارگذاری نشست"
+  },
+  "nav": {
+    "dashboard": "داشبورد",
+    "projects": "پروژه‌ها",
+    "tasks": "وظایف",
+    "agents": "نماینده‌ها",
+    "policies": "سیاست‌ها",
+    "telemetry": "تله‌متری",
+    "terminal": "ترمینال",
+    "settings": "تنظیمات",
+    "sign_out": "خروج",
+    "command_palette": "فرمان‌ها",
+    "rtl": "تغییر جهت"
+  },
+  "dashboard": {
+    "welcome": "خوش آمدید",
+    "active_tasks": "وظایف فعال",
+    "latency": "تاخیر P95",
+    "budget": "مصرف بودجه",
+    "success": "نرخ موفقیت"
+  },
+  "tasks": {
+    "create": "ایجاد وظیفه",
+    "intent": "هدف",
+    "params": "پارامترها",
+    "submit": "ارسال وظیفه",
+    "status": "وضعیت",
+    "streaming": "به‌روزرسانی زنده",
+    "rate_limited": "محدودیت نرخ فعال است. دوباره تلاش کنید.",
+    "privacy": "حریم خصوصی",
+    "preferred_engine": "موتور ترجیحی"
+  },
+  "policies": {
+    "title": "ویرایشگر سیاست",
+    "save": "ذخیره",
+    "reset": "بازنشانی",
+    "success": "سیاست با موفقیت ذخیره شد",
+    "error": "ذخیره سیاست شکست خورد"
+  }
+}
