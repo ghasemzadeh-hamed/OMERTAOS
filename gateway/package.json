@@ -15,7 +15,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.10.6",
     "@grpc/proto-loader": "^0.7.8",
-    "@opentelemetry/api": "^1.8.0",
+    "@opentelemetry/api": "1.7.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.46.0",
     "@opentelemetry/sdk-node": "^0.46.0",
     "@opentelemetry/semantic-conventions": "^1.23.0",
@@ -46,7 +46,8 @@
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "eslint": "^8.57.0",
-    "playwright": "^1.42.0",
+    "@playwright/test": "^1.56.1",
+    "playwright": "^1.56.1",
     "prettier": "^3.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.2",
