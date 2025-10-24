@@ -47,6 +47,9 @@ async def trace_context(request: Request, call_next):
     return response
 
 
+app.include_router(memory_router)
+
+
 @app.get("/healthz")
 async def healthz():
     return {"status": "ok"}
