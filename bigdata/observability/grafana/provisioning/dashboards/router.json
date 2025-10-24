@@ -1,0 +1,30 @@
+{
+  "id": null,
+  "title": "Router Overview",
+  "tags": ["router"],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "panels": [
+    {
+      "type": "piechart",
+      "title": "Decision Share",
+      "datasource": "ClickHouse",
+      "targets": [
+        {
+          "query": "SELECT decision, count() AS total FROM aion.decisions WHERE ts_event >= now() - INTERVAL 1 DAY GROUP BY decision"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Router P95 Latency",
+      "datasource": "ClickHouse",
+      "targets": [
+        {
+          "query": "SELECT quantile(0.95)(latency_ms) AS p95 FROM aion.tasks WHERE status = 'succeeded' AND ts_event >= now() - INTERVAL 1 DAY"
+        }
+      ]
+    }
+  ]
+}

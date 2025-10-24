@@ -1,0 +1,12 @@
+{
+  "version": "2024-03-01T00:00:00Z",
+  "strategy": "hybrid-threshold",
+  "rules": [
+    {
+      "intent": "code_generation",
+      "latency_budget": 3000,
+      "cost_budget": 0.15,
+      "decision": "hybrid"
+    }
+  ]
+}

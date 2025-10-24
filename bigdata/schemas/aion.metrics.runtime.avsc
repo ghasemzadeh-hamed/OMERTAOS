@@ -1,0 +1,16 @@
+{
+  "type": "record",
+  "name": "RuntimeMetric",
+  "namespace": "aion.metrics",
+  "doc": "Operational runtime metrics for core components",
+  "fields": [
+    {"name": "component", "type": {"type": "enum", "name": "Component", "symbols": ["gateway", "control", "rust", "ui"]}},
+    {"name": "cpu", "type": "double"},
+    {"name": "mem_mb", "type": "double"},
+    {"name": "gpu_util", "type": ["null", "double"], "default": null},
+    {"name": "queue_depth", "type": ["null", "int"], "default": null},
+    {"name": "rps", "type": "double"},
+    {"name": "p95_ms", "type": "double"},
+    {"name": "ts_event", "type": "long", "logicalType": "timestamp-millis"}
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "type": "record",
+  "name": "RouterDecision",
+  "namespace": "aion.router",
+  "doc": "Decision events emitted by the AI Decision Router",
+  "fields": [
+    {"name": "task_id", "type": "string"},
+    {"name": "intent", "type": "string"},
+    {"name": "decision", "type": {"type": "enum", "name": "DecisionType", "symbols": ["local", "api", "hybrid"]}},
+    {"name": "reason", "type": "string"},
+    {"name": "policy_overrides", "type": {"type": "record", "name": "PolicyOverrides", "fields": [
+      {"name": "is_manual", "type": "boolean", "default": false},
+      {"name": "privacy_override", "type": "boolean", "default": false},
+      {"name": "cost_override", "type": "boolean", "default": false},
+      {"name": "latency_override", "type": "boolean", "default": false}
+    ]}, "default": {"is_manual": false, "privacy_override": false, "cost_override": false, "latency_override": false}},
+    {"name": "features", "type": {"type": "record", "name": "DecisionFeatures", "fields": [
+      {"name": "size", "type": ["null", "long"], "default": null},
+      {"name": "latency_budget", "type": ["null", "long"], "default": null},
+      {"name": "cost_budget", "type": ["null", "double"], "default": null},
+      {"name": "privacy_level", "type": {"type": "enum", "name": "PrivacyLevel", "symbols": ["public", "restricted", "confidential", "secret"]}, "default": "public"}
+    ]}},
+    {"name": "engine_meta", "type": {"type": "record", "name": "EngineMeta", "fields": [
+      {"name": "model", "type": "string"},
+      {"name": "local_module", "type": ["null", "string"], "default": null},
+      {"name": "version", "type": "string"}
+    ]}},
+    {"name": "ts_event", "type": "long", "logicalType": "timestamp-millis"}
+  ]
+}

@@ -1,0 +1,18 @@
+version: 1
+lakes:
+  raw:
+    bucket: aion-raw
+    format: mixed
+    retention_days: 7
+  processed:
+    bucket: aion-processed
+    format: parquet
+    retention_days: 30
+  features:
+    bucket: aion-features
+    format: parquet
+    retention_days: 30
+  models:
+    bucket: aion-models
+    format: binary
+    retention_days: 180

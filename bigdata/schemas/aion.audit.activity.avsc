@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "name": "AuditActivity",
+  "namespace": "aion.audit",
+  "doc": "Immutable audit events for governance and compliance",
+  "fields": [
+    {"name": "actor_id", "type": "string"},
+    {"name": "entity_type", "type": "string"},
+    {"name": "entity_id", "type": "string"},
+    {"name": "action", "type": "string"},
+    {"name": "meta", "type": {"type": "map", "values": "string"}, "default": {}},
+    {"name": "ts_event", "type": "long", "logicalType": "timestamp-millis"}
+  ]
+}

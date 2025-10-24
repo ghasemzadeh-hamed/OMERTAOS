@@ -1,0 +1,16 @@
+{
+  "type": "record",
+  "name": "TaskLifecycle",
+  "namespace": "aion.tasks",
+  "doc": "Lifecycle transitions for orchestrated tasks",
+  "fields": [
+    {"name": "task_id", "type": "string"},
+    {"name": "status", "type": {"type": "enum", "name": "TaskStatus", "symbols": ["created", "queued", "running", "succeeded", "failed", "timeout", "canceled"]}},
+    {"name": "agent_id", "type": ["null", "string"], "default": null},
+    {"name": "project_id", "type": ["null", "string"], "default": null},
+    {"name": "latency_ms", "type": ["null", "long"], "default": null},
+    {"name": "retries", "type": "int", "default": 0},
+    {"name": "error_code", "type": ["null", "string"], "default": null},
+    {"name": "ts_event", "type": "long", "logicalType": "timestamp-millis"}
+  ]
+}

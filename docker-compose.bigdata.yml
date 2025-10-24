@@ -1,0 +1,308 @@
+version: "3.9"
+
+networks:
+  aion-bigdata-net:
+    driver: bridge
+
+volumes:
+  kafka-data:
+  kafka-config:
+  schema-registry-data:
+  spark-master-data:
+  spark-worker-data:
+  clickhouse-data:
+  clickhouse-logs:
+  minio-data:
+  airflow-dags:
+  airflow-logs:
+  airflow-plugins:
+  superset-home:
+  grafana-data:
+  redis-data:
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.3
+    container_name: aion-zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - aion-bigdata-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.3
+    container_name: aion-kafka
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    env_file:
+      - .env.bigdata
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:SASL_PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_NUM_PARTITIONS: 6
+      KAFKA_LOG_RETENTION_HOURS: ${KAFKA_LOG_RETENTION_HOURS:-72}
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_SASL_ENABLED_MECHANISMS: SCRAM-SHA-512
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: SCRAM-SHA-512
+      KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/secrets/jaas.conf
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+      - kafka-config:/etc/kafka
+      - ./bigdata/security/kafka-jaas.conf:/etc/kafka/secrets/jaas.conf:ro
+      - ./bigdata/security/kafka.server.properties:/etc/kafka/server.properties:ro
+    command: ["/etc/confluent/docker/run"]
+    networks:
+      - aion-bigdata-net
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.4.3
+    container_name: aion-schema-registry
+    restart: unless-stopped
+    depends_on:
+      - kafka
+    env_file:
+      - .env.bigdata
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: SASL_SSL://kafka:9092
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: SASL_SSL
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM: SCRAM-SHA-512
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_JAAS_CONFIG: org.apache.kafka.common.security.scram.ScramLoginModule required username="${KAFKA_SCHEMA_REGISTRY_USER}" password="${KAFKA_SCHEMA_REGISTRY_PASSWORD}";
+    volumes:
+      - schema-registry-data:/var/lib/schema-registry
+      - ./bigdata/security/schema-registry.truststore.jks:/etc/schema-registry/secrets/truststore.jks:ro
+    networks:
+      - aion-bigdata-net
+
+  spark-master:
+    image: bitnami/spark:3.5
+    container_name: aion-spark-master
+    restart: unless-stopped
+    environment:
+      SPARK_MODE: master
+      SPARK_RPC_AUTHENTICATION_ENABLED: "yes"
+      SPARK_RPC_ENCRYPTION_ENABLED: "yes"
+      SPARK_LOCAL_DIRS: /opt/spark/work
+      SPARK_DRIVER_MEMORY: 4g
+    volumes:
+      - spark-master-data:/opt/spark/work
+      - ./bigdata/pipelines/streaming:/opt/bitnami/spark/jobs
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+    networks:
+      - aion-bigdata-net
+
+  spark-worker:
+    image: bitnami/spark:3.5
+    container_name: aion-spark-worker
+    restart: unless-stopped
+    depends_on:
+      - spark-master
+    environment:
+      SPARK_MODE: worker
+      SPARK_MASTER_URL: spark://spark-master:7077
+      SPARK_WORKER_MEMORY: 4g
+      SPARK_WORKER_CORES: 2
+      SPARK_RPC_AUTHENTICATION_ENABLED: "yes"
+      SPARK_RPC_ENCRYPTION_ENABLED: "yes"
+    volumes:
+      - spark-worker-data:/opt/spark/work
+      - ./bigdata/pipelines/streaming:/opt/bitnami/spark/jobs
+    ports:
+      - "8081:8081"
+    networks:
+      - aion-bigdata-net
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.12
+    container_name: aion-clickhouse
+    restart: unless-stopped
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - clickhouse-logs:/var/log/clickhouse-server
+      - ./bigdata/sql:/docker-entrypoint-initdb.d
+    environment:
+      CLICKHOUSE_DB: aion
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    networks:
+      - aion-bigdata-net
+
+  clickhouse-client:
+    image: clickhouse/clickhouse-client:23.12
+    container_name: aion-clickhouse-client
+    depends_on:
+      - clickhouse
+    entrypoint: ["/bin/sh", "-c", "sleep infinity"]
+    networks:
+      - aion-bigdata-net
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2024-01-11T07-46-16Z
+    container_name: aion-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    env_file:
+      - .env.bigdata
+    volumes:
+      - minio-data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - aion-bigdata-net
+
+  minio-create-buckets:
+    image: minio/mc:RELEASE.2024-01-13T15-47-28Z
+    depends_on:
+      - minio
+    entrypoint: ["/bin/sh", "-c"]
+    command: >-
+      sleep 5 &&
+      mc alias set minio http://minio:9000 ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY} &&
+      mc mb --ignore-existing minio/aion-raw &&
+      mc mb --ignore-existing minio/aion-processed &&
+      mc mb --ignore-existing minio/aion-features &&
+      mc mb --ignore-existing minio/aion-models &&
+      mc cp /bootstrap/catalog.yaml minio/aion-processed/catalog.yaml &&
+      mc ilm add --id "raw-retention" --expire-days ${MINIO_RAW_EXPIRE_DAYS:-7} minio/aion-raw &&
+      mc ilm add --id "processed-retention" --expire-days ${MINIO_PROCESSED_EXPIRE_DAYS:-30} minio/aion-processed
+    volumes:
+      - ./data/catalog/bootstrap:/bootstrap
+    networks:
+      - aion-bigdata-net
+
+  qdrant:
+    image: qdrant/qdrant:v1.7.0
+    container_name: aion-qdrant
+    restart: unless-stopped
+    volumes:
+      - ./bigdata/vector_store:/qdrant/storage
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    networks:
+      - aion-bigdata-net
+
+  airflow-init:
+    image: apache/airflow:2.8.1
+    container_name: aion-airflow-init
+    env_file:
+      - .env.bigdata
+    entrypoint: ["/bin/bash", "-c"]
+    command: >-
+      airflow db init &&
+      airflow users create --username admin --password ${AIRFLOW_ADMIN_PASSWORD:-admin} --firstname Aion --lastname Admin --role Admin --email admin@example.com
+    volumes:
+      - airflow-dags:/opt/airflow/dags
+      - airflow-logs:/opt/airflow/logs
+      - airflow-plugins:/opt/airflow/plugins
+      - ./bigdata/pipelines/batch:/opt/airflow/dags/repo
+    networks:
+      - aion-bigdata-net
+
+  airflow-webserver:
+    image: apache/airflow:2.8.1
+    container_name: aion-airflow-webserver
+    depends_on:
+      - airflow-init
+    env_file:
+      - .env.bigdata
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags/repo
+    volumes:
+      - airflow-dags:/opt/airflow/dags
+      - airflow-logs:/opt/airflow/logs
+      - airflow-plugins:/opt/airflow/plugins
+      - ./bigdata/pipelines/batch:/opt/airflow/dags/repo
+    ports:
+      - "8082:8080"
+    command: webserver
+    networks:
+      - aion-bigdata-net
+
+  airflow-scheduler:
+    image: apache/airflow:2.8.1
+    container_name: aion-airflow-scheduler
+    depends_on:
+      - airflow-webserver
+    env_file:
+      - .env.bigdata
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags/repo
+    volumes:
+      - airflow-dags:/opt/airflow/dags
+      - airflow-logs:/opt/airflow/logs
+      - airflow-plugins:/opt/airflow/plugins
+      - ./bigdata/pipelines/batch:/opt/airflow/dags/repo
+    command: scheduler
+    networks:
+      - aion-bigdata-net
+
+  superset:
+    image: apache/superset:3.0.0
+    container_name: aion-superset
+    restart: unless-stopped
+    depends_on:
+      - clickhouse
+    env_file:
+      - .env.bigdata
+    environment:
+      SUPERSET_LOAD_EXAMPLES: "no"
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY:-superset-secret-key}
+      SUPERSET_SQLALCHEMY_DATABASE_URI: sqlite:////app/superset_home/superset.db
+    volumes:
+      - superset-home:/app/superset_home
+      - ./bigdata/bi:/app/bi
+    ports:
+      - "8088:8088"
+    command: ["/bin/sh", "-c", "superset db upgrade && superset init && gunicorn -w 3 -k gevent --timeout 60 --bind 0.0.0.0:8088 superset.app:create_app()"]
+    networks:
+      - aion-bigdata-net
+
+  grafana:
+    image: grafana/grafana:10.2.3
+    container_name: aion-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./bigdata/observability/grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3000:3000"
+    networks:
+      - aion-bigdata-net
+
+  redis:
+    image: redis:7.2
+    container_name: aion-redis
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - aion-bigdata-net
+

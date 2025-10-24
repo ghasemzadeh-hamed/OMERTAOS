@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pyspark
+clickhouse-driver
+redis
+fastavro
+pyyaml
+pytest
