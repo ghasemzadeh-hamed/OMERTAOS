@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background: radial-gradient(circle at top left, rgba(76, 29, 149, 0.4), transparent 45%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.35), transparent 40%),
+    #020617;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+a:hover {
+  color: #fff;
+}
+
+.glass-button {
+  @apply rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white shadow-glass transition;
+  backdrop-filter: blur(18px);
+}
+
+.glass-button:hover {
+  @apply border-white/40 bg-white/20;
+}
+
+.glass-button:active {
+  @apply border-white/30 bg-white/10;
+  backdrop-filter: blur(12px);
+}
+
+.glass-input {
+  @apply w-full rounded-xl border border-white/20 bg-slate-950/40 px-3 py-2 text-sm text-white shadow-inner transition focus:border-cyan-300 focus:outline-none;
+  backdrop-filter: blur(18px);
+}

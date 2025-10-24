@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MetricsRuntimeEvent",
+  "type": "object",
+  "required": ["component", "metric", "value", "timestamp"],
+  "properties": {
+    "component": { "type": "string" },
+    "metric": { "type": "string" },
+    "value": { "type": "number" },
+    "labels": { "type": "object" },
+    "timestamp": { "type": "string", "format": "date-time" }
+  }
+}

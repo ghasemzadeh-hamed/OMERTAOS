@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package aion.v1;
+
+option go_package = "github.com/aionos/proto/go/aion/v1";
+option java_multiple_files = true;
+option java_package = "com.aionos.proto.v1";
+option csharp_namespace = "Aion.Proto.V1";
+
+message TaskRequest {
+  string schema_version = 1;
+  string task_id = 2;
+  string intent = 3;
+  map<string, string> params = 4;
+  string preferred_engine = 5;
+  string priority = 6;
+  SLA sla = 7;
+  map<string, string> metadata = 8;
+  string request_id = 9;
+}
+
+message SLA {
+  double budget_usd = 1;
+  int64 p95_ms = 2;
+  string privacy = 3;
+}
+
+message TaskId {
+  string task_id = 1;
+}
+
+message TaskResult {
+  string schema_version = 1;
+  string task_id = 2;
+  string intent = 3;
+  string status = 4;
+  EngineDecision engine = 5;
+  map<string, string> result = 6;
+  Usage usage = 7;
+  Error error = 8;
+}
+
+message EngineDecision {
+  string route = 1;
+  string chosen_by = 2;
+  string reason = 3;
+  string tier = 4;
+}
+
+message Usage {
+  double latency_ms = 1;
+  int64 tokens = 2;
+  double cost_usd = 3;
+}
+
+message Error {
+  string code = 1;
+  string message = 2;
+}
+
+service AionTasks {
+  rpc Submit(TaskRequest) returns (TaskResult);
+  rpc Stream(TaskRequest) returns (stream TaskResult);
+  rpc StatusById(TaskId) returns (TaskResult);
+}

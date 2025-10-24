@@ -1,0 +1,10 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "invoice_ocr",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "creators": ["Tool: syft-embedded"],
+    "created": "2024-03-20T00:00:00Z"
+  },
+  "packages": []
+}

@@ -1,0 +1,16 @@
+dashboard_title: Router Overview
+position:
+  CHART-router-latency:
+    type: CHART
+    meta:
+      chartId: 1
+      sliceName: "Router Latency"
+      height: 50
+      width: 6
+  CHART-decision-volume:
+    type: CHART
+    meta:
+      chartId: 2
+      sliceName: "Decision Volume"
+      height: 50
+      width: 6
