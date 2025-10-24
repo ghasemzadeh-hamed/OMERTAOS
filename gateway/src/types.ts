@@ -1,16 +1,26 @@
-export interface TaskRequest {
-  schemaVersion: string;
-  intent: string;
-  params: Record<string, unknown>;
-  preferredEngine?: 'auto' | 'local' | 'api' | 'hybrid';
-  priority?: 'low' | 'normal' | 'high';
-  sla?: {
-    budget_usd?: number;
-    p95_ms?: number;
-    privacy?: 'local-only' | 'allow-api' | 'hybrid';
-  };
-  metadata?: Record<string, unknown>;
-}
+import { z } from 'zod';
+
+export const taskRequestSchema = z
+  .object({
+    schemaVersion: z.string().min(1).default('1.0'),
+    intent: z.string().min(1, 'intent is required'),
+    params: z.record(z.unknown()).default({}),
+    preferredEngine: z.enum(['auto', 'local', 'api', 'hybrid']).default('auto'),
+    priority: z.enum(['low', 'normal', 'high']).default('normal'),
+    sla: z
+      .object({
+        budget_usd: z.number().positive().finite().optional(),
+        p95_ms: z.number().int().positive().optional(),
+        privacy: z.enum(['local-only', 'allow-api', 'hybrid']).optional(),
+      })
+      .partial()
+      .optional(),
+    metadata: z.record(z.unknown()).optional(),
+  })
+  .strict();
+
+export type TaskRequestInput = z.input<typeof taskRequestSchema>;
+export type TaskRequest = z.output<typeof taskRequestSchema>;
 
 export interface TaskResult {
   schemaVersion: string;
