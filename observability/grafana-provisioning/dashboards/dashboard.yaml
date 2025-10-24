@@ -1,0 +1,5 @@
+apiVersion: 1
+dashboards:
+  - name: AION Overview
+    options:
+      path: /var/lib/grafana/dashboards

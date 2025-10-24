@@ -1,0 +1,13 @@
+name: sample-summary
+version: 1.0.0
+entrypoint: summary
+resources:
+  cpu: "500m"
+  memory: "256Mi"
+permissions:
+  - read:object_store
+  - write:object_store
+gpu: false
+signing:
+  provider: cosign
+  digest: sha256:example

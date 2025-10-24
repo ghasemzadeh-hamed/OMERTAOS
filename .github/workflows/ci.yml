@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: aion
+          POSTGRES_PASSWORD: aion
+          POSTGRES_DB: aion
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aion" --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    env:
+      POSTGRES_URL: postgresql+asyncpg://aion:aion@localhost:5432/aion
+      REDIS_URL: redis://localhost:6379/0
+      NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080
+      GOOGLE_CLIENT_ID: dummy
+      GOOGLE_CLIENT_SECRET: dummy
+      JWT_SECRET: github
+      GATEWAY_PORT: 8080
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Install pip deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r control/requirements.txt pytest pytest-asyncio httpx
+      - name: Install gateway deps
+        run: |
+          cd gateway
+          npm install
+      - name: Install web deps
+        run: |
+          cd web
+          npm install
+      - name: Lint gateway
+        run: |
+          cd gateway
+          npm run lint
+      - name: Test gateway
+        run: |
+          cd gateway
+          npm test -- --run
+      - name: Test control
+        run: |
+          pytest control/tests -s
+      - name: Test web
+        run: |
+          cd web
+          npm test -- --run
+      - name: Build execution
+        run: |
+          cd execution
+          cargo test

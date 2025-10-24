@@ -1,0 +1,20 @@
+# Root ignore
+node_modules
+.env
+__pycache__
+*.pyc
+*.log
+.DS_Store
+.vscode
+.idea
+.next
+coverage
+.cache
+artifacts
+poetry.lock
+**/dist
+**/build
+target
+**/target
+*.db
+.env.local

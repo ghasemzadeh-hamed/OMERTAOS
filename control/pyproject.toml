@@ -1,0 +1,37 @@
+[project]
+name = "aion-control"
+version = "0.1.0"
+description = "AION-OS control plane"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi",
+  "uvicorn[standard]",
+  "sqlmodel",
+  "asyncpg",
+  "aiosqlite",
+  "alembic",
+  "httpx",
+  "redis>=5.0",
+  "pydantic-settings",
+  "python-jose[cryptography]",
+  "passlib[bcrypt]",
+  "structlog",
+  "tenacity",
+  "openai",
+  "orjson",
+  "prometheus-client",
+  "grpcio>=1.63.0",
+  "grpcio-tools>=1.63.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-asyncio",
+  "httpx[http2]",
+  "coverage"
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"

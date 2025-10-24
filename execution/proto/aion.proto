@@ -1,0 +1,18 @@
+syntax = "proto3";
+package aion.execution;
+
+message TaskRequest {
+  string external_id = 1;
+  string intent = 2;
+  string payload = 3;
+}
+
+message TaskResponse {
+  string external_id = 1;
+  string status = 2;
+  string output = 3;
+}
+
+service TaskExecutor {
+  rpc ExecuteTask(TaskRequest) returns (TaskResponse);
+}
