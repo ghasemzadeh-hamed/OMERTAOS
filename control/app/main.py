@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict
 from typing import AsyncGenerator, Dict
 
 from .config import get_settings
+from .models import TaskStatus
 from .orchestrator import orchestrator
 from .policy import policy_store
 from .models import TaskStatus
@@ -45,6 +46,9 @@ async def trace_context(request: Request, call_next):
     response = await call_next(request)
     response.headers["x-request-id"] = request.headers.get("x-request-id", "")
     return response
+
+
+app.include_router(memory_router)
 
 
 @app.get("/healthz")

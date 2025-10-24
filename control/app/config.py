@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     tracing_endpoint: str = "http://otel-collector:4318/v1/traces"
     models_directory: str = "/data/models"
     policies_directory: str = "../policies"
+    memory_storage_path: str = "./.memory"
+    memory_default_retention_days: int = 90
     default_budget: float = 0.02
     hard_budget_cap: float = 0.2
     local_latency_p95: int = 600

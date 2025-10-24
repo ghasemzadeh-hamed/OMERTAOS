@@ -1,3 +1,5 @@
-from .models import router as models_router
+"""FastAPI routers for control plane services."""
 
-__all__ = ["models_router"]
+from .memory import router as memory_router  # noqa: F401
+
+__all__ = ["memory_router"]
