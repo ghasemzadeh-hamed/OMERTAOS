@@ -1,0 +1,15 @@
+{
+  "dashboard": {
+    "title": "AION Control Center",
+    "welcome": "Welcome back, {name}!",
+    "projects": "Projects",
+    "tasks": "Tasks",
+    "activity": "Activity Log",
+    "files": "Shared Files",
+    "search": "Search",
+    "filters": "Filters",
+    "create": "Create",
+    "logout": "Logout",
+    "rtl": "Switch to RTL"
+  }
+}

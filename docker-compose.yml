@@ -1,0 +1,31 @@
+version: '3.9'
+services:
+  web:
+    build: .
+    command: pnpm dev
+    ports:
+      - '3000:3000'
+    env_file: .env.example
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - .:/app
+      - /app/node_modules
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: aion
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    command: redis-server --save 60 1 --loglevel warning
+volumes:
+  db-data:

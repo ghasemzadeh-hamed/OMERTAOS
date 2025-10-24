@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  @apply bg-slate-900 text-slate-100 min-h-screen antialiased;
+  background-image: radial-gradient(circle at 20% 20%, rgba(96, 165, 250, 0.25), transparent 55%),
+    radial-gradient(circle at 80% 0%, rgba(244, 114, 182, 0.2), transparent 50%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.8));
+}
+
+a {
+  @apply text-glass-accent hover:text-sky-400 transition;
+}
+
+.glass-border {
+  border-image: linear-gradient(120deg, rgba(96, 165, 250, 0.8), rgba(244, 114, 182, 0.6)) 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+pnpm-lock.yaml
+.env
+.env.local
+coverage
+playwright-report
+playwright/.cache
+.DS_Store
+.idea
