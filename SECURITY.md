@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-Email security@aionos.dev with details and reproduction steps. Encrypt messages using the PGP key published at https://aionos.dev/pgp.
+Email ghasemzadeh.it@gmail.com with details and reproduction steps. Encrypt messages using the PGP key published.
 
 ## Supported Versions
 
