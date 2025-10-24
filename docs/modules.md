@@ -47,6 +47,43 @@ COSIGN_KEY=cosign.key ./scripts/register_module.sh summarize_text modules/summar
 
 This command pushes the artifact and signs it with Cosign for downstream verification.
 
+## Adapter generation workflow
+
+Vendors that do not provide AIP-compliant OCI/WASM packages can be wrapped with an auto-generated adapter. Submit a vendor REST
+or gRPC specification to the Builder service:
+
+```http
+POST /v1/builder/adapter
+Content-Type: application/json
+
+{
+  "name": "acme-summarizer",
+  "protocol": "grpc",
+  "source": "https://vendor.example.com/specs/summarizer.proto",
+  "signing": {
+    "cosign_key_ref": "s3://omerta/keys/builder.pub"
+  }
+}
+```
+
+The builder emits a signed WASM or gRPC micro-service image, publishes an SBOM, and registers an AIP manifest so the module appe
+ars as a first-class capability. Generated artifacts, SBOMs, and Cosign signatures live under `builder/adapter_generator/` for a
+uditing.
+
+Console operators can trigger the workflow through the **Add Vendor Spec → Build Adapter** button on the Agents page.
+
+## Module status in the Console
+
+The Agents page surfaces installation state for every module using status chips:
+
+* **Installed** – manifest and SBOM verified, module routable.
+* **Not Installed** – module visible in the registry but not present locally.
+* **Needs Update** – newer signed artifact detected in the registry.
+* **Unverified** – artifact pulled without a valid Cosign signature.
+
+Operators can also inspect SBOM details, re-run Cosign verification, or install modules directly from the registry via dedicated
+buttons.
+
 ## Runtime registration
 
 Once a module is installed, the control plane automatically discovers manifests from `modules/**/manifest.yaml`. The router caches manifest metadata in Postgres with an optional `tenant_id` field to support multi-tenant scheduling. Cache invalidation occurs whenever `scripts/register_module.sh` or the policy reload endpoint is invoked.

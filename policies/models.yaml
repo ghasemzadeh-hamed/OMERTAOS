@@ -1,0 +1,83 @@
+# Model catalog and routing constraints
+defaults:
+  privacy: local-only
+  latency_budget_ms:
+    local-only: 600
+    hybrid: 2000
+    allow-api: 2300
+  fallback: gpt-4o
+  budget:
+    daily_usd: 25.0
+    hard_cap_usd: 100.0
+
+models:
+  - name: llama3-8b
+    display_name: Llama 3 8B Instruct
+    provider: ollama
+    mode: local
+    engine: chat
+    privacy: local-only
+    intents: [general, summarize, code]
+    latency_budget_ms: 1200
+    health:
+      endpoint: http://localhost:11434/api/tags
+      method: GET
+    metadata:
+      format: gguf
+      size_gb: 5.1
+      install_script: scripts/install_llm.sh
+      engine: ollama
+  - name: mixtral-8x7b
+    display_name: Mixtral 8x7B
+    provider: vllm
+    mode: local
+    engine: chat
+    privacy: hybrid
+    intents: [general, reasoning]
+    latency_budget_ms: 1800
+    health:
+      endpoint: http://localhost:9000/healthz
+      method: GET
+    metadata:
+      format: safetensors
+      size_gb: 40
+      engine: vllm
+  - name: gpt-4o
+    display_name: GPT-4 Omni
+    provider: openai
+    mode: api
+    engine: chat
+    privacy: allow-api
+    intents: [general, reasoning, analysis]
+    latency_budget_ms: 2200
+    credentials_env: OPENAI_API_KEY
+    health:
+      endpoint: https://api.openai.com/v1/models
+      method: HEAD
+    metadata:
+      api_base: https://api.openai.com/v1
+      tier: enterprise
+  - name: azure-gpt4o
+    display_name: Azure GPT-4o
+    provider: azure
+    mode: api
+    engine: chat
+    privacy: allow-api
+    intents: [general, reasoning]
+    latency_budget_ms: 2100
+    credentials_env: AZURE_OPENAI_KEY
+    metadata:
+      endpoint: https://example.openai.azure.com
+      deployment: gpt-4o
+  - name: hf-deepseek-v2
+    display_name: DeepSeek-V2 (HF)
+    provider: huggingface
+    mode: hybrid
+    engine: chat
+    privacy: hybrid
+    intents: [code, reasoning]
+    latency_budget_ms: 2400
+    credentials_env: HF_TOKEN
+    metadata:
+      inference_endpoint: https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-V2
+      cache_ttl_s: 600
