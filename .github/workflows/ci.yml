@@ -14,12 +14,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: License consistency
+        run: |
+          grep -R "Apache License" LICENSE README.md
       - name: Install gateway deps
         run: |
           cd gateway
           npm install
           npm run build
           npm test
+      - name: Install console deps
+        run: |
+          npm install -g pnpm
+          pnpm -C console install
+          pnpm -C console lint
+          pnpm -C console test
+          pnpm -C console build
       - name: Set up Python
         uses: actions/setup-python@v5
         with:

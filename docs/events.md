@@ -28,3 +28,5 @@ sr-cli --config schema-registry.properties register --subject aion.router.decisi
 - Spark streaming jobs consume decisions and lifecycle events.
 - Airflow DAGs ingest ClickHouse exports for offline training.
 - Control plane producers validate payloads before publishing.
+
+Use `bigdata/scripts/bootstrap_kafka.sh` to create topics with retention policies and register schemas with the Confluent-compatible Schema Registry.

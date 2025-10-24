@@ -1,18 +1,18 @@
-import Fastify from 'fastify';
+import Fastify, { FastifyRequest } from 'fastify';
 import compress from '@fastify/compress';
 import helmet from '@fastify/helmet';
 import websocket from '@fastify/websocket';
-import { authPreHandler } from './auth.js';
+import { authPreHandler } from './auth/index.js';
 import { gatewayConfig } from './config.js';
-import { cacheIdempotency, getIdempotency, redis } from './redis.js';
-import { createControlClient } from './grpcClient.js';
-import { TaskRequest, TaskResult } from './types.js';
-import { randomUUID } from 'crypto';
-import { FastifyRequest } from 'fastify';
-import { EventEmitter } from 'node:events';
-import { Metadata } from '@grpc/grpc-js';
 import cors from '@fastify/cors';
 import fastifySsePlugin from 'fastify-sse-v2';
+import { randomUUID } from 'node:crypto';
+import { EventEmitter } from 'node:events';
+import { Metadata } from '@grpc/grpc-js';
+import { createControlClient } from './server/grpc.js';
+import { idempotencyMiddleware, persistIdempotency } from './middleware/idempotency.js';
+import { rateLimitMiddleware } from './middleware/rateLimit.js';
+import type { TaskRequest, TaskResult } from './types.js';
 
 const app = Fastify({
   logger: true,
@@ -29,52 +29,8 @@ app.register(cors, { origin: gatewayConfig.corsOrigins, credentials: true });
 const controlClient = createControlClient();
 const streamEmitter = new EventEmitter();
 
-const windowMs = (() => {
-  const window = gatewayConfig.rateLimit.timeWindow;
-  const [value, unit] = window.split(' ');
-  const numeric = Number(value || '1');
-  switch ((unit || 'minute').toLowerCase()) {
-    case 's':
-    case 'sec':
-    case 'second':
-    case 'seconds':
-      return numeric * 1000;
-    case 'm':
-    case 'min':
-    case 'minute':
-    case 'minutes':
-      return numeric * 60 * 1000;
-    case 'h':
-    case 'hr':
-    case 'hour':
-    case 'hours':
-      return numeric * 60 * 60 * 1000;
-    default:
-      return 60 * 1000;
-  }
-})();
-
-const rateLimitCheck = async (request: FastifyRequest) => {
-  const identifier = request.headers['x-api-key'] || request.ip;
-  const bucket = `rl:${identifier}`;
-  const now = Date.now();
-  const windowKey = `${bucket}:${Math.floor(now / windowMs)}`;
-  const ttl = Math.ceil(windowMs / 1000);
-  const [[, count], [, _]] = await redis
-    .multi()
-    .incr(windowKey)
-    .expire(windowKey, ttl)
-    .exec();
-  const requests = Number(count);
-  if (requests > gatewayConfig.rateLimit.max) {
-    throw app.httpErrors.tooManyRequests('Rate limit exceeded');
-  }
-};
-
-const invokeControlUnary = (method: 'Submit' | 'StatusById', payload: any) => {
+const invokeControlUnary = (method: 'Submit' | 'StatusById', payload: any, metadata: Metadata) => {
   return new Promise<any>((resolve, reject) => {
-    const metadata = new Metadata();
-    metadata.add('x-request-id', payload.requestId || randomUUID());
     controlClient[method](payload, metadata, (err: Error | null, response: any) => {
       if (err) {
         reject(err);
@@ -85,9 +41,24 @@ const invokeControlUnary = (method: 'Submit' | 'StatusById', payload: any) => {
   });
 };
 
-const pollStatus = async (taskId: string): Promise<TaskResult | null> => {
+const buildMetadata = (request: FastifyRequest) => {
+  const metadata = new Metadata();
+  metadata.add('x-request-id', request.id);
+  if (request.headers['authorization']) {
+    metadata.add('authorization', String(request.headers['authorization']));
+  }
+  if (request.headers['x-tenant']) {
+    metadata.add('x-tenant', String(request.headers['x-tenant']));
+  }
+  if (request.headers['traceparent']) {
+    metadata.add('traceparent', String(request.headers['traceparent']));
+  }
+  return metadata;
+};
+
+const pollStatus = async (taskId: string, request: FastifyRequest): Promise<TaskResult | null> => {
   try {
-    const response = await invokeControlUnary('StatusById', { taskId });
+    const response = await invokeControlUnary('StatusById', { taskId }, buildMetadata(request));
     if (!response) {
       return null;
     }
@@ -102,48 +73,48 @@ const pollStatus = async (taskId: string): Promise<TaskResult | null> => {
       error: response.error,
     } as TaskResult;
   } catch (error) {
-    app.log.error({ err: error }, 'Failed to fetch status');
+    request.log.error({ err: error }, 'Failed to fetch status');
     return null;
   }
 };
 
-const streamTask = async (taskId: string) => {
-  const result = await pollStatus(taskId);
+const streamTask = async (taskId: string, request: FastifyRequest) => {
+  const result = await pollStatus(taskId, request);
   if (result) {
     streamEmitter.emit(taskId, result);
   }
 };
 
-app.addHook('onRequest', async (request) => {
-  await rateLimitCheck(request);
+app.addHook('onRequest', async (request, reply) => {
+  await rateLimitMiddleware(request, reply);
 });
 
 app.addHook('preHandler', authPreHandler(['user', 'manager', 'admin']));
 
+app.get('/healthz', async () => ({ status: 'ok' }));
+
 app.post<{ Body: TaskRequest }>('/v1/tasks', async (request, reply) => {
-  const idempotencyKey = request.headers['idempotency-key'];
-  if (typeof idempotencyKey === 'string') {
-    const cached = await getIdempotency(idempotencyKey);
-    if (cached) {
-      reply.header('x-idempotent-replay', 'true');
-      return JSON.parse(cached) as TaskResult;
-    }
+  const cached = await idempotencyMiddleware(request, reply);
+  if (cached) {
+    return cached;
   }
+
+  const idempotencyKey = typeof request.headers['idempotency-key'] === 'string' ? request.headers['idempotency-key'] : undefined;
+  const tenantId = (request.headers['x-tenant'] as string | undefined) ?? undefined;
 
   const taskId = randomUUID();
   const payload = {
     schemaVersion: request.body.schemaVersion || '1.0',
     intent: request.body.intent,
-    params: Object.fromEntries(Object.entries(request.body.params || {}).map(([k, v]) => [k, String(v)])),
+    params: request.body.params ?? {},
     preferredEngine: request.body.preferredEngine || 'auto',
     priority: request.body.priority || 'normal',
     sla: request.body.sla,
     metadata: request.body.metadata,
-    requestId: request.id,
     taskId,
   };
 
-  const response = await invokeControlUnary('Submit', payload);
+  const response = await invokeControlUnary('Submit', payload, buildMetadata(request));
   const result: TaskResult = {
     schemaVersion: response.schemaVersion,
     taskId: response.taskId,
@@ -155,111 +126,90 @@ app.post<{ Body: TaskRequest }>('/v1/tasks', async (request, reply) => {
     error: response.error,
   };
 
-  if (typeof idempotencyKey === 'string') {
-    await cacheIdempotency(idempotencyKey, JSON.stringify(result), 15 * 60);
+  if (idempotencyKey) {
+    try {
+      await persistIdempotency(idempotencyKey, result, tenantId);
+    } catch (error) {
+      request.log.error({ err: error }, 'Failed to persist idempotency result');
+      throw reply.serviceUnavailable('Idempotency cache unavailable');
+    }
   }
 
-  reply.header('x-request-id', request.id);
-  setImmediate(() => streamTask(result.taskId));
   return result;
 });
 
 app.get('/v1/tasks/:id', async (request, reply) => {
   const { id } = request.params as { id: string };
-  const result = await pollStatus(id);
+  const result = await pollStatus(id, request);
   if (!result) {
-    throw app.httpErrors.notFound('Task not found');
+    throw reply.notFound('Task not found');
   }
-  reply.header('x-request-id', request.id);
   return result;
 });
 
-app.get('/v1/stream/:id', { websocket: false }, async (request, reply) => {
+app.get('/v1/stream/:id', async (request, reply) => {
   const { id } = request.params as { id: string };
   reply.raw.setHeader('Content-Type', 'text/event-stream');
   reply.raw.setHeader('Cache-Control', 'no-cache');
   reply.raw.setHeader('Connection', 'keep-alive');
-  reply.sse({ data: JSON.stringify({ type: 'heartbeat' }) });
 
-  const listener = (payload: TaskResult) => {
-    reply.sse({ data: JSON.stringify({ type: 'result', payload }) });
+  const listener = (result: TaskResult) => {
+    reply.sse({ id: result.taskId, data: JSON.stringify(result) });
   };
 
   streamEmitter.on(id, listener);
-  const interval = setInterval(async () => {
-    const status = await pollStatus(id);
-    if (status) {
-      reply.sse({ data: JSON.stringify({ type: 'status', payload: status }) });
-      if (status.status !== 'PENDING' && status.status !== 'RUNNING') {
-        clearInterval(interval);
-      }
-    }
-  }, 2000);
-
   request.raw.on('close', () => {
-    clearInterval(interval);
-    streamEmitter.removeListener(id, listener);
+    streamEmitter.off(id, listener);
   });
+  await streamTask(id, request);
 });
 
-app.get('/v1/ws', { websocket: true }, (connection, request) => {
-  connection.socket.send(
-    JSON.stringify({ type: 'info', message: 'send {"op":"subscribe","taskId":"..."}' })
-  );
-  const subscribe = (taskId: string) => {
-    const listener = (payload: TaskResult) => {
-      connection.socket.send(JSON.stringify({ type: 'result', payload }));
-    };
-    streamEmitter.on(taskId, listener);
-    const interval = setInterval(async () => {
-      const status = await pollStatus(taskId);
-      if (status) {
-        connection.socket.send(JSON.stringify({ type: 'status', payload: status }));
-        if (status.status !== 'PENDING' && status.status !== 'RUNNING') {
-          clearInterval(interval);
+app.register(async (instance) => {
+  instance.get('/v1/ws', { websocket: true }, (connection, request) => {
+    const { socket } = connection;
+    socket.send(JSON.stringify({ type: 'welcome', requestId: request.id }));
+    socket.on('message', async (message: Buffer) => {
+      try {
+        const parsed = JSON.parse(message.toString());
+        if (parsed.action === 'subscribe' && parsed.taskId) {
+          const listener = (result: TaskResult) => {
+            socket.send(JSON.stringify({ type: 'task', payload: result }));
+          };
+          streamEmitter.on(parsed.taskId, listener);
+          socket.once('close', () => streamEmitter.off(parsed.taskId, listener));
+          await streamTask(parsed.taskId, request);
         }
+      } catch (error) {
+        socket.send(JSON.stringify({ type: 'error', message: (error as Error).message }));
       }
-    }, 2000);
-    connection.socket.once('close', () => {
-      streamEmitter.removeListener(taskId, listener);
-      clearInterval(interval);
     });
-  };
-
-  connection.socket.on('message', (message) => {
-    try {
-      const parsed = JSON.parse(message.toString());
-      if (parsed.op === 'subscribe' && typeof parsed.taskId === 'string') {
-        subscribe(parsed.taskId);
+    const heartbeat = setInterval(() => {
+      if (socket.readyState === socket.OPEN) {
+        socket.send(JSON.stringify({ type: 'heartbeat', ts: Date.now() }));
       }
-    } catch (error) {
-      connection.socket.send(JSON.stringify({ type: 'error', message: 'invalid message' }));
-    }
+    }, 15_000);
+    socket.once('close', () => clearInterval(heartbeat));
   });
 });
 
-app.get('/healthz', async () => {
-  try {
-    const redisPing = await redis.ping();
-    return { status: 'ok', redis: redisPing };
-  } catch (error) {
-    app.log.warn({ err: error }, 'Redis health check failed');
-    return { status: 'degraded', redis: 'unreachable' };
+app.setErrorHandler((error, request, reply) => {
+  request.log.error({ err: error }, 'Unhandled gateway error');
+  if (reply.raw.headersSent) {
+    return reply;
   }
+  return reply.status(error.statusCode || 500).send({
+    error: 'GatewayError',
+    message: error.message,
+    statusCode: error.statusCode || 500,
+  });
 });
 
-const start = async () => {
-  try {
-    await app.listen({ host: gatewayConfig.host, port: gatewayConfig.port });
-    app.log.info(`Gateway listening on ${gatewayConfig.host}:${gatewayConfig.port}`);
-  } catch (err) {
-    app.log.error({ err }, 'Failed to start gateway');
-    process.exit(1);
-  }
+export const start = async () => {
+  await app.listen({ port: gatewayConfig.port, host: gatewayConfig.host });
+  app.log.info(`Gateway listening on ${gatewayConfig.host}:${gatewayConfig.port}`);
+  return app;
 };
 
-if (process.env.NODE_ENV !== 'test') {
-  start();
-}
+export type GatewayServer = typeof app;
 
 export default app;

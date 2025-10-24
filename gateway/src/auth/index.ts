@@ -1,7 +1,8 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import createError from 'http-errors';
 import jwt from 'jsonwebtoken';
-import { gatewayConfig } from './config.js';
+import { gatewayConfig } from '../config.js';
+import { resolveTenant } from './claims.js';
 
 export interface RequestContext {
   requestId: string;
@@ -44,10 +45,11 @@ export const authPreHandler = (requiredRoles: string[] = []) => {
     const apiKey = request.headers['x-api-key'];
     if (typeof apiKey === 'string' && gatewayConfig.apiKeys[apiKey]) {
       const keyConfig = gatewayConfig.apiKeys[apiKey];
+      const tenant = resolveTenant(request, keyConfig.tenant).tenantId;
       context.user = {
         id: `api-key:${apiKey.slice(0, 6)}`,
         roles: keyConfig.roles,
-        tenant: keyConfig.tenant,
+        tenant,
       };
       context.authType = 'api_key';
     } else if (typeof request.headers.authorization === 'string') {
@@ -58,10 +60,11 @@ export const authPreHandler = (requiredRoles: string[] = []) => {
         : typeof payload.role === 'string'
         ? payload.role.split(',')
         : [];
+      const tenant = resolveTenant(request, payload.tenant_id ? String(payload.tenant_id) : undefined).tenantId;
       context.user = {
         id: String(payload.sub || payload.user_id || 'unknown'),
         roles,
-        tenant: payload.tenant_id ? String(payload.tenant_id) : undefined,
+        tenant,
         metadata: payload,
       };
       context.authType = 'jwt';

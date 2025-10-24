@@ -11,6 +11,7 @@
 - API keys stored in secrets manager; hashed at rest.
 - JWT support with RS256 signatures; JWKS endpoints pluggable.
 - Optional OIDC integration can be enabled via reverse proxy.
+- Public gRPC endpoints require JWT metadata and mTLS in production (client certificates issued per tenant).
 
 ## Module Sandbox
 
@@ -21,7 +22,7 @@
 ## Network Policies
 
 - Kubernetes NetworkPolicy denies outbound traffic except HTTPS.
-- Service Mesh recommended for mTLS between gateway and control plane.
+- Service mesh enforces mutual TLS between gateway, control plane, and module hosts. Certificates rotate automatically via SPIRE or cert-manager.
 
 ## Supply Chain
 

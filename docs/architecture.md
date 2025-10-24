@@ -52,3 +52,10 @@ flowchart TD
   Control --> Storage
   Control --> Observability
 ```
+
+## Tenancy model
+
+- `TENANCY_MODE=single` keeps behavior compatible with existing deployments.
+- `TENANCY_MODE=multi` requires an `X-Tenant` header or tenant claim on every request.
+- Redis, Qdrant, and idempotency caches are namespaced per tenant (`tenant_id` prefix).
+- Postgres tables include nullable `tenant_id` columns with composite indexes for future partitioning.

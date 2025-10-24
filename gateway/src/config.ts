@@ -12,6 +12,15 @@ export interface GatewayConfig {
   rateLimit: {
     max: number;
     timeWindow: string;
+    perIp: number;
+  };
+  idempotencyTtlSeconds: number;
+  environment: 'development' | 'test' | 'production';
+  tls: {
+    certPath?: string;
+    keyPath?: string;
+    caPaths?: string[];
+    requireMtls: boolean;
   };
 }
 
@@ -31,6 +40,17 @@ const parseApiKeys = (): Record<string, { roles: string[]; tenant?: string }> =>
   return mapped;
 };
 
+const parseCaPaths = (raw?: string): string[] | undefined => {
+  if (!raw) {
+    return undefined;
+  }
+  const paths = raw
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  return paths.length ? paths : undefined;
+};
+
 export const gatewayConfig: GatewayConfig = {
   port: Number(process.env.AION_GATEWAY_PORT || 8080),
   host: process.env.AION_GATEWAY_HOST || '0.0.0.0',
@@ -45,5 +65,14 @@ export const gatewayConfig: GatewayConfig = {
   rateLimit: {
     max: Number(process.env.AION_RATE_LIMIT_MAX || 60),
     timeWindow: process.env.AION_RATE_LIMIT_WINDOW || '1 minute',
+    perIp: Number(process.env.AION_RATE_LIMIT_PER_IP || 30),
+  },
+  idempotencyTtlSeconds: Number(process.env.AION_IDEMPOTENCY_TTL || 900),
+  environment: (process.env.NODE_ENV as GatewayConfig['environment']) || 'development',
+  tls: {
+    certPath: process.env.AION_TLS_CERT,
+    keyPath: process.env.AION_TLS_KEY,
+    caPaths: parseCaPaths(process.env.AION_TLS_CA_CHAIN),
+    requireMtls: process.env.AION_TLS_REQUIRE_MTLS === 'true',
   },
 };
