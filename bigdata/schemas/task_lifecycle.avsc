@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "TaskLifecycle",
+  "namespace": "aion.events",
+  "fields": [
+    { "name": "task_id", "type": "string" },
+    { "name": "tenant_id", "type": ["null", "string"], "default": null },
+    { "name": "intent", "type": "string" },
+    { "name": "status", "type": "string" },
+    { "name": "timestamp", "type": "string" },
+    { "name": "metadata", "type": ["null", "string"], "default": null }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "type": "record",
+  "name": "RouterDecision",
+  "namespace": "aion.events",
+  "fields": [
+    { "name": "task_id", "type": "string" },
+    { "name": "tenant_id", "type": ["null", "string"], "default": null },
+    { "name": "intent", "type": "string" },
+    { "name": "route", "type": "string" },
+    { "name": "reason", "type": "string" },
+    { "name": "tier", "type": "string" },
+    { "name": "timestamp", "type": "string" }
+  ]
+}

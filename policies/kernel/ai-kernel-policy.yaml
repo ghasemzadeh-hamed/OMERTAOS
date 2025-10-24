@@ -1,0 +1,9 @@
+allow:
+  - sysctl
+  - cgroup
+  - netd
+max_risk: 0.6
+ttl_seconds: 900
+default_canary_percent: 25
+kpi_guard:
+  degrade_threshold_pct: 5

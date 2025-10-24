@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "MetricsRuntime",
+  "namespace": "aion.events",
+  "fields": [
+    { "name": "component", "type": "string" },
+    { "name": "metric", "type": "string" },
+    { "name": "value", "type": "double" },
+    { "name": "labels", "type": ["null", "string"], "default": null },
+    { "name": "timestamp", "type": "string" }
+  ]
+}

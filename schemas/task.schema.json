@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aionos.dev/schemas/task.schema.json",
+  "title": "Task",
+  "type": "object",
+  "required": ["schema_version", "intent", "params"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "task_id": { "type": "string" },
+    "tenant_id": { "type": "string" },
+    "intent": { "type": "string" },
+    "params": { "type": "object" },
+    "preferred_engine": {
+      "type": "string",
+      "enum": ["auto", "local", "api", "hybrid"]
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["low", "normal", "high"],
+      "default": "normal"
+    },
+    "sla": {
+      "type": "object",
+      "properties": {
+        "budget_usd": { "type": "number", "minimum": 0 },
+        "p95_ms": { "type": "integer", "minimum": 0 },
+        "privacy": {
+          "type": "string",
+          "enum": ["local-only", "allow-api", "hybrid"]
+        }
+      }
+    },
+    "metadata": { "type": "object" }
+  }
+}

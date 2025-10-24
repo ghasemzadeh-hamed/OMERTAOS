@@ -1,0 +1,18 @@
+summarize:
+  default_route: local
+  candidates:
+    - local
+    - api
+  privacy: allow-api
+  tiers_allowed:
+    - tier0
+    - tier1
+  vector_usage: memory
+invoice_ocr:
+  default_route: local
+  candidates:
+    - local
+  privacy: local-only
+  tiers_allowed:
+    - tier0
+  vector_usage: disabled
