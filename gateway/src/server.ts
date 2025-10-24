@@ -12,7 +12,9 @@ import { Metadata } from '@grpc/grpc-js';
 import { createControlClient } from './server/grpc.js';
 import { idempotencyMiddleware, persistIdempotency } from './middleware/idempotency.js';
 import { rateLimitMiddleware } from './middleware/rateLimit.js';
-import type { TaskRequest, TaskResult } from './types.js';
+import { ZodError } from 'zod';
+import type { TaskRequest, TaskRequestInput, TaskResult } from './types.js';
+import { taskRequestSchema } from './types.js';
 
 const app = Fastify({
   logger: true,
@@ -93,7 +95,26 @@ app.addHook('preHandler', authPreHandler(['user', 'manager', 'admin']));
 
 app.get('/healthz', async () => ({ status: 'ok' }));
 
-app.post<{ Body: TaskRequest }>('/v1/tasks', async (request, reply) => {
+app.post<{ Body: TaskRequestInput }>('/v1/tasks', async (request, reply) => {
+  let validatedBody: TaskRequest;
+  try {
+    validatedBody = taskRequestSchema.parse(request.body);
+  } catch (error) {
+    request.log.warn({ err: error }, 'Invalid task request payload');
+    if (error instanceof ZodError) {
+      return reply.status(400).send({
+        error: 'ValidationError',
+        message: 'Invalid task request',
+        issues: error.issues.map((issue) => ({
+          path: issue.path.join('.'),
+          message: issue.message,
+          code: issue.code,
+        })),
+      });
+    }
+    throw error;
+  }
+
   const cached = await idempotencyMiddleware(request, reply);
   if (cached) {
     return cached;
@@ -104,13 +125,7 @@ app.post<{ Body: TaskRequest }>('/v1/tasks', async (request, reply) => {
 
   const taskId = randomUUID();
   const payload = {
-    schemaVersion: request.body.schemaVersion || '1.0',
-    intent: request.body.intent,
-    params: request.body.params ?? {},
-    preferredEngine: request.body.preferredEngine || 'auto',
-    priority: request.body.priority || 'normal',
-    sla: request.body.sla,
-    metadata: request.body.metadata,
+    ...validatedBody,
     taskId,
   };
 
