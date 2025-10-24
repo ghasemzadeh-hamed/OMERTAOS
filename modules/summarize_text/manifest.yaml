@@ -1,0 +1,35 @@
+metadata:
+  name: summarize_text
+  version: 0.1.0
+  description: Summarize text using simple heuristics
+  authors:
+    - name: aionOS Team
+      email: oss@aionos.dev
+  license: Apache-2.0
+signatures:
+  cosign:
+    image: ghcr.io/aionos/modules/summarize_text:0.1.0
+    certificate: cosign.pub
+sbom: sbom.spdx.json
+runtime:
+  type: wasm
+  wasi: true
+resources:
+  cpu: "100m"
+  memory: "128Mi"
+  gpu: none
+permissions:
+  filesystem: read-only
+  network: denied
+  secrets: []
+entrypoints:
+  wasi:
+    command: run
+schemas:
+  input: ../../schemas/task.schema.json
+  output: ../../schemas/result.schema.json
+intents:
+  - summarize
+policies:
+  timeout_ms: 1200
+  retries: 0
