@@ -1,0 +1,14 @@
+defaults:
+  description: "Admin-gated AI kernel policy"
+limits:
+  max_ttl_seconds: 3600
+  max_risk_score: 0.6
+allowlist:
+  sysctl:
+    keys:
+      - net.ipv4.tcp_congestion_control
+      - net.core.default_qdisc
+apply:
+  require_admin_approval: true
+admins:
+  - admin@example.com

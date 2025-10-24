@@ -1,5 +1,15 @@
 from functools import lru_cache
-from pydantic import BaseSettings, Field
+from pydantic import Field
+
+try:
+    from pydantic_settings import BaseSettings
+except ImportError:  # pragma: no cover - fallback for minimal environments
+    from pydantic import BaseModel
+
+    class BaseSettings(BaseModel):
+        class Config:
+            env_prefix = "AION_CONTROL_"
+            env_file = ".env"
 from typing import List
 
 
