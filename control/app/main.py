@@ -8,10 +8,10 @@ from pydantic import BaseModel, ConfigDict
 from typing import AsyncGenerator, Dict
 
 from .config import get_settings
+from .models import TaskStatus
 from .orchestrator import orchestrator
 from .policy import policy_store
-from .models import TaskStatus
-from .routes import memory_router
+from .routes.kernel_proposals import router as kernel_router
 
 
 class SubmitRequest(BaseModel):
@@ -36,6 +36,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(kernel_router, prefix=settings.api_prefix)
 
 
 @app.middleware("http")
