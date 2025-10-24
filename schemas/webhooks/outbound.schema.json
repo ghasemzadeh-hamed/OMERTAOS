@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OutboundWebhookEvent",
+  "type": "object",
+  "properties": {
+    "topic": { "type": "string" },
+    "payload": { "type": "object" },
+    "timestamp": { "type": "string", "format": "date-time" }
+  },
+  "required": ["topic", "payload", "timestamp"]
+}

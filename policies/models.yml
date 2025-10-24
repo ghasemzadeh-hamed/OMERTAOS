@@ -1,0 +1,19 @@
+tiers:
+  tier0:
+    description: Local inference stack
+    providers:
+      - name: summarize_text
+        type: module
+        endpoint: wasm://summarize_text
+  tier1:
+    description: Cloud standard providers
+    providers:
+      - name: openai-gpt3.5
+        type: openai
+        endpoint: https://api.openai.com/v1/chat/completions
+  tier2:
+    description: Premium models
+    providers:
+      - name: openai-gpt4
+        type: openai
+        endpoint: https://api.openai.com/v1/chat/completions

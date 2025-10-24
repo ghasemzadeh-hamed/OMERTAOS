@@ -1,0 +1,39 @@
+metadata:
+  name: invoice_ocr
+  version: 0.1.0
+  description: Extract invoice metadata using OCR-friendly regex parsing
+  authors:
+    - name: aionOS Team
+      email: oss@aionos.dev
+  license: Apache-2.0
+signatures:
+  cosign:
+    image: ghcr.io/aionos/modules/invoice_ocr:0.1.0
+    certificate: cosign.pub
+sbom: sbom.spdx.json
+runtime:
+  type: subprocess
+  wasi: false
+resources:
+  cpu: "200m"
+  memory: "256Mi"
+  gpu: optional
+permissions:
+  filesystem: read-only
+  network: denied
+  secrets:
+    - OCR_API_TOKEN
+entrypoints:
+  stdio:
+    command: invoice_ocr
+schemas:
+  input: ../../schemas/task.schema.json
+  output: ../../schemas/result.schema.json
+intents:
+  - invoice_ocr
+policies:
+  timeout_ms: 4000
+  retries: 1
+  sandbox:
+    user: aion
+    seccomp: profiles/invoice_ocr.json

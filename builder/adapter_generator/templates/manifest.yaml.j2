@@ -1,0 +1,10 @@
+name: {{ spec.name }}
+version: {{ spec.version }}
+authors:
+  - generated@aionos
+license: Apache-2.0
+runtime:
+  type: wasm
+actions:
+  - intent: {{ spec.target_intent }}
+    entrypoint: index
