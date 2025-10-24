@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install gateway deps
+        run: |
+          cd gateway
+          npm install
+          npm run build
+          npm test
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install control deps
+        run: |
+          pip install poetry
+          cd control
+          poetry install
+          poetry run pytest
+      - name: Run cargo tests
+        run: |
+          cd modules
+          cargo test
+      - name: Trivy Scan
+        uses: aquasecurity/trivy-action@0.18.0
+        with:
+          scan-type: fs
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+      - name: Syft SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          output-file: sbom.spdx.json
+      - name: Upload coverage
+        if: always()
+        run: echo "Coverage upload placeholder"

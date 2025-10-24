@@ -1,0 +1,24 @@
+budget:
+  default_usd: 0.02
+  hard_cap_usd: 0.2
+latency:
+  p95:
+    local: 600
+    api: 2000
+    hybrid: 2300
+privacy:
+  local_only_intents:
+    - invoice_ocr
+providers:
+  allow:
+    - openai
+    - azure
+    - huggingface
+    - ollama
+  deny: []
+fallback_order:
+  summarize:
+    - local
+    - api
+  invoice_ocr:
+    - local

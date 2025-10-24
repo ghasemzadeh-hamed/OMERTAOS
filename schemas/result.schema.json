@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aionos.dev/schemas/result.schema.json",
+  "title": "TaskResult",
+  "type": "object",
+  "required": ["schema_version", "task_id", "intent", "status", "engine"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "task_id": { "type": "string" },
+    "intent": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["OK", "ERROR", "TIMEOUT", "CANCELED"]
+    },
+    "engine": {
+      "type": "object",
+      "required": ["route", "chosen_by", "reason"],
+      "properties": {
+        "route": { "type": "string" },
+        "chosen_by": { "type": "string" },
+        "reason": { "type": "string" },
+        "tier": { "type": "string" }
+      }
+    },
+    "result": { "type": "object" },
+    "usage": {
+      "type": "object",
+      "properties": {
+        "latency_ms": { "type": "number" },
+        "tokens": { "type": "integer" },
+        "cost_usd": { "type": "number" }
+      }
+    },
+    "error": {
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "message": { "type": "string" }
+      }
+    }
+  }
+}

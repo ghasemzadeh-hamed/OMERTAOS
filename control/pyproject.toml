@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "aionos-control"
+version = "0.1.0"
+description = "Control plane for aionOS"
+authors = ["aionOS Contributors <oss@aionos.dev>"]
+license = "Apache-2.0"
+readme = "README.md"
+packages = [{ include = "app" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "0.110.0"
+uvicorn = "0.27.1"
+httpx = "0.27.0"
+redis = "5.0.1"
+pydantic = "2.6.3"
+asyncpg = "0.29.0"
+motor = "3.3.2"
+qdrant-client = "1.7.1"
+aiokafka = "0.10.0"
+python-json-logger = "2.0.7"
+python-dotenv = "1.0.1"
+structlog = "24.1.0"
+protobuf = "4.25.3"
+pyyaml = "6.0.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "8.1.1"
+pytest-asyncio = "0.23.5"
+httpx = "0.27.0"
+pytest-cov = "4.1.0"
+
+[build-system]
+requires = ["poetry-core>=1.7.0"]
+build-backend = "poetry.core.masonry.api"

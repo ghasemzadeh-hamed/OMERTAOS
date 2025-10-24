@@ -1,0 +1,9 @@
+dashboard_title: Cost per 1k Tasks
+position:
+  CHART-cost-trend:
+    type: CHART
+    meta:
+      chartId: 4
+      sliceName: "Cost Trend"
+      height: 50
+      width: 12
