@@ -30,3 +30,19 @@ sr-cli --config schema-registry.properties register --subject aion.router.decisi
 - Control plane producers validate payloads before publishing.
 
 Use `bigdata/scripts/bootstrap_kafka.sh` to create topics with retention policies and register schemas with the Confluent-compatible Schema Registry.
+
+## Webhooks
+
+Outbound webhooks configured in `policies/webhooks.yaml` mirror the Kafka catalog. Each webhook entry includes:
+
+- `url` – HTTPS endpoint that receives the event payload.
+- `secret` – shared HMAC-SHA256 secret used to populate the `X-Aion-Signature` header.
+- `topics` – list of topic patterns (for example, `kernel.proposal.*`) that trigger deliveries.
+- `retry` – backoff configuration (`initial_interval`, `max_interval`, `max_attempts`).
+
+Deliveries include an `Idempotency-Key` header and are retried automatically until success or the retry policy expires.
+
+Inbound commands arrive on `/webhooks/inbound` inside the gateway. Only allow-listed actions such as `approve_kernel_proposal`,
+`reject_kernel_proposal`, `install_module`, `ingest_dataset`, and `update_memory_profile` are executed. Requests must pass HMAC
+verification and RBAC checks (API key or JWT) before being dispatched to the control plane. Every accepted command emits an aud
+it event.

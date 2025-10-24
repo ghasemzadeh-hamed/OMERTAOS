@@ -11,6 +11,7 @@ from .config import get_settings
 from .orchestrator import orchestrator
 from .policy import policy_store
 from .models import TaskStatus
+from .routes import models_router
 
 
 class SubmitRequest(BaseModel):
@@ -35,6 +36,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(models_router, prefix=settings.api_prefix)
 
 
 @app.middleware("http")
