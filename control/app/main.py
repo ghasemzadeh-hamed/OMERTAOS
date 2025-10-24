@@ -11,6 +11,7 @@ from .config import get_settings
 from .orchestrator import orchestrator
 from .policy import policy_store
 from .models import TaskStatus
+from .routes import memory_router
 
 
 class SubmitRequest(BaseModel):
@@ -42,6 +43,9 @@ async def trace_context(request: Request, call_next):
     response = await call_next(request)
     response.headers["x-request-id"] = request.headers.get("x-request-id", "")
     return response
+
+
+app.include_router(memory_router)
 
 
 @app.get("/healthz")
