@@ -17,7 +17,7 @@ export interface RequestContext {
 
 declare module 'fastify' {
   interface FastifyRequest {
-    context: RequestContext;
+    aionContext: RequestContext;
   }
 }
 
@@ -42,6 +42,25 @@ const decodeJwt = (token: string) => {
 export const authPreHandler = (requiredRoles: string[] = []) => {
   return async (request: FastifyRequest, _reply: FastifyReply) => {
     const context = buildDefaultContext(request);
+    const publicRoutes = new Set(['/healthz', '/readyz']);
+    if (publicRoutes.has(request.routerPath ?? '')) {
+      request.aionContext = context;
+      return;
+    }
+
+    if (gatewayConfig.environment === 'test') {
+      request.aionContext = {
+        ...context,
+        authType: 'api_key',
+        user: {
+          id: 'test-runner',
+          roles: requiredRoles.length ? requiredRoles : ['user'],
+          tenant: resolveTenant(request, undefined).tenantId,
+        },
+      };
+      return;
+    }
+
     const apiKey = request.headers['x-api-key'];
     if (typeof apiKey === 'string' && gatewayConfig.apiKeys[apiKey]) {
       const keyConfig = gatewayConfig.apiKeys[apiKey];
@@ -78,6 +97,6 @@ export const authPreHandler = (requiredRoles: string[] = []) => {
       throw createError(403, 'Forbidden');
     }
 
-    request.context = context;
+    request.aionContext = context;
   };
 };

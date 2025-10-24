@@ -8,4 +8,18 @@ describe('gateway server configuration', () => {
     const payload = response.json();
     expect(['ok', 'degraded']).toContain(payload.status);
   });
+
+  it('rejects invalid task payloads early', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/v1/tasks',
+      payload: { intent: '' },
+    });
+
+    expect(response.statusCode).toBe(400);
+    const payload = response.json();
+    expect(payload.error).toBe('ValidationError');
+    expect(payload.issues).toBeInstanceOf(Array);
+    expect(payload.issues[0]?.path).toContain('intent');
+  });
 });

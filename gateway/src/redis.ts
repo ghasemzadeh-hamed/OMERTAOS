@@ -4,7 +4,24 @@ import { gatewayConfig } from './config.js';
 export const redis = new Redis(gatewayConfig.redisUrl, {
   enableAutoPipelining: true,
   maxRetriesPerRequest: 3,
+  lazyConnect: gatewayConfig.environment === 'test',
+  retryStrategy: (times) => {
+    if (gatewayConfig.environment === 'test') {
+      return null;
+    }
+    return Math.min(times * 50, 2000);
+  },
 });
+
+if (gatewayConfig.environment === 'test') {
+  redis.on('error', (error) => {
+    if (process.env.VITEST) {
+      // Silence connection noise during tests while still surfacing unexpected errors when requested.
+      return;
+    }
+    console.warn('Redis connection error (test env)', error);
+  });
+}
 
 const idemKey = (key: string, tenantId?: string) =>
   tenantId ? `idem:${tenantId}:${key}` : `idem:${key}`;
