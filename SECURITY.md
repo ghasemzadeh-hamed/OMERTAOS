@@ -8,7 +8,7 @@ Email ghasemzadeh.it@gmail.com with details and reproduction steps. Encrypt mess
 
 | Version | Supported |
 |---------|-----------|
-| main | ✅ |
+| 001| ✅ |
 
 ## Hardening Guidelines
 
