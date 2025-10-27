@@ -1,0 +1,20 @@
+kind: service
+name: mongodb
+category: database
+version: "7.0.0"
+license: SSPL
+provider: mongodb.com
+description: >-
+  Document-oriented database used for storing agent state and registry metadata.
+download:
+  url: "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-7.0.0.tgz"
+  method: direct
+  install_script: "scripts/install_service.py --service mongodb"
+integrity:
+  sha256: "3def183f32c0a6b1c516f7abeb7f4be3"
+compat:
+  os:
+    - linux
+configurable: true
+auto_update: false
+admin_approval_required: true

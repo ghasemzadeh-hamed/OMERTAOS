@@ -1,0 +1,83 @@
+{
+  "generated_at": "2025-10-27T21:07:07+00:00",
+  "entries": [
+    {
+      "kind": "algorithm",
+      "name": "vector-cache",
+      "path": "algorithms/memory/vector-cache.yaml",
+      "sha256": "c1542d4a9ea095dbf597b91e2b2d3089944db174a140d37292399feb9b6a3314"
+    },
+    {
+      "kind": "algorithm",
+      "name": "react-planner",
+      "path": "algorithms/planning/react.yaml",
+      "sha256": "fcf8195b61354ed62dab79bf01605bd782b25bf14bb53ec9c1406ca2fb2fc718"
+    },
+    {
+      "kind": "algorithm",
+      "name": "rag-lite",
+      "path": "algorithms/rag/rag-lite.yaml",
+      "sha256": "84f327b5d7dd63a2ccb386e261f2d1f1ed190539806dd57fb4e74416e304f2f6"
+    },
+    {
+      "kind": "algorithm",
+      "name": "tree-of-thought",
+      "path": "algorithms/tot/tree-of-thought.yaml",
+      "sha256": "f20876b6fd8fa234a255513e8c0837cdbb586f7e57736a402f1f1a283ce6d186"
+    },
+    {
+      "kind": "model",
+      "name": "qwen-2.5-max",
+      "path": "models/alibaba/qwen-2.5-max.yaml",
+      "sha256": "d26b348f8587cf12335e88dbbce39cd28cccc439b884931f4dd876fbecaf1e36"
+    },
+    {
+      "kind": "model",
+      "name": "deepseek-v3",
+      "path": "models/deepseek/deepseek-v3.yaml",
+      "sha256": "a332494667d77253669cde612223a41c4d9c83e3eb949b4a25f396a7629b2bab"
+    },
+    {
+      "kind": "model",
+      "name": "gemini-2.5-pro",
+      "path": "models/google/gemini-2.5-pro.yaml",
+      "sha256": "177f4a5fbb0233be6676bdf0790637ead7f953d125e6298bc569efdacb2b8780"
+    },
+    {
+      "kind": "model",
+      "name": "llama-4-maverick",
+      "path": "models/meta/llama-4-maverick.yaml",
+      "sha256": "cb123a6d9940f961d0d3bd17f85d1e77688858db76471a3514e8f91b0064bda9"
+    },
+    {
+      "kind": "model",
+      "name": "gpt-4.5",
+      "path": "models/openai/gpt-4.5.yaml",
+      "sha256": "77817e60ff30ad58066fe3a0bc7cdaf5c3c36ba844e3cfcd96358e4824eae6d7"
+    },
+    {
+      "kind": "service",
+      "name": "mongodb",
+      "path": "services/database/mongodb.yaml",
+      "sha256": "12e02013df59018f8555faad6a366282a932e3f590755d6e160a134d1bfdbdf9"
+    },
+    {
+      "kind": "service",
+      "name": "minio",
+      "path": "services/storage/minio.yaml",
+      "sha256": "2aea247a4c1a92924af094c68dd6716ab17196bc7094645e8691e93ebf9af3db"
+    },
+    {
+      "kind": "service",
+      "name": "qdrant",
+      "path": "services/vector/qdrant.yaml",
+      "sha256": "1c43f0e6cf6f47af5cfc107054647800de45825f2b9d861f12315b8e5fbf2ba7"
+    },
+    {
+      "kind": "service",
+      "name": "n8n",
+      "path": "services/workflow/n8n.yaml",
+      "sha256": "0b521d7d6b74c4535b38c4d8d44ca913bd13804653ccf08eaf1fe196b5c0e040"
+    }
+  ]
+}

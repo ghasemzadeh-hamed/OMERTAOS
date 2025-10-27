@@ -1,0 +1,22 @@
+kind: algorithm
+name: react-planner
+type: planning
+entrypoint: "algorithms/planning/react/runner.py:plan"
+inputs:
+  - prompt
+  - tools[]
+  - max_steps
+outputs:
+  - final_answer
+  - trace[]
+depends_on:
+  - model://llama-3.1-8b-instruct
+  - tool://web-search
+compat:
+  agent_api: "^1.2"
+policies:
+  safety:
+    - no-PII-leak
+version: "1.1.0"
+integrity:
+  sha256: "reactsha256placeholder"

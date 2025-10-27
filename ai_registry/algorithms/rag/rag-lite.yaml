@@ -1,0 +1,17 @@
+kind: algorithm
+name: rag-lite
+type: rag
+entrypoint: "algorithms/rag/rag-lite/runner.py:retrieve_and_answer"
+inputs:
+  - query
+  - documents[]
+outputs:
+  - answer
+  - citations[]
+depends_on:
+  - service://vector/qdrant
+compat:
+  agent_api: "^1.2"
+version: "0.9.0"
+integrity:
+  sha256: "raglitesha256placeholder"
