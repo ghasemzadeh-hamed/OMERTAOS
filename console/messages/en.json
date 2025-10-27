@@ -12,6 +12,7 @@
     "dashboard": "Dashboard",
     "projects": "Projects",
     "tasks": "Tasks",
+    "ci": "CI/CD",
     "agents": "Agents",
     "policies": "Policies",
     "telemetry": "Telemetry",
