@@ -17,7 +17,6 @@ aionOS is a modular AI orchestration platform that combines a **TypeScript Gatew
 
 ## 🗺️ Architecture (high-level)
 
-```mermaid
 flowchart LR
   U[Client / Console] -- REST/SSE/WS --> G[Gateway (Fastify)]
   G -- gRPC/REST --> C[Control (FastAPI)]
