@@ -2,9 +2,12 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import yaml, os, secrets, subprocess
 
+from ..config_paths import resolve_config_path
+
 router = APIRouter(prefix="/admin/onboarding", tags=["admin"])
 
-CONFIG_PATH = os.getenv("AIONOS_CONFIG_PATH", "/app/config/aionos.config.yaml")
+def _config_path(prefer_existing: bool = True) -> str:
+    return str(resolve_config_path(prefer_existing=prefer_existing))
 ENV_OUT = os.getenv("AIONOS_ENV_OUT", "/app/.env")
 
 class SubmitPayload(BaseModel):
@@ -14,7 +17,7 @@ class SubmitPayload(BaseModel):
 @router.get("/status")
 def status():
     try:
-        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+        with open(_config_path(), "r", encoding="utf-8") as f:
             cfg = yaml.safe_load(f) or {}
         return {"onboardingComplete": bool(cfg.get("onboardingComplete", False))}
     except FileNotFoundError:
@@ -23,10 +26,11 @@ def status():
 @router.post("/submit")
 def submit(p: SubmitPayload):
     try:
-        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+        config_path = _config_path(prefer_existing=False)
+        os.makedirs(os.path.dirname(config_path), exist_ok=True)
         cfg = {}
-        if os.path.exists(CONFIG_PATH):
-            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+        if os.path.exists(config_path):
+            with open(config_path, "r", encoding="utf-8") as f:
                 cfg = yaml.safe_load(f) or {}
 
         if p.stepId == "admin":
@@ -56,7 +60,7 @@ def submit(p: SubmitPayload):
 
         # finalize: هیچ تغییری اینجا لازم نیست؛ در /apply اعمال می‌شود
 
-        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+        with open(config_path, "w", encoding="utf-8") as f:
             yaml.safe_dump(cfg, f, allow_unicode=True, sort_keys=False)
 
         return {"ok": True}
@@ -79,7 +83,7 @@ def render_env_from_yaml(cfg: dict) -> str:
 @router.post("/apply")
 def apply():
     try:
-        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+        with open(_config_path(), "r", encoding="utf-8") as f:
             cfg = yaml.safe_load(f) or {}
 
         # 1) تولید .env از YAML (برای Control یا ریشه‌ی ریپو—بسته به ساختار فعلی)
@@ -94,7 +98,7 @@ def apply():
         if "admin" in cfg and "password" in cfg["admin"]:
             cfg["admin"]["password"] = ""
         cfg["onboardingComplete"] = True
-        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+        with open(_config_path(prefer_existing=False), "w", encoding="utf-8") as f:
             yaml.safe_dump(cfg, f, allow_unicode=True, sort_keys=False)
 
         # 4) ری‌استارت سرویس‌ها (Dev: اختیاری؛ Prod: بر اساس orchestrator)
