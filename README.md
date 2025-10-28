@@ -1,5 +1,3 @@
-عالی—این هم یک `README.md` دوزبانه، بدون هیچ اشاره‌ای به «الهام از…»، با لحن مدرن و ترندی؛ آمادهٔ کپی‌پیست برای برنچ `AIONOS`.
-
 ````markdown
 # AION-OS (Agent Web-OS) — Next-Gen Modular AI Agent OS
 [FA ⭢ فارسی](#-معرفی-فارسی) · [EN ⭢ English](#-english-overview)
