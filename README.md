@@ -1,188 +1,184 @@
-# AION-OS (Agent Web-OS) — Modular, Distributed AI Agent Operating System
+
+# AION-OS (Agent Web-OS) — Modular, Spec-Driven AI Agent OS
+
 [FA ⭢ فارسی](#-معرفی-فارسی) · [EN ⭢ English](#-english-overview)
 
-AION-OS is a **modular AI orchestration platform** with a multi-plane architecture:
-**Gateway (TypeScript/Fastify)**, **Control (FastAPI)**, **Execution Modules (Rust/WASM)**, and a **Glass-UI Console (Next.js)**.
-It ships policy-driven routing, streaming (SSE/WS), analytics pipelines, and production-grade observability.  
-[oai_citation:1‡GitHub](https://github.com/ghasemzadeh-hamed/OMERTAOS/tree/AIONOS)
+AION-OS is a **distributed, kernel-style operating system for AI agents**. It blends three proven ideas into one production platform:
+
+1. **Spec-Driven Workflows** — project/user markdown specs (`.aionos/AGENT.md`, `policies/*.md`) steer agents to ship code to your standards (inspired by BuilderMethods Agent-OS). ([GitHub][1])
+2. **Knowledge & Task OS for Coding** — RAG-backed knowledge, task graphs, and **MCP/IDE** integrations to supercharge coding agents (inspired by Archon). ([GitHub][2])
+3. **Personal OS Modules** — assemble assistants, tutors, & device controllers with local-first privacy and plug-in connectors (inspired by OpenDAN). ([GitHub][3])
 
 ---
 
-## ✨ Features
-- **Gateway:** REST, gRPC, SSE & WebSocket APIs; auth, rate-limit, idempotency; OTEL propagation to Control.  
-  [oai_citation:2‡GitHub](https://github.com/ghasemzadeh-hamed/OMERTAOS/tree/AIONOS)
-- **Control Plane (FastAPI):** policy-aware router, task orchestrator, Kafka events; Postgres/Mongo/Redis/Qdrant connectors.  
-  [oai_citation:3‡GitHub](https://github.com/ghasemzadeh-hamed/OMERTAOS/tree/AIONOS)
-- **Modules (Rust):** WASM-first or sandboxed subprocess; Cosign signature, SBOM metadata, policy constraints.  
-  [oai_citation:4‡GitHub](https://github.com/ghasemzadeh-hamed/OMERTAOS/tree/AIONOS)
-- **Data Platform:** Kafka→ClickHouse with Spark; Airflow DAGs; Superset dashboards.  
-  [oai_citation:5‡GitHub](https://github.com/ghasemzadeh-hamed/OMERTAOS/tree/AIONOS)
-- **Security & CI/CD:** Cosign signing, SBOM, comprehensive GitHub Actions pipeline.  
-  [oai_citation:6‡GitHub](https://github.com/ghasemzadeh-hamed/OMERTAOS/tree/AIONOS)
+## ✨ Highlights
+
+* **Multi-Plane Architecture:** Gateway (TS/Fastify), Control (FastAPI), Execution (Rust/WASM), Glass-UI Console (Next.js).
+* **Spec-Driven Agents:** read `.aionos/AGENT.md` + repo docs to derive plans, acceptance criteria, and coding standards. ([GitHub][1])
+* **Knowledge OS:** project KB + embeddings + citations; optional **MCP** to IDEs for tool/FS access (Archon-style). ([GitHub][4])
+* **Personal Modules:** connectors for mail/Telegram/HTTP hooks/IoT; local execution path available (OpenDAN-style). ([GitHub][3])
+* **Policy Router:** `local | api | hybrid` with budget/SLA.
+* **Observability:** Prometheus/Grafana + OpenTelemetry; audit trail.
+* **Big-Data Overlay (optional):** Kafka → ClickHouse; Spark/Flink; Airflow; Superset dashboards.
 
 ---
 
 ## 🚀 Quick Start (Docker Compose)
+
 ```bash
+# 1) clone (AIONOS branch)
+git clone -b AIONOS --single-branch https://github.com/ghasemzadeh-hamed/OMERTAOS.git
+cd OMERTAOS
+
+# 2) envs
 cp .env.example .env
-cp .env.bigdata.example bigdata/.env
-./scripts/dev-up.sh
+cp console/.env.example console/.env
+cp control/.env.example control/.env
+
+# 3) bring up core
+docker compose up -d
+
+# (optional) analytics stack
+docker compose -f bigdata/docker-compose.bigdata.yml up -d
 ```
 
-Then open Gateway at http://localhost:8080 and Console at http://localhost:3000. Health checks are at /healthz for gateway & control.  
+Open: **Console** [http://localhost:3000](http://localhost:3000) · **Gateway** [http://localhost:8080](http://localhost:8080) · health: `/healthz`.
 
-**First Admin API Key**
+Create an admin key (dev):
 
-Add to `.env` (comma-separated for multiple keys/roles):
-
-```
+```env
 AION_GATEWAY_API_KEYS=demo-key:admin|manager
 ```
 
-**Submit a Task (REST)**
+Submit a task:
 
 ```bash
 curl -X POST http://localhost:8080/v1/tasks \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: demo-key" \
-  -d '{
-    "schemaVersion": "1.0",
-    "intent": "summarize",
-    "params": {"text": "hello world"}
-  }'
+  -H "X-API-Key: demo-key" -H "Content-Type: application/json" \
+  -d '{"schemaVersion":"1.0","intent":"summarize","params":{"text":"Hello"}}'
 ```
 
-**Follow live events via SSE:**
+Stream events (SSE):
 
 ```bash
-curl http://localhost:8080/v1/stream/<task_id> -H "X-API-Key: demo-key"
-```
-
-**gRPC example:**
-
-```bash
-grpcurl -plaintext \
-  -d '{"schema_version":"1.0","intent":"summarize","params":{"text":"hi"}}' \
-  localhost:50051 aion.v1.AionTasks/Submit
+curl -H "X-API-Key: demo-key" http://localhost:8080/v1/stream/<task_id>
 ```
 
 ---
 
-## 🧱 Repository Structure
+## 🧱 Repository Layout
+
 ```
-.bigdata/      # analytics stack: Kafka, Spark, ClickHouse, Airflow, Superset
-console/       # Next.js Glass UI (task streaming, policy editing, RTL)
-control/       # FastAPI: router, orchestrator, events, persistence
-gateway/       # TypeScript Fastify service (REST/gRPC/SSE/WS, auth, rate-limit)
-modules/       # Rust modules (WASM/subprocess) + manifests/signing
-policies/      # intents.yml, policies.yml, models.yml, modules.yml
-deploy/        # observability: Prometheus/Grafana
-scripts/       # dev & ops scripts (e.g., dev-up.sh)
-docs/ tests/ protos/ schemas/ kernel/
-```
-(See repo root for the full list.)
-
----
-
-## ⚙️ Configuration (env matrix — key vars)
-- **Gateway:** `AION_GATEWAY_PORT`, `AION_CONTROL_GRPC`, `AION_GATEWAY_API_KEYS`, `AION_RATE_LIMIT_MAX`, `AION_RATE_LIMIT_PER_IP`, `AION_TLS_CERT`, `AION_TLS_KEY`
-- **Control:** `AION_CONTROL_REDIS_URL`, `AION_CONTROL_POSTGRES_DSN`, `AION_CONTROL_MONGO_DSN`, `TENANCY_MODE` (single|multi)
-- **Console:** `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `NEXT_PUBLIC_GATEWAY_URL`, `NEXT_PUBLIC_CONTROL_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
-- **Big Data:** `KAFKA_BROKERS`, `CLICKHOUSE_URL`
-
-Privacy modes per intent: `local-only | allow-api | hybrid`. Default P95 targets and budget caps are defined in policies.
-
----
-
-## 📜 Policies & Live Reload
-
-All policies live under `/policies` (`intents.yml`, `policies.yml`, `models.yml`, `modules.yml`).
-Reload at runtime: `POST /v1/router/policy/reload` (Control Plane).
-
----
-
-## 📊 Big Data Edition
-
-Spin up analytics:
-
-```bash
-docker compose -f bigdata/docker-compose.bigdata.yml up
+gateway/   # REST/gRPC/SSE/WS, auth, rate-limit, idempotency
+control/   # FastAPI router + orchestrator + policy/budget SLA
+modules/   # Rust tools (WASM/subprocess) + manifests (Cosign/SBOM)
+console/   # Next.js Glass UI (fa/en + RTL), NextAuth, real-time
+.aionos/   # <— spec-driven agent configs (AGENT.md, standards.md)
+policies/  # intents.yml, models.yml, modules.yml, privacy.yml
+bigdata/   # Kafka/Spark(or Flink)/ClickHouse/Airflow/Superset
+deploy/    # Prometheus/Grafana, OTel; k6/load; CI/CD workflows
+docs/      # ERD, sequences, API refs, runbooks
 ```
 
-Streaming jobs: `bigdata/pipelines/streaming/` • Batch: `bigdata/pipelines/batch/airflow/` • ClickHouse DDL: `bigdata/sql/`.
+---
+
+## 🧭 Spec-Driven Agenting (Agent-OS inspired)
+
+Place a minimal spec in your repo so AION-OS agents **follow your standards on the first try**:
+
+```
+.aionos/
+ ├─ AGENT.md            # Product spec, architecture guardrails, done-criteria
+ ├─ standards.md        # Code style, review checklist, security rules
+ └─ commands.md         # /plan /scaffold /implement /test /doc
+```
+
+**Workflow (suggested):**
+
+1. `/plan` → break down tasks with acceptance tests;
+2. `/scaffold` → create module skeletons;
+3. `/implement` → open PRs;
+4. `/test` → run unit/e2e;
+5. `/doc` → update README/ERD.
+
+These conventions mirror BuilderMethods Agent-OS’ philosophy (user-level + project-level specs) while mapped onto AION-OS planes. ([GitHub][1])
 
 ---
 
-## 🔭 Observability
-- Prometheus scrapes gateway, control, modules; OpenTelemetry traces across services.
-- Grafana dashboards under `deploy/observability/grafana`.
+## 📚 Knowledge OS (Archon inspired)
+
+* Project KB ingestion (`/docs`, ADRs, API refs) → embeddings + RAG;
+* **MCP/IDE Hooks** for coding agents to read/write files & run tools safely;
+* Task board with citations back to sources. (Archon positions itself as a knowledge & task OS for coding assistants). ([GitHub][2])
+
+---
+
+## 🧩 Personal OS Modules (OpenDAN inspired)
+
+* Compose assistants (butler/tutor/ops) with local-first privacy;
+* Connectors: Webhooks (HMAC), Telegram/Email, IoT device APIs;
+* Teaming: multi-agent handoffs with shared memory. (OpenDAN emphasizes modular personal agents and interoperability.) ([GitHub][3])
+
+---
+
+## 🔐 Security
+
+* RBAC + API keys/OIDC; sandboxed subprocess/WASM; signed modules (Cosign); SBOM.
+* Privacy policies per intent: `local-only | allow-api | hybrid` with budget/latency caps.
+* **Prod note:** enable mTLS for inter-service gRPC.
+
+---
+
+## 📊 Observability & Big-Data
+
+* OpenTelemetry traces, Prometheus metrics; Grafana dashboards.
+* Optional overlay: Kafka topics (`aion.tasks.*`, `aion.router.*`) ingested to ClickHouse; Spark/Flink jobs; Airflow DAGs; Superset BI.
 
 ---
 
 ## 🧪 Testing
-- **Gateway:** `npm test` (Vitest)
-- **Control:** `poetry run pytest`
-- **Modules:** `cargo test`
-- **End-to-end:** `npm run e2e` (gateway)
-- **Load:** `k6 run tests/load.js`
+
+* Unit: `npm test` (gateway), `pytest` (control), `cargo test` (modules)
+* E2E: Playwright (console) + API smoke; Load: `k6` profiles.
 
 ---
 
-## 🔐 Security Notes
-- Dev uses plaintext gRPC by default — enable mTLS in production.
-- Idempotency relies on Redis; in outages, degrades gracefully to non-idempotent behavior.
-- Provide hardened secrets & TLS in production.
+## 🗺️ Roadmap (short)
+
+* MCP adapters for VS Code/Cursor/Claude Code. ([GitHub][4])
+* Spec wizards to bootstrap `.aionos/AGENT.md` from existing repos (Agent-OS style). ([GitHub][1])
+* Personal connectors pack (OpenDAN-style modules & IoT). ([GitHub][3])
 
 ---
 
 ## 📝 License
 
-Apache-2.0. See `LICENSE`.
+Apache-2.0 (recommended).
 
 ---
 
 ## 🇮🇷 معرفی فارسی
 
-AION-OS یک پلتفرم ارکستراسیون عامل‌های هوش مصنوعی با معماری چندلایه است:
-Gateway (TypeScript/Fastify)، Control (FastAPI)، Modules (Rust/WASM) و کنسول Next.js.
-پروژه شامل مسیریابی مبتنی بر سیاست، استریم زنده (SSE/WS)، پایپلاین‌های تحلیلی و مشاهده‌پذیری تولیدی است.
+**AION-OS** یک «سیستم‌عامل عامل‌ها» با سه ایدهٔ کلیدی است:
 
-### ویژگی‌ها
-- APIهای REST/gRPC/SSE/WS، احراز هویت، Rate-Limit و Idempotency در Gateway؛ اتصال OTEL به Control.
-- Router و Orchestrator در Control با اتصال به Postgres/Mongo/Redis/Qdrant و انتشار رویدادهای Kafka.
-- ماژول‌های Rust به‌صورت WASM یا Subprocess با امضا/سیاست و SBOM.
-- داده: Kafka→ClickHouse، Spark، Airflow، داشبوردهای Superset.
+* **ورک‌فلوهای Spec-Driven** برای اینکه ایجنت‌ها دقیقاً مطابق استاندارد کدنویسی شما خروجی بدهند (ایده‌گرفته از Agent-OS). ([GitHub][1])
+* **OS دانشی و تسکی برای کدنویسی** با RAG و اتصال MCP/IDE (الهام از Archon). ([GitHub][2])
+* **ماژول‌های Personal OS** با اجرای محلی و کانکتور سرویس/IoT (الهام از OpenDAN). ([GitHub][3])
 
-### شروع سریع (Compose)
+### شروع سریع
 
-```bash
-cp .env.example .env
-cp .env.bigdata.example bigdata/.env
-./scripts/dev-up.sh
-```
+1. کلون `AIONOS`، تنظیم `.env`ها، اجرای `docker compose`.
+2. ساخت کلید ادمین و ارسال Task نمونه (REST/SSE).
+3. افزودن پوشه‌ی `.aionos/` و تعریف استانداردها تا ایجنت‌ها از روی آن کار کنند (Spec-Driven).
 
-- Gateway: http://localhost:8080 • Console: http://localhost:3000 • Health: `/healthz`
+### امنیت، مشاهده‌پذیری و بیگ‌دیتا
 
-**ایجاد کلید ادمین:**
-
-```
-AION_GATEWAY_API_KEYS=demo-key:admin|manager
-```
-
-ارسال Task (REST) و استریم SSE و نمونه gRPC در بالا آمده‌اند.
-
-### سیاست‌ها و ریلود
-
-فایل‌های سیاست در `policies/` و ریلود با `POST /v1/router/policy/reload`.
-
-### مشاهده‌پذیری و تست
-
-Prometheus/Grafana/OTEL آماده؛ تست‌ها و مسیرهای e2e/load مشخص شده‌اند.
-
-### مجوز
-
-Apache-2.0.
+RBAC، امضای ماژول‌ها، mTLS (محیط عملیاتی)، ردیابی OTel، متریک Prometheus، داشبورد Grafana. بیگ‌دیتا: Kafka→ClickHouse، Spark/Flink، Airflow، Superset.
 
 ---
 
-اگه بخوای، هم‌زمان **Badge**‌های آماده (CI، License) هم به بالای README اضافه می‌کنم، یا بخش «From Source (Dev)» رو هم بر اساس اسکریپت‌های فعلی گسترش می‌دم—بگو تمرکزت روی Dev محلیه یا فقط Compose.
+### Acknowledgements
+
+This README synthesizes ideas from: **BuilderMethods Agent-OS** (spec-driven agent workflows), **Archon** (knowledge+task OS for AI coding with MCP/IDE), and **OpenDAN** (personal modular AI OS). ([buildermethods.com][5])
+
+---
