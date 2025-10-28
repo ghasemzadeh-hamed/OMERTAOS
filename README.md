@@ -25,6 +25,16 @@ Pass `bigdata` to include analytics services:
 
 Expose the gateway on `http://localhost:8080` and the console on `http://localhost:3000`. Health checks are available at `/healthz` for both gateway and control services.
 
+## Native Bootstrap (Ubuntu, no Docker)
+
+For an Ubuntu LTS host without Docker, run the native bootstrapper. It installs system packages, Node.js 20 + pnpm, Rust, Poetry, prepares `.env`, and builds the core services.
+
+```bash
+sudo bash scripts/bootstrap-native.sh
+```
+
+The script prompts for ports, console URL, and an admin API key before running the control-plane migrations and building the gateway, modules, and console bundles.
+
 ### First Admin Creation
 
 Create the first API key by exporting `AION_GATEWAY_API_KEYS` in `.env`:
