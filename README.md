@@ -170,19 +170,5 @@ RBAC و OIDC، ایزوله‌سازی ماژول‌ها، امضای بسته�
 
 Apache-2.0.
 
----
 
-### Badges (optional)
-
-Add CI/License badges at the top if you like:
-
-```
-[![CI](https://img.shields.io/badge/CI-passing-brightgreen)]()
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue)]()
-```
-
-```
-
-اگه بخوای، همین الان محتویات پوشهٔ `.aionos/` (AGENT.md / standards.md / commands.md) رو هم برات می‌نویسم تا تجربهٔ Spec-Driven فوراً آمادهٔ استفاده باشه.
-::contentReference[oaicite:0]{index=0}
 ```
