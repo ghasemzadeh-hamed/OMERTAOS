@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 
-const CONTROL_BASE = process.env.CONTROL_BASE_URL || "http://control:8000";
+const CONTROL_BASE =
+  process.env.NEXT_PUBLIC_CONTROL_BASE ||
+  process.env.CONTROL_BASE_URL ||
+  "http://localhost:8000";
 
 export async function GET() {
   try {
