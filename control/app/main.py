@@ -12,7 +12,7 @@ from .models import TaskStatus
 from .orchestrator import orchestrator
 from .policy import policy_store
 from .models import TaskStatus
-from .routes import models_router
+from .routes import ingest_excel_router, memory_router, models_router
 
 
 class SubmitRequest(BaseModel):
@@ -39,6 +39,7 @@ app.add_middleware(
 )
 
 app.include_router(models_router, prefix=settings.api_prefix)
+app.include_router(ingest_excel_router)
 
 
 @app.middleware("http")
