@@ -1,18 +1,23 @@
-import os
 import time
 from typing import Dict, List, Any
 
 import yaml
 
+from .config_paths import resolve_config_path
 from .llm_local import LocalLLM
-
-CONFIG_PATH = os.getenv("AIONOS_CONFIG_PATH", "/app/config/aionos.config.yaml")
 
 
 class AIRouter:
     def __init__(self) -> None:
-        with open(CONFIG_PATH, "r", encoding="utf-8") as stream:
-            self.cfg = yaml.safe_load(stream) or {}
+        self.config_path = resolve_config_path()
+        try:
+            with open(self.config_path, "r", encoding="utf-8") as stream:
+                self.cfg = yaml.safe_load(stream) or {}
+        except FileNotFoundError as exc:  # pragma: no cover - defensive guard
+            raise FileNotFoundError(
+                "AION-OS config file not found. Set AIONOS_CONFIG_PATH or add"
+                f" config/aionos.config.yaml (looked at {self.config_path})."
+            ) from exc
         models_cfg = self.cfg.get("models", {})
         local_cfg = models_cfg.get("local") or {}
         routing_cfg = models_cfg.get("routing") or {}
