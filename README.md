@@ -37,6 +37,63 @@ docker compose up -d
 docker compose -f bigdata/docker-compose.bigdata.yml up -d
 ````
 
+### Quick-Start with Local LLM
+#### Default (CPU/GPU auto) — Ollama
+```bash
+./install.sh
+# opens http://localhost:3000 (Onboarding chat)
+# Local LLM at http://127.0.0.1:11434
+# Override defaults via env vars, e.g. AIONOS_LOCAL_MODEL="llama3.2:8b" ./install.sh
+```
+
+#### With GPU — vLLM (optional)
+Requirements: NVIDIA driver + NVIDIA Container Toolkit + (optional) `HF_TOKEN`
+```bash
+docker compose -f docker-compose.yml -f docker-compose.vllm.yml up -d --build
+# vLLM OpenAI endpoint -> http://localhost:8008/v1/chat/completions
+```
+
+#### Switch engine
+Edit `config/aionos.config.yaml`:
+```yaml
+models:
+  provider: local
+  local:
+    engine: vllm   # ollama | vllm
+    model: Qwen/Qwen2.5-7B-Instruct
+```
+
+### Agent Mode (demo)
+- Page: `/agent` on Console
+- Env: `NEXT_PUBLIC_CONTROL_BASE`, `NEXT_PUBLIC_AGENT_API_TOKEN`
+- Optional envs: `AIONOS_LOCAL_MODEL`, `OLLAMA_HOST`, `VLLM_HOST`
+
+Security tips:
+- Protect `/agent/*` & `/admin/onboarding/*` behind private network or auth.
+- Do not commit secrets; use Docker/Swarm/K8s secrets or SOPS/Vault.
+
+### Onboarding Chat (pet-bot)
+- Visit `http://localhost:3000/onboarding` on first launch to seed admin, model provider, and gateway settings via the Persian chat wizard.
+- Backend endpoints live under `/admin/onboarding/*` on the control plane.
+
+### RAG Demo
+- Ingest Markdown or plaintext into Qdrant:
+
+```bash
+curl -F "col=aionos-docs" -F "files=@README.md" http://localhost:8000/rag/ingest
+```
+
+- Query the collection:
+
+```bash
+curl -X POST http://localhost:8000/rag/query \
+  -H "content-type: application/json" \
+  -d '{"collection":"aionos-docs","query":"What is AION-OS?","limit":3}'
+```
+
+### Smoke E2E script
+- Run `./scripts/smoke_e2e.sh` after the stack is up to ping health, agent, and RAG endpoints.
+
 Open **Console** → `http://localhost:3000`
 Open **Gateway** → `http://localhost:8080`
 Health endpoints → `/healthz`

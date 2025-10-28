@@ -1,0 +1,24 @@
+version: "3.9"
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: vllm
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    environment:
+      - HF_TOKEN=${HF_TOKEN:-}
+      - VLLM_WORKER_USE_NCCL=0
+    command: >
+      --model Qwen/Qwen2.5-7B-Instruct
+      --dtype auto
+      --max-model-len 4096
+    ports:
+      - "8008:8000"
+    volumes:
+      - hf-cache:/root/.cache/huggingface
+volumes:
+  hf-cache:
