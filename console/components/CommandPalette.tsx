@@ -10,6 +10,7 @@ const actions = [
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'Projects', href: '/projects' },
   { label: 'Tasks', href: '/tasks' },
+  { label: 'CI/CD', href: '/ci' },
   { label: 'Agents', href: '/agents' },
   { label: 'Policies', href: '/policies' },
   { label: 'Telemetry', href: '/telemetry' },

@@ -11,6 +11,7 @@ const navItems = [
   { href: '/projects', key: 'projects' },
   { href: '/datasets', key: 'datasets' },
   { href: '/tasks', key: 'tasks' },
+  { href: '/ci', key: 'ci' },
   { href: '/agents', key: 'agents', permission: 'canManageAgents' },
   { href: '/policies', key: 'policies', permission: 'canManagePolicies' },
   { href: '/telemetry', key: 'telemetry', permission: 'canViewTelemetry' },
