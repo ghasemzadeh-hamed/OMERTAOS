@@ -1,0 +1,7 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" fill="#F1F1F1"/>
+  <circle cx="512" cy="344" r="176" stroke="#101010" stroke-width="64" fill="none"/>
+  <path d="M256 792C256 640.268 378.268 518 530 518H494C645.732 518 768 640.268 768 792" stroke="#101010" stroke-width="64" stroke-linecap="round" fill="none"/>
+  <path d="M256 792C256 648.451 372.451 532 516 532H508C651.549 532 768 648.451 768 792" stroke="#101010" stroke-width="32" fill="none" opacity="0.35"/>
+  <text x="512" y="912" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="160" font-weight="700" fill="#101010" letter-spacing="12">AION OS</text>
+</svg>
