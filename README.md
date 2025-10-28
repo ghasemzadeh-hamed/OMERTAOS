@@ -41,6 +41,27 @@ flowchart LR
 
 ⸻
 
+## 🚀 Docker one-shot installers
+
+For a guided Docker Compose setup (including `.env` generation and optional BigData services) use the bundled scripts:
+
+| Platform | Command |
+|----------|---------|
+| Windows  | `pwsh -File install.ps1` (Run as Administrator) |
+| Linux/WSL | `chmod +x install.sh && ./install.sh` |
+
+Both scripts will:
+
+1. Clone/update the `AIONOS` branch (or a custom branch/URL).
+2. Prompt for initial admin credentials, ports, and datastore URLs.
+3. Create `.env` files for **console**, **gateway**, and **control**.
+4. Launch Docker Compose with or without the BigData overlay.
+5. Print a quick container/URL health summary.
+
+To tear everything down later run `./uninstall.sh` (Linux/WSL) or `pwsh -File uninstall.ps1` (Windows).
+
+⸻
+
 ⚡ Quick Start (native, no Docker)
 
 Create a clean workspace terminal and run the following:
