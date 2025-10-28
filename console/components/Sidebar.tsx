@@ -9,6 +9,7 @@ import { useAuth } from '../hooks/useAuth';
 const navItems = [
   { href: '/dashboard', key: 'dashboard' },
   { href: '/projects', key: 'projects' },
+  { href: '/datasets', key: 'datasets' },
   { href: '/tasks', key: 'tasks' },
   { href: '/agents', key: 'agents', permission: 'canManageAgents' },
   { href: '/policies', key: 'policies', permission: 'canManagePolicies' },
