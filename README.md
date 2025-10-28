@@ -14,9 +14,13 @@ aionOS is a modular AI orchestration platform combining a TypeScript gateway, Fa
 ## Quick Start (Docker Compose)
 
 ```bash
-cp .env.example .env
-cp .env.bigdata.example bigdata/.env
-./scripts/dev-up.sh
+./install.sh
+```
+
+Pass `bigdata` to include analytics services:
+
+```bash
+./install.sh bigdata
 ```
 
 Expose the gateway on `http://localhost:8080` and the console on `http://localhost:3000`. Health checks are available at `/healthz` for both gateway and control services.
