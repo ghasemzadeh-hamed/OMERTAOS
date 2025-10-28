@@ -1,0 +1,20 @@
+kind: service
+name: minio
+category: storage
+version: "2025-02-14"
+license: AGPL-3.0
+provider: min.io
+description: >-
+  High-performance object storage compatible with S3 APIs for offline artifact caching.
+download:
+  url: "https://dl.min.io/server/minio/release/linux-amd64/minio"
+  method: direct
+  install_script: "scripts/install_service.py --service minio"
+integrity:
+  sha256: "9d5ed678fe57bcca610140957afab571"
+compat:
+  os:
+    - linux
+configurable: true
+auto_update: true
+admin_approval_required: true

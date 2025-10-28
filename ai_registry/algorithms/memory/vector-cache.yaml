@@ -1,0 +1,14 @@
+kind: algorithm
+name: vector-cache
+type: memory
+entrypoint: "algorithms/memory/vector-cache/runner.py:update"
+inputs:
+  - document
+  - embeddings
+outputs:
+  - status
+compat:
+  agent_api: "^1.2"
+version: "0.5.1"
+integrity:
+  sha256: "vectorcachesha256placeholder"

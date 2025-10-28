@@ -1,0 +1,27 @@
+kind: model
+name: deepseek-v3
+provider: deepseek-ai
+version: "3.0.0"
+release_date: "2025-06-01"
+modality:
+  - text
+  - code
+license: apache-2.0
+access: huggingface
+description: >-
+  Open-source reasoning model with retrieval-augmented generation and tool-calling support.
+download:
+  url: "https://huggingface.co/deepseek-ai/deepseek-v3"
+  method: huggingface
+  install_script: "scripts/install_model.py --model deepseek-v3"
+integrity:
+  sha256: "7c222fb2927d828af22f592134e8932480637c0d"
+  signature: "minisign:DEEPSEEK"
+resources:
+  vram_gb: 12
+  context_tokens: 393216
+configurable: true
+compat:
+  agent_api: ">=1.2"
+auto_update: true
+admin_approval_required: true

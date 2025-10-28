@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from threading import Lock
+from threading import RLock
 from typing import Dict, Iterable, Optional
 
 from ..kapply.actuator import KernelActuator
@@ -25,7 +25,7 @@ class ProposalLifecycleManager:
         self._actuator = actuator
         self._dataplane = dataplane
         self._policy = policy
-        self._lock = Lock()
+        self._lock = RLock()
         self._proposals: Dict[str, KernelProposal] = {}
 
     def submit(self, payload: Dict[str, object]) -> KernelProposal:

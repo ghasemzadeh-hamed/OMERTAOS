@@ -1,7 +1,7 @@
 """FastAPI routers for control plane services."""
 
-from .ingest_excel import router as ingest_excel_router  # noqa: F401
-from .memory import router as memory_router  # noqa: F401
-from .models import router as models_router  # noqa: F401
+from .kernel_proposals import router as kernel_router
+from .memory import router as memory_router
+from .models import router as models_router
 
-__all__ = ["ingest_excel_router", "memory_router", "models_router"]
+__all__ = ["kernel_router", "memory_router", "models_router"]

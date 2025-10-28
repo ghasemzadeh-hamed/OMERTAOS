@@ -1,0 +1,26 @@
+kind: model
+name: llama-4-maverick
+provider: meta
+version: "4.0.0"
+release_date: "2025-03-09"
+modality:
+  - text
+license: llama-community
+access: huggingface
+description: >-
+  Open-weight large language model optimized for agent-style interactions and code synthesis.
+download:
+  url: "https://huggingface.co/meta-llama/llama-4-maverick"
+  method: huggingface
+  install_script: "scripts/install_model.py --model llama-4-maverick"
+integrity:
+  sha256: "2c26b46b68ffc68ff99b453c1d30413413422"
+  signature: "minisign:LLAMA"
+resources:
+  vram_gb: 8
+  context_tokens: 262144
+configurable: true
+compat:
+  agent_api: ">=1.2"
+auto_update: false
+admin_approval_required: true

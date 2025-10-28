@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import asyncio
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse, StreamingResponse
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, ConfigDict
 from typing import AsyncGenerator, Dict
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, StreamingResponse
+from pydantic import BaseModel, ConfigDict
 
 from .config import get_settings
 from .models import TaskStatus
@@ -13,6 +14,7 @@ from .orchestrator import orchestrator
 from .policy import policy_store
 from .models import TaskStatus
 from .routes import ingest_excel_router, memory_router, models_router
+from .routes import memory_router, models_router
 
 
 class SubmitRequest(BaseModel):
