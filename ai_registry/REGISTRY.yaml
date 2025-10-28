@@ -1,0 +1,28 @@
+registry_version: '1.0'
+catalog:
+  models:
+  - models/alibaba/qwen-2.5-max.yaml
+  - models/deepseek/deepseek-v3.yaml
+  - models/google/gemini-2.5-pro.yaml
+  - models/meta/llama-4-maverick.yaml
+  - models/openai/gpt-4.5.yaml
+  algorithms:
+  - algorithms/memory/vector-cache.yaml
+  - algorithms/planning/react.yaml
+  - algorithms/rag/rag-lite.yaml
+  - algorithms/tot/tree-of-thought.yaml
+  services:
+  - services/database/mongodb.yaml
+  - services/storage/minio.yaml
+  - services/vector/qdrant.yaml
+  - services/workflow/n8n.yaml
+installed:
+  models: {}
+  algorithms: {}
+  services: {}
+signing:
+  method: minisign
+  public_key: security/publickey.txt
+metadata:
+  generated_at: '2025-10-27T21:07:07+00:00'
+  generated_by: update_catalog.py

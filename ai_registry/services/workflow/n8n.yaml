@@ -1,0 +1,23 @@
+kind: service
+name: n8n
+category: workflow
+version: "1.80.0"
+license: AGPL-3.0
+provider: n8n.io
+description: >-
+  Open-source workflow automation service for connecting APIs and AI modules.
+download:
+  url: "https://github.com/n8n-io/n8n/releases/download/v1.80.0/n8n.zip"
+  method: direct
+  install_script: "scripts/install_service.py --service n8n"
+integrity:
+  sha256: "fae1c95e..."
+compat:
+  os:
+    - linux
+    - windows
+  python:
+    - ">=3.10"
+configurable: true
+auto_update: true
+admin_approval_required: true

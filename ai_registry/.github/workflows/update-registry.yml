@@ -1,0 +1,25 @@
+name: Update AI Registry
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install pyyaml requests
+      - name: Run registry updater
+        run: python ai_registry/scripts/update_catalog.py
+      - name: Commit & PR changes
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "auto: registry update"
+          title: "Auto-update AI registry"
+          body: "Periodic registry refresh from external sources"

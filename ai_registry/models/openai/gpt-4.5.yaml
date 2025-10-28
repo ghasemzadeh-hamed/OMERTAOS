@@ -1,0 +1,27 @@
+kind: model
+name: gpt-4.5
+provider: openai
+version: "4.5.0"
+release_date: "2025-05-20"
+modality:
+  - text
+  - code
+license: proprietary
+access: api_key
+description: >-
+  High-accuracy multi-turn reasoning model with 512k context and tool-use support.
+download:
+  url: "https://api.openai.com/v1/models/gpt-4.5"
+  method: api
+  install_script: "scripts/install_model.py --model gpt-4.5"
+integrity:
+  sha256: "5d41402abc4b2a76b9719d911017c592"
+  signature: "minisign:ABC123"
+resources:
+  vram_gb: 20
+  context_tokens: 524288
+configurable: true
+compat:
+  agent_api: ">=1.2"
+auto_update: true
+admin_approval_required: true

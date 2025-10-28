@@ -1,0 +1,23 @@
+kind: service
+name: qdrant
+category: vector
+version: "1.10.0"
+license: Apache-2.0
+provider: qdrant.tech
+description: >-
+  Vector database optimized for hybrid search and real-time filtering.
+download:
+  url: "https://github.com/qdrant/qdrant/releases/download/v1.10.0/qdrant.zip"
+  method: direct
+  install_script: "scripts/install_service.py --service qdrant"
+integrity:
+  sha256: "b1946ac92492d2347c6235b4d2611184"
+compat:
+  os:
+    - linux
+    - macos
+  python:
+    - ">=3.10"
+configurable: true
+auto_update: true
+admin_approval_required: true

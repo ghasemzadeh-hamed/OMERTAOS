@@ -1,0 +1,9 @@
+update_policy:
+  require_admin: true
+  check_interval_hours: 24
+  auto_download: false
+  notify_admin_email: "admin@aionos.local"
+install_policy:
+  verify_signature: true
+  sandbox_execution: true
+  allow_external_sources: false
