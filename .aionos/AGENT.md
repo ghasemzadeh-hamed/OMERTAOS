@@ -42,7 +42,7 @@ Build a modular, **kernel-style Agent OS** with four planes:
 ## 2) فارسی — مشخصات محصول و فنی
 
 ### هدف
-پیاده‌سازی **سیستم‌عامل عامل‌ها** با چهار لایه: Gateway، Control، Modules، Console (UI شیشه‌ای).
+پیاده‌سازی **سیستم‌عامل عامل‌ها** با چهار لایه: Gateway، Control، Modules، Console.
 
 ### الزامات غیرقابل مذاکره
 - امنیت (RBAC، OIDC/API Key، mTLS، Sandbox، امضای ماژول‌ها)،
@@ -57,7 +57,6 @@ Build a modular, **kernel-style Agent OS** with four planes:
 - فعال‌سازی لایه بیگ‌دیتا و مشاهده داشبوردها.
 
 ### معیارهای پذیرش (AC)
-مطابق بخش انگلیسی (AC1…AC7).
+(AC1…AC7).
 
 ### DoR / DoD
-مطابق بخش انگلیسی.
