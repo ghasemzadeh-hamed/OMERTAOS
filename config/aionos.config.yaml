@@ -1,0 +1,52 @@
+version: 1
+onboardingComplete: false
+
+admin:
+  email: "admin@example.com"
+  password: ""
+
+console:
+  port: 3000
+  baseUrl: "http://localhost:3000"
+  locale: "fa"
+
+gateway:
+  port: 8080
+  apiKey: ""
+  rateLimitRPS: 10
+
+control:
+  httpPort: 8000
+  grpcPort: 50051
+
+data:
+  postgres:
+    host: "postgres"
+    port: 5432
+    user: "aionos"
+    password: "aionos"
+    db: "aionos"
+  redis:
+    host: "redis"
+    port: 6379
+  qdrant:
+    host: "qdrant"
+    port: 6333
+  minio:
+    endpoint: "http://minio:9000"
+    accessKey: "minioadmin"
+    secretKey: "minioadmin"
+    bucket: "aionos"
+
+models:
+  provider: "openai"
+  openaiApiKey: ""
+  defaultModel: "gpt-4o-mini"
+
+security:
+  enableMTLS: false
+  allowRegistrations: false
+
+telemetry:
+  otelEnabled: true
+  serviceName: "aionos"
