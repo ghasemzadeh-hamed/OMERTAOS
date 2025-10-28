@@ -1,64 +1,64 @@
+عالی—این هم یک `README.md` دوزبانه، بدون هیچ اشاره‌ای به «الهام از…»، با لحن مدرن و ترندی؛ آمادهٔ کپی‌پیست برای برنچ `AIONOS`.
 
-# AION-OS (Agent Web-OS) — Modular, Spec-Driven AI Agent OS
-
+````markdown
+# AION-OS (Agent Web-OS) — Next-Gen Modular AI Agent OS
 [FA ⭢ فارسی](#-معرفی-فارسی) · [EN ⭢ English](#-english-overview)
 
-AION-OS is a **distributed, kernel-style operating system for AI agents**. It blends three proven ideas into one production platform:
-
-1. **Spec-Driven Workflows** — project/user markdown specs (`.aionos/AGENT.md`, `policies/*.md`) steer agents to ship code to your standards (inspired by BuilderMethods Agent-OS). ([GitHub][1])
-2. **Knowledge & Task OS for Coding** — RAG-backed knowledge, task graphs, and **MCP/IDE** integrations to supercharge coding agents (inspired by Archon). ([GitHub][2])
-3. **Personal OS Modules** — assemble assistants, tutors, & device controllers with local-first privacy and plug-in connectors (inspired by OpenDAN). ([GitHub][3])
+Build, route, and scale AI agents like a pro.  
+AION-OS is a **kernel-style, distributed OS for AI agents** with a sleek **Glass-UI** console, **policy-aware router**, and **local-first privacy**. Ship fast. Run anywhere.
 
 ---
 
-## ✨ Highlights
-
-* **Multi-Plane Architecture:** Gateway (TS/Fastify), Control (FastAPI), Execution (Rust/WASM), Glass-UI Console (Next.js).
-* **Spec-Driven Agents:** read `.aionos/AGENT.md` + repo docs to derive plans, acceptance criteria, and coding standards. ([GitHub][1])
-* **Knowledge OS:** project KB + embeddings + citations; optional **MCP** to IDEs for tool/FS access (Archon-style). ([GitHub][4])
-* **Personal Modules:** connectors for mail/Telegram/HTTP hooks/IoT; local execution path available (OpenDAN-style). ([GitHub][3])
-* **Policy Router:** `local | api | hybrid` with budget/SLA.
-* **Observability:** Prometheus/Grafana + OpenTelemetry; audit trail.
-* **Big-Data Overlay (optional):** Kafka → ClickHouse; Spark/Flink; Airflow; Superset dashboards.
+## ⚡ What You Get
+- **Multi-Plane Architecture** → Gateway (TS/Fastify), Control (FastAPI), Execution (Rust/WASM), Console (Next.js).
+- **Policy Router** → `local | api | hybrid` with budgets & SLAs (+ live reload).
+- **Spec-Driven Agents** → repo-level standards in `.aionos/` guide agents from plan → PR → test → docs.
+- **Knowledge OS** → project knowledge base with citations surfaced in UI; safe tools via IDE/MCP hooks.
+- **Realtime Everything** → WS/SSE streams, presence, live logs, health.
+- **Security by Default** → RBAC, API keys/OIDC, sandboxed modules, signed manifests, SBOM.
+- **Observability** → OpenTelemetry, Prometheus, Grafana dashboards.
+- **Big-Data Mode (optional)** → Kafka → ClickHouse, Spark/Flink, Airflow, Superset.
 
 ---
 
 ## 🚀 Quick Start (Docker Compose)
 
 ```bash
-# 1) clone (AIONOS branch)
+# 1) Clone the AIONOS branch
 git clone -b AIONOS --single-branch https://github.com/ghasemzadeh-hamed/OMERTAOS.git
 cd OMERTAOS
 
-# 2) envs
+# 2) Env setup
 cp .env.example .env
 cp console/.env.example console/.env
 cp control/.env.example control/.env
 
-# 3) bring up core
+# 3) Bring up core services
 docker compose up -d
 
-# (optional) analytics stack
+# (optional) Analytics stack
 docker compose -f bigdata/docker-compose.bigdata.yml up -d
-```
+````
 
-Open: **Console** [http://localhost:3000](http://localhost:3000) · **Gateway** [http://localhost:8080](http://localhost:8080) · health: `/healthz`.
+Open **Console** → `http://localhost:3000`
+Open **Gateway** → `http://localhost:8080`
+Health endpoints → `/healthz`
 
-Create an admin key (dev):
+**Dev admin key (example):**
 
 ```env
 AION_GATEWAY_API_KEYS=demo-key:admin|manager
 ```
 
-Submit a task:
+**Fire a task (REST):**
 
 ```bash
 curl -X POST http://localhost:8080/v1/tasks \
   -H "X-API-Key: demo-key" -H "Content-Type: application/json" \
-  -d '{"schemaVersion":"1.0","intent":"summarize","params":{"text":"Hello"}}'
+  -d '{"schemaVersion":"1.0","intent":"summarize","params":{"text":"Hello AION-OS!"}}'
 ```
 
-Stream events (SSE):
+**Follow live events (SSE):**
 
 ```bash
 curl -H "X-API-Key: demo-key" http://localhost:8080/v1/stream/<task_id>
@@ -69,116 +69,123 @@ curl -H "X-API-Key: demo-key" http://localhost:8080/v1/stream/<task_id>
 ## 🧱 Repository Layout
 
 ```
-gateway/   # REST/gRPC/SSE/WS, auth, rate-limit, idempotency
-control/   # FastAPI router + orchestrator + policy/budget SLA
-modules/   # Rust tools (WASM/subprocess) + manifests (Cosign/SBOM)
-console/   # Next.js Glass UI (fa/en + RTL), NextAuth, real-time
-.aionos/   # <— spec-driven agent configs (AGENT.md, standards.md)
-policies/  # intents.yml, models.yml, modules.yml, privacy.yml
-bigdata/   # Kafka/Spark(or Flink)/ClickHouse/Airflow/Superset
-deploy/    # Prometheus/Grafana, OTel; k6/load; CI/CD workflows
-docs/      # ERD, sequences, API refs, runbooks
+gateway/    # REST/gRPC/SSE/WS, auth, rate-limit, idempotency
+control/    # FastAPI router + orchestrator + policy/budget SLA + storage
+modules/    # Rust tools (WASM/subprocess) + manifests + signing
+console/    # Next.js Glass UI (fa/en + RTL), NextAuth, realtime task board
+.aionos/    # <— spec-driven agent configs (AGENT.md, standards.md, commands.md)
+policies/   # intents.yml, models.yml, modules.yml, privacy.yml (hot-reloadable)
+bigdata/    # Kafka, Spark/Flink, ClickHouse, Airflow, Superset (optional)
+deploy/     # Prometheus, Grafana, OTel configs
+docs/       # ERD, sequences, API refs, runbooks
+tests/      # unit, e2e, load profiles
 ```
 
 ---
 
-## 🧭 Spec-Driven Agenting (Agent-OS inspired)
+## 🧭 Spec-Driven Agenting
 
-Place a minimal spec in your repo so AION-OS agents **follow your standards on the first try**:
+Standardize outcomes with repo-native specs:
 
 ```
 .aionos/
- ├─ AGENT.md            # Product spec, architecture guardrails, done-criteria
- ├─ standards.md        # Code style, review checklist, security rules
- └─ commands.md         # /plan /scaffold /implement /test /doc
+ ├─ AGENT.md        # product spec, guardrails, acceptance
+ ├─ standards.md    # code style, security, review checklist
+ └─ commands.md     # /plan /scaffold /implement /test /doc
 ```
 
-**Workflow (suggested):**
-
-1. `/plan` → break down tasks with acceptance tests;
-2. `/scaffold` → create module skeletons;
-3. `/implement` → open PRs;
-4. `/test` → run unit/e2e;
-5. `/doc` → update README/ERD.
-
-These conventions mirror BuilderMethods Agent-OS’ philosophy (user-level + project-level specs) while mapped onto AION-OS planes. ([GitHub][1])
+**Flow:** `/plan` → `/scaffold` → `/implement` → `/test` → `/doc`
+Agents read these specs, follow policies, and open PRs with tests + docs.
 
 ---
 
-## 📚 Knowledge OS (Archon inspired)
+## 🔐 Security & Privacy
 
-* Project KB ingestion (`/docs`, ADRs, API refs) → embeddings + RAG;
-* **MCP/IDE Hooks** for coding agents to read/write files & run tools safely;
-* Task board with citations back to sources. (Archon positions itself as a knowledge & task OS for coding assistants). ([GitHub][2])
-
----
-
-## 🧩 Personal OS Modules (OpenDAN inspired)
-
-* Compose assistants (butler/tutor/ops) with local-first privacy;
-* Connectors: Webhooks (HMAC), Telegram/Email, IoT device APIs;
-* Teaming: multi-agent handoffs with shared memory. (OpenDAN emphasizes modular personal agents and interoperability.) ([GitHub][3])
-
----
-
-## 🔐 Security
-
-* RBAC + API keys/OIDC; sandboxed subprocess/WASM; signed modules (Cosign); SBOM.
-* Privacy policies per intent: `local-only | allow-api | hybrid` with budget/latency caps.
-* **Prod note:** enable mTLS for inter-service gRPC.
+* **Auth**: API keys/OIDC, RBAC (admin/manager/user)
+* **Isolation**: sandboxed subprocess/WASM, resource limits
+* **Supply Chain**: signed modules (Cosign), SBOM
+* **Policies**: privacy per intent (`local-only | allow-api | hybrid`), budget caps, latency targets
+* **Prod Tip**: enable mTLS for inter-service gRPC
 
 ---
 
 ## 📊 Observability & Big-Data
 
-* OpenTelemetry traces, Prometheus metrics; Grafana dashboards.
-* Optional overlay: Kafka topics (`aion.tasks.*`, `aion.router.*`) ingested to ClickHouse; Spark/Flink jobs; Airflow DAGs; Superset BI.
+* **Tracing/Metrics**: OTel + Prometheus; curated Grafana dashboards
+* **Pipelines (optional)**: Kafka topics → ClickHouse; Spark/Flink jobs; Airflow DAGs; Superset BI
 
 ---
 
 ## 🧪 Testing
 
-* Unit: `npm test` (gateway), `pytest` (control), `cargo test` (modules)
-* E2E: Playwright (console) + API smoke; Load: `k6` profiles.
+* Gateway → `npm test` (Vitest)
+* Control → `pytest`
+* Modules → `cargo test`
+* Console → Playwright e2e
+* Load → `k6` profiles
 
 ---
 
-## 🗺️ Roadmap (short)
+## 🗺️ Roadmap
 
-* MCP adapters for VS Code/Cursor/Claude Code. ([GitHub][4])
-* Spec wizards to bootstrap `.aionos/AGENT.md` from existing repos (Agent-OS style). ([GitHub][1])
-* Personal connectors pack (OpenDAN-style modules & IoT). ([GitHub][3])
+* IDE/MCP adapters for safe tool/file access
+* One-click spec wizard to bootstrap `.aionos/`
+* Connector pack (webhooks, messaging, IoT)
 
 ---
 
 ## 📝 License
 
-Apache-2.0 (recommended).
+**Apache-2.0** (recommended). See `LICENSE`.
 
 ---
 
 ## 🇮🇷 معرفی فارسی
 
-**AION-OS** یک «سیستم‌عامل عامل‌ها» با سه ایدهٔ کلیدی است:
+**AION-OS** یک سیستم‌عامل ماژولار برای ایجنت‌های هوش مصنوعی است: هسته‌ی زمان‌بندی و حافظه‌ی اشتراکی، مسیریاب مبتنی‌بر سیاست، و کنسول وب شیشه‌ای برای مشاهده و کنترل زنده.
 
-* **ورک‌فلوهای Spec-Driven** برای اینکه ایجنت‌ها دقیقاً مطابق استاندارد کدنویسی شما خروجی بدهند (ایده‌گرفته از Agent-OS). ([GitHub][1])
-* **OS دانشی و تسکی برای کدنویسی** با RAG و اتصال MCP/IDE (الهام از Archon). ([GitHub][2])
-* **ماژول‌های Personal OS** با اجرای محلی و کانکتور سرویس/IoT (الهام از OpenDAN). ([GitHub][3])
+### ویژگی‌ها
+
+* **معماری چندلایه**: Gateway (TypeScript/Fastify)، Control (FastAPI)، Modules (Rust/WASM)، Console (Next.js)
+* **مسیریابی هوشمند**: `local | api | hybrid` با سقف هزینه و SLA و ریلود در لحظه
+* **Spec-Driven**: پوشه‌ی `.aionos/` برای استانداردسازی خروجی ایجنت‌ها (از برنامه تا تست و مستند)
+* **دانش و ابزار امن**: پایگاه دانشی پروژه با ارجاع در UI و اتصال امن IDE/MCP
+* **Real-time**: استریم زندهٔ لاگ، وضعیت تسک، حضور کاربران
+* **امنیت**: RBAC، کلید/SSO، Sandbox، امضای ماژول‌ها، SBOM
+* **مشاهده‌پذیری**: OTel، Prometheus، داشبوردهای Grafana
+* **بیگ‌دیتا (اختیاری)**: Kafka→ClickHouse، Spark/Flink، Airflow، Superset
 
 ### شروع سریع
 
-1. کلون `AIONOS`، تنظیم `.env`ها، اجرای `docker compose`.
-2. ساخت کلید ادمین و ارسال Task نمونه (REST/SSE).
-3. افزودن پوشه‌ی `.aionos/` و تعریف استانداردها تا ایجنت‌ها از روی آن کار کنند (Spec-Driven).
+1. کلون شاخهٔ `AIONOS` و تنظیم `.env`ها
+2. اجرای `docker compose up -d`
+3. ساخت کلید ادمین و ارسال یک Task نمونه (REST/SSE)
 
-### امنیت، مشاهده‌پذیری و بیگ‌دیتا
+### امنیت و حریم خصوصی
 
-RBAC، امضای ماژول‌ها، mTLS (محیط عملیاتی)، ردیابی OTel، متریک Prometheus، داشبورد Grafana. بیگ‌دیتا: Kafka→ClickHouse، Spark/Flink، Airflow، Superset.
+RBAC و OIDC، ایزوله‌سازی ماژول‌ها، امضای بسته‌ها، سیاست‌های حریم خصوصی بر اساس Intent. در محیط عملیاتی، **mTLS** را فعال کنید.
+
+### مشاهده‌پذیری و بیگ‌دیتا
+
+ردیابی و متریک‌ها با OTel/Prometheus؛ داشبوردهای آماده در Grafana. در حالت بیگ‌دیتا، جریان‌ها به ClickHouse وصل می‌شوند و وظایف تحلیلی با Spark/Flink و Airflow مدیریت می‌شوند.
+
+### مجوز
+
+Apache-2.0.
 
 ---
 
-### Acknowledgements
+### Badges (optional)
 
-This README synthesizes ideas from: **BuilderMethods Agent-OS** (spec-driven agent workflows), **Archon** (knowledge+task OS for AI coding with MCP/IDE), and **OpenDAN** (personal modular AI OS). ([buildermethods.com][5])
+Add CI/License badges at the top if you like:
 
----
+```
+[![CI](https://img.shields.io/badge/CI-passing-brightgreen)]()
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue)]()
+```
+
+```
+
+اگه بخوای، همین الان محتویات پوشهٔ `.aionos/` (AGENT.md / standards.md / commands.md) رو هم برات می‌نویسم تا تجربهٔ Spec-Driven فوراً آمادهٔ استفاده باشه.
+::contentReference[oaicite:0]{index=0}
+```
