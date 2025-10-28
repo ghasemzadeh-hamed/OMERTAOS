@@ -21,6 +21,15 @@ a:hover {
   color: #fff;
 }
 
+.glass {
+  @apply rounded-2xl border border-white/10 bg-white/5 shadow-xl backdrop-blur-md;
+}
+
+.glass-accent {
+  background: radial-gradient(1200px 400px at 100% 0%, rgba(99, 102, 241, 0.08), transparent),
+    radial-gradient(800px 300px at 0% 100%, rgba(236, 72, 153, 0.08), transparent);
+}
+
 .glass-button {
   @apply rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white shadow-glass transition;
   backdrop-filter: blur(18px);
