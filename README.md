@@ -1,205 +1,188 @@
-# aionOS (Agent-OS) — AIONOS Branch
+# AION-OS (Agent Web-OS) — Modular, Distributed AI Agent Operating System
+[FA ⭢ فارسی](#-معرفی-فارسی) · [EN ⭢ English](#-english-overview)
 
-aionOS is a modular AI orchestration platform that combines a **TypeScript Gateway**, a **FastAPI Control Plane**, and **Rust/WASM execution modules**. It focuses on policy-driven routing, local-first privacy modes, and production-grade observability.  
-**License:** Apache-2.0
-
-> This README describes the **native (no-Docker)** developer setup for Ubuntu/Debian. A Docker Compose path may also exist, but the recommended route here is **from source**.
-
----
-
-## ✨ Key Features
-- **Gateway (Fastify/TypeScript):** REST + SSE/WS + (optional) gRPC, API-keys, rate-limit, idempotency, OTEL propagation.
-- **Control (FastAPI/Python):** AI decision router, task orchestration, pluggable providers (OpenAI/Azure/HF/vLLM/Ollama), storage connectors (PostgreSQL/MongoDB/Redis/Qdrant).
-- **Modules (Rust/WASM/Subprocess):** Safe execution with policy manifests, optional Cosign/SBOM for supply-chain integrity.
-- **Data & Observability:** Kafka/ClickHouse/Spark/Airflow (optional), MinIO object storage, OTEL tracing, Prometheus metrics.
+AION-OS is a **modular AI orchestration platform** with a multi-plane architecture:
+**Gateway (TypeScript/Fastify)**, **Control (FastAPI)**, **Execution Modules (Rust/WASM)**, and a **Glass-UI Console (Next.js)**.
+It ships policy-driven routing, streaming (SSE/WS), analytics pipelines, and production-grade observability.  
+[oai_citation:1‡GitHub](https://github.com/ghasemzadeh-hamed/OMERTAOS/tree/AIONOS)
 
 ---
 
-## 🗺️ Architecture (high-level)
+## ✨ Features
+- **Gateway:** REST, gRPC, SSE & WebSocket APIs; auth, rate-limit, idempotency; OTEL propagation to Control.  
+  [oai_citation:2‡GitHub](https://github.com/ghasemzadeh-hamed/OMERTAOS/tree/AIONOS)
+- **Control Plane (FastAPI):** policy-aware router, task orchestrator, Kafka events; Postgres/Mongo/Redis/Qdrant connectors.  
+  [oai_citation:3‡GitHub](https://github.com/ghasemzadeh-hamed/OMERTAOS/tree/AIONOS)
+- **Modules (Rust):** WASM-first or sandboxed subprocess; Cosign signature, SBOM metadata, policy constraints.  
+  [oai_citation:4‡GitHub](https://github.com/ghasemzadeh-hamed/OMERTAOS/tree/AIONOS)
+- **Data Platform:** Kafka→ClickHouse with Spark; Airflow DAGs; Superset dashboards.  
+  [oai_citation:5‡GitHub](https://github.com/ghasemzadeh-hamed/OMERTAOS/tree/AIONOS)
+- **Security & CI/CD:** Cosign signing, SBOM, comprehensive GitHub Actions pipeline.  
+  [oai_citation:6‡GitHub](https://github.com/ghasemzadeh-hamed/OMERTAOS/tree/AIONOS)
 
-flowchart LR
-  U[Client / Console] -- REST/SSE/WS --> G[Gateway (Fastify)]
-  G -- gRPC/REST --> C[Control (FastAPI)]
-  C -- gRPC/IPC/WASM --> M[Modules (Rust/WASM/Subprocess)]
-  C -- drivers --> D[(Datastores: Postgres/Mongo/Redis/Qdrant/MinIO)]
-  C <-- events --> K[(Kafka)]
-  subgraph Observability
-    G -. OTEL .-> O[(Collector)]
-    C -. OTEL .-> O
-  end
-```
+---
 
-⸻
-
-🧰 Requirements (native)
-•OS: Ubuntu 22.04+ / Debian 12+ (tested)
-•Node.js: v20.x (use nvm)
-•Python: 3.11+
-•Rust: stable (for module dev)
-•Datastores (choose what you need):
-•Redis 7+, PostgreSQL 14+/MongoDB 6+, Qdrant (optional), MinIO (optional)
-
-⸻
-
-## 🚀 Docker one-shot installers
-
-For a guided Docker Compose setup (including `.env` generation and optional BigData services) use the bundled scripts:
-
-| Platform | Command |
-|----------|---------|
-| Windows  | `pwsh -File install.ps1` (Run as Administrator) |
-| Linux/WSL | `chmod +x install.sh && ./install.sh` |
-
-Both scripts will:
-
-1. Clone/update the `AIONOS` branch (or a custom branch/URL).
-2. Prompt for initial admin credentials, ports, and datastore URLs.
-3. Create `.env` files for **console**, **gateway**, and **control**.
-4. Launch Docker Compose with or without the BigData overlay.
-5. Print a quick container/URL health summary.
-
-To tear everything down later run `./uninstall.sh` (Linux/WSL) or `pwsh -File uninstall.ps1` (Windows).
-
-⸻
-
-⚡ Quick Start (native, no Docker)
-
-Create a clean workspace terminal and run the following:
-
-```
-# 1) System deps
-sudo apt update
-sudo apt install -y build-essential curl git python3.11 python3.11-venv python3-pip \
-                     redis-server pkg-config libssl-dev
-
-# 2) Node 20 via nvm
-curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
-nvm install 20 && nvm use 20
-
-# 3) Clone AIONOS branch
-git clone -b AIONOS --single-branch https://github.com/ghasemzadeh-hamed/OMERTAOS.git
-cd OMERTAOS
-
-# 4) Gateway (TypeScript)
-cd gateway
-npm ci
+## 🚀 Quick Start (Docker Compose)
+```bash
 cp .env.example .env
-# minimal env for dev:
-# AION_GATEWAY_PORT=8080
-# AION_CONTROL_GRPC=localhost:50051
-# AION_GATEWAY_API_KEYS=dev-key:admin
-npm run dev
-# (keep running; in a new terminal continue)
-
-# 5) Control (FastAPI)
-cd ../control
-python3.11 -m venv .venv && source .venv/bin/activate
-pip install -U pip wheel
-pip install -r requirements.txt
-cp .env.example .env
-# minimal env for dev:
-# AION_CONTROL_REDIS_URL=redis://localhost:6379
-# TENANCY_MODE=single
-uvicorn app.main:app --host 0.0.0.0 --port 50052 --reload
-# OR if gRPC sidecar is used, run it per repo instructions
-
-# 6) (Optional) Console
-cd ../console
-npm ci
-cp .env.local.example .env.local
-npm run dev
+cp .env.bigdata.example bigdata/.env
+./scripts/dev-up.sh
 ```
 
-Verify health
-•Gateway: http://localhost:8080/healthz
-•Control: http://localhost:50052/healthz (or the configured port)
+Then open Gateway at http://localhost:8080 and Console at http://localhost:3000. Health checks are at /healthz for gateway & control.  
 
-First admin / API key
+**First Admin API Key**
 
-For development, the Gateway reads AION_GATEWAY_API_KEYS. Example in .env:
+Add to `.env` (comma-separated for multiple keys/roles):
 
 ```
-AION_GATEWAY_API_KEYS=dev-key:admin|manager
+AION_GATEWAY_API_KEYS=demo-key:admin|manager
 ```
 
-Submit a task
+**Submit a Task (REST)**
 
-```
-curl -X POST "http://localhost:8080/v1/tasks" \
+```bash
+curl -X POST http://localhost:8080/v1/tasks \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: dev-key" \
+  -H "X-API-Key: demo-key" \
   -d '{
     "schemaVersion": "1.0",
     "intent": "summarize",
-    "params": {"text": "Hello aionOS"}
+    "params": {"text": "hello world"}
   }'
 ```
 
-Stream output (SSE)
+**Follow live events via SSE:**
 
-```
-curl -N "http://localhost:8080/v1/stream/<TASK_ID>" -H "X-API-Key: dev-key"
-```
-
-⸻
-
-🔧 Configuration Matrix (common)
-
-| Component | Variable | Description |
-|-----------|----------|-------------|
-| Gateway | AION_GATEWAY_PORT | HTTP listen port (default: 8080) |
-| Gateway | AION_CONTROL_GRPC | Control plane gRPC/REST endpoint |
-| Gateway | AION_GATEWAY_API_KEYS | Comma-separated `key:role1\|role2` pairs |
-| Gateway | AION_RATE_LIMIT_* | Per-key/IP throttling |
-| Gateway | AION_TLS_CERT/AION_TLS_KEY | TLS in production |
-| Control | TENANCY_MODE | single or multi (tenant headers enforced) |
-| Control | AION_CONTROL_REDIS_URL | Redis URL |
-| Control | AION_CONTROL_POSTGRES_DSN | Postgres DSN (optional) |
-| Control | AION_CONTROL_MONGO_DSN | Mongo DSN (optional) |
-| Providers | see policies/*.yml | Provider configs and allowlists |
-| Console | NEXT_PUBLIC_GATEWAY_URL | Base URL for REST/SSE |
-| Console | NEXTAUTH_* | If SSO/OAuth is enabled |
-
-Policies live in /policies (intents.yml, models.yml, modules.yml, policies.yml).
-Reload via Control API (POST /v1/router/policy/reload).
-
-⸻
-
-📁 Project Layout
-
-```
-.github/workflows   CI/CD, scans, SBOM
-bigdata/            Kafka/ClickHouse/Spark/Airflow (optional)
-console/            Next.js admin console
-control/            FastAPI control plane
-gateway/            Fastify/TypeScript gateway
-kernel/             Core abstractions
-modules/            Rust/WASM/subprocess modules + manifests
-policies/           intents/models/modules/policies
-protos/aion/v1/     gRPC definitions
-schemas/            JSON/YAML schemas
-scripts/            helper scripts
-tests/              e2e/integration tests
+```bash
+curl http://localhost:8080/v1/stream/<task_id> -H "X-API-Key: demo-key"
 ```
 
-⸻
+**gRPC example:**
 
-🔐 Security
-•Secrets via environment or your vault (no secrets in git).
-•Production behind a TLS reverse-proxy; enable rate-limit and idempotency.
-•Use GitHub private vulnerability reporting (see SECURITY.md).
+```bash
+grpcurl -plaintext \
+  -d '{"schema_version":"1.0","intent":"summarize","params":{"text":"hi"}}' \
+  localhost:50051 aion.v1.AionTasks/Submit
+```
 
-⸻
+---
 
-🧭 Roadmap (short)
-•Multi-tenant auth with OIDC (optional)
-•Pluggable provider registry UI
-•Module Store + signatures (Cosign)
-•More built-in policies for low-latency local routing
+## 🧱 Repository Structure
+```
+.bigdata/      # analytics stack: Kafka, Spark, ClickHouse, Airflow, Superset
+console/       # Next.js Glass UI (task streaming, policy editing, RTL)
+control/       # FastAPI: router, orchestrator, events, persistence
+gateway/       # TypeScript Fastify service (REST/gRPC/SSE/WS, auth, rate-limit)
+modules/       # Rust modules (WASM/subprocess) + manifests/signing
+policies/      # intents.yml, policies.yml, models.yml, modules.yml
+deploy/        # observability: Prometheus/Grafana
+scripts/       # dev & ops scripts (e.g., dev-up.sh)
+docs/ tests/ protos/ schemas/ kernel/
+```
+(See repo root for the full list.)
 
-⸻
+---
 
-🤝 Contributing
+## ⚙️ Configuration (env matrix — key vars)
+- **Gateway:** `AION_GATEWAY_PORT`, `AION_CONTROL_GRPC`, `AION_GATEWAY_API_KEYS`, `AION_RATE_LIMIT_MAX`, `AION_RATE_LIMIT_PER_IP`, `AION_TLS_CERT`, `AION_TLS_KEY`
+- **Control:** `AION_CONTROL_REDIS_URL`, `AION_CONTROL_POSTGRES_DSN`, `AION_CONTROL_MONGO_DSN`, `TENANCY_MODE` (single|multi)
+- **Console:** `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `NEXT_PUBLIC_GATEWAY_URL`, `NEXT_PUBLIC_CONTROL_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+- **Big Data:** `KAFKA_BROKERS`, `CLICKHOUSE_URL`
 
-See CONTRIBUTING.md and follow Conventional Commits.
+Privacy modes per intent: `local-only | allow-api | hybrid`. Default P95 targets and budget caps are defined in policies.
+
+---
+
+## 📜 Policies & Live Reload
+
+All policies live under `/policies` (`intents.yml`, `policies.yml`, `models.yml`, `modules.yml`).
+Reload at runtime: `POST /v1/router/policy/reload` (Control Plane).
+
+---
+
+## 📊 Big Data Edition
+
+Spin up analytics:
+
+```bash
+docker compose -f bigdata/docker-compose.bigdata.yml up
+```
+
+Streaming jobs: `bigdata/pipelines/streaming/` • Batch: `bigdata/pipelines/batch/airflow/` • ClickHouse DDL: `bigdata/sql/`.
+
+---
+
+## 🔭 Observability
+- Prometheus scrapes gateway, control, modules; OpenTelemetry traces across services.
+- Grafana dashboards under `deploy/observability/grafana`.
+
+---
+
+## 🧪 Testing
+- **Gateway:** `npm test` (Vitest)
+- **Control:** `poetry run pytest`
+- **Modules:** `cargo test`
+- **End-to-end:** `npm run e2e` (gateway)
+- **Load:** `k6 run tests/load.js`
+
+---
+
+## 🔐 Security Notes
+- Dev uses plaintext gRPC by default — enable mTLS in production.
+- Idempotency relies on Redis; in outages, degrades gracefully to non-idempotent behavior.
+- Provide hardened secrets & TLS in production.
+
+---
+
+## 📝 License
+
+Apache-2.0. See `LICENSE`.
+
+---
+
+## 🇮🇷 معرفی فارسی
+
+AION-OS یک پلتفرم ارکستراسیون عامل‌های هوش مصنوعی با معماری چندلایه است:
+Gateway (TypeScript/Fastify)، Control (FastAPI)، Modules (Rust/WASM) و کنسول Next.js.
+پروژه شامل مسیریابی مبتنی بر سیاست، استریم زنده (SSE/WS)، پایپلاین‌های تحلیلی و مشاهده‌پذیری تولیدی است.
+
+### ویژگی‌ها
+- APIهای REST/gRPC/SSE/WS، احراز هویت، Rate-Limit و Idempotency در Gateway؛ اتصال OTEL به Control.
+- Router و Orchestrator در Control با اتصال به Postgres/Mongo/Redis/Qdrant و انتشار رویدادهای Kafka.
+- ماژول‌های Rust به‌صورت WASM یا Subprocess با امضا/سیاست و SBOM.
+- داده: Kafka→ClickHouse، Spark، Airflow، داشبوردهای Superset.
+
+### شروع سریع (Compose)
+
+```bash
+cp .env.example .env
+cp .env.bigdata.example bigdata/.env
+./scripts/dev-up.sh
+```
+
+- Gateway: http://localhost:8080 • Console: http://localhost:3000 • Health: `/healthz`
+
+**ایجاد کلید ادمین:**
+
+```
+AION_GATEWAY_API_KEYS=demo-key:admin|manager
+```
+
+ارسال Task (REST) و استریم SSE و نمونه gRPC در بالا آمده‌اند.
+
+### سیاست‌ها و ریلود
+
+فایل‌های سیاست در `policies/` و ریلود با `POST /v1/router/policy/reload`.
+
+### مشاهده‌پذیری و تست
+
+Prometheus/Grafana/OTEL آماده؛ تست‌ها و مسیرهای e2e/load مشخص شده‌اند.
+
+### مجوز
+
+Apache-2.0.
+
+---
+
+اگه بخوای، هم‌زمان **Badge**‌های آماده (CI، License) هم به بالای README اضافه می‌کنم، یا بخش «From Source (Dev)» رو هم بر اساس اسکریپت‌های فعلی گسترش می‌دم—بگو تمرکزت روی Dev محلیه یا فقط Compose.
