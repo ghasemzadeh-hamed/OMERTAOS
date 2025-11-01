@@ -2,6 +2,16 @@
 
 Build, route, and scale AI agents with a production-ready operating system. AION-OS ships with a modular kernel, privacy-first policy router, and a real-time Glass UI so teams can ship and manage agents anywhere.
 
+<p align="center">
+  <a href="https://github.com/sponsors/ghasemzadeh-hamed" target="_blank" rel="noopener">
+    <img src="https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-black?logo=githubsponsors" alt="Sponsor on GitHub">
+  </a>
+  &nbsp;
+  <a href="https://tronscan.org/#/address/TFF6hgmr5h5fy8sEJS8sLYN81pm4rarkDM" target="_blank" rel="noopener">
+    <img src="https://img.shields.io/badge/Donate-TRX%20(TRON)-red?logo=tron" alt="Donate TRX (TRON)">
+  </a>
+</p>
+
 [FA ⭢ فارسی](#-معرفی-فارسی)
 
 ---
@@ -185,6 +195,17 @@ Refer to [`docs/manual-setup.md`](docs/manual-setup.md) for detailed manual prov
 - IDE/MCP adapters for safe tool/file access.
 - One-click spec wizard to bootstrap `.aionos/`.
 - Connector pack (webhooks, messaging, IoT).
+
+---
+
+## 💸 Donate (Crypto)
+
+**TRON (TRX)**  
+Address: `TFF6hgmr5h5fy8sEJS8sLYN81pm4rarkDM`  
+
+[![Donate TRX](https://img.shields.io/badge/Donate-TRX%20(TRON)-red?logo=tron)](https://tronscan.org/#/address/TFF6hgmr5h5fy8sEJS8sLYN81pm4rarkDM)
+
+> Only send **TRX / TRC20** assets to this address.
 
 ---
 
