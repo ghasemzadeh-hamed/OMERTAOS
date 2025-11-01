@@ -43,7 +43,7 @@ class ExplorerApp(App):
     """Main Textual application."""
 
     CSS_PATH = None
-    BINDINGS = [Binding("ctrl+d", "show_help", "راهنما"), Binding("ctrl+r", "refresh", "به‌روزرسانی")]
+    BINDINGS = [Binding("ctrl+d", "show_help", "Help"), Binding("ctrl+r", "refresh", "Refresh")]
 
     def __init__(self, api: ControlAPI, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -61,9 +61,9 @@ class ExplorerApp(App):
             yield self.sidebar
             with Vertical():
                 self.log = TextLog(highlight=True, markup=True, wrap=True)
-                self.log.write("👋 به اکسپلورر متنی OMERTAOS خوش آمدید. برای شروع `help` را وارد کنید.")
+                self.log.write("Welcome to the OMERTAOS explorer. Type `help` to view available commands.")
                 yield self.log
-                self.command_input = Input(placeholder="فرمان یا پیام خود را بنویسید…")
+                self.command_input = Input(placeholder="Type a command and press Enter...")
                 yield self.command_input
         yield Footer()
 
@@ -97,17 +97,17 @@ class ExplorerApp(App):
 
     async def action_refresh(self) -> None:
         await self.refresh_sidebar()
-        self.log.write("🔄 فهرست‌ها به‌روزرسانی شد.")
+        self.log.write("Sidebar refreshed.")
 
     async def on_resize(self, event: events.Resize) -> None:  # pragma: no cover - UI feedback
-        self.log.write(f"📐 ابعاد جدید: {event.size.width}×{event.size.height}")
+        self.log.write(f"Window resized to {event.size.width}x{event.size.height}")
 
 
 def run_explorer(args: List[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="اکسپلورر متنی برای کنترل aionOS")
-    parser.add_argument("--api", default="http://127.0.0.1:8001", help="آدرس پایهٔ API کنترل")
-    parser.add_argument("--token", default=None, help="توکن دسترسی (Bearer)")
-    parser.add_argument("--no-verify", action="store_true", help="غیرفعال کردن بررسی TLS")
+    parser = argparse.ArgumentParser(description="Command explorer for aionOS")
+    parser.add_argument("--api", default="http://127.0.0.1:8001", help="Control API base URL")
+    parser.add_argument("--token", default=None, help="Optional bearer token")
+    parser.add_argument("--no-verify", action="store_true", help="Disable TLS verification")
     parsed = parser.parse_args(args=args)
     api = ControlAPI(parsed.api, token=parsed.token, verify=not parsed.no_verify)
     ExplorerApp(api).run()

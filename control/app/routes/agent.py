@@ -24,7 +24,7 @@ def run_agent(body: AgentReq, x_agent_token: str = Header(default="")) -> Dict[s
         raise HTTPException(403, "forbidden")
     try:
         plan = (
-            "Plan: understand goal → call ConsoleAPI.list_tasks → show result "
+            "Plan: understand goal -> call ConsoleAPI.list_tasks -> show result "
             f"(goal={body.goal})"
         )
         result = _fake_console_api_list_tasks()

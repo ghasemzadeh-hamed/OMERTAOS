@@ -14,7 +14,7 @@ export async function GET() {
     const data = await r.json();
     return NextResponse.json(data);
   } catch (e) {
-    // اگر کنترل هنوز بالا نیامده باشد
+    // Fall back to incomplete onboarding state when control API is unreachable
     return NextResponse.json({ onboardingComplete: false });
   }
 }

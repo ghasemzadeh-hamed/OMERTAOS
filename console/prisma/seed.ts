@@ -16,7 +16,7 @@ async function main() {
     },
   });
 
-  console.log('Seeded admin account → username/email: admin@localhost (alias: admin), password: admin');
+  console.log('Seeded admin account - username/email: admin@localhost (alias: admin), password: admin');
 }
 
 main()

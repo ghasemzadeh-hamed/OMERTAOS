@@ -15,7 +15,7 @@ from .api import CommandProcessor, ControlAPI
 HISTORY_LIMIT = 50
 
 INDEX_TEMPLATE = """<!doctype html>
-<html lang=fa>
+<html lang=en>
 <head>
   <meta charset="utf-8" />
   <title>aionOS Terminal Explorer</title>
@@ -31,17 +31,17 @@ INDEX_TEMPLATE = """<!doctype html>
 </head>
 <body>
   <div class="container">
-    <h1>aionOS Explorer (متنی)</h1>
-    <p>فرمان خود را وارد کنید. نمونه: <code>add provider openai key=sk-...</code></p>
+    <h1>aionOS Explorer (text mode)</h1>
+    <p>Enter commands such as <code>add provider openai key=sk-...</code>.</p>
     <form method="post" action="/chat">
-      <label for="command">فرمان:</label>
+      <label for="command">Command:</label>
       <input type="text" name="command" id="command" autofocus />
-      <button type="submit">ارسال</button>
+      <button type="submit">Run</button>
     </form>
     <div class="history" role="log">{history}</div>
     <div class="tips">
-      <p><strong>راهنما:</strong> <code>help</code> را ارسال کنید.</p>
-      <p>بازنشانی لاگ: <a href="/reset">/reset</a></p>
+      <p><strong>Tip:</strong> run <code>help</code> to see available commands.</p>
+      <p>Reset history via <a href="/reset">/reset</a></p>
     </div>
   </div>
 </body>
@@ -62,7 +62,7 @@ def build_app(api: ControlAPI) -> FastAPI:
 
     def render_history() -> str:
         if not history:
-            return "هنوز پیامی ثبت نشده است."
+            return "No commands executed yet."
         return "\n".join(history)
 
     @app.get("/", response_class=HTMLResponse)
@@ -84,13 +84,13 @@ def build_app(api: ControlAPI) -> FastAPI:
 
 
 def run_server(args: List[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="وب‌سرور متنی برای اکسپلورر aionOS")
-    parser.add_argument("--api", default="http://127.0.0.1:8001", help="آدرس API کنترل")
-    parser.add_argument("--token", default=None, help="توکن دسترسی")
-    parser.add_argument("--host", default="127.0.0.1", help="آدرس گوش دادن")
-    parser.add_argument("--port", type=int, default=3030, help="پورت سرویس")
-    parser.add_argument("--no-verify", action="store_true", help="غیرفعال کردن بررسی TLS")
-    parser.add_argument("--reload", action="store_true", help="اجرا با hot-reload (برای توسعه)")
+    parser = argparse.ArgumentParser(description="Web wrapper for the aionOS explorer")
+    parser.add_argument("--api", default="http://127.0.0.1:8001", help="Control API base URL")
+    parser.add_argument("--token", default=None, help="Optional bearer token")
+    parser.add_argument("--host", default="127.0.0.1", help="Server host")
+    parser.add_argument("--port", type=int, default=3030, help="Server port")
+    parser.add_argument("--no-verify", action="store_true", help="Disable TLS verification")
+    parser.add_argument("--reload", action="store_true", help="Enable hot-reload (development only)")
     parsed = parser.parse_args(args=args)
     api = ControlAPI(parsed.api, token=parsed.token, verify=not parsed.no_verify)
     app = build_app(api)

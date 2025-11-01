@@ -191,7 +191,7 @@ export default function ExcelUpload() {
             disabled={isInferring || !file}
             className="mt-4 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isInferring ? 'Inferring…' : 'Infer schema'}
+            {isInferring ? 'Inferring...' : 'Infer schema'}
           </button>
         </div>
         <div className="glass-card p-5">
@@ -207,7 +207,7 @@ export default function ExcelUpload() {
             disabled={isApplying || !infer}
             className="mt-4 w-full rounded-xl border border-emerald-300/30 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-100 transition hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isApplying ? 'Committing…' : 'Commit dataset'}
+            {isApplying ? 'Committing...' : 'Commit dataset'}
           </button>
         </div>
         {datasetId ? (
@@ -240,7 +240,7 @@ export default function ExcelUpload() {
                 disabled={isTriggeringTrain}
                 className="w-full rounded-xl border border-cyan-300/30 bg-cyan-500/10 px-4 py-2 text-sm font-medium text-cyan-100 transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isTriggeringTrain ? 'Queuing…' : 'Trigger training'}
+                {isTriggeringTrain ? 'Queuing...' : 'Trigger training'}
               </button>
             </div>
           </div>
@@ -296,7 +296,7 @@ export default function ExcelUpload() {
                   }
                   className="mt-3 w-full rounded-xl border border-white/20 bg-slate-950/40 px-3 py-2 text-sm text-white focus:border-cyan-300 focus:outline-none"
                 >
-                  <option value="">— Not mapped —</option>
+                  <option value="">-- Not mapped --</option>
                   {TARGET_FIELDS.map((target) => (
                     <option key={target} value={target}>
                       {target}

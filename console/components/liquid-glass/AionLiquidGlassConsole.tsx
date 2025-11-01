@@ -40,12 +40,12 @@ const glass =
   'backdrop-blur-xl bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.12)]';
 
 const navItems = [
-  { key: 'dashboard', label: 'پیشخوان', icon: <LayoutDashboard className="h-5 w-5" /> },
-  { key: 'chat', label: 'چت با بات', icon: <MessageSquare className="h-5 w-5" /> },
-  { key: 'updates', label: 'به‌روزرسانی', icon: <RefreshCcw className="h-5 w-5" /> },
-  { key: 'config', label: 'پیکربندی', icon: <Settings className="h-5 w-5" /> },
-  { key: 'install', label: 'نصب امکانات', icon: <DownloadCloud className="h-5 w-5" /> },
-  { key: 'health', label: 'سلامت سیستم', icon: <ShieldCheck className="h-5 w-5" /> },
+  { key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
+  { key: 'chat', label: 'Chat', icon: <MessageSquare className="h-5 w-5" /> },
+  { key: 'updates', label: 'Updates', icon: <RefreshCcw className="h-5 w-5" /> },
+  { key: 'config', label: 'Configuration', icon: <Settings className="h-5 w-5" /> },
+  { key: 'install', label: 'Installers', icon: <DownloadCloud className="h-5 w-5" /> },
+  { key: 'health', label: 'Health', icon: <ShieldCheck className="h-5 w-5" /> },
 ] as const;
 
 const THEME_STORAGE_KEY = 'aion-liquid-theme';
@@ -62,7 +62,7 @@ export default function AionLiquidGlassConsole(): JSX.Element {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dark, setDark] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'assistant', text: 'سلام! چه کمکی از من برمیاد؟' },
+    { role: 'assistant', text: 'Hello! How can I help you today?' },
   ]);
   const [input, setInput] = useState('');
 
@@ -94,7 +94,7 @@ export default function AionLiquidGlassConsole(): JSX.Element {
   };
 
   return (
-    <div dir="rtl" className={`min-h-screen ${themeClasses} text-white`}>
+    <div dir="ltr" className={`min-h-screen ${themeClasses} text-white`}>
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
         <div className="absolute -bottom-24 -right-24 h-[32rem] w-[32rem] rounded-full bg-fuchsia-500/10 blur-3xl" />
@@ -110,7 +110,7 @@ export default function AionLiquidGlassConsole(): JSX.Element {
           <div className="flex items-center justify-between px-2 py-1">
             <div className="flex items-center gap-2">
               <Bot className="h-6 w-6" />
-              {sidebarOpen && <span className="font-bold">AION‑OS</span>}
+              {sidebarOpen && <span className="font-bold">AION-OS</span>}
             </div>
             <Button size="icon" variant="ghost" onClick={() => setSidebarOpen((prev) => !prev)}>
               {sidebarOpen ? <ChevronRight /> : <ChevronLeft />}
@@ -120,10 +120,10 @@ export default function AionLiquidGlassConsole(): JSX.Element {
           <div className="px-2">
             <Select>
               <SelectTrigger className={`${glass} h-10`}>
-                <SelectValue placeholder="انتخاب پروژه" />
+                <SelectValue placeholder="Choose project" />
               </SelectTrigger>
               <SelectContent align="end">
-                <SelectItem value="default">پروژه پیش‌فرض</SelectItem>
+                <SelectItem value="default">Default project</SelectItem>
                 <SelectItem value="doko">Doko (Commerce)</SelectItem>
                 <SelectItem value="sobhan">Sobhan (FMCG)</SelectItem>
               </SelectContent>
@@ -152,7 +152,7 @@ export default function AionLiquidGlassConsole(): JSX.Element {
               <CardContent className="flex items-center justify-between p-3">
                 <div className="flex items-center gap-2">
                   <Activity className="h-4 w-4" />
-                  <span className="text-sm">وضعیت سرویس‌ها</span>
+                  <span className="text-sm">Service status</span>
                 </div>
                 <div className="flex gap-1">
                   <Badge className="bg-emerald-500/80">Gateway</Badge>
@@ -167,16 +167,16 @@ export default function AionLiquidGlassConsole(): JSX.Element {
         <main className="m-4 mr-0 flex-1">
           <div className={`${glass} mb-4 flex items-center justify-between rounded-2xl px-4 py-3`}>
             <div className="flex items-center gap-3">
-              <span className="font-semibold">پیشخوان مدیریتی</span>
+              <span className="font-semibold">Operations overview</span>
               <Badge className="bg-sky-500/80">Beta</Badge>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="ghost" onClick={toggleTheme} className="gap-2">
                 {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                <span>تم</span>
+                <span>Theme</span>
               </Button>
               <Button variant="secondary" className="bg-white/20 hover:bg-white/30">
-                خروج
+                Sign out
               </Button>
             </div>
           </div>
@@ -239,23 +239,23 @@ function DashboardSection() {
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
       <Card className={`${glass} rounded-2xl xl:col-span-2`}>
         <CardHeader>
-          <CardTitle>نمای کلی پروژه</CardTitle>
+          <CardTitle>Project summary</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          <Stat title="درخواست‌های امروز" value="12,457" sub="+8% نسبت به دیروز" />
-          <Stat title="هزینهٔ ماه" value="$142.8" sub="سقف: $200" />
-          <Stat title="میانگین تأخیر" value="612ms" sub="p95: 1.3s" />
+          <Stat title="Requests today" value="12,457" sub="+8% vs yesterday" />
+          <Stat title="Monthly spend" value="$142.8" sub="Budget: $200" />
+          <Stat title="Average latency" value="612ms" sub="p95: 1.3s" />
         </CardContent>
       </Card>
       <Card className={`${glass} rounded-2xl`}>
         <CardHeader>
-          <CardTitle>روتر فعلی</CardTitle>
+          <CardTitle>Current router</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <KeyValue k="Policy" v="auto (fa→local, long→api)" />
+          <KeyValue k="Policy" v="auto (fa->local, long->api)" />
           <KeyValue k="Local Provider" v="Ollama (qwen2.5:7b)" />
-          <KeyValue k="API Provider" v="OpenAI (gpt‑4o)" />
-          <Button className="w-full bg-white/20 hover:bg-white/30">ویرایش Policy</Button>
+          <KeyValue k="API Provider" v="OpenAI (gpt-4o)" />
+          <Button className="w-full bg-white/20 hover:bg-white/30">Edit policy</Button>
         </CardContent>
       </Card>
     </div>
@@ -285,7 +285,7 @@ function ChatSection({ input, messages, onInputChange, onSend }: ChatSectionProp
                 }`}
               >
                 <div className="mb-1 text-xs opacity-70">
-                  {message.role === 'user' ? 'شما' : 'دستیار'}
+                  {message.role === 'user' ? 'You' : 'Assistant'}
                 </div>
                 <div className="whitespace-pre-wrap leading-7">{message.text}</div>
               </motion.div>
@@ -296,14 +296,14 @@ function ChatSection({ input, messages, onInputChange, onSend }: ChatSectionProp
 
       <div className="flex items-center gap-2">
         <Input
-          placeholder="پیام خود را بنویسید…"
+          placeholder="Type your message..."
           value={input}
           onChange={(event) => onInputChange(event.target.value)}
           className={`${glass} rounded-2xl`}
         />
         <Select>
           <SelectTrigger className={`${glass} w-48`}>
-            <SelectValue placeholder="انتخاب Agent" />
+            <SelectValue placeholder="Choose agent" />
           </SelectTrigger>
           <SelectContent align="end">
             <SelectItem value="sales">Sales Assistant</SelectItem>
@@ -312,7 +312,7 @@ function ChatSection({ input, messages, onInputChange, onSend }: ChatSectionProp
           </SelectContent>
         </Select>
         <Button onClick={onSend} className="bg-white/20 hover:bg-white/30">
-          ارسال
+          Send
         </Button>
       </div>
     </div>
@@ -324,7 +324,7 @@ function UpdatesSection() {
     <div className="grid gap-4 md:grid-cols-2">
       <Card className={`${glass} rounded-2xl`}>
         <CardHeader>
-          <CardTitle>به‌روزرسانی هسته و کنسول</CardTitle>
+          <CardTitle>Core and console updates</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <KeyValue k="Console" v="v0.9.2" />
@@ -336,7 +336,7 @@ function UpdatesSection() {
 
       <Card className={`${glass} rounded-2xl`}>
         <CardHeader>
-          <CardTitle>به‌روزرسانی مدل‌ها و ماژول‌ها</CardTitle>
+          <CardTitle>Model and module updates</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between">
@@ -382,11 +382,11 @@ function ConfigSection() {
     <div className="grid gap-4 lg:grid-cols-3">
       <Card className={`${glass} rounded-2xl lg:col-span-2`}>
         <CardHeader>
-          <CardTitle>پیکربندی روتر و Provider</CardTitle>
+          <CardTitle>Router and provider settings</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm opacity-80">سیاست روتینگ</label>
+            <label className="text-sm opacity-80">Routing policy</label>
             <Select>
               <SelectTrigger className={glass}>
                 <SelectValue placeholder="auto" />
@@ -404,7 +404,7 @@ function ConfigSection() {
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-sm opacity-80">Provider پیش‌فرض</label>
+            <label className="text-sm opacity-80">Default provider</label>
             <Select>
               <SelectTrigger className={glass}>
                 <SelectValue placeholder="Ollama" />
@@ -416,18 +416,18 @@ function ConfigSection() {
                 <SelectItem value="hf">HuggingFace</SelectItem>
               </SelectContent>
             </Select>
-            <label className="mt-4 block text-sm opacity-80">سقف هزینه ماهانه (USD)</label>
+            <label className="mt-4 block text-sm opacity-80">Monthly budget (USD)</label>
             <Input type="number" defaultValue={200} className={glass} />
           </div>
 
           <div className="md:col-span-2">
-            <label className="text-sm opacity-80">قوانین سفارشی YAML</label>
+            <label className="text-sm opacity-80">Custom YAML rules</label>
             <Textarea
               className={`${glass} min-h-[160px]`}
               placeholder={`rules:\n  - match:\n      lang: fa\n      max_input_tokens: 2000\n    route: local\n    provider: ollama\n    model: qwen2.5:7b`}
             />
             <div className="mt-3 flex gap-2">
-              <Button className="bg-white/20 hover:bg-white/30">اعمال و Reload</Button>
+              <Button className="bg-white/20 hover:bg-white/30">Apply and reload</Button>
               <Button variant="secondary" className="bg-white/20">
                 Export
               </Button>
@@ -438,13 +438,13 @@ function ConfigSection() {
 
       <Card className={`${glass} rounded-2xl`}>
         <CardHeader>
-          <CardTitle>داده‌ها و اتصال‌ها</CardTitle>
+          <CardTitle>Data and integrations</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <KeyValue k="Postgres" v="postgres-main (RO)" icon={<Database className="h-4 w-4" />} />
           <KeyValue k="MinIO" v="company-docs (S3)" icon={<HardDrive className="h-4 w-4" />} />
           <KeyValue k="Odoo" v="prod@odoo.local" icon={<Globe className="h-4 w-4" />} />
-          <Button className="w-full bg-white/20 hover:bg-white/30">مدیریت کانکتورها</Button>
+          <Button className="w-full bg-white/20 hover:bg-white/30">Manage connectors</Button>
         </CardContent>
       </Card>
     </div>
@@ -454,12 +454,12 @@ function ConfigSection() {
 function InstallSection() {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      <InstallCard title="Ollama" desc="LLM محلی با مدل‌های سبک" tags={['CPU', 'Local']} />
-      <InstallCard title="vLLM" desc="سرور اجرای مدل‌های سنگین (GPU/TP)" tags={['GPU', 'API']} />
-      <InstallCard title="Qdrant" desc="بردارستان برای جست‌وجوی معنایی" tags={['Vector', 'Search']} />
-      <InstallCard title="ClickHouse" desc="انبار داده تحلیلی پرسرعت" tags={['OLAP', 'Analytics']} />
-      <InstallCard title="Superset" desc="داشبورد و مصورسازی" tags={['BI', 'Charts']} />
-      <InstallCard title="Summarize‑RS" desc="ماژول خلاصه‌سازی سریع" tags={['Module', 'Rust']} />
+      <InstallCard title="Ollama" desc="Local LLM host for lightweight models" tags={['CPU', 'Local']} />
+      <InstallCard title="vLLM" desc="High-throughput model serving (GPU/TP)" tags={['GPU', 'API']} />
+      <InstallCard title="Qdrant" desc="Vector database for semantic search" tags={['Vector', 'Search']} />
+      <InstallCard title="ClickHouse" desc="Fast analytical data warehouse" tags={['OLAP', 'Analytics']} />
+      <InstallCard title="Superset" desc="Dashboards and visualization" tags={['BI', 'Charts']} />
+      <InstallCard title="Summarize-RS" desc="Rust summarization module" tags={['Module', 'Rust']} />
     </div>
   );
 }
@@ -477,7 +477,7 @@ function InstallCard({ title, desc, tags }: InstallCardProps) {
         <CardTitle className="flex items-center justify-between">
           <span>{title}</span>
           <Button size="sm" variant="secondary" className="bg-white/20">
-            نصب
+            Install
           </Button>
         </CardTitle>
       </CardHeader>
@@ -505,7 +505,7 @@ type HealthRowProps = {
 
 function HealthRow({ name, state, latency }: HealthRowProps) {
   const color = state === 'healthy' ? 'bg-emerald-500' : state === 'degraded' ? 'bg-amber-500' : 'bg-rose-500';
-  const label = state === 'healthy' ? 'سالم' : state === 'degraded' ? 'کاهش کارایی' : 'خاموش';
+  const label = state === 'healthy' ? 'Healthy' : state === 'degraded' ? 'Degraded' : 'Offline';
 
   return (
     <div className="flex items-center justify-between rounded-xl bg-white/10 px-3 py-2">
@@ -526,7 +526,7 @@ function HealthSection() {
     <div className="grid gap-4 md:grid-cols-2">
       <Card className={`${glass} rounded-2xl`}>
         <CardHeader>
-          <CardTitle>سلامت سرویس‌ها</CardTitle>
+          <CardTitle>Service health</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <HealthRow name="Gateway" state="healthy" latency="82ms" />
@@ -537,7 +537,7 @@ function HealthSection() {
       </Card>
       <Card className={`${glass} rounded-2xl`}>
         <CardHeader>
-          <CardTitle>لاگ‌های اخیر</CardTitle>
+          <CardTitle>Recent logs</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="whitespace-pre-wrap text-sm/7 opacity-90">

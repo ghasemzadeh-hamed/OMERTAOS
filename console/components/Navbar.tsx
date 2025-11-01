@@ -28,7 +28,7 @@ export function Navbar() {
           aria-label={t('command_palette')}
         >
           <Command className="h-4 w-4" />
-          <span className="hidden md:inline">⌘K</span>
+          <span className="hidden md:inline">K</span>
         </button>
         <button className="glass-button" onClick={toggle}>
           {locale === 'fa' ? 'FA' : 'EN'}

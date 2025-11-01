@@ -6,10 +6,10 @@ if (Test-Path (Join-Path $scriptDir "docker-compose.yml")) {
 } elseif (Test-Path (Join-Path (Split-Path $scriptDir -Parent) "docker-compose.yml")) {
   Set-Location (Split-Path $scriptDir -Parent)
 } else {
-  Write-Host "docker-compose.yml پیدا نشد. لطفاً این اسکریپت را از کنار مخزن اجرا کن." -ForegroundColor Red
+  Write-Host "docker-compose.yml was not found. Run this script from the repository root or alongside it." -ForegroundColor Red
   exit 1
 }
 
-Write-Host "Stopping and removing AION-OS Docker stack…" -ForegroundColor Yellow
+Write-Host "Stopping and removing AION-OS Docker stack..." -ForegroundColor Yellow
 docker compose down -v
-Write-Host "✅ stack down & volumes removed." -ForegroundColor Green
+Write-Host "AION-OS stack down and volumes removed." -ForegroundColor Green

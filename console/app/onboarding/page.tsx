@@ -12,41 +12,40 @@ type Step = {
 const STEPS: Step[] = [
   {
     id: "welcome",
-    prompt:
-      "سلام! من دستیار راه‌انداز AION-OS هستم. برای شروع بنویس «بله».",
-    fields: [{ key: "ready", label: "بگو بله تا شروع کنیم", placeholder: "بله", type: "text" }],
-    validate: (v) => (v.ready?.trim()?.toLowerCase() === "بله" ? null : "لطفاً بنویس بله"),
+    prompt: "Welcome to AION-OS! Type 'ready' to begin the guided setup.",
+    fields: [{ key: "ready", label: "Type ready to continue", placeholder: "ready", type: "text" }],
+    validate: (v) => (v.ready?.trim()?.toLowerCase() === "ready" ? null : "Please type ready to continue."),
   },
   {
     id: "admin",
-    prompt: "یک ادمین بسازیم: نام کاربری (یا ایمیل) و گذرواژهٔ امن را وارد کن.",
+    prompt: "Admin setup: provide the initial console credentials.",
     fields: [
-      { key: "email", label: "نام کاربری / ایمیل ادمین", type: "text" },
-      { key: "password", label: "گذرواژه", type: "password" },
+      { key: "email", label: "Email or username", type: "text" },
+      { key: "password", label: "Password", type: "password" },
     ],
   },
   {
     id: "models",
-    prompt: "ارائه‌دهندهٔ مدل پیش‌فرض؟ (openai, gemini, local)",
+    prompt: "Model routing: choose the default provider (openai, gemini, local).",
     fields: [
       { key: "provider", label: "Provider", placeholder: "openai", type: "text" },
-      { key: "apiKey", label: "API Key (در صورت نیاز)", type: "password" },
-      { key: "defaultModel", label: "نام مدل پیش‌فرض", placeholder: "gpt-4o-mini", type: "text" },
+      { key: "apiKey", label: "API Key (if required)", type: "password" },
+      { key: "defaultModel", label: "Default model", placeholder: "gpt-4o-mini", type: "text" },
     ],
   },
   {
     id: "gateway",
-    prompt: "تنظیمات Gateway: پورت و API Key",
+    prompt: "Gateway configuration: port and optional API key.",
     fields: [
-      { key: "port", label: "پورت", placeholder: "8080", type: "number" },
-      { key: "apiKey", label: "API Key (اگر خالی بماند تولید می‌شود)", type: "text" },
+      { key: "port", label: "Gateway port", placeholder: "8080", type: "number" },
+      { key: "apiKey", label: "API Key (leave blank to auto-generate)", type: "text" },
     ],
   },
   {
     id: "finalize",
-    prompt: "اعمال تنظیمات و ری‌لود سرویس‌ها انجام شود؟ (بنویس بله)",
-    fields: [{ key: "confirm", label: "تأیید", placeholder: "بله", type: "text" }],
-    validate: (v) => (v.confirm?.trim()?.toLowerCase() === "بله" ? null : "برای ادامه بنویس بله"),
+    prompt: "Almost done! Type 'confirm' to apply the configuration.",
+    fields: [{ key: "confirm", label: "Type confirm to finish", placeholder: "confirm", type: "text" }],
+    validate: (v) => (v.confirm?.trim()?.toLowerCase() === "confirm" ? null : "Please type confirm to finish."),
   },
 ];
 
@@ -74,12 +73,12 @@ export default function OnboardingPage() {
     const userText = Object.entries(values)
       .map(([k, v]) => `${k}: ${v}`)
       .join(" | ");
-    setMessages((m) => [...m, { role: "user", text: userText || "—" }]);
+    setMessages((m) => [...m, { role: "user", text: userText || "-" }]);
 
     if (step.validate) {
       const err = step.validate(values);
       if (err) {
-        setMessages((m) => [...m, { role: "bot", text: `❗ ${err}` }]);
+        setMessages((m) => [...m, { role: "bot", text: err }]);
         return;
       }
     }
@@ -88,9 +87,9 @@ export default function OnboardingPage() {
     setValues({});
 
     if (step.id === "finalize") {
-      setMessages((m) => [...m, { role: "bot", text: "در حال اعمال تنظیمات و ری‌لود سرویس‌ها..." }]);
+      setMessages((m) => [...m, { role: "bot", text: "Applying configuration..." }]);
       await applyChanges();
-      setMessages((m) => [...m, { role: "bot", text: "تمام شد! حالا داشبورد آماده است." }]);
+      setMessages((m) => [...m, { role: "bot", text: "Setup complete! Redirecting to the console." }]);
       window.location.href = "/";
       return;
     }
@@ -102,7 +101,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">AION-OS • نصب تعاملی</h1>
+      <h1 className="text-2xl font-bold mb-4">AION-OS Guided Onboarding</h1>
       <div className="border rounded-xl p-4 space-y-3 bg-white/60 backdrop-blur">
         {messages.map((msg, i) => (
           <div key={i} className={msg.role === "bot" ? "text-right" : "text-left"}>
@@ -124,7 +123,7 @@ export default function OnboardingPage() {
               />
             </div>
           ))}
-          <button className="px-4 py-2 rounded-xl border">ارسال</button>
+          <button className="px-4 py-2 rounded-xl border">Continue</button>
         </form>
       </div>
     </div>

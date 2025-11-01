@@ -4,14 +4,14 @@ set -euo pipefail
 MODEL="${1:-llama3.2:3b}"
 OLLAMA_HOST="${OLLAMA_HOST:-http://127.0.0.1:11434}"
 
-# نصب Ollama (Linux/macOS). روی Windows WSL هم پاسخ می‌دهد.
+# Install Ollama on Linux/macOS. Windows users should run within WSL when needed.
 if [ "$OLLAMA_HOST" = "http://127.0.0.1:11434" ]; then
   if ! command -v ollama >/dev/null 2>&1; then
     echo "Installing Ollama ..."
     curl -fsSL https://ollama.com/install.sh | sh
   fi
 
-  # اجرا
+  # Ensure the Ollama service is running
   if pgrep -x "ollama" >/dev/null 2>&1; then
     echo "Ollama is already running."
   else
@@ -20,7 +20,7 @@ if [ "$OLLAMA_HOST" = "http://127.0.0.1:11434" ]; then
     sleep 2
   fi
 else
-  echo "Detected remote/custom OLLAMA_HOST=$OLLAMA_HOST — skipping local install/start."
+  echo "Detected remote/custom OLLAMA_HOST=$OLLAMA_HOST - skipping local install/start."
   if ! command -v ollama >/dev/null 2>&1; then
     echo "ollama CLI not found; install it manually if you want to manage remote models."
     exit 0
@@ -30,4 +30,4 @@ fi
 echo "Pulling model: $MODEL via $OLLAMA_HOST"
 OLLAMA_HOST="$OLLAMA_HOST" ollama pull "$MODEL" || true
 
-echo "✅ Local LLM ready via Ollama → $MODEL"
+echo "Local LLM ready via Ollama model $MODEL"
