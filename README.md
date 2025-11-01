@@ -74,6 +74,8 @@ Once the containers are healthy:
 - Gateway → `http://localhost:8080`
 - Health endpoints → append `/healthz`
 
+> **Default console credentials (Quick Start & install.sh):** username `admin` (or email `admin@localhost`) with password `admin`.
+
 Use the example admin key for experiments:
 ```env
 AION_GATEWAY_API_KEYS=demo-key:admin|manager

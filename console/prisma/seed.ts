@@ -2,8 +2,8 @@ import bcrypt from 'bcrypt';
 import { prisma } from '@/lib/prisma';
 
 async function main() {
-  const email = 'admin@aion.local';
-  const password = await bcrypt.hash('Admin@123', 10);
+  const email = 'admin@localhost';
+  const password = await bcrypt.hash('admin', 10);
 
   await prisma.user.upsert({
     where: { email },
@@ -16,7 +16,7 @@ async function main() {
     },
   });
 
-  console.log('Seeded admin:', email, 'password: Admin@123');
+  console.log('Seeded admin account → username/email: admin@localhost (alias: admin), password: admin');
 }
 
 main()

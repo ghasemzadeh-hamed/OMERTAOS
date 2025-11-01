@@ -10,16 +10,31 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email: { label: 'Email', type: 'email' },
+        identifier: { label: 'Username or Email', type: 'text' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials.password) {
+        const rawIdentifier = credentials?.identifier?.trim();
+        if (!rawIdentifier || !credentials.password) {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+        const identifierLower = rawIdentifier.toLowerCase();
+        const candidateEmails = new Set<string>([
+          rawIdentifier,
+          identifierLower,
+        ]);
+        if (!identifierLower.includes('@')) {
+          candidateEmails.add(`${identifierLower}@localhost`);
+          candidateEmails.add(`${identifierLower}@aion.local`);
+        }
+
+        const user = await prisma.user.findFirst({
+          where: {
+            email: {
+              in: Array.from(candidateEmails),
+            },
+          },
         });
 
         if (!user) {

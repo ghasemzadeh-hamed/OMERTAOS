@@ -53,8 +53,8 @@ version: 1
 onboardingComplete: false
 
 admin:
-  email: "admin@example.com"
-  password: ""
+  email: "admin@localhost"
+  password: "admin"
 
 console:
   port: 3000
@@ -147,6 +147,8 @@ docker compose logs -f gateway
    ```bash
    docker compose restart gateway control console
    ```
+
+> **Console sign-in:** the default seed user is `admin` (email `admin@localhost`) with password `admin`.
 
 ---
 

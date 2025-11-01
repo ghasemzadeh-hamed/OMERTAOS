@@ -38,6 +38,8 @@ def submit(p: SubmitPayload):
             password = (p.answers.get("password") or "").strip()
             if not email or not password:
                 raise HTTPException(400, "admin email/password required")
+            if "@" not in email:
+                email = f"{email}@localhost"
             cfg.setdefault("admin", {})["email"] = email
             cfg["admin"]["password"] = password
 

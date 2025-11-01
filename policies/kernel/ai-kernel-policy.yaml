@@ -11,4 +11,4 @@ allowlist:
 apply:
   require_admin_approval: true
 admins:
-  - admin@example.com
+  - admin@localhost

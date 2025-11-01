@@ -17,8 +17,8 @@ version: 1
 onboardingComplete: false
 
 admin:
-  email: "admin@example.com"
-  password: ""
+  email: "admin@localhost"
+  password: "admin"
 
 console:
   port: 3000
