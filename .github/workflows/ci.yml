@@ -94,3 +94,14 @@ jobs:
           if [ -f uvicorn.pid ]; then
             kill $(cat uvicorn.pid) || true
           fi
+
+  installers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Linux quick installer
+        run: bash -n install.sh
+      - name: Validate Windows quick installer syntax
+        run: pwsh -NoLogo -NoProfile -Command "Get-Command -Path './install.ps1' | Out-Null"
+      - name: Validate Apache edge installer
+        run: bash -n deploy/scripts/aion_edge_setup.sh

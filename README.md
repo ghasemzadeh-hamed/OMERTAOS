@@ -23,10 +23,12 @@ Build, route, and scale AI agents with a production‑ready operating system. AI
 * [Architecture Highlights](#architecture-highlights)
 * [Quick Start](#quick-start)
 
-  * [A) Docker Compose](#a-docker-compose)
-  * [B) Headless / Server (No Browser)](#b-headless--server-no-browser)
-  * [C) Team / CI (Config‑as‑Code)](#c-team--ci-config-as-code)
-  * [D) Terminal Explorer / TUI](#d-terminal-explorer--tui)
+  * [A) Linux Quick Install Wizard](#a-linux-quick-install-wizard)
+  * [B) Windows Quick Install Wizard](#b-windows-quick-install-wizard)
+  * [C) Docker Compose](#c-docker-compose)
+  * [D) Headless / Server (No Browser)](#d-headless--server-no-browser)
+  * [E) Team / CI (Config‑as‑Code)](#e-team--ci-config-as-code)
+  * [F) Terminal Explorer / TUI](#f-terminal-explorer--tui)
 * [Local LLM Options](#local-llm-options)
 * [Agent & Console Experiences](#agent--console-experiences)
 * [Webhooks (Generic Intake → JSON → Queue)](#webhooks-generic-intake--json--queue)
@@ -74,7 +76,32 @@ Tests/      Unit, integration, e2e, and load profiles
 
 ## Quick Start
 
-### A) Docker Compose
+### A) Linux Quick Install Wizard
+
+Bootstrap a complete local or remote (cloud VM) deployment with the Bash wizard. It prepares config, seeds defaults, and launches Docker Compose with Ollama ready for quick experiments.
+
+```bash
+./install.sh
+# Accepts AIONOS_CONFIG_PATH overrides and can be run over SSH on Linux hosts
+```
+
+* Runs on Debian/Ubuntu/Fedora class systems with Docker and Docker Compose.
+* Configures `.env`, seeds admin credentials, installs/warms up a local LLM, and opens the onboarding UI when available.
+* Ideal for **local development** or **cloud VMs** where you want the entire stack in one command.
+
+### B) Windows Quick Install Wizard
+
+Use the interactive PowerShell installer for Windows workstations or Windows Server. It guides you through ports, credentials, and optional BigData overlays before launching Docker Compose.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+* Prompts for repo/branch, admin credentials, service ports, and data backends.
+* Supports local or remote Docker (with WSL2) and prints the resulting service URLs.
+* Automatically writes `console/.env`, `gateway/.env`, and `control/.env` based on your answers.
+
+### C) Docker Compose
 
 ```bash
 # 1) Clone the AIONOS branch
@@ -124,7 +151,7 @@ curl -X POST http://localhost:8080/v1/tasks \
 curl -H "X-API-Key: demo-key" http://localhost:8080/v1/stream/<task_id>
 ```
 
-### B) Headless / Server (No Browser)
+### D) Headless / Server (No Browser)
 
 ```bash
 # Create admin + seed provider without opening a browser
@@ -136,7 +163,7 @@ aion init --quickstart --no-browser \
 curl -sf http://127.0.0.1:8001/api/health
 ```
 
-### C) Team / CI (Config‑as‑Code)
+### E) Team / CI (Config‑as‑Code)
 
 ```bash
 aion apply --bundle deploy/bundles/my-config.tgz --atomic --no-browser
@@ -156,7 +183,7 @@ my-config/
   CHECKSUMS.txt      sha256 sums for integrity
 ```
 
-### D) Terminal Explorer / TUI
+### F) Terminal Explorer / TUI
 
 * Launch an in‑terminal explorer with a **chat config bot** and text‑friendly UI:
 
@@ -303,6 +330,8 @@ curl -X POST http://localhost:8000/rag/query \
 * **Modules** → `cargo test`
 * **Console** → Playwright e2e suite
 * **Load** → k6 profiles
+
+The GitHub Actions workflow (`.github/workflows/ci.yml`) keeps these tracks green and additionally lint-checks the **Linux** wizard (`install.sh`), **Windows** wizard (`install.ps1`), and the **Apache edge installer** so the quick-start flows stay CI‑verified across local, cloud, and perimeter modes.
 
 ---
 
