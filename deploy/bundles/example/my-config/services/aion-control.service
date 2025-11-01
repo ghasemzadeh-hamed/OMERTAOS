@@ -1,0 +1,14 @@
+[Unit]
+Description=AION Control Plane
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/aion/aion.env
+ExecStart=/usr/bin/env python -m control.app.main
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

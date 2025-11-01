@@ -139,10 +139,7 @@ curl -sf http://127.0.0.1:8001/api/health
 ### C) Team / CI (Config‑as‑Code)
 
 ```bash
-# Apply a pre‑built bundle (providers/router/datasources/modules + systemd units)
 aion apply --bundle deploy/bundles/my-config.tgz --atomic --no-browser
-
-# Server health gate (CI should fail on non‑zero)
 aion doctor --verbose
 ```
 
@@ -164,11 +161,33 @@ my-config/
 * Launch an in‑terminal explorer with a **chat config bot** and text‑friendly UI:
 
 ```bash
-aion-explorer   # opens TUI via w3m/lynx if available, otherwise prints local URL
+aion-explorer
+# Opens a text-friendly Explorer (w3m/lynx) or prints local URL to open
+# Tabs: Projects · Providers · Modules · DataSources · Router · Chat · Health · Logs · Admin
+# Keys: ←/→ tabs · Ctrl+S Apply · Ctrl+E Export · Ctrl+J Jobs · q quit
 ```
 
 * Tabs: **Projects · Providers · Modules · DataSources · Router · Chat · Health · Logs · Admin**
 * Keybindings: `←/→` tabs · `Ctrl+S` Apply · `Ctrl+E` Export · `Ctrl+J` Jobs · `q` quit
+
+---
+
+## Edge Install (Apache, Domain vs Local)
+
+Run the interactive installer to harden the reverse proxy perimeter. It detects IPv4/IPv6, validates DNS, and wires Apache for WebSocket/SSE aware reverse proxies.
+
+```bash
+make edge-setup
+# Interactive:
+# 1) Domain Mode (SSL) or Local Mode
+# 2) Subdomains or Single-domain paths
+# 3) Email for Let's Encrypt, IPv6 toggle
+# Results: HTTPS vhosts + HSTS (Domain) OR local reverse proxies on 8088/8089/8090
+```
+
+* **Domain mode**: issues Let's Encrypt certificates via HTTP-01, enables `proxy`, `proxy_http`, `proxy_wstunnel`, `http2`, and injects security headers (HSTS, X-Frame-Options, Referrer-Policy) with SSE/WebSocket aware `ProxyPassMatch` rules.
+* **Local mode**: provisions non-TLS proxies bound to `127.0.0.1` on ports `8088`, `8089`, and `8090` for Console, Gateway, and Control respectively.
+* **IPv6**: optional listener when AAAA records exist. The script surfaces mismatched DNS answers so you can update zone files before rerunning.
 
 ---
 
@@ -244,7 +263,7 @@ Body:    raw (json | form | xml | binary)
 **Quick test**
 
 ```bash
-curl -s -X POST http://localhost:8001/api/webhooks/custom-1 \
+curl -s -X POST http(s)://<control-host>/api/webhooks/custom-1 \
   -H "Content-Type: application/json" \
   -H "X-Signature: $(echo -n '{"ping":1}' | openssl dgst -sha256 -hmac "$CUSTOM1_SECRET" -hex | sed 's/^.* //')" \
   -d '{"event_id":"evt_1","event":"ping","ping":1}'

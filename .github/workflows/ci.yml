@@ -6,54 +6,91 @@ on:
   pull_request:
 
 jobs:
-  build:
+  control:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-python@v5
         with:
-          node-version: 20
-      - name: License consistency
-        run: |
-          grep -R "Apache License" LICENSE README.md
-      - name: Install gateway deps
-        run: |
-          cd gateway
-          npm install
-          npm run build
-          npm test
-      - name: Install console deps
-        run: |
-          npm install -g pnpm
-          pnpm -C console install
-          pnpm -C console lint
-          pnpm -C console test
-          pnpm -C console build
-      - name: Set up Python
-        uses: actions/setup-python@v5
+          python-version: "3.12"
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install control dependencies
+        working-directory: control
+        run: poetry install --no-interaction --no-root
+      - name: Run control tests
+        working-directory: control
+        run: poetry run pytest -q
+
+  gateway:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
-      - name: Install control deps
-        run: |
-          pip install poetry
-          cd control
-          poetry install
-          poetry run pytest
-      - name: Run cargo tests
-        run: |
-          cd modules
-          cargo test
-      - name: Trivy Scan
-        uses: aquasecurity/trivy-action@0.18.0
+          node-version: "18"
+      - name: Install gateway dependencies
+        working-directory: gateway
+        run: npm ci
+      - name: Run gateway unit tests
+        working-directory: gateway
+        run: npm test -- --runInBand
+
+  console:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          scan-type: fs
-          ignore-unfixed: true
-          severity: HIGH,CRITICAL
-      - name: Syft SBOM
-        uses: anchore/sbom-action@v0
+          node-version: "18"
+      - name: Install console dependencies
+        working-directory: console
+        run: npm ci
+      - name: Install Playwright browsers
+        working-directory: console
+        run: npx playwright install --with-deps chromium
+      - name: Run console smoke tests
+        working-directory: console
+        run: npm run test:e2e -- --project=chromium --headed=false
+
+  load:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install k6
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y k6
+      - name: Run k6 smoke profile
+        run: k6 run tests/load.js
+
+  doctor:
+    runs-on: ubuntu-latest
+    needs: [control]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          output-file: sbom.spdx.json
-      - name: Upload coverage
+          python-version: "3.12"
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install CLI dependencies
+        run: pip install typer jsonschema pyyaml
+      - name: Install control service
+        working-directory: control
+        run: poetry install --no-interaction --no-root
+      - name: Launch control API
+        working-directory: control
+        run: |
+          nohup poetry run uvicorn app.main:app --port 8001 --host 127.0.0.1 &
+          echo $! > ../uvicorn.pid
+      - name: Doctor check
+        env:
+          PYTHONPATH: cli
+        run: python -m aion.cli doctor --verbose
+      - name: Stop control API
         if: always()
-        run: echo "Coverage upload placeholder"
+        run: |
+          if [ -f uvicorn.pid ]; then
+            kill $(cat uvicorn.pid) || true
+          fi

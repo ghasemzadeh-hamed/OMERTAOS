@@ -33,7 +33,8 @@ async def intake_webhook(
     if len(raw_body) > MAX_BODY_BYTES:
         raise HTTPException(status_code=413, detail="payload too large")
 
-    _validate_ip(request.client.host)
+    client_host = request.client.host if request.client else None
+    _validate_ip(client_host)
     _validate_signature(request.headers, raw_body)
     payload_dict, event_type, event_id = _normalize_payload(raw_body, request.headers)
     if not event_id:
