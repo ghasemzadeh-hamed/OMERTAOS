@@ -1,0 +1,40 @@
+apiVersion: aip/v1
+kind: Module
+metadata:
+  name: summarize-rs
+  version: 0.3.2
+  description: "Fast summarization in Rust"
+security:
+  sandbox: process
+  allow_net: false
+  allow_fs_read:
+    - ${AION_WORKDIR}/scratch
+  allow_fs_write:
+    - ${AION_WORKDIR}/scratch/out
+  signature:
+    cosign_pubkey: /etc/aionos/keys/cosign.pub
+runtime:
+  entry:
+    type: grpc
+    addr: 127.0.0.1:7011
+    healthcheck: /health
+io:
+  input:
+    type: json
+    schema:
+      text:
+        type: string
+        maxLength: 20000
+      max_tokens:
+        type: integer
+        default: 256
+  output:
+    type: json
+    schema:
+      summary:
+        type: string
+      ratio:
+        type: number
+observability:
+  timeout_ms: 60000
+  log_level: info

@@ -1,32 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 PORT="${AION_EXPLORER_PORT:-3030}"
-TOKEN="${AION_TOKEN:-}"
 API="${AION_API:-http://127.0.0.1:8001}"
-LOG_FILE="${AION_EXPLORER_LOG:-/var/log/aionos/explorer.log}"
-HOST="${AION_EXPLORER_HOST:-127.0.0.1}"
-
-mkdir -p "$(dirname "$LOG_FILE")"
-
-cmd=(python3 -m console.tui.web_server --api "$API" --host "$HOST" --port "$PORT")
-if [[ -n "$TOKEN" ]]; then
-  cmd+=(--token "$TOKEN")
-fi
-
-nohup "${cmd[@]}" >>"$LOG_FILE" 2>&1 &
-server_pid=$!
-trap 'kill $server_pid >/dev/null 2>&1 || true' EXIT
-sleep 0.5
-
+TOKEN="${AION_TOKEN:-$(PYTHONPATH=cli python -m aion.cli auth token --once --ttl 5m)}"
+mkdir -p /var/log/aionos
+nohup PYTHONPATH=cli python -m aion.cli tui-serve serve --port "$PORT" --api "$API" --token "$TOKEN" >/var/log/aionos/explorer.log 2>&1 &
+URL="http://127.0.0.1:$PORT/?token=$TOKEN"
 if command -v w3m >/dev/null 2>&1; then
-  w3m "http://${HOST}:${PORT}/"
+  exec w3m "$URL"
 elif command -v lynx >/dev/null 2>&1; then
-  lynx "http://${HOST}:${PORT}/"
-elif command -v links >/dev/null 2>&1; then
-  links "http://${HOST}:${PORT}/"
+  exec lynx "$URL"
 else
-  echo "هیچ مرورگر متنی (w3m/lynx/links) نصب نشده است." >&2
-  echo "آدرس رابط: http://${HOST}:${PORT}/" >&2
-  wait "$server_pid"
+  echo "Open $URL (install w3m/lynx for in-terminal browsing)"
 fi

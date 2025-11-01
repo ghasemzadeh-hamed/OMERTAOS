@@ -1,0 +1,16 @@
+default: auto
+rules:
+  - match:
+      lang: "fa|ar"
+      max_input_tokens: 2000
+    route: local
+    provider: ollama-local
+    model: qwen2.5:7b
+  - match:
+      domain: "legal|medical|vision"
+    route: api
+    provider: openai
+    model: gpt-4o
+budgets:
+  monthly_usd: 200
+  failover: true

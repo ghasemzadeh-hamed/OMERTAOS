@@ -1,0 +1,15 @@
+[Unit]
+Description=AION Gateway
+After=network.target aion-control.service
+
+[Service]
+User=aion
+WorkingDirectory=/opt/aionos/gateway
+ExecStart=/usr/bin/python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=3
+StandardOutput=append:/var/log/aionos/gateway.log
+StandardError=append:/var/log/aionos/gateway.err
+
+[Install]
+WantedBy=multi-user.target

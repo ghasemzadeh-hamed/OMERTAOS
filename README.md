@@ -240,3 +240,32 @@ RBAC و OIDC، ایزوله‌سازی ماژول‌ها، امضای بسته�
 
 ### مجوز
 Apache-2.0.
+
+## Headless + TUI Tooling
+The monorepo now ships with a Typer-powered CLI (`cli/aion`) that mirrors the production workflows described in the Codex brief. Run all commands with `PYTHONPATH=cli python -m aion.cli ...` or install the package.
+
+### Bootstrap
+```bash
+PYTHONPATH=cli python -m aion.cli init --quickstart --no-browser --admin-email admin@example.com --admin-pass changeme --provider local --model qwen2.5:7b --port 3000
+```
+The command seeds an admin user, prepares the default provider, and prints a one-time token for console onboarding.
+
+### Apply bundles
+```bash
+make bundle
+PYTHONPATH=cli python -m aion.cli apply bundle dist/example-bundle.tgz --atomic
+```
+Bundles are unpacked, validated against the JSON Schemas in `config-schemas/`, and any `deploy/systemd/*.service` files are staged for installation.
+
+### Diagnostics & tokens
+```bash
+PYTHONPATH=cli python -m aion.cli doctor --verbose
+PYTHONPATH=cli python -m aion.cli auth token --once --ttl 10m
+```
+The doctor command calls `/api/health` and reports component status and latencies, while `auth token` issues short-lived bearer tokens for the Explorer and automation.
+
+### Terminal explorer launcher
+Use `aion tui-serve` to expose a text-friendly HTTP surface for the Textual TUI (`explorer/aion_explorer.py`). A convenience launcher script can point w3m/lynx at the rendered dashboard.
+
+### Webhooks & Workers
+The FastAPI control plane now includes `/api/webhooks/{source}` with HMAC verification, IP allowlists, idempotency, and a background worker loop that routes events such as `github.push` and `odoo.invoice.paid` to simulated modules. Recent activity is visible via `/api/jobs`.

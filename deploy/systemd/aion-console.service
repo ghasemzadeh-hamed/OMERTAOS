@@ -1,0 +1,15 @@
+[Unit]
+Description=AION Console
+After=network.target aion-control.service
+
+[Service]
+User=aion
+WorkingDirectory=/opt/aionos/console
+ExecStart=/usr/bin/npm start -- --host 0.0.0.0 --port 3000
+Restart=always
+RestartSec=3
+StandardOutput=append:/var/log/aionos/console.log
+StandardError=append:/var/log/aionos/console.err
+
+[Install]
+WantedBy=multi-user.target
