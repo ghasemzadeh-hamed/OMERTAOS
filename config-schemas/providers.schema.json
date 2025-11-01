@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Providers Configuration",
+  "type": "object",
+  "properties": {
+    "llm_providers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "kind", "base_url", "models"],
+        "properties": {
+          "name": {"type": "string"},
+          "kind": {"type": "string"},
+          "base_url": {"type": "string", "format": "uri"},
+          "models": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "api_key": {"type": "string"},
+          "healthcheck": {
+            "type": "object",
+            "properties": {
+              "path": {"type": "string"},
+              "timeout_ms": {"type": "integer", "minimum": 0}
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "router": {
+      "type": "object",
+      "properties": {
+        "default_policy": {"type": "string"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

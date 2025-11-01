@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Router Policy",
+  "type": "object",
+  "required": ["default", "rules"],
+  "properties": {
+    "default": {"type": "string"},
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["match", "route", "provider", "model"],
+        "properties": {
+          "match": {"type": "object"},
+          "route": {"type": "string"},
+          "provider": {"type": "string"},
+          "model": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "budgets": {"type": "object"}
+  },
+  "additionalProperties": false
+}
