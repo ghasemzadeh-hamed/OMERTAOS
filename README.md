@@ -12,7 +12,7 @@
 
 Build, route, and scale AI agents with a production‑ready operating system. AION‑OS ships with a modular kernel, a privacy‑first policy router, and a real‑time Glass UI so teams can ship and manage agents anywhere.
 
-[⭐ Sponsor on GitHub](#) · [💸 Donate TRX (TRON)](#donate-trx) · **FA ⭢ [فارسی](#-introducing-aion-os-fa)**
+· **FA ⭢ [فارسی](#-introducing-aion-os-fa)**
 
 ---
 
