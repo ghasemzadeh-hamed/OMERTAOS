@@ -60,7 +60,7 @@ def submit(p: SubmitPayload):
             cfg.setdefault("gateway", {})
             cfg["gateway"].update({"port": port, "apiKey": apiKey})
 
-        # finalize: هیچ تغییری اینجا لازم نیست؛ در /apply اعمال می‌شود
+        # finalize: defer console/admin provisioning to /apply handler
 
         with open(config_path, "w", encoding="utf-8") as f:
             yaml.safe_dump(cfg, f, allow_unicode=True, sort_keys=False)
@@ -79,7 +79,7 @@ def render_env_from_yaml(cfg: dict) -> str:
     out.append(f"GATEWAY_API_KEY={cfg.get('gateway',{}).get('apiKey','')}")
     out.append(f"CONTROL_HTTP_PORT={cfg.get('control',{}).get('httpPort',8000)}")
     out.append(f"OPENAI_API_KEY={cfg.get('models',{}).get('openaiApiKey','')}")
-    # TODO: سایر نگاشت‌ها (Redis/Qdrant/MinIO/DB/Telemetry) بر اساس env های موجود پروژه
+    # TODO: expose Redis/Qdrant/MinIO/DB/Telemetry env rendering when needed
     return "\n".join(out) + "\n"
 
 @router.post("/apply")
@@ -88,22 +88,22 @@ def apply():
         with open(_config_path(), "r", encoding="utf-8") as f:
             cfg = yaml.safe_load(f) or {}
 
-        # 1) تولید .env از YAML (برای Control یا ریشه‌ی ریپو—بسته به ساختار فعلی)
+        # 1) render .env from YAML (control/gateway/console)
         env_text = render_env_from_yaml(cfg)
         with open(ENV_OUT, "w", encoding="utf-8") as f:
             f.write(env_text)
 
-        # 2) ساخت ادمین (در صورت وجود اسکریپت/Endpoint داخلی—در این نسخه به‌صورت نمادین)
+        # 2) Optionally invoke provisioning endpoints/scripts here
         # subprocess.run(["python","/app/scripts/create_admin.py", cfg["admin"]["email"], cfg["admin"]["password"]], check=False)
 
-        # 3) پاک کردن رمز از YAML و اتمام Onboarding
+        # 3) scrub secrets from YAML for post-onboarding state
         if "admin" in cfg and "password" in cfg["admin"]:
             cfg["admin"]["password"] = ""
         cfg["onboardingComplete"] = True
         with open(_config_path(prefer_existing=False), "w", encoding="utf-8") as f:
             yaml.safe_dump(cfg, f, allow_unicode=True, sort_keys=False)
 
-        # 4) ری‌استارت سرویس‌ها (Dev: اختیاری؛ Prod: بر اساس orchestrator)
+        # 4) In production you may restart orchestrators or services here
         # if os.getenv("IN_DOCKER","1") == "1":
         #     subprocess.run(["/usr/bin/docker","compose","restart"], check=False)
 

@@ -11,6 +11,6 @@ else
   exit 1
 fi
 
-echo "Stopping and removing AION-OS Docker stack…"
+echo "Stopping and removing AION-OS Docker stack..."
 docker compose down -v
-echo "✅ stack down & volumes removed."
+echo "AION-OS stack down and volumes removed."

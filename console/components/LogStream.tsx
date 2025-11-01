@@ -32,7 +32,7 @@ export function LogStream({ endpoint }: Props) {
 
   return (
     <motion.div className="glass-card max-h-72 overflow-auto p-4 text-xs text-emerald-200" layout>
-      {lines.length === 0 ? 'Waiting for logs…' : lines.map((line, index) => <div key={index}>{line}</div>)}
+      {lines.length === 0 ? 'Waiting for logs...' : lines.map((line, index) => <div key={index}>{line}</div>)}
     </motion.div>
   );
 }

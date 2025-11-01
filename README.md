@@ -76,6 +76,17 @@ Tests/      Unit, integration, e2e, and load profiles
 
 ## Quick Start
 
+### Windows Quick Start
+
+On Windows (Admin PowerShell):
+
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install_all_win.ps1
+```
+
+> Codebase note: all code and configuration files are ASCII-only. Language packs such as `fa-IR` can be installed at the end of
+> the Windows bootstrap script or enabled later from the Console settings.
+
 ### A) Linux Quick Install Wizard
 
 Bootstrap a complete local or remote (cloud VM) deployment with the Bash wizard. It prepares config, seeds defaults, and launches Docker Compose with Ollama ready for quick experiments.

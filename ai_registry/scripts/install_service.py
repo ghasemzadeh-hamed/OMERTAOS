@@ -80,23 +80,23 @@ def install(service_name: str, approve: bool, manifest_root: Path, install_root:
 
     with tempfile.TemporaryDirectory() as tmpdir:
         archive_path = Path(tmpdir) / f"{service_name}.pkg"
-        print(f"📦 Downloading {service_name} from {url} ...")
+        print(f"Downloading {service_name} from {url} ...")
         _download(url, archive_path)
 
         if expected_sha:
-            print("🔐 Verifying SHA-256 checksum ...")
+            print("Verifying SHA-256 checksum ...")
             if not _verify_sha256(archive_path, expected_sha):
                 raise InstallError("Integrity check failed (SHA-256 mismatch).")
-            print("✅ Integrity verified.")
+            print("Integrity verified.")
         else:
-            print("⚠️  No integrity information present in manifest. Skipping verification.")
+            print("Warning: no integrity information in manifest. Skipping verification.")
 
         target_dir = install_root / service_name
-        print(f"📂 Installing into {target_dir} ...")
+        print(f"Installing into {target_dir} ...")
         _extract(archive_path, target_dir)
 
     _update_registry(service_name, target_dir)
-    print(f"✅ {service_name} installed successfully!")
+    print(f"{service_name} installed successfully!")
     return target_dir
 
 
@@ -121,10 +121,10 @@ def main(argv: Iterable[str] | None = None) -> int:
     try:
         install(args.service, args.approve, args.manifest_root, args.install_root)
     except InstallError as exc:
-        print(f"❌ {exc}")
+        print(f"ERROR: {exc}")
         return 1
     except Exception as exc:  # pragma: no cover
-        print(f"❌ Unexpected error: {exc}")
+        print(f"ERROR: Unexpected error: {exc}")
         return 1
     return 0
 

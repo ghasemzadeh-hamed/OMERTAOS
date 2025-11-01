@@ -105,14 +105,14 @@ class ControlAPI:
         return self._request("POST", "/api/modules", json=definition)
 
 
-HELP_TEXT = """فرمان‌های پشتیبانی‌شده:
-  help                               نمایش این راهنما
-  list providers|modules|datasources لیست منابع از کنترل
+HELP_TEXT = """Commands:
+  help
+  list providers|modules|datasources
   add provider <name> key=... [kind=local|api] [base_url=...]
   add ds <name> kind=postgres dsn=postgres://... [readonly=true]
   set router policy=<default|auto> [budget=200] [failover=on|off]
-  reload router                      بارگذاری مجدد سیاست مسیردهی
-  test ds <name>                     اجرای تست اتصال دیتاسورس
+  reload router
+  test ds <name>
 """
 
 
@@ -129,7 +129,7 @@ class CommandProcessor:
         try:
             parts = shlex.split(command)
         except ValueError as exc:  # unmatched quotes etc.
-            return f"❌ خطا در خواندن فرمان: {exc}"
+            return f"Parse error: {exc}"
         if not parts:
             return ""
         action = parts[0].lower()
@@ -148,50 +148,50 @@ class CommandProcessor:
                 return self._handle_set_router(parts[2:])
             if action == "reload" and len(parts) > 1 and parts[1].lower() == "router":
                 self.api.reload_router_policy()
-                return "🔄 سیاست مسیردهی مجدداً بارگذاری شد."
+                return "Router reloaded."
             if action == "test" and len(parts) > 2 and parts[1].lower() in {"ds", "datasource"}:
                 name = parts[2]
                 result = self.api.test_data_source(name)
-                return f"🧪 نتیجهٔ تست دیتاسورس {name}: {json.dumps(result, ensure_ascii=False)}"
-            return f"⚠️ فرمان ناشناخته. `help` را برای فهرست دستورها وارد کنید."
+                return f"Test result for {name}: {json.dumps(result, ensure_ascii=False)}"
+            return "Unknown command. Type `help` for usage."
         except ControlAPIError as exc:
             detail = self._format_error(exc)
-            return f"❌ خطا از API: {detail}"
+            return f"Control API error: {detail}"
 
     def _handle_list(self, what: str) -> str:
         what = what.lower()
         if what in {"providers", "provider"}:
             providers = self.api.list_providers()
             if not providers:
-                return "ℹ️ هیچ Provider فعالی یافت نشد."
-            lines = ["📡 Providers:"]
+                return "No providers found."
+            lines = ["Providers:"]
             for provider in providers:
                 lines.append(self._format_summary(provider, ["name", "kind", "status"]))
             return "\n".join(lines)
         if what in {"modules", "module"}:
             modules = self.api.list_modules()
             if not modules:
-                return "ℹ️ ماژولی ثبت نشده است."
-            lines = ["🧩 Modules:"]
+                return "No modules found."
+            lines = ["Modules:"]
             for module in modules:
                 lines.append(self._format_summary(module, ["name", "version", "status"]))
             return "\n".join(lines)
         if what in {"datasources", "datasource", "ds"}:
             data_sources = self.api.list_data_sources()
             if not data_sources:
-                return "ℹ️ هیچ Data Source فعالی وجود ندارد."
-            lines = ["🗄️ Data Sources:"]
+                return "No data sources found."
+            lines = ["Data Sources:"]
             for ds in data_sources:
                 lines.append(self._format_summary(ds, ["name", "kind", "status"]))
             return "\n".join(lines)
-        return "⚠️ نوع لیست پشتیبانی نمی‌شود."
+        return "Unsupported list target."
 
     def _handle_add_provider(self, args: Iterable[str]) -> str:
         args = list(args)
         params = self._consume_params(args)
         name = params.pop("name", args[0] if args else None)
         if not name:
-            return "⚠️ نام Provider مشخص نشده است (name=...)."
+            return "Provider name is required (name=...)."
         definition: Dict[str, Any] = {
             "name": name,
             "kind": params.pop("kind", "api" if "api_key" in params else "local"),
@@ -208,20 +208,20 @@ class CommandProcessor:
         if config:
             definition["config"] = config
         created = self.api.create_provider(definition)
-        return f"✅ Provider `{name}` ثبت شد: {json.dumps(created, ensure_ascii=False)}"
+        return f"Provider `{name}` created: {json.dumps(created, ensure_ascii=False)}"
 
     def _handle_add_datasource(self, args: Iterable[str]) -> str:
         args = list(args)
         params = self._consume_params(args)
         name = params.pop("name", args[0] if args else None)
         if not name:
-            return "⚠️ نام دیتاسورس مشخص نشده است (name=...)."
+            return "Data source name is required (name=...)."
         kind = params.pop("kind", None)
         if not kind:
-            return "⚠️ نوع دیتاسورس (kind=...) اجباری است."
+            return "Data source kind is required (kind=...)."
         definition: Dict[str, Any] = {"name": name, "kind": kind, "config": params}
         created = self.api.create_data_source(definition)
-        return f"✅ دیتاسورس `{name}` اضافه شد: {json.dumps(created, ensure_ascii=False)}"
+        return f"Data source `{name}` created: {json.dumps(created, ensure_ascii=False)}"
 
     def _handle_set_router(self, args: Iterable[str]) -> str:
         args = list(args)
@@ -235,7 +235,7 @@ class CommandProcessor:
         if isinstance(failover, str):
             payload.setdefault("budgets", {})["failover"] = failover.lower() in {"on", "true", "1", "yes"}
         response = self.api.set_router_policy(payload)
-        return f"✅ سیاست مسیردهی به‌روزرسانی شد: {json.dumps(response, ensure_ascii=False)}"
+        return f"Router policy updated: {json.dumps(response, ensure_ascii=False)}"
 
     def _format_error(self, exc: ControlAPIError) -> str:
         if exc.response is None:
@@ -249,7 +249,7 @@ class CommandProcessor:
                 parts.append(f"{key}={item[key]}")
         if not parts:
             return json.dumps(item, ensure_ascii=False)
-        return " • ".join(parts)
+        return " ".join(parts)
 
     def _consume_params(self, args: Iterable[str]) -> Dict[str, Any]:
         params: Dict[str, Any] = {}

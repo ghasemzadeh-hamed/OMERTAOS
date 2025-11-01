@@ -32,7 +32,7 @@ class AIRouter:
 
     def route(self, task: Dict[str, Any], messages: List[Dict[str, str]]) -> Dict[str, Any]:
         started = time.time()
-        # نسخهٔ ساده: همیشه اول لوکال
+        # Route locally for now; remote routing can be enabled via config
         output = self.local.chat(messages, stream=False)
         latency_ms = int((time.time() - started) * 1000)
         return {

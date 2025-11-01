@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "🧠 AION-OS Interactive Installer (Native, no Docker)"
+echo "AION-OS Interactive Installer (Native, no Docker)"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_DIR"
 
@@ -105,7 +105,7 @@ GOOGLE_CLIENT_SECRET=
 EOF_ENV
 
 # ---- 6) Python Control setup
-echo ">> Setting up Control (FastAPI)…"
+echo ">> Setting up Control (FastAPI)..."
 cd "$REPO_DIR/control"
 python3 -m venv .venv
 . .venv/bin/activate
@@ -127,7 +127,7 @@ echo "$UVICORN_APP" > .uvicorn_app
 deactivate
 
 # ---- 7) Gateway (Node)
-echo ">> Setting up Gateway (Node)…"
+echo ">> Setting up Gateway (Node)..."
 cd "$REPO_DIR/gateway"
 if [ -f package-lock.json ] || [ -f package.json ]; then
   su - "$SUDO_USER" -c "cd '$REPO_DIR/gateway' && . \\$HOME/.nvm/nvm.sh && npm ci || npm install"
@@ -135,7 +135,7 @@ if [ -f package-lock.json ] || [ -f package.json ]; then
 fi
 
 # ---- 8) Console (Next.js)
-echo ">> Building Console (Next.js)…"
+echo ">> Building Console (Next.js)..."
 cd "$REPO_DIR/console" 2>/dev/null || cd "$REPO_DIR/web" 2>/dev/null || mkdir -p "$REPO_DIR/console" && cd "$REPO_DIR/console"
 if [ -f package.json ]; then
   su - "$SUDO_USER" -c "cd '$PWD' && . \\$HOME/.nvm/nvm.sh && npm ci || npm install"
@@ -143,7 +143,7 @@ if [ -f package.json ]; then
 fi
 
 # ---- 9) systemd services
-echo ">> Creating systemd services…"
+echo ">> Creating systemd services..."
 cat > /etc/systemd/system/aionos-control.service <<SERVICE
 [Unit]
 Description=AIONOS Control (FastAPI)
@@ -191,7 +191,7 @@ systemctl daemon-reload
 systemctl enable aionos-control aionos-gateway aionos-console
 systemctl restart aionos-control aionos-gateway aionos-console
 
-echo "✅ Done."
+echo "Done."
 echo "Gateway: http://${DOMAIN}:${GATEWAY_PORT}   (set via AION_GATEWAY_PORT)"
 echo "Control: http://${DOMAIN}:${CONTROL_HTTP_PORT}/healthz"
 echo "Console: http://${DOMAIN}:${UI_PORT}"

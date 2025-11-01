@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 import httpx
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
-VLLM_HOST = os.getenv("VLLM_HOST", "http://127.0.0.1:8008")  # از docker-compose.vllm.yml
+VLLM_HOST = os.getenv("VLLM_HOST", "http://127.0.0.1:8008")  # default from docker-compose.vllm.yml
 
 
 class LocalLLM:

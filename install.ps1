@@ -3,12 +3,12 @@ $ErrorActionPreference = "Stop"
 function Require-Cmd {
   param([string]$name)
   if (-not (Get-Command $name -ErrorAction SilentlyContinue)) {
-    Write-Host "❌ ابزار '$name' پیدا نشد. لطفاً نصبش کن و دوباره اجرا کن." -ForegroundColor Red
+    Write-Host "ERROR: Required command '$name' was not found. Please install it and re-run this script." -ForegroundColor Red
     exit 1
   }
 }
 
-Write-Host "🚀 AION-OS – Windows Installer (AIONOS branch)" -ForegroundColor Cyan
+Write-Host "AION-OS Windows Installer (AIONOS branch)" -ForegroundColor Cyan
 
 Require-Cmd git
 Require-Cmd docker
@@ -16,17 +16,17 @@ Require-Cmd docker
 try {
   $wslv = wsl -l -v 2>$null
   if ($LASTEXITCODE -eq 0) {
-    Write-Host "ℹ️  WSL وضعیت:"; $wslv
+    Write-Host "WSL status:"; $wslv
   }
 } catch {
-  Write-Host "ℹ️  WSL موجود نیست (اختیاری است)."
+  Write-Host "WSL not detected (optional)."
 }
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (Test-Path (Join-Path $scriptDir ".git")) {
   $targetDir = $scriptDir
   Set-Location $targetDir
-  Write-Host "ℹ️  مخزن OMERTAOS در $targetDir پیدا شد؛ همان را استفاده می‌کنیم." -ForegroundColor Yellow
+  Write-Host "Detected OMERTAOS repository at $targetDir; using it." -ForegroundColor Yellow
   try {
     $defaultRepoUrl = git remote get-url origin
   } catch {
@@ -37,38 +37,38 @@ if (Test-Path (Join-Path $scriptDir ".git")) {
   $defaultRepoUrl = "https://github.com/ghasemzadeh-hamed/OMERTAOS.git"
 }
 
-$repoUrl = Read-Host "🔗 Repo URL (enter برای پیشفرض)"
+$repoUrl = Read-Host "Repository URL (press enter for default)"
 if ([string]::IsNullOrWhiteSpace($repoUrl)) { $repoUrl = $defaultRepoUrl }
-$branch  = Read-Host "🌿 Branch (enter برای AIONOS)"
+$branch  = Read-Host "Branch name (press enter for AIONOS)"
 if ([string]::IsNullOrWhiteSpace($branch)) { $branch = "AIONOS" }
 
-$adminUser = Read-Host "👤 نام کاربر ادمین اولیه (مثلاً admin)"
-$adminPass = Read-Host "🔑 پسورد ادمین (حداقل 8 کاراکتر)"
-$uiPort    = Read-Host "🖥️  پورت UI (console) (enter=3000)"
+$adminUser = Read-Host "Initial admin username (example: admin)"
+$adminPass = Read-Host "Initial admin password (min 8 characters)"
+$uiPort    = Read-Host "Console port (enter=3000)"
 if ([string]::IsNullOrWhiteSpace($uiPort)) { $uiPort = "3000" }
-$gwPort    = Read-Host "🌐 پورت Gateway (enter=8080)"
+$gwPort    = Read-Host "Gateway port (enter=8080)"
 if ([string]::IsNullOrWhiteSpace($gwPort)) { $gwPort = "8080" }
-$apiPort   = Read-Host "⚙️  پورت FastAPI (enter=8000)"
+$apiPort   = Read-Host "FastAPI port (enter=8000)"
 if ([string]::IsNullOrWhiteSpace($apiPort)) { $apiPort = "8000" }
 
-$pgUser = Read-Host "🗄️  Postgres user (enter=postgres)"
+$pgUser = Read-Host "Postgres user (enter=postgres)"
 if ([string]::IsNullOrWhiteSpace($pgUser)) { $pgUser = "postgres" }
-$pgPass = Read-Host "🔐 Postgres password (enter=postgres)"
+$pgPass = Read-Host "Postgres password (enter=postgres)"
 if ([string]::IsNullOrWhiteSpace($pgPass)) { $pgPass = "postgres" }
-$pgDb   = Read-Host "📚 Postgres DB name (enter=aionos)"
+$pgDb   = Read-Host "Postgres database name (enter=aionos)"
 if ([string]::IsNullOrWhiteSpace($pgDb)) { $pgDb = "aionos" }
 
-$redisUrl = Read-Host "🧠 Redis URL (enter=redis://redis:6379)"
+$redisUrl = Read-Host "Redis URL (enter=redis://redis:6379)"
 if ([string]::IsNullOrWhiteSpace($redisUrl)) { $redisUrl = "redis://redis:6379" }
-$minioUrl = Read-Host "🗂️  MinIO Console URL (enter=http://localhost:9001)"
+$minioUrl = Read-Host "MinIO Console URL (enter=http://localhost:9001)"
 if ([string]::IsNullOrWhiteSpace($minioUrl)) { $minioUrl = "http://localhost:9001" }
 
-$useBigData = Read-Host "📊 فعال‌سازی BigData overlay؟ (y/N)"
+$useBigData = Read-Host "Enable BigData overlay? (y/N)"
 $useBigData = $useBigData.ToLower() -eq "y"
 
 if ($targetDir -ne $scriptDir) {
   if (Test-Path (Join-Path $targetDir ".git")) {
-    Write-Host "ℹ️  پوشه OMERTAOS موجود است؛ pull آخرین تغییرات…" -ForegroundColor Yellow
+    Write-Host "Found existing OMERTAOS folder; pulling latest changes." -ForegroundColor Yellow
     Set-Location $targetDir
     git fetch origin $branch
     git checkout $branch
@@ -88,7 +88,7 @@ function Write-EnvFile {
   $dir = Split-Path $path -Parent
   if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
   $content | Out-File -FilePath $path -Encoding UTF8 -Force
-  Write-Host "✅ wrote $path"
+  Write-Host "Wrote $path"
 }
 
 $FASTAPI_URL = "http://control:$apiPort"
@@ -123,27 +123,27 @@ MINIO_ENDPOINT=http://minio:9000
 Write-EnvFile "control/.env" $controlEnv
 
 if ($useBigData -and (Test-Path "docker-compose.bigdata.yml")) {
-  Write-Host "🟣 Starting with BigData overlay…" -ForegroundColor Magenta
+  Write-Host "Starting with BigData overlay (docker-compose.bigdata.yml)..." -ForegroundColor Magenta
   docker compose -f docker-compose.yml -f docker-compose.bigdata.yml up -d --build
 } elseif ($useBigData -and (Test-Path "bigdata/docker-compose.bigdata.yml")) {
-  Write-Host "🟣 Starting with BigData overlay (bigdata/docker-compose.bigdata.yml)…" -ForegroundColor Magenta
+  Write-Host "Starting with BigData overlay (bigdata/docker-compose.bigdata.yml)..." -ForegroundColor Magenta
   docker compose -f docker-compose.yml -f bigdata/docker-compose.bigdata.yml up -d --build
 } elseif ($useBigData) {
-  Write-Host "⚠️  فایل BigData overlay پیدا نشد؛ حالت اصلی اجرا می‌شود." -ForegroundColor Yellow
+  Write-Host "WARNING: BigData overlay file not found; running base stack." -ForegroundColor Yellow
   docker compose up -d --build
 } else {
-  Write-Host "🟢 Starting core stack…" -ForegroundColor Green
+  Write-Host "Starting core stack..." -ForegroundColor Green
   docker compose up -d --build
 }
 
 Start-Sleep -Seconds 5
-Write-Host "`n📡 Containers:" -ForegroundColor Cyan
+Write-Host "`nContainers:" -ForegroundColor Cyan
 docker ps --format "table {{.Names}}`t{{.Status}}`t{{.Ports}}"
 
-Write-Host "`n🌐 URLs:"
+Write-Host "`nService URLs:"
 Write-Host "UI (console):     http://localhost:$uiPort"
 Write-Host "Gateway:          http://localhost:$gwPort"
 Write-Host "FastAPI (docs):   http://localhost:$apiPort/docs"
-Write-Host "MinIO Console:    $minioUrl (اگر BigData فعال است)"
+Write-Host "MinIO Console:    $minioUrl (only if BigData overlay is enabled)"
 
-Write-Host "`n✅ نصب تمام شد. اگر اولین باره، چند ثانیه صبر کن تا DB seed کامل شود."
+Write-Host "`nSetup complete. If this is the first run, allow the database seed to finish."

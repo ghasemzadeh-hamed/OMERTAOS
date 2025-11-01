@@ -8,7 +8,7 @@ admin:
 console:
   port: 3000
   baseUrl: "http://localhost:3000"
-  locale: "fa"
+  locale: "en"
 
 gateway:
   port: 8080
@@ -28,10 +28,10 @@ models:
   provider: "local"        # local | openai | gemini | ...
   local:
     engine: "ollama"       # ollama | vllm
-    model: "llama3.2:3b"   # شروع سبک؛ بعداً قابل ارتقاء
+    model: "llama3.2:3b"
     ctx: 4096
     temperature: 0.2
-    num_gpu: 0             # 0=CPU (Ollama خودش GPU را هم اتومات هندل می‌کند اگر باشد)
+    num_gpu: 0             # 0=CPU (Ollama); set GPU count when supported
   routing:
     mode: "local-first"    # local-first | remote-fallback | hybrid
     budget_ms: 18000

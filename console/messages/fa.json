@@ -1,50 +1,50 @@
 {
   "auth": {
-    "title": "ورود به آيون‌اواس",
-    "email": "ایمیل",
-    "password": "رمز عبور",
-    "submit": "ورود",
-    "signin_google": "ادامه با گوگل",
-    "back_home": "بازگشت به خانه",
-    "loading": "در حال بارگذاری نشست"
+    "title": "Sign in to aionOS",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "signin_google": "Continue with Google",
+    "back_home": "Back to landing",
+    "loading": "Loading session..."
   },
   "nav": {
-    "dashboard": "داشبورد",
-    "projects": "پروژه‌ها",
-    "datasets": "داده‌ست‌ها",
-    "tasks": "وظایف",
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "datasets": "Datasets",
+    "tasks": "Tasks",
     "ci": "CI/CD",
-    "agents": "نماینده‌ها",
-    "policies": "سیاست‌ها",
-    "telemetry": "تله‌متری",
-    "settings": "تنظیمات",
-    "sign_out": "خروج",
-    "command_palette": "فرمان‌ها",
-    "rtl": "تغییر جهت"
+    "agents": "Agents",
+    "policies": "Policies",
+    "telemetry": "Telemetry",
+    "settings": "Settings",
+    "sign_out": "Sign out",
+    "command_palette": "Command palette",
+    "rtl": "Toggle RTL"
   },
   "dashboard": {
-    "welcome": "خوش آمدید",
-    "active_tasks": "وظایف فعال",
-    "latency": "تاخیر P95",
-    "budget": "مصرف بودجه",
-    "success": "نرخ موفقیت"
+    "welcome": "Welcome back",
+    "active_tasks": "Active tasks",
+    "latency": "P95 latency",
+    "budget": "Budget usage",
+    "success": "Success rate"
   },
   "tasks": {
-    "create": "ایجاد وظیفه",
-    "intent": "هدف",
-    "params": "پارامترها",
-    "submit": "ارسال وظیفه",
-    "status": "وضعیت",
-    "streaming": "به‌روزرسانی زنده",
-    "rate_limited": "محدودیت نرخ فعال است. دوباره تلاش کنید.",
-    "privacy": "حریم خصوصی",
-    "preferred_engine": "موتور ترجیحی"
+    "create": "Create task",
+    "intent": "Intent",
+    "params": "Parameters",
+    "submit": "Submit task",
+    "status": "Status",
+    "streaming": "Streaming updates",
+    "rate_limited": "Rate limit reached. Please retry soon.",
+    "privacy": "Privacy mode",
+    "preferred_engine": "Preferred engine"
   },
   "policies": {
-    "title": "ویرایشگر سیاست",
-    "save": "ذخیره",
-    "reset": "بازنشانی",
-    "success": "سیاست با موفقیت ذخیره شد",
-    "error": "ذخیره سیاست شکست خورد"
+    "title": "Policy editor",
+    "save": "Save",
+    "reset": "Reset",
+    "success": "Policy saved successfully",
+    "error": "Failed to save policy"
   }
 }
