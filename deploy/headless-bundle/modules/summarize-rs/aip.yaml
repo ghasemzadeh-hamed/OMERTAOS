@@ -1,0 +1,29 @@
+apiVersion: aip/v1
+kind: Module
+metadata:
+  name: summarize-rs
+  version: 0.3.2
+security:
+  sandbox: process
+  signature:
+    cosign_pubkey: /etc/aionos/keys/cosign.pub
+runtime:
+  entry:
+    type: grpc
+    addr: 127.0.0.1:7011
+    healthcheck: /health
+io:
+  input:
+    type: json
+    schema:
+      text:
+        type: string
+        maxLength: 20000
+  output:
+    type: json
+    schema:
+      summary:
+        type: string
+observability:
+  timeout_ms: 60000
+  log_level: info

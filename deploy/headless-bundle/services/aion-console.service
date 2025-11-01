@@ -1,0 +1,16 @@
+[Unit]
+Description=AION Console (Workers)
+After=network.target aion-control.service
+
+[Service]
+User=aion
+EnvironmentFile=/home/aion/.aion.env
+WorkingDirectory=/opt/aionos/console
+ExecStart=/opt/aionos/console/bin/aion-console --config /etc/aionos/config/providers.yaml
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/aionos/console.log
+StandardError=append:/var/log/aionos/console.err
+
+[Install]
+WantedBy=multi-user.target
