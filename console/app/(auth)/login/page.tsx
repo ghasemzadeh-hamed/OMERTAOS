@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import GlassCard from '@/components/GlassCard';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function LoginPage() {
 
     const callbackUrl = searchParams.get('callbackUrl') ?? '/dashboard';
     const result = await signIn('credentials', {
-      email,
+      identifier,
       password,
       redirect: false,
       callbackUrl,
@@ -31,7 +31,7 @@ export default function LoginPage() {
       return;
     }
 
-    alert('Invalid email or password');
+    alert('Invalid username or password');
   };
 
   return (
@@ -40,11 +40,11 @@ export default function LoginPage() {
         <h1 className="text-2xl font-semibold mb-6">Sign in</h1>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm mb-1">Email</label>
+            <label className="block text-sm mb-1">Username or Email</label>
             <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              type="text"
+              value={identifier}
+              onChange={(event) => setIdentifier(event.target.value)}
               className="w-full bg-white/10 border border-white/20 rounded-lg p-3 outline-none focus:ring-2 focus:ring-white/30"
               required
             />

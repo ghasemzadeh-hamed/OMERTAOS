@@ -19,9 +19,9 @@ const STEPS: Step[] = [
   },
   {
     id: "admin",
-    prompt: "یک ادمین بسازیم: ایمیل و گذرواژهٔ امن را وارد کن.",
+    prompt: "یک ادمین بسازیم: نام کاربری (یا ایمیل) و گذرواژهٔ امن را وارد کن.",
     fields: [
-      { key: "email", label: "ایمیل ادمین", type: "text" },
+      { key: "email", label: "نام کاربری / ایمیل ادمین", type: "text" },
       { key: "password", label: "گذرواژه", type: "password" },
     ],
   },

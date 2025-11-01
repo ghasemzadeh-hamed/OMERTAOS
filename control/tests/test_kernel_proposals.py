@@ -61,10 +61,10 @@ def test_submit_and_list_proposals() -> None:
 def test_approval_and_apply_flow() -> None:
     submit_proposal(ProposalRequest(**_proposal_payload()))
 
-    approve = approve_proposal("kp_123", AdminActionRequest(actor="admin@example.com"))
+    approve = approve_proposal("kp_123", AdminActionRequest(actor="admin@localhost"))
     assert approve["status"] == "APPROVED"
 
-    payload = apply_now("kp_123", AdminActionRequest(actor="admin@example.com"))
+    payload = apply_now("kp_123", AdminActionRequest(actor="admin@localhost"))
     assert payload["status"] == "APPLIED"
     assert payload["before_metrics"]["latency_p95_ms"] > payload["after_metrics"]["latency_p95_ms"]
     assert payload["canary_plan"]["percent"] == 30
@@ -73,7 +73,7 @@ def test_approval_and_apply_flow() -> None:
 def test_reject_requires_reason() -> None:
     submit_proposal(ProposalRequest(**_proposal_payload({"proposal_id": "kp_456"})))
     with pytest.raises(Exception):
-        reject_proposal("kp_456", AdminActionRequest(actor="admin@example.com"))
+        reject_proposal("kp_456", AdminActionRequest(actor="admin@localhost"))
 
 
 def test_ttl_expiry_marks_proposal_expired() -> None:
