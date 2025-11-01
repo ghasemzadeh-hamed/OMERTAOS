@@ -12,7 +12,7 @@ except ImportError:  # pragma: no cover - optional dependency
 
 from jsonschema import Draft7Validator
 
-SCHEMA_DIR = Path(__file__).resolve().parents[2] / "config-schemas"
+SCHEMA_DIR = Path(__file__).resolve().parents[3] / "config-schemas"
 
 
 class BundleValidator:

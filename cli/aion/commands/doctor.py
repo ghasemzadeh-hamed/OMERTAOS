@@ -7,10 +7,10 @@ from ..services.doctor import DoctorService
 
 
 def register(app: typer.Typer) -> None:
-    doctor_app = typer.Typer(help="Run health diagnostics against the control API")
-
-    @doctor_app.command()
-    def doctor(verbose: bool = typer.Option(False, "--verbose", help="Verbose output.")) -> None:
+    @app.command("doctor", help="Run health diagnostics against the control API")
+    def doctor_command(
+        verbose: bool = typer.Option(False, "--verbose", help="Verbose output."),
+    ) -> None:
         service = DoctorService(verbose=verbose)
         ok, report = service.run()
         if ok:
@@ -19,8 +19,6 @@ def register(app: typer.Typer) -> None:
             typer.secho("Issues detected", fg=typer.colors.RED)
         typer.echo(report)
         raise typer.Exit(code=0 if ok else 1)
-
-    app.add_typer(doctor_app, name="doctor")
 
 
 __all__ = ["register"]

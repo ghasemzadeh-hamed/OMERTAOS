@@ -2,14 +2,15 @@
 set -euo pipefail
 PORT="${AION_EXPLORER_PORT:-3030}"
 API="${AION_API:-http://127.0.0.1:8001}"
-TOKEN="${AION_TOKEN:-$(PYTHONPATH=cli python -m aion.cli auth token --once --ttl 5m)}"
-mkdir -p /var/log/aionos
-nohup PYTHONPATH=cli python -m aion.cli tui-serve serve --port "$PORT" --api "$API" --token "$TOKEN" >/var/log/aionos/explorer.log 2>&1 &
-URL="http://127.0.0.1:$PORT/?token=$TOKEN"
-if command -v w3m >/dev/null 2>&1; then
-  exec w3m "$URL"
-elif command -v lynx >/dev/null 2>&1; then
-  exec lynx "$URL"
+if command -v aion >/dev/null 2>&1; then
+  CLI_BIN="aion"
 else
-  echo "Open $URL (install w3m/lynx for in-terminal browsing)"
+  CLI_BIN="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/aion"
 fi
+TOKEN="${AION_TOKEN:-$($CLI_BIN auth token --once --ttl 5m)}"
+mkdir -p /var/log/aionos
+nohup $CLI_BIN tui-serve --port "$PORT" --api "$API" --token "$TOKEN" >/var/log/aionos/explorer.log 2>&1 &
+URL="http://127.0.0.1:$PORT/?token=$TOKEN"
+if command -v w3m >/dev/null; then exec w3m "$URL";
+elif command -v lynx >/dev/null; then exec lynx "$URL";
+else echo "Open $URL (install w3m/lynx for in-terminal browsing)"; fi
