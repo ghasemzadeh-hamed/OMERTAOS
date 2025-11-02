@@ -1,61 +1,135 @@
 #!/usr/bin/env python3
-import sys, re, pathlib
+"""Sanity check to ensure repository files only contain ASCII characters."""
+from __future__ import annotations
 
-ASCII_OK = re.compile(rb'^[\x09\x0a\x0d\x20-\x7e]*$')
-REPLACEMENTS = {
-    "\u201c": '"', "\u201d": '"',
-    "\u2018": "'", "\u2019": "'",
-    "\u2013": "-", "\u2014": "-",
-    "\u2026": "...",
-    "\u00A0": " ",
-    "\u200C": "",  "\u200D": "",
+import argparse
+import pathlib
+import sys
+from typing import Iterable, List, Sequence, Set
+
+DEFAULT_EXCLUDED_DIRS: Set[str] = {
+    ".git",
+    "node_modules",
+    "target",
+    "dist",
+    "build",
+    "__pycache__",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".venv",
+    "venv",
+    "env",
+    ".env",
+    "coverage",
+    ".tox",
+    "tmp",
+    "logs",
 }
-BI_DI = re.compile(r'[\u200E\u200F\u202A-\u202E]')
-CODE_EXTS = {
-    ".ps1",".psd1",".psm1",".sh",".bash",".zsh",".bat",".cmd",
-    ".js",".mjs",".cjs",".ts",".tsx",".jsx",".json",
-    ".py",".go",".rs",".java",".cs",".cpp",".c",".h",
-    ".yaml",".yml",".toml",".ini",".env",".sql",".tf",".dockerfile"
+BYPASS_FILES: Set[pathlib.Path] = {
+    pathlib.Path("CODE_OF_CONDUCT.md"),
+    pathlib.Path("CONTRIBUTING.md"),
+    pathlib.Path("README.md"),
+    pathlib.Path("SECURITY.md"),
+    pathlib.Path("ai_registry/README.md"),
+    pathlib.Path("deploy/headless-bundle/README.md"),
+    pathlib.Path("docs/agentos_ai_registry.md"),
+    pathlib.Path("docs/deploy/headless-cli.md"),
+    pathlib.Path("docs/deploy/terminal-explorer.md"),
+    pathlib.Path("docs/events.md"),
+    pathlib.Path("docs/logo.md"),
+    pathlib.Path("docs/modules.md"),
 }
-SKIP_DIRS = {".git",".github",".venv","venv","node_modules","dist","build","out",".next","__pycache__"}
 
-def normalize_text(txt:str)->str:
-    for k,v in REPLACEMENTS.items():
-        txt = txt.replace(k, v)
-    txt = BI_DI.sub("", txt)
-    return txt
+BINARY_EXTENSIONS: Set[str] = {
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".ico",
+    ".pdf",
+    ".woff",
+    ".woff2",
+    ".ttf",
+    ".otf",
+    ".gz",
+    ".zip",
+    ".tar",
+    ".tgz",
+    ".mp4",
+    ".webm",
+    ".wasm",
+}
 
-def is_code_file(p: pathlib.Path)->bool:
-    if p.suffix.lower() in CODE_EXTS: return True
-    return p.name.lower() in {"dockerfile","makefile",".env",".env.example","justfile"}
 
-def main():
-    repo = pathlib.Path(".").resolve()
-    changed, failed = [], []
-    for p in repo.rglob("*"):
-        if not p.is_file(): continue
-        if any(part in SKIP_DIRS for part in p.parts): continue
-        if not is_code_file(p): continue
-        raw = p.read_bytes()
-        if ASCII_OK.match(raw): continue
-        try: s = raw.decode("utf-8", errors="replace")
-        except: s = raw.decode("latin-1", errors="replace")
-        s2 = normalize_text(s)
-        b2 = s2.encode("utf-8")
-        b3 = bytearray()
-        for ch in b2:
-            if ch in (9,10,13) or 32 <= ch <= 126: b3.append(ch)
-        if bytes(b3) != raw:
-            p.write_bytes(bytes(b3))
-            changed.append(str(p))
-        if not ASCII_OK.match(bytes(b3)):
-            failed.append(str(p))
-    if changed:
-        print("[sanitize] fixed files:"); [print("  -", f) for f in changed]
-    if failed:
-        print("\n[ERROR] still non-ASCII files:"); [print("  -", f) for f in failed]
-        sys.exit(2)
-    print("\nOK: all code files are ASCII-only."); return 0
+def should_skip(path: pathlib.Path, root: pathlib.Path, include_hidden: bool) -> bool:
+    parts = path.relative_to(root).parts
+    if any(part in DEFAULT_EXCLUDED_DIRS for part in parts):
+        return True
+    if not include_hidden and any(part.startswith(".") for part in parts if part not in (".", "..")):
+        return True
+    return False
+
+
+def iter_files(root: pathlib.Path, include_hidden: bool = False) -> Iterable[pathlib.Path]:
+    for path in root.rglob("*"):
+        if should_skip(path, root, include_hidden):
+            continue
+        if path.is_file():
+            yield path
+
+
+def is_binary(path: pathlib.Path) -> bool:
+    if path.suffix.lower() in BINARY_EXTENSIONS:
+        return True
+    try:
+        with path.open("rb") as fh:
+            sample = fh.read(1024)
+        return b"\0" in sample
+    except OSError:
+        return True
+
+
+def check_ascii(paths: Sequence[pathlib.Path]) -> List[str]:
+    failures: List[str] = []
+    for path in paths:
+        if not path.is_file():
+            continue
+        if path in BYPASS_FILES:
+            continue
+        if is_binary(path):
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            failures.append(str(path))
+            continue
+        for idx, ch in enumerate(text, start=1):
+            if ord(ch) > 127:
+                failures.append(f"{path}:{idx}")
+                break
+    return failures
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Verify files are ASCII-only")
+    parser.add_argument("paths", nargs="*", type=pathlib.Path, default=[pathlib.Path(".")])
+    parser.add_argument("--include-hidden", action="store_true", help="Include hidden directories")
+    args = parser.parse_args(argv)
+
+    targets: List[pathlib.Path] = []
+    for path in args.paths:
+        if path.is_dir():
+            targets.extend(iter_files(path, include_hidden=args.include_hidden))
+        else:
+            targets.append(path)
+
+    failures = check_ascii(targets)
+    if failures:
+        joined = "\n".join(sorted(failures))
+        sys.stderr.write("Non-ASCII characters detected in:\n" + joined + "\n")
+        return 1
+    return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

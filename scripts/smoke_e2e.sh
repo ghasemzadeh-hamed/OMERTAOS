@@ -1,52 +1,76 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ -f .env ]; then
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+if [[ -f .env ]]; then
   # shellcheck disable=SC1091
   source .env >/dev/null 2>&1 || true
 fi
 
-CONTROL_BASE="${CONTROL_BASE_URL:-${NEXT_PUBLIC_CONTROL_BASE:-http://localhost:8000}}"
-AGENT_TOKEN="${AGENT_API_TOKEN:-${NEXT_PUBLIC_AGENT_API_TOKEN:-}}"
-COLLECTION="${AIONOS_RAG_COLLECTION:-demo-docs}"
+GATEWAY_URL="${NEXT_PUBLIC_GATEWAY_URL:-http://localhost:8080}"
+CONTROL_URL="${CONTROL_BASE_URL:-${NEXT_PUBLIC_CONTROL_BASE:-http://localhost:8000}}"
+CONSOLE_URL="${NEXTAUTH_URL:-http://localhost:3000}"
+API_KEY_PAIR="${AION_GATEWAY_API_KEYS:-demo-key:admin|manager}"
+API_KEY="${API_KEY_PAIR%%:*}"
 
-say() {
-  printf '\n%s\n' "$1"
+wait_for() {
+  local name=$1
+  local url=$2
+  echo "Waiting for $name at $url"
+  for i in {1..60}; do
+    if curl -fsS "$url" >/dev/null; then
+      echo "$name healthy"
+      return 0
+    fi
+    sleep 5
+  done
+  echo "$name did not become ready" >&2
+  return 1
 }
 
-say "== Control health check =="
-curl -fsS "$CONTROL_BASE/healthz" || {
-  echo "Control plane is not reachable at $CONTROL_BASE" >&2
+wait_for "control" "$CONTROL_URL/healthz"
+wait_for "gateway" "$GATEWAY_URL/healthz"
+wait_for "console" "$CONSOLE_URL/healthz"
+
+payload='{"intent":"diagnostics","input":{"prompt":"ping"}}'
+response=$(curl -fsS -X POST "$GATEWAY_URL/v1/tasks" \
+  -H "content-type: application/json" \
+  -H "x-api-key: $API_KEY" \
+  -d "$payload")
+
+task_id=$(echo "$response" | jq -r '.taskId' 2>/dev/null || echo "")
+if [[ -z "$task_id" || "$task_id" == "null" ]]; then
+  echo "Failed to create task via gateway" >&2
+  echo "$response"
   exit 1
-}
-
-say "== Agent demo =="
-agent_payload='{"goal":"List demo tasks","context":{"user":"smoke"}}'
-if [ -n "$AGENT_TOKEN" ]; then
-  curl -fsS -X POST "$CONTROL_BASE/agent/run" \
-    -H "content-type: application/json" \
-    -H "x-agent-token: $AGENT_TOKEN" \
-    -d "$agent_payload"
-else
-  curl -fsS -X POST "$CONTROL_BASE/agent/run" \
-    -H "content-type: application/json" \
-    -d "$agent_payload"
 fi
 
-say "== RAG collections before ingest =="
-curl -fsS "$CONTROL_BASE/rag/collections" || true
+echo "Task created: $task_id"
 
-say "== RAG ingest README snippet =="
-readme_sample=$(head -n 120 README.md)
-curl -fsS -X POST "$CONTROL_BASE/rag/ingest" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  --data-urlencode "col=$COLLECTION" \
-  --data-urlencode "text=$readme_sample" || true
+for i in {1..60}; do
+  status_response=$(curl -fsS "$GATEWAY_URL/v1/tasks/$task_id" -H "x-api-key: $API_KEY")
+  status=$(echo "$status_response" | jq -r '.status' 2>/dev/null || echo "unknown")
+  echo "status: $status"
+  if [[ "$status" == "completed" || "$status" == "failed" ]]; then
+    echo "$status_response"
+    break
+  fi
+  sleep 5
+  if [[ $i -eq 60 ]]; then
+    echo "Task did not complete in time" >&2
+    exit 1
+  fi
+done
 
-say "== RAG query demo =="
-query_payload=$(jq -n --arg col "$COLLECTION" --arg q "What is AION-OS?" '{collection:$col,query:$q,limit:3}' 2>/dev/null || printf '{"collection":"%s","query":"%s","limit":3}' "$COLLECTION" "What is AION-OS?" )
-curl -fsS -X POST "$CONTROL_BASE/rag/query" \
-  -H "content-type: application/json" \
-  -d "$query_payload" || true
+echo "Streaming events sample"
+stream_output=$(curl -fsS -N "$GATEWAY_URL/v1/stream/$task_id" -H "x-api-key: $API_KEY" --max-time 5 || true)
+if [[ -z "$stream_output" ]]; then
+  echo "No stream output received" >&2
+  exit 1
+fi
 
-say "Smoke test complete."
+echo "$stream_output" | head -n 5
+
+echo "Smoke test completed"

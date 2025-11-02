@@ -20,5 +20,15 @@ services:
       - "8008:8000"
     volumes:
       - hf-cache:/root/.cache/huggingface
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    networks:
+      - aionos
 volumes:
   hf-cache:
+networks:
+  aionos:
+    external: true
