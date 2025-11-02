@@ -1,4 +1,3 @@
-
 <p align="center">
   <a href="https://github.com/sponsors/ghasemzadeh-hamed" target="_blank" rel="noopener">
     <img src="https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-black?logo=githubsponsors" alt="Sponsor on GitHub">
@@ -11,60 +10,62 @@
 
 # AION‑OS (Agent Web‑OS)
 
-Build, route, and scale AI agents with a production‑ready operating system. AION‑OS ships with a modular kernel, a privacy‑first policy router, and a real‑time Glass UI so teams can ship and manage agents anywhere.
+AION‑OS is an opinionated operating system for AI agents. It combines a secure routing plane, a modular execution kernel, and a
+Glass‑style web console so teams can orchestrate agents with predictable costs, auditable decisions, and real‑time feedback.
 
-· **FA ⭢ [فارسی](#-introducing-aion-os-fa)**
-
----
-
-## Contents
-
-* [Overview](#overview)
-* [Architecture Highlights](#architecture-highlights)
-* [Quick Start](#quick-start)
-
-  * [A) Linux Quick Install Wizard](#a-linux-quick-install-wizard)
-  * [B) Windows Quick Install Wizard](#b-windows-quick-install-wizard)
-  * [C) Docker Compose](#c-docker-compose)
-  * [D) Headless / Server (No Browser)](#d-headless--server-no-browser)
-  * [E) Team / CI (Config‑as‑Code)](#e-team--ci-config-as-code)
-  * [F) Terminal Explorer / TUI](#f-terminal-explorer--tui)
-* [Local LLM Options](#local-llm-options)
-* [Agent & Console Experiences](#agent--console-experiences)
-* [Webhooks (Generic Intake → JSON → Queue)](#webhooks-generic-intake--json--queue)
-* [Knowledge & RAG Demo](#knowledge--rag-demo)
-* [Observability & Big‑Data](#observability--big-data)
-* [Testing Matrix](#testing-matrix)
-* [Repository Layout](#repository-layout)
-* [Security & Privacy](#security--privacy)
-* [Roadmap](#roadmap)
-* [License](#license)
+> 💡 Looking for فارسی؟ [به بخش فارسی بروید](#-معرفی-aion-os-fa).
 
 ---
 
-## Overview
+## Table of contents
 
-AION‑OS is a kernel‑style, distributed OS for AI agents. It combines a secure routing plane, WASM‑enabled execution modules, and a bilingual (FA/EN) Next.js console. The system keeps policies, budgets, and knowledge models in sync so agent workflows remain auditable and reproducible.
-
-**Key capabilities**
-
-* **Multi‑plane architecture:** Gateway (TypeScript/Fastify), Control (FastAPI), Execution (Rust/WASM), Console (Next.js) for clean separation of concerns.
-* **Policy‑aware routing:** `local | api | hybrid` runtime selection with per‑intent budgets, SLAs, and live reload support.
-* **Spec‑driven delivery:** repo‑level standards under `.aionos/` keep planning, implementation, testing, and documentation aligned for every agent.
-* **Knowledge OS:** a project memory graph with citations exposed in the UI and secure IDE/MCP tool hooks.
-* **Realtime operations:** WebSocket/SSE streams for tasks, presence, health, and audit events.
-* **Defense in depth:** RBAC, API keys/OIDC, sandboxed modules, signed manifests, SBOM generation, and privacy policies per intent.
+- [Why AION‑OS?](#why-aion-os)
+- [Platform architecture](#platform-architecture)
+- [Getting started](#getting-started)
+  - [Linux quick install wizard](#linux-quick-install-wizard)
+  - [Windows quick install wizard](#windows-quick-install-wizard)
+  - [Docker Compose](#docker-compose)
+  - [Headless / server usage](#headless--server-usage)
+  - [Config‑as‑code bundles](#config-as-code-bundles)
+  - [Terminal explorer (TUI)](#terminal-explorer-tui)
+- [Local model runtimes](#local-model-runtimes)
+- [Operations toolkit](#operations-toolkit)
+  - [Webhooks](#webhooks)
+  - [Knowledge & RAG demo](#knowledge--rag-demo)
+  - [Edge install (Apache)](#edge-install-apache)
+  - [Observability & big‑data overlay](#observability--big-data-overlay)
+- [Developer workflow](#developer-workflow)
+- [Security & privacy](#security--privacy)
+- [Roadmap](#roadmap)
+- [Donate](#donate)
+- [License](#license)
+- [معرفی فارسی](#-معرفی-aion-os-fa)
 
 ---
 
-## Architecture Highlights
+## Why AION‑OS?
 
-```
+- **Multi‑plane design:** Gateway (TypeScript/Fastify), Control (FastAPI), Execution Modules (Rust/WASM), and Console (Next.js)
+  separate routing, policy, execution, and UX concerns.
+- **Policy‑aware routing:** The router selects `local | api | hybrid` execution paths with per‑intent budgets, SLAs, and privacy
+  guarantees that can be updated without redeploying services.
+- **Spec‑driven delivery:** Repository‑level contracts under `.aionos/` keep planning, implementation, testing, and
+  documentation aligned for each agent workflow.
+- **Knowledge OS:** Project memory with citations, IDE/MCP integrations, and secure knowledge ingestion pipelines.
+- **Realtime operations:** WebSocket/SSE streams expose agent activity, health, and audit trails in the console and CLI tools.
+- **Defense in depth:** RBAC, API keys/OIDC, sandboxed modules, signed manifests, SBOM generation, and privacy policies per
+  intent.
+
+---
+
+## Platform architecture
+
+```text
 Gateway/    Fastify router exposing REST/gRPC/SSE/WS with auth, quotas, idempotency
 Control/    FastAPI orchestration, policy & budget management, storage adapters
 Modules/    Rust/WASM execution units with signing and sandboxing
-Console/    Next.js Glass UI (RTL‑ready) with NextAuth, task board, live logs
-.aionos/    Spec contracts that guide agents (/plan → /doc) with guardrails
+Console/    Next.js Glass UI (RTL ready) with NextAuth, task board, live logs
+.aionos/    Spec contracts guiding planning (/plan) and delivery (/doc) outputs
 Policies/   Intents, model routing, module manifests, privacy definitions
 BigData/    Kafka → ClickHouse, Spark/Flink, Airflow, Superset overlays
 Deploy/     Systemd/K8s, Prometheus/Grafana/OTel configs
@@ -72,50 +73,55 @@ Docs/       Runbooks, diagrams, ADRs
 Tests/      Unit, integration, e2e, and load profiles
 ```
 
+Refer to `docs/` for diagrams and runbooks, and to `deploy/` for production manifests.
+
 ---
 
-## Quick Start
+## Getting started
 
-### Windows Quick Start
+### Prerequisites
 
-On Windows (Admin PowerShell):
+- Docker and Docker Compose (v2+) on the host machine.
+- Git for cloning the repository.
+- Optional: NVIDIA container toolkit for GPU inference, TRON wallet for donations.
 
-```
-powershell -NoProfile -ExecutionPolicy Bypass -File .\install_all_win.ps1
-```
+### Linux quick install wizard
 
-> Codebase note: all code and configuration files are ASCII-only. Language packs such as `fa-IR` can be installed at the end of
-> the Windows bootstrap script or enabled later from the Console settings.
-
-### A) Linux Quick Install Wizard
-
-Bootstrap a complete local or remote (cloud VM) deployment with the Bash wizard. It prepares config, seeds defaults, and launches Docker Compose with Ollama ready for quick experiments.
+Bootstrap a complete local or remote deployment with the Bash wizard. It prepares configuration, seeds defaults, and launches
+Docker Compose with a local model provider preconfigured.
 
 ```bash
 ./install.sh
 # Accepts AIONOS_CONFIG_PATH overrides and can be run over SSH on Linux hosts
 ```
 
-* Runs on Debian/Ubuntu/Fedora class systems with Docker and Docker Compose.
-* Configures `.env`, seeds admin credentials, installs/warms up a local LLM, and opens the onboarding UI when available.
-* Ideal for **local development** or **cloud VMs** where you want the entire stack in one command.
+- Works on Debian/Ubuntu/Fedora class systems with Docker available.
+- Configures `.env`, seeds admin credentials, warms up a local LLM, and opens the onboarding UI when available.
+- Ideal for local development or cloud VMs where you want the entire stack with a single command.
 
-### B) Windows Quick Install Wizard
+### Windows quick install wizard
 
-Use the interactive PowerShell installer for Windows workstations or Windows Server. It guides you through ports, credentials, and optional BigData overlays before launching Docker Compose.
+Use the interactive PowerShell installer for Windows workstations or Windows Server. It guides you through ports, credentials,
+and optional BigData overlays before launching Docker Compose.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File install.ps1
 ```
 
-* Prompts for repo/branch, admin credentials, service ports, and data backends.
-* Supports local or remote Docker (with WSL2) and prints the resulting service URLs.
-* Automatically writes `console/.env`, `gateway/.env`, and `control/.env` based on your answers.
+- Prompts for repository/branch, admin credentials, service ports, and data backends.
+- Supports local or remote Docker (with WSL2) and prints the resulting service URLs.
+- Automatically writes `console/.env`, `gateway/.env`, and `control/.env` using your answers.
 
-### C) Docker Compose
+For a one‑shot bootstrap on Windows, you can also run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install_all_win.ps1
+```
+
+### Docker Compose
 
 ```bash
-# 1) Clone the AIONOS branch
+# 1) Clone the repository
 git clone -b AIONOS --single-branch https://github.com/ghasemzadeh-hamed/OMERTAOS.git
 cd OMERTAOS
 
@@ -131,38 +137,19 @@ docker compose up -d
 docker compose -f bigdata/docker-compose.bigdata.yml up -d
 ```
 
-Once the containers are healthy:
+Once containers are healthy, the default endpoints are:
 
-* Console → [http://localhost:3000](http://localhost:3000)
-* Gateway → [http://localhost:8080](http://localhost:8080)
-* Health endpoints → append `/healthz`
+- Console → <http://localhost:3000>
+- Gateway → <http://localhost:8080>
+- Control API → <http://localhost:8001>
+- Health endpoints → append `/healthz`
 
-**Default console credentials (Quick Start & install.sh):**
+Default console credentials (for install scripts):
 
-* username: `admin` (or email `admin@localhost`)
-* password: `admin`
+- username: `admin` (or email `admin@localhost`)
+- password: `admin`
 
-**Example admin key for experiments:**
-
-```bash
-export AION_GATEWAY_API_KEYS="demo-key:admin|manager"
-```
-
-**Trigger a task via REST:**
-
-```bash
-curl -X POST http://localhost:8080/v1/tasks \
-  -H "X-API-Key: demo-key" -H "Content-Type: application/json" \
-  -d '{"schemaVersion":"1.0","intent":"summarize","params":{"text":"Hello AION-OS!"}}'
-```
-
-**Follow live SSE events:**
-
-```bash
-curl -H "X-API-Key: demo-key" http://localhost:8080/v1/stream/<task_id>
-```
-
-### D) Headless / Server (No Browser)
+### Headless / server usage
 
 ```bash
 # Create admin + seed provider without opening a browser
@@ -174,16 +161,18 @@ aion init --quickstart --no-browser \
 curl -sf http://127.0.0.1:8001/api/health
 ```
 
-### E) Team / CI (Config‑as‑Code)
+### Config‑as‑code bundles
+
+Use atomic bundles for repeatable deployments and CI automation.
 
 ```bash
 aion apply --bundle deploy/bundles/my-config.tgz --atomic --no-browser
 aion doctor --verbose
 ```
 
-**Bundle layout**
+Bundle layout:
 
-```
+```text
 my-config/
   config/            providers.yaml · router.policy.yaml · data-sources.yaml
   modules/           */aip.yaml (+ cosign.pub)
@@ -194,44 +183,22 @@ my-config/
   CHECKSUMS.txt      sha256 sums for integrity
 ```
 
-### F) Terminal Explorer / TUI
+### Terminal explorer (TUI)
 
-* Launch an in‑terminal explorer with a **chat config bot** and text‑friendly UI:
+Launch an in-terminal explorer with a chat‑forward configuration bot and text‑friendly UI.
 
 ```bash
 aion-explorer
-# Opens a text-friendly Explorer (w3m/lynx) or prints local URL to open
+# Opens a text-friendly explorer (w3m/lynx) or prints the local URL to open
 # Tabs: Projects · Providers · Modules · DataSources · Router · Chat · Health · Logs · Admin
 # Keys: ←/→ tabs · Ctrl+S Apply · Ctrl+E Export · Ctrl+J Jobs · q quit
 ```
 
-* Tabs: **Projects · Providers · Modules · DataSources · Router · Chat · Health · Logs · Admin**
-* Keybindings: `←/→` tabs · `Ctrl+S` Apply · `Ctrl+E` Export · `Ctrl+J` Jobs · `q` quit
-
 ---
 
-## Edge Install (Apache, Domain vs Local)
+## Local model runtimes
 
-Run the interactive installer to harden the reverse proxy perimeter. It detects IPv4/IPv6, validates DNS, and wires Apache for WebSocket/SSE aware reverse proxies.
-
-```bash
-make edge-setup
-# Interactive:
-# 1) Domain Mode (SSL) or Local Mode
-# 2) Subdomains or Single-domain paths
-# 3) Email for Let's Encrypt, IPv6 toggle
-# Results: HTTPS vhosts + HSTS (Domain) OR local reverse proxies on 8088/8089/8090
-```
-
-* **Domain mode**: issues Let's Encrypt certificates via HTTP-01, enables `proxy`, `proxy_http`, `proxy_wstunnel`, `http2`, and injects security headers (HSTS, X-Frame-Options, Referrer-Policy) with SSE/WebSocket aware `ProxyPassMatch` rules.
-* **Local mode**: provisions non-TLS proxies bound to `127.0.0.1` on ports `8088`, `8089`, and `8090` for Console, Gateway, and Control respectively.
-* **IPv6**: optional listener when AAAA records exist. The script surfaces mismatched DNS answers so you can update zone files before rerunning.
-
----
-
-## Local LLM Options
-
-**Default (Ollama)**
+### Default (Ollama)
 
 ```bash
 ./install.sh
@@ -240,16 +207,16 @@ make edge-setup
 # Override via: AIONOS_LOCAL_MODEL="llama3.2:8b" ./install.sh
 ```
 
-**GPU (vLLM)**
+### GPU (vLLM)
 
-* Requirements: NVIDIA driver, NVIDIA Container Toolkit, optional `HF_TOKEN`.
+Requirements: NVIDIA driver, NVIDIA Container Toolkit, optional `HF_TOKEN`.
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.vllm.yml up -d --build
-# OpenAI‑compatible endpoint → http://localhost:8008/v1/chat/completions
+# OpenAI compatible endpoint → http://localhost:8008/v1/chat/completions
 ```
 
-**Switching Engines**
+### Switching engines
 
 ```yaml
 # config/aionos.config.yaml
@@ -262,28 +229,21 @@ models:
 
 ---
 
-## Agent & Console Experiences
+## Operations toolkit
 
-* **Agent mode demo:** visit `/agent` on the Console. Configure `NEXT_PUBLIC_CONTROL_BASE` and `NEXT_PUBLIC_AGENT_API_TOKEN`.
-* **Onboarding chat:** `http://localhost:3000/onboarding` seeds the initial admin, model provider, and gateway options (Persian chat wizard). Backend routes live under `/admin/onboarding/*` on the control plane.
-* **Security tips:** guard `/agent/*` & `/admin/onboarding/*` with authentication or private networking. Store secrets with Docker/K8s secrets or SOPS/Vault.
-* **Smoke test:** after the stack is running, `./scripts/smoke_e2e.sh` probes health, agent, and RAG endpoints.
+### Webhooks
 
----
+AION‑OS can normalize inbound webhooks into signed, idempotent JSON envelopes before queuing them for processing.
 
-## Webhooks (Generic Intake → JSON → Queue)
-
-**Endpoint**
-
-```
+```http
 POST /api/webhooks/{source}
-Headers: X-Signature (HMAC‑SHA256), X-Timestamp, Content-Type
+Headers: X-Signature (HMACSHA256), X-Timestamp, Content-Type
 Body:    raw (json | form | xml | binary)
 ```
 
-**Allowed ("authorized") webhooks** must pass: signature/auth, allowlisted source/IP, content‑type/size limits, idempotency token.
+Authorized webhooks must pass signature/auth checks, IP allowlists, content limits, and idempotency tokens.
 
-**Normalization to JSON** (envelope):
+Normalized envelope example:
 
 ```json
 {
@@ -296,9 +256,10 @@ Body:    raw (json | form | xml | binary)
 }
 ```
 
-**Processing**: queued to Redis/Kafka; workers route by `source+event_type` to modules (with retry/backoff & DLQ). **Idempotency** via Redis `SETNX` on `event_id` with TTL.
+Events are queued to Redis/Kafka and routed by `source + event_type` to modules with retry/backoff and DLQ support. Idempotency is
+enforced via Redis `SETNX` on `event_id` with TTL.
 
-**Quick test**
+Quick test:
 
 ```bash
 curl -s -X POST http(s)://<control-host>/api/webhooks/custom-1 \
@@ -307,107 +268,118 @@ curl -s -X POST http(s)://<control-host>/api/webhooks/custom-1 \
   -d '{"event_id":"evt_1","event":"ping","ping":1}'
 ```
 
----
-
-## Knowledge & RAG Demo
-
-**Ingest Markdown/plain‑text into Qdrant**
+### Knowledge & RAG demo
 
 ```bash
+# Ingest Markdown/plain-text into Qdrant
 curl -F "col=aionos-docs" -F "files=@README.md" http://localhost:8000/rag/ingest
-```
 
-**Query the collection**
-
-```bash
+# Query the collection
 curl -X POST http://localhost:8000/rag/query \
   -H "content-type: application/json" \
   -d '{"collection":"aionos-docs","query":"What is AION-OS?","limit":3}'
 ```
 
----
+### Edge install (Apache)
 
-## Observability & Big‑Data
+The interactive installer hardens the reverse proxy perimeter. It detects IPv4/IPv6, validates DNS, and configures Apache for
+WebSocket/SSE aware reverse proxies.
 
-* **Tracing & metrics:** OpenTelemetry instrumentation with Prometheus exporters and curated Grafana dashboards.
-* **Pipeline overlay (optional):** Kafka → ClickHouse ingestion, Spark/Flink jobs, Airflow DAGs, and Superset BI dashboards.
-
----
-
-## Testing Matrix
-
-* **Gateway** → `npm test` (Vitest)
-* **Control** → `pytest`
-* **Modules** → `cargo test`
-* **Console** → Playwright e2e suite
-* **Load** → k6 profiles
-
-The GitHub Actions workflow (`.github/workflows/ci.yml`) keeps these tracks green and additionally lint-checks the **Linux** wizard (`install.sh`), **Windows** wizard (`install.ps1`), and the **Apache edge installer** so the quick-start flows stay CI‑verified across local, cloud, and perimeter modes.
-
----
-
-## Repository Layout
-
-```
-Policies/   Intent routing, model configs, module manifests, privacy rules
-Deploy/     K8s manifests, Prometheus/Grafana/OTel configuration
-Docs/       Architecture diagrams, runbooks, ADRs
-Tests/      Unit, integration, E2E, and load profiles
+```bash
+make edge-setup
+# Interactive prompts:
+# 1) Domain Mode (SSL) or Local Mode
+# 2) Subdomains or single-domain paths
+# 3) Email for Let's Encrypt, IPv6 toggle
+# Results: HTTPS vhosts + HSTS (Domain) OR local reverse proxies on 8088/8089/8090
 ```
 
-Refer to `docs/manual-setup.md` for detailed manual provisioning instructions.
+- **Domain mode:** Issues Let's Encrypt certificates, enables `proxy`, `proxy_http`, `proxy_wstunnel`, `http2`, and injects
+  security headers with SSE/WebSocket aware `ProxyPassMatch` rules.
+- **Local mode:** Provisions non‑TLS proxies bound to `127.0.0.1` on ports `8088`, `8089`, and `8090` for Console, Gateway, and
+  Control respectively.
+- **IPv6:** Optional listener when AAAA records exist. The script surfaces mismatched DNS answers so you can update zone files
+  before rerunning.
+
+### Observability & big‑data overlay
+
+- **Tracing & metrics:** OpenTelemetry instrumentation with Prometheus exporters and curated Grafana dashboards.
+- **Pipeline overlay (optional):** Kafka → ClickHouse ingestion, Spark/Flink jobs, Airflow DAGs, and Superset BI dashboards.
 
 ---
 
-## Security & Privacy
+## Developer workflow
 
-* **Auth:** API keys or OIDC with RBAC roles (admin, manager, user).
-* **Isolation:** sandboxed subprocesses/WASM with resource limits.
-* **Supply chain:** signed modules (Cosign) with SBOM attestation.
-* **Policies:** per‑intent privacy levels (`local‑only`, `allow‑api`, `hybrid`), budget caps, latency targets.
-* **Production tip:** enable **mTLS** for inter‑service gRPC traffic.
+- **Repository layout:**
+
+  ```text
+  Policies/   Intent routing, model configs, module manifests, privacy rules
+  Deploy/     K8s manifests, Prometheus/Grafana/OTel configuration
+  Docs/       Architecture diagrams, runbooks, ADRs
+  Tests/      Unit, integration, E2E, and load profiles
+  ```
+
+- **Manual setup:** Refer to `docs/manual-setup.md` for step-by-step provisioning.
+- **Testing matrix:**
+  - Gateway → `npm test` (Vitest)
+  - Control → `pytest`
+  - Modules → `cargo test`
+  - Console → Playwright E2E suite
+  - Load → `k6` profiles
+
+GitHub Actions (`.github/workflows/ci.yml`) keeps these tracks green and lint-checks the Linux wizard (`install.sh`), Windows wizard
+(`install.ps1`), and the Apache edge installer so the quick-start flows remain CI verified across local, cloud, and perimeter modes.
+
+---
+
+## Security & privacy
+
+- **Auth:** API keys or OIDC with RBAC roles (admin, manager, user).
+- **Isolation:** Sandboxed subprocesses/WASM with resource limits.
+- **Supply chain:** Signed modules (Cosign) with SBOM attestation.
+- **Policies:** Per-intent privacy levels (`local-only`, `allow-api`, `hybrid`), budget caps, and latency targets.
+- **Production tip:** Enable mutual TLS for inter-service gRPC traffic.
 
 ---
 
 ## Roadmap
 
-* IDE/MCP adapters for safe tool/file access.
-* One‑click spec wizard to bootstrap `.aionos/`.
-* Connector pack (webhooks, messaging, IoT).
+- IDE/MCP adapters for safe tool/file access.
+- One-click spec wizard to bootstrap `.aionos/`.
+- Connector pack (webhooks, messaging, IoT).
+
+---
+
+## Donate
+
+**TRON (TRX)**
+
+- Address: `TFF6hgmr5h5fy8sEJS8sLYN81pm4rarkDM`
+- Only send TRX / TRC20 assets to this address.
 
 ---
 
 ## License
 
-Apache‑2.0. See `LICENSE`.
+Apache-2.0. See [`LICENSE`](LICENSE).
 
 ---
 
-## 💸 Donate TRX
+## 🇮🇷 معرفی AION-OS (FA)
 
-**TRON (TRX)**
-
-* Address: `TFF6hgmr5h5fy8sEJS8sLYN81pm4rarkDM`
-
-> Only send TRX / TRC20 assets to this address.
-
----
-
-#-introducing-aion-os-fa
-
-AION‑OS:
-یک سیستم‌عامل ماژولار برای ایجنت‌های هوش مصنوعی است که از هسته‌ی زمان‌بندی، مسیریاب مبتنی بر سیاست، و کنسول شیشه‌ای زنده تشکیل شده است.
+AION‑OS یک سیستم‌عامل ماژولار برای ایجنت‌های هوش مصنوعی است که از هسته‌ی زمان‌بندی، مسیریاب مبتنی بر سیاست و کنسول شیشه‌ای زنده
+تشکیل شده است.
 
 **ویژگی‌ها**
 
-* معماری چندلایه: Gateway (TypeScript/Fastify)، Control (FastAPI)، Modules (Rust/WASM)، Console (Next.js).
-* مسیریابی هوشمند: `local | api | hybrid` با سقف هزینه، SLA، و ریلود آنی.
-* Spec‑Driven: پوشه‌ی `.aionos/` برای استانداردسازی خروجی ایجنت‌ها از برنامه تا تست و مستند.
-* دانش و ابزار امن: پایگاه دانش پروژه با ارجاع در UI و اتصال امن IDE/MCP.
-* Real‑time: استریم زنده‌ی لاگ، وضعیت تسک، حضور کاربران.
-* امنیت: RBAC، کلید/SSO، Sandbox، امضای ماژول‌ها، SBOM.
-* مشاهده‌پذیری: OTel، Prometheus، داشبوردهای Grafana.
-* بیگ‌دیتا (اختیاری): Kafka→ClickHouse، Spark/Flink، Airflow، Superset.
+- معماری چندلایه: Gateway (TypeScript/Fastify)، Control (FastAPI)، Modules (Rust/WASM)، Console (Next.js).
+- مسیریابی هوشمند: `local | api | hybrid` با سقف هزینه، SLA و ریلود آنی.
+- Spec-Driven: پوشه‌ی `.aionos/` برای استانداردسازی خروجی ایجنت‌ها از برنامه تا تست و مستندات.
+- دانش و ابزار امن: پایگاه دانش پروژه با ارجاع در UI و اتصال امن IDE/MCP.
+- Real-time: استریم زنده‌ی لاگ، وضعیت تسک، حضور کاربران.
+- امنیت: RBAC، کلید/SSO، Sandbox، امضای ماژول‌ها، SBOM.
+- مشاهده‌پذیری: OTel، Prometheus، داشبوردهای Grafana.
+- بیگ‌دیتا (اختیاری): Kafka → ClickHouse، Spark/Flink، Airflow، Superset.
 
 **شروع سریع**
 
@@ -416,10 +388,14 @@ AION‑OS:
 3. یک کلید ادمین بسازید و یک Task نمونه (REST/SSE) ارسال کنید.
 
 **امنیت و حریم خصوصی**
+
 RBAC و OIDC، ایزوله‌سازی ماژول‌ها، امضای بسته‌ها، سیاست‌های حریم خصوصی بر اساس Intent. در محیط عملیاتی، mTLS را فعال کنید.
 
 **مشاهده‌پذیری و بیگ‌دیتا**
-ردیابی و متریک‌ها با OTel/Prometheus؛ داشبوردهای آماده در Grafana. در حالت بیگ‌دیتا، جریان‌ها به ClickHouse متصل می‌شوند و وظایف تحلیلی با Spark/Flink و Airflow مدیریت می‌شوند.
+
+ردیابی و متریک‌ها با OTel/Prometheus؛ داشبوردهای آماده در Grafana. در حالت بیگ‌دیتا، جریان‌ها به ClickHouse متصل می‌شوند و
+وظایف تحلیلی با Spark/Flink و Airflow مدیریت می‌شوند.
 
 **مجوز**
-Apache‑2.0.
+
+Apache-2.0.
