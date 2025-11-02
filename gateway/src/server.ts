@@ -15,6 +15,7 @@ import { rateLimitMiddleware } from './middleware/rateLimit.js';
 import { ZodError } from 'zod';
 import type { TaskRequest, TaskRequestInput, TaskResult } from './types.js';
 import { taskRequestSchema } from './types.js';
+import { shutdownTelemetry, startTelemetry } from './telemetry.js';
 
 const app = Fastify({
   logger: true,
@@ -27,6 +28,16 @@ app.register(compress);
 app.register(websocket);
 app.register(fastifySsePlugin);
 app.register(cors, { origin: gatewayConfig.corsOrigins, credentials: true });
+
+app.addHook('onRequest', async (request, reply) => {
+  reply.header('x-request-id', request.id);
+  const correlation = request.headers['x-correlation-id'];
+  if (typeof correlation === 'string') {
+    reply.header('x-correlation-id', correlation);
+  } else {
+    reply.header('x-correlation-id', request.id);
+  }
+});
 
 const controlClient = createControlClient();
 const streamEmitter = new EventEmitter();
@@ -220,6 +231,12 @@ app.setErrorHandler((error, request, reply) => {
 });
 
 export const start = async () => {
+  const telemetryEnabled = await startTelemetry(gatewayConfig.telemetry.serviceName);
+  app.addHook('onClose', async () => {
+    if (telemetryEnabled) {
+      await shutdownTelemetry();
+    }
+  });
   await app.listen({ port: gatewayConfig.port, host: gatewayConfig.host });
   app.log.info(`Gateway listening on ${gatewayConfig.host}:${gatewayConfig.port}`);
   return app;

@@ -2,115 +2,126 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TOOLS_DIR="${ROOT_DIR}/tools"
+CONFIG_DIR="${ROOT_DIR}/config"
+CONFIG_FILE="${CONFIG_DIR}/aionos.config.yaml"
+MODEL_NAME="${AIONOS_LOCAL_MODEL:-llama3.2:3b}"
+NONINTERACTIVE=false
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --noninteractive)
+      NONINTERACTIVE=true
+      shift
+      ;;
+    --model)
+      shift
+      MODEL_NAME="$1"
+      shift
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      exit 1
+      ;;
+  esac
+done
+
 cd "$ROOT_DIR"
 
-# 0) .env 
-if [ ! -f ".env" ]; then
-  cp .env.example .env || true
+if [[ -x "${TOOLS_DIR}/preflight.sh" ]]; then
+  if $NONINTERACTIVE; then
+    "${TOOLS_DIR}/preflight.sh" --noninteractive
+  else
+    "${TOOLS_DIR}/preflight.sh"
+  fi
 fi
 
-# 1) Generate YAML Quick-Start config
-mkdir -p config
-if [ ! -f "config/aionos.config.yaml" ]; then
-  cat > config/aionos.config.yaml <<'YAML'
+if [[ ! -f .env && -f .env.example ]]; then
+  cp .env.example .env
+fi
+
+mkdir -p "$CONFIG_DIR"
+if [[ ! -f "$CONFIG_FILE" ]]; then
+  cat > "$CONFIG_FILE" <<'YAML'
 version: 1
-onboardingComplete: false
-
-admin:
-  email: "admin@localhost"
-  password: "admin"
-
+locale: en-US
 console:
   port: 3000
-  baseUrl: "http://localhost:3000"
-  locale: "en"
-
+  baseUrl: http://localhost:3000
 gateway:
   port: 8080
-  apiKey: ""
-
+  apiKeys:
+    - demo-key:admin|manager
 control:
   httpPort: 8000
   grpcPort: 50051
-
-data:
-  postgres: { host: "postgres", port: 5432, user: "aionos", password: "aionos", db: "aionos" }
-  redis:    { host: "redis", port: 6379 }
-  qdrant:   { host: "qdrant", port: 6333 }
-  minio:    { endpoint: "http://minio:9000", accessKey: "minioadmin", secretKey: "minioadmin", bucket: "aionos" }
-
-models:
-  provider: "local"
-  local:
-    engine: "ollama"
-    model: "llama3.2:3b"
-    ctx: 4096
-    temperature: 0.2
-    num_gpu: 0  # 0=CPU (Ollama); set GPU count when supported
-  routing:
-    mode: "local-first"
-    budget_ms: 18000
-    allow_remote: false
-
-agent:
-  enabled: true
-  allow_ui_tool: false
-  policy:
-    allowed_paths:
-      - "/api/*"
-    allowed_ui_actions:
-      - "click"
-      - "fill"
-      - "press"
-
-security:
-  agent_api_token: ""
-
+storage:
+  postgres:
+    host: postgres
+    port: 5432
+    user: aion
+    password: aion
+    database: aion
+  redis:
+    host: redis
+    port: 6379
+  qdrant:
+    host: qdrant
+    port: 6333
+  minio:
+    endpoint: http://minio:9000
+    accessKey: minio
+    secretKey: miniosecret
+    bucket: aion-raw
 telemetry:
-  otelEnabled: true
-  serviceName: "aionos"
+  otelEnabled: false
+  endpoint: http://localhost:4317
 YAML
 fi
 
-export AIONOS_CONFIG_PATH="${AIONOS_CONFIG_PATH:-$ROOT_DIR/config/aionos.config.yaml}"
+ensure_compose() {
+  local attempt=1
+  local max_attempts=3
+  while (( attempt <= max_attempts )); do
+    if docker compose up -d --build; then
+      return 0
+    fi
+    echo "docker compose failed (attempt ${attempt}/${max_attempts}); retrying..." >&2
+    sleep $((attempt * 5))
+    attempt=$((attempt + 1))
+  done
+  echo "docker compose failed after ${max_attempts} attempts" >&2
+  return 1
+}
 
-# 2)    
-if command -v docker >/dev/null 2>&1; then
-  docker compose up -d --build
-fi
-
-# 3) Install local LLM helpers (Ollama / optional GPU)
-chmod +x scripts/install_local_llm.sh scripts/install_vllm_gpu.sh scripts/smoke_e2e.sh
-export AIONOS_LOCAL_MODEL="${AIONOS_LOCAL_MODEL:-llama3.2:3b}"
-scripts/install_local_llm.sh "$AIONOS_LOCAL_MODEL"
-
-# 4)   
-AGENT_TOKEN=$(head -c 32 /dev/urandom | xxd -p)
-if ! grep -q "^AGENT_API_TOKEN=" .env; then
-  echo "AGENT_API_TOKEN=$AGENT_TOKEN" >> .env
-fi
-export AGENT_API_TOKEN="$(grep ^AGENT_API_TOKEN .env | tail -n1 | cut -d= -f2)"
-
-# 5)    
-echo "Waiting for console (http://localhost:3000) ..."
-for i in {1..90}; do
-  if command -v curl >/dev/null 2>&1 && curl -fsS http://localhost:3000/ >/dev/null; then
-    break
+install_ollama_model() {
+  if command -v ollama >/dev/null 2>&1; then
+    if ollama --version >/dev/null 2>&1; then
+      if ! ollama list | grep -q "${MODEL_NAME}"; then
+        if ! ollama pull "${MODEL_NAME}"; then
+          echo "Warning: ollama pull ${MODEL_NAME} failed" >&2
+        fi
+      fi
+    fi
+  else
+    echo "Ollama not installed; skipping local model pull" >&2
   fi
-  sleep 2
-done
+}
 
-# 6)  
-URL="http://localhost:3000"
-if command -v xdg-open >/dev/null 2>&1; then xdg-open "$URL" || true; fi
-if command -v open >/dev/null 2>&1; then open "$URL" || true; fi
+ensure_compose
+install_ollama_model
 
-cat <<MSG
-AION-OS Quick-Start finished.
-Console: $URL
-Local LLM (Ollama): http://127.0.0.1:11434
-Agent Token saved in .env as AGENT_API_TOKEN=$AGENT_API_TOKEN
+if [[ -x scripts/install_local_llm.sh ]]; then
+  chmod +x scripts/install_local_llm.sh scripts/install_vllm_gpu.sh scripts/smoke_e2e.sh >/dev/null 2>&1 || true
+fi
 
-To launch the optional vLLM GPU profile:
-  docker compose -f docker-compose.yml -f docker-compose.vllm.yml up -d --build
+if ! $NONINTERACTIVE; then
+  cat <<MSG
+OMERTAOS installation complete.
+To launch the stack:
+  docker compose up -d
+
+Run the smoke test:
+  scripts/smoke_e2e.sh
 MSG
+fi

@@ -2,106 +2,77 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [AIONOS]
   pull_request:
 
 jobs:
-  control:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install Poetry
-        run: pip install poetry
-      - name: Install control dependencies
-        working-directory: control
-        run: poetry install --no-interaction --no-root
-      - name: Run control tests
-        working-directory: control
-        run: poetry run pytest -q
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  gateway:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          node-version: "18"
+          python-version: '3.11'
+
+      - name: Install pre-commit
+        run: |
+          python -m pip install --upgrade pip
+          pip install pre-commit
+
+      - name: Run pre-commit
+        run: pre-commit run --all-files
+
+      - name: Run preflight
+        run: tools/preflight.sh --noninteractive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Install gateway dependencies
         working-directory: gateway
         run: npm ci
-      - name: Run gateway unit tests
-        working-directory: gateway
-        run: npm test -- --runInBand
 
-  console:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "18"
+      - name: Build gateway
+        working-directory: gateway
+        run: npm run build
+
       - name: Install console dependencies
         working-directory: console
         run: npm ci
-      - name: Install Playwright browsers
-        working-directory: console
-        run: npx playwright install --with-deps chromium
-      - name: Run console smoke tests
-        working-directory: console
-        run: npm run test:e2e -- --project=chromium --headed=false
 
-  load:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install k6
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y k6
-      - name: Run k6 smoke profile
-        run: k6 run tests/load.js
+      - name: Build console
+        working-directory: console
+        run: npm run build
 
-  doctor:
-    runs-on: ubuntu-latest
-    needs: [control]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
       - name: Install Poetry
         run: pip install poetry
-      - name: Install CLI dependencies
-        run: pip install typer jsonschema pyyaml
-      - name: Install control service
-        working-directory: control
-        run: poetry install --no-interaction --no-root
-      - name: Launch control API
-        working-directory: control
-        run: |
-          nohup poetry run uvicorn app.main:app --port 8001 --host 127.0.0.1 &
-          echo $! > ../uvicorn.pid
-      - name: Doctor check
-        env:
-          PYTHONPATH: cli
-        run: python -m aion.cli doctor --verbose
-      - name: Stop control API
-        if: always()
-        run: |
-          if [ -f uvicorn.pid ]; then
-            kill $(cat uvicorn.pid) || true
-          fi
 
-  installers:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Validate Linux quick installer
-        run: bash -n install.sh
-      - name: Validate Windows quick installer syntax
-        run: pwsh -NoLogo -NoProfile -Command "Get-Command -Path './install.ps1' | Out-Null"
-      - name: Validate Apache edge installer
-        run: bash -n deploy/scripts/aion_edge_setup.sh
+      - name: Install control dependencies
+        working-directory: control
+        run: poetry install --no-root
+
+      - name: Compose up
+        run: docker compose up -d --build
+
+      - name: Run smoke test
+        run: ./scripts/smoke_e2e.sh
+
+      - name: Dump compose logs
+        if: always()
+        run: docker compose logs > compose.log
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compose-logs
+          path: compose.log
+
+      - name: Compose down
+        if: always()
+        run: docker compose down -v

@@ -5,6 +5,7 @@ export interface GatewayConfig {
   port: number;
   host: string;
   controlGrpcEndpoint: string;
+  controlBaseUrl: string;
   redisUrl: string;
   apiKeys: Record<string, { roles: string[]; tenant?: string }>;
   jwtPublicKey: string | undefined;
@@ -21,6 +22,10 @@ export interface GatewayConfig {
     keyPath?: string;
     caPaths?: string[];
     requireMtls: boolean;
+  };
+  telemetry: {
+    enabled: boolean;
+    serviceName: string;
   };
 }
 
@@ -55,6 +60,7 @@ export const gatewayConfig: GatewayConfig = {
   port: Number(process.env.AION_GATEWAY_PORT || 8080),
   host: process.env.AION_GATEWAY_HOST || '0.0.0.0',
   controlGrpcEndpoint: process.env.AION_CONTROL_GRPC || 'control:50051',
+  controlBaseUrl: process.env.AION_CONTROL_BASE || 'http://control:8000',
   redisUrl: process.env.AION_REDIS_URL || 'redis://redis:6379',
   apiKeys: parseApiKeys(),
   jwtPublicKey: process.env.AION_JWT_PUBLIC_KEY,
@@ -74,5 +80,9 @@ export const gatewayConfig: GatewayConfig = {
     keyPath: process.env.AION_TLS_KEY,
     caPaths: parseCaPaths(process.env.AION_TLS_CA_CHAIN),
     requireMtls: process.env.AION_TLS_REQUIRE_MTLS === 'true',
+  },
+  telemetry: {
+    enabled: process.env.AION_OTEL_ENABLED === 'true',
+    serviceName: process.env.AION_SERVICE_NAME || 'aionos-gateway',
   },
 };
