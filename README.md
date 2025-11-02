@@ -247,7 +247,7 @@ Normalized envelope example:
 
 ```json
 {
-  "source": "github|stripe|odoo|custom-1",
+  "source": "github|stripe|n8n|custom-1",
   "event_type": "push|invoice.paid|...|unknown",
   "event_id": "evt_... or sha256(body)",
   "occurred_at": "ISO8601",
