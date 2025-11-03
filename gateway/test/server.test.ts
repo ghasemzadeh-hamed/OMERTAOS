@@ -2,11 +2,14 @@ import { describe, expect, it } from 'vitest';
 import app from '../src/server.js';
 
 describe('gateway server configuration', () => {
-  it('exposes health endpoint', async () => {
-    const response = await app.inject({ method: 'GET', url: '/healthz' });
-    expect(response.statusCode).toBe(200);
-    const payload = response.json();
-    expect(['ok', 'degraded']).toContain(payload.status);
+  it('exposes health endpoints', async () => {
+    for (const endpoint of ['/healthz', '/health']) {
+      const response = await app.inject({ method: 'GET', url: endpoint });
+      expect(response.statusCode).toBe(200);
+      const payload = response.json();
+      expect(['ok', 'degraded']).toContain(payload.status);
+      expect(payload.service).toBe('gateway');
+    }
   });
 
   it('rejects invalid task payloads early', async () => {

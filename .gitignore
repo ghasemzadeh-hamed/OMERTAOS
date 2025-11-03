@@ -18,3 +18,4 @@ coverage/
 .playwright-cache/
 .poetry/
 .envrc
+artifacts/

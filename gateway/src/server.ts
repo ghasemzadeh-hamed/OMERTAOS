@@ -42,6 +42,7 @@ app.addHook('onRequest', async (request, reply) => {
 
 const controlClient = createControlClient();
 const streamEmitter = new EventEmitter();
+const healthHandler = async () => ({ status: 'ok', service: 'gateway' });
 
 const invokeControlUnary = (method: 'Submit' | 'StatusById', payload: any, metadata: Metadata) => {
   return new Promise<any>((resolve, reject) => {
@@ -108,7 +109,8 @@ app.addHook('onRequest', async (request, reply) => {
 
 app.addHook('preHandler', authPreHandler(['user', 'manager', 'admin']));
 
-app.get('/healthz', async () => ({ status: 'ok' }));
+app.get('/healthz', healthHandler);
+app.get('/health', healthHandler);
 
 app.post<{ Body: TaskRequestInput }>('/v1/tasks', async (request, reply) => {
   let validatedBody: TaskRequest;

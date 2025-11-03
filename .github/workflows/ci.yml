@@ -90,3 +90,45 @@ jobs:
       - name: Compose down
         if: always()
         run: docker compose down -v
+
+  native:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run native installer
+        run: |
+          chmod +x scripts/install_linux.sh
+          ./scripts/install_linux.sh
+
+      - name: Wait for services
+        run: sleep 20
+
+      - name: Run native smoke test
+        run: ./scripts/smoke.sh
+
+      - name: Show service status
+        if: always()
+        run: |
+          sudo systemctl status omerta-control
+          sudo systemctl status omerta-gateway
+          sudo systemctl status omerta-console
+
+      - name: Collect journal logs
+        if: always()
+        run: |
+          sudo journalctl -u omerta-control -n 200 --no-pager > control.log
+          sudo journalctl -u omerta-gateway -n 200 --no-pager > gateway.log
+          sudo journalctl -u omerta-console -n 200 --no-pager > console.log
+
+      - name: Upload native logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-logs
+          path: |
+            control.log
+            gateway.log
+            console.log

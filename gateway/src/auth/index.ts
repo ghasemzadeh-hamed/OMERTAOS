@@ -42,7 +42,7 @@ const decodeJwt = (token: string) => {
 export const authPreHandler = (requiredRoles: string[] = []) => {
   return async (request: FastifyRequest, _reply: FastifyReply) => {
     const context = buildDefaultContext(request);
-    const publicRoutes = new Set(['/healthz', '/readyz']);
+    const publicRoutes = new Set(['/healthz', '/health', '/readyz']);
     if (publicRoutes.has(request.routerPath ?? '')) {
       request.aionContext = context;
       return;

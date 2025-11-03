@@ -1,0 +1,18 @@
+[Unit]
+Description=OMERTA Console (Next.js)
+After=network.target
+
+[Service]
+User=omerta
+Group=www-data
+WorkingDirectory=/opt/omerta/OMERTAOS/console
+EnvironmentFile=/opt/omerta/OMERTAOS/.env
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+Environment=NODE_ENV=production
+Environment=CONSOLE_PORT=3001
+ExecStart=/usr/bin/env node node_modules/next/dist/bin/next start --hostname 0.0.0.0 --port $CONSOLE_PORT
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
