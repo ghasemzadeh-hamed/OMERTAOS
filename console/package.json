@@ -31,6 +31,8 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.65.0",
+    "react-simple-keyboard": "^3.8.132",
+    "simple-keyboard": "^3.8.88",
     "sonner": "^1.4.41",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
