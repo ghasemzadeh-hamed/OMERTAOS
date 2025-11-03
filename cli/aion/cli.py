@@ -19,6 +19,7 @@ for module_name in (
     "aion.commands.doctor",
     "aion.commands.auth",
     "aion.commands.tui",
+    "aion.commands.local",
 ):
     try:
         module = importlib.import_module(module_name)

@@ -56,6 +56,7 @@ flowchart TD
 ## Tenancy model
 
 - `TENANCY_MODE=single` keeps behavior compatible with existing deployments.
-- `TENANCY_MODE=multi` requires an `X-Tenant` header or tenant claim on every request.
+- `TENANCY_MODE=multi` requires a `Tenant-ID` header or tenant claim on every request. Legacy `X-Tenant`/`X-Tenant-ID`
+  headers are still accepted for backwards compatibility.
 - Redis, Qdrant, and idempotency caches are namespaced per tenant (`tenant_id` prefix).
 - Postgres tables include nullable `tenant_id` columns with composite indexes for future partitioning.

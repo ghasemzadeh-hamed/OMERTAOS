@@ -183,6 +183,12 @@ my-config/
   CHECKSUMS.txt      sha256 sums for integrity
 ```
 
+Validate bundle metadata before promoting changes:
+
+```bash
+./deploy/bundles/verify.sh
+```
+
 ### Terminal explorer (TUI)
 
 Launch an in-terminal explorer with a chat‑forward configuration bot and text‑friendly UI.
@@ -303,7 +309,16 @@ make edge-setup
 
 ### Observability & big‑data overlay
 
-- **Tracing & metrics:** OpenTelemetry instrumentation with Prometheus exporters and curated Grafana dashboards.
+- **Tracing & metrics:** OpenTelemetry instrumentation with Prometheus exporters and curated Grafana dashboards. A lightweight
+  observability profile ships as `docker-compose.obsv.yml`:
+
+  ```bash
+  docker compose -f docker-compose.obsv.yml up -d
+  # Prometheus → http://localhost:9090
+  # Grafana    → http://localhost:3001 (admin/admin)
+  # Tempo      → http://localhost:3200
+  ```
+
 - **Pipeline overlay (optional):** Kafka → ClickHouse ingestion, Spark/Flink jobs, Airflow DAGs, and Superset BI dashboards.
 
 ---
@@ -322,7 +337,7 @@ make edge-setup
 - **Manual setup:** Refer to `docs/manual-setup.md` for step-by-step provisioning.
 - **Testing matrix:**
   - Gateway → `npm test` (Vitest)
-  - Control → `pytest`
+  - Control → `pytest` (streaming + policy E2E coverage lives in `tests/test_stream_control.py` and `tests/test_policy_state.py`)
   - Modules → `cargo test`
   - Console → Playwright E2E suite
   - Load → `k6` profiles
@@ -338,7 +353,12 @@ GitHub Actions (`.github/workflows/ci.yml`) keeps these tracks green and lint-ch
 - **Isolation:** Sandboxed subprocesses/WASM with resource limits.
 - **Supply chain:** Signed modules (Cosign) with SBOM attestation.
 - **Policies:** Per-intent privacy levels (`local-only`, `allow-api`, `hybrid`), budget caps, and latency targets.
-- **Production tip:** Enable mutual TLS for inter-service gRPC traffic.
+- **Tenancy:** `TENANCY_MODE=multi` enforces the `Tenant-ID` header across HTTP and gRPC and stores per-tenant overrides in the
+  control database.
+- **mTLS by default:** Development certificates live in `config/certs/`; rotate them for production deployments. gRPC listeners
+  refuse unauthenticated clients unless you explicitly disable `AION_TLS_REQUIRE_MTLS`.
+- **Module hardening:** Subprocess hosts apply a default seccomp profile (`config/seccomp/module-default.json`) and opt-in
+  AppArmor profile changes before `execve`.
 
 ---
 

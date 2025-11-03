@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { gatewayConfig } from '../config.js';
 import { withRateLimitCounter } from '../redis.js';
+import { tenantFromHeader } from '../auth/claims.js';
 
 const parseWindowMs = (window: string) => {
   const [value, unit] = window.split(' ');
@@ -34,7 +35,7 @@ export const rateLimitMiddleware = async (request: FastifyRequest, reply: Fastif
   }
 
   const apiKey = request.headers['x-api-key'];
-  const tenant = request.headers['x-tenant'] as string | undefined;
+  const tenant = tenantFromHeader(request);
   const identifier = typeof apiKey === 'string' ? apiKey : request.ip;
   const perKeyLimit = gatewayConfig.rateLimit.max;
   const perIpLimit = gatewayConfig.rateLimit.perIp;

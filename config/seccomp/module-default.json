@@ -1,0 +1,17 @@
+{
+  "default": {
+    "mismatch_action": "allow",
+    "match_action": { "errno": 1 },
+    "filter": [
+      { "syscall": "clone", "comment": "Disallow creating new namespaces" },
+      { "syscall": "unshare", "comment": "Disallow unshare" },
+      { "syscall": "mount", "comment": "Prevent mounting filesystems" },
+      { "syscall": "umount2", "comment": "Prevent unmounting" },
+      { "syscall": "pivot_root", "comment": "Prevent pivot_root" },
+      { "syscall": "kexec_load", "comment": "Prevent kernel replacements" },
+      { "syscall": "bpf", "comment": "Disallow custom BPF programs" },
+      { "syscall": "ptrace", "comment": "Block ptrace inspection" },
+      { "syscall": "userfaultfd", "comment": "Block userfaultfd memory access" }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": null,
+  "uid": "router-overview",
+  "title": "Router Overview",
+  "timezone": "",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Exporter Metric Throughput",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(otelcol_exporter_sent_metric_points[5m]))",
+          "legendFormat": "metrics/s"
+        }
+      ]
+    }
+  ]
+}

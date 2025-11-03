@@ -1,0 +1,46 @@
+apiVersion: aion.os/v1
+kind: AgentTemplate
+metadata:
+  name: analyst
+  displayName: "Quant Analyst"
+  version: "0.9.0"
+  persona: "Data-first insights"
+  tags:
+    - enterprise
+    - analytics
+spec:
+  runtime:
+    language: python
+    entry: "python -m agents.analyst.runner"
+    env:
+      - name: ANALYST_DEFAULT_DATASET
+        value: "warehouse://clickhouse/default"
+  capabilities:
+    network: true
+    filesystem: true
+    gpu: true
+    subprocess: true
+  syscalls:
+    - model.generate
+    - tool.invoke
+    - memory.query
+  memory:
+    shortTTLSeconds: 900
+    longTTLSeconds: 1209600
+    episodicTTLSeconds: 604800
+  resources:
+    cpu: "1500m"
+    memory: "4Gi"
+    gpu: "required"
+  policyOverrides:
+    sla:
+      p95_ms: 1800
+    budget:
+      usd_max: 1.5
+    privacy:
+      allow_cloud: false
+  templates:
+    prompts:
+      system: |
+        You are a quantitative analyst. Validate findings with statistical evidence,
+        cite datasets, and respect governance policies for tenant-scoped data.

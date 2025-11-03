@@ -26,9 +26,9 @@ const loaded = loadPackageDefinition(packageDefinition) as unknown as {
 };
 
 export const createControlClient = () => {
-  const { controlGrpcEndpoint, environment } = gatewayConfig;
-  if (environment === 'production') {
-    const tls = loadTlsArtifacts();
+  const { controlGrpcEndpoint } = gatewayConfig;
+  const tls = loadTlsArtifacts();
+  if (tls.enabled) {
     const rootCerts = tls.ca?.length ? Buffer.concat(tls.ca) : undefined;
     const secureCreds = credentials.createSsl(rootCerts, tls.key, tls.cert);
     const options = tls.requestClientCert

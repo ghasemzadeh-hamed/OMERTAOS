@@ -76,6 +76,7 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
     volumes:
       - ./policies:${AION_CONTROL_POLICIES_DIRECTORY}
+      - ./config/certs:/app/config/certs:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -110,6 +111,7 @@ services:
       AION_RATE_LIMIT_PER_IP: ${AION_RATE_LIMIT_PER_IP}
       AION_RATE_LIMIT_WINDOW: ${AION_RATE_LIMIT_WINDOW}
       AION_IDEMPOTENCY_TTL: ${AION_IDEMPOTENCY_TTL}
+      AION_TLS_REQUIRE_MTLS: ${AION_TLS_REQUIRE_MTLS:-true}
     depends_on:
       postgres:
         condition: service_healthy
@@ -126,6 +128,8 @@ services:
       retries: 60
     networks:
       - aionos
+    volumes:
+      - ./config/certs:/app/config/certs:ro
 
   console:
     build: ./console

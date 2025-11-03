@@ -38,6 +38,7 @@ message TaskResult {
   map<string, string> result = 6;
   Usage usage = 7;
   Error error = 8;
+  map<string, string> metadata = 9;
 }
 
 message EngineDecision {
@@ -60,6 +61,38 @@ message Error {
 
 service AionTasks {
   rpc Submit(TaskRequest) returns (TaskResult);
-  rpc Stream(TaskRequest) returns (stream TaskResult);
+  rpc Stream(TaskRequest) returns (stream StreamChunk);
+  rpc AckStream(StreamAck) returns (AckResponse);
   rpc StatusById(TaskId) returns (TaskResult);
+}
+
+message StreamChunk {
+  TaskResult result = 1;
+  StreamControl control = 2;
+}
+
+message StreamControl {
+  string cursor = 1;
+  bool final = 2;
+  bool requires_ack = 3;
+  RetryMarker retry = 4;
+  string backpressure_hint = 5;
+}
+
+message RetryMarker {
+  string reason = 1;
+  int32 attempt = 2;
+  int32 max_attempts = 3;
+  int64 retry_after_ms = 4;
+}
+
+message StreamAck {
+  string task_id = 1;
+  string cursor = 2;
+  string consumer_id = 3;
+}
+
+message AckResponse {
+  bool accepted = 1;
+  string cursor = 2;
 }

@@ -1,5 +1,9 @@
 $ErrorActionPreference = "Stop"
 
+param(
+  [switch]$Local = $false
+)
+
 function Require-Cmd {
   param([string]$name)
   if (-not (Get-Command $name -ErrorAction SilentlyContinue)) {
@@ -8,7 +12,11 @@ function Require-Cmd {
   }
 }
 
-Write-Host "AION-OS Windows Installer (AIONOS branch)" -ForegroundColor Cyan
+if ($Local) {
+  Write-Host "AION-OS Windows Installer (Personal Mode)" -ForegroundColor Cyan
+} else {
+  Write-Host "AION-OS Windows Installer (AIONOS branch)" -ForegroundColor Cyan
+}
 
 Require-Cmd git
 Require-Cmd docker
@@ -63,8 +71,11 @@ if ([string]::IsNullOrWhiteSpace($redisUrl)) { $redisUrl = "redis://redis:6379" 
 $minioUrl = Read-Host "MinIO Console URL (enter=http://localhost:9001)"
 if ([string]::IsNullOrWhiteSpace($minioUrl)) { $minioUrl = "http://localhost:9001" }
 
-$useBigData = Read-Host "Enable BigData overlay? (y/N)"
-$useBigData = $useBigData.ToLower() -eq "y"
+$useBigData = $false
+if (-not $Local) {
+  $useBigData = Read-Host "Enable BigData overlay? (y/N)"
+  $useBigData = $useBigData.ToLower() -eq "y"
+}
 
 if ($targetDir -ne $scriptDir) {
   if (Test-Path (Join-Path $targetDir ".git")) {
@@ -122,7 +133,11 @@ MINIO_ENDPOINT=http://minio:9000
 "@
 Write-EnvFile "control/.env" $controlEnv
 
-if ($useBigData -and (Test-Path "docker-compose.bigdata.yml")) {
+if ($Local) {
+  $composeArgs = @('-f', 'docker-compose.local.yml')
+  Write-Host "Starting personal mode stack (docker-compose.local.yml)..." -ForegroundColor Green
+  docker compose @composeArgs up -d --build
+} elseif ($useBigData -and (Test-Path "docker-compose.bigdata.yml")) {
   Write-Host "Starting with BigData overlay (docker-compose.bigdata.yml)..." -ForegroundColor Magenta
   docker compose -f docker-compose.yml -f docker-compose.bigdata.yml up -d --build
 } elseif ($useBigData -and (Test-Path "bigdata/docker-compose.bigdata.yml")) {
@@ -144,6 +159,9 @@ Write-Host "`nService URLs:"
 Write-Host "UI (console):     http://localhost:$uiPort"
 Write-Host "Gateway:          http://localhost:$gwPort"
 Write-Host "FastAPI (docs):   http://localhost:$apiPort/docs"
+if ($Local) {
+  Write-Host "Kernel API:       http://localhost:8010"
+}
 Write-Host "MinIO Console:    $minioUrl (only if BigData overlay is enabled)"
 
 Write-Host "`nSetup complete. If this is the first run, allow the database seed to finish."

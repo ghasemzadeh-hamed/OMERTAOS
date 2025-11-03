@@ -2,6 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { cacheIdempotency, getIdempotency } from '../redis.js';
 import { gatewayConfig } from '../config.js';
 import type { TaskResult } from '../types.js';
+import { tenantFromHeader } from '../auth/claims.js';
 
 export const idempotencyMiddleware = async (
   request: FastifyRequest,
@@ -12,7 +13,7 @@ export const idempotencyMiddleware = async (
     return;
   }
 
-  const tenantId = (request.headers['x-tenant'] as string | undefined) ?? undefined;
+  const tenantId = tenantFromHeader(request);
   try {
     const cached = await getIdempotency(key, tenantId);
     if (cached) {

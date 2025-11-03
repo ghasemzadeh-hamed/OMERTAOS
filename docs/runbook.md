@@ -52,7 +52,7 @@
 ## Webhook Operations
 
 - Outbound: webhooks are retried with exponential backoff up to 5 times. Failed deliveries surface in Grafana (panel `webhook_failures_total`). Payloads include `x-omerta-signature` for downstream verification.
-- Inbound: verify required headers (`x-omerta-signature`, `x-tenant-id`) and enforce RBAC scopes. Redis-backed idempotency keys live in `redis://redis:6379/3` and expire after 24h.
+- Inbound: verify required headers (`x-omerta-signature`, `Tenant-ID`) and enforce RBAC scopes. Redis-backed idempotency keys live in `redis://redis:6379/3` and expire after 24h. Legacy `x-tenant-id` and `x-tenant` headers are accepted for older agents.
 
 ## Memory Operations
 
