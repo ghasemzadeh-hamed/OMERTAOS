@@ -1,7 +1,67 @@
 #!/usr/bin/env bash
 set -euo pipefail
+MODE=${MODE:-native}
+CONTROL_HEALTH_URL=${CONTROL_HEALTH_URL:-http://localhost:8000/health}
+GATEWAY_HEALTH_URL=${GATEWAY_HEALTH_URL:-http://localhost:3000/health}
+CONSOLE_HEALTH_URL=${CONSOLE_HEALTH_URL:-http://localhost:3001}
+SMOKE_RETRIES=${SMOKE_RETRIES:-10}
+SMOKE_DELAY=${SMOKE_DELAY:-3}
 API_URL=${API_URL:-http://localhost:8080}
 API_KEY=${API_KEY:-demo-key}
+
+check_http() {
+  local url=$1
+  local label=$2
+  local attempts=$SMOKE_RETRIES
+  local delay=$SMOKE_DELAY
+
+  for ((i=1; i<=attempts; i++)); do
+    if curl -fsS "$url" >/tmp/smoke_response.$$ 2>/tmp/smoke_error.$$; then
+      cat /tmp/smoke_response.$$
+      rm -f /tmp/smoke_response.$$ /tmp/smoke_error.$$
+      return 0
+    fi
+    echo "[$label] attempt $i/$attempts failed" >&2
+    sleep "$delay"
+  done
+
+  echo "Failed to reach $label at $url" >&2
+  if [[ -s /tmp/smoke_error.$$ ]]; then
+    cat /tmp/smoke_error.$$ >&2
+  fi
+  rm -f /tmp/smoke_response.$$ /tmp/smoke_error.$$
+  return 1
+}
+
+if [[ "$MODE" == "native" ]]; then
+  HAVE_JQ=false
+  if command -v jq >/dev/null 2>&1; then
+    HAVE_JQ=true
+  fi
+
+  echo "Checking control plane health at $CONTROL_HEALTH_URL"
+  response=$(check_http "$CONTROL_HEALTH_URL" "control")
+  if [[ "$HAVE_JQ" == "true" ]]; then
+    jq '.status' >/dev/null <<<"$response"
+  fi
+
+  echo "Checking gateway health at $GATEWAY_HEALTH_URL"
+  response=$(check_http "$GATEWAY_HEALTH_URL" "gateway")
+  if [[ "$HAVE_JQ" == "true" ]]; then
+    jq '.status' >/dev/null <<<"$response"
+  fi
+
+  if [[ "${SKIP_CONSOLE_HEALTH:-false}" != "true" ]]; then
+    echo "Checking console availability at $CONSOLE_HEALTH_URL"
+    check_http "$CONSOLE_HEALTH_URL" "console" >/dev/null
+  fi
+
+  echo "Native smoke checks passed"
+
+  if [[ "${RUN_GATEWAY_FLOW:-false}" != "true" ]]; then
+    exit 0
+  fi
+fi
 
 function submit_task() {
   curl -sS -X POST "$API_URL/v1/tasks" \

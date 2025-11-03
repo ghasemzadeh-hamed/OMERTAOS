@@ -1,0 +1,13 @@
+edition: personal
+services:
+  kernel: enabled
+  console: enabled
+  gateway: optional
+security:
+  policies: policies/training.yaml
+  rbac:
+    roles:
+      - personal
+observability:
+  metrics: false
+  tracing: false

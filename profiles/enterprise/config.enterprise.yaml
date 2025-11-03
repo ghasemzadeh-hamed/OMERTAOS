@@ -1,0 +1,19 @@
+edition: enterprise
+services:
+  kernel: ha
+  console: enabled
+  gateway: ha
+  governance: enabled
+security:
+  policies: policies/training.yaml
+  rbac:
+    roles:
+      - admin
+      - auditor
+compliance:
+  iso27001: true
+  soc2: true
+observability:
+  metrics: true
+  tracing: true
+  logging: centralized

@@ -1,0 +1,35 @@
+cv:
+  scheme: stratified_kfold        # or group_kfold/time_series
+  n_splits: 5
+  nested: true
+split:
+  val_size: 0.15
+  test_size: 0.15
+  stratify: true
+regularization:
+  trees:
+    reg_lambda: 2.0
+    reg_alpha: 0.5
+  nn:
+    weight_decay: 1.0e-4
+    dropout: 0.2
+early_stopping:
+  enabled: true
+  patience: 50
+  min_delta: 0.0
+ensemble:
+  methods: [bagging, boosting, stacking]
+  stacking_cv: 5
+feature_selection:
+  filter:
+    kbest: 50
+    score: anova_f
+  embedded: select_from_model
+  wrapper:
+    rfecv: false
+guards:
+  max_train_val_gap: 0.10
+  max_cv_std: 0.03
+monitoring:
+  drift:
+    psi_threshold: 0.20

@@ -1,0 +1,15 @@
+type: iot
+services:
+  kernel: edge
+  console: disabled
+  gateway: enabled
+  telematics: enabled
+security:
+  device_certificates: required
+  firmware_attestation: true
+observability:
+  metrics: true
+  tracing: false
+  logging: buffered
+sync:
+  cadence_minutes: 15

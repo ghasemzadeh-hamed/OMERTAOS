@@ -38,6 +38,8 @@ from .core.deps import get_state
 from .core.tenancy import tenancy_middleware
 from .core.workers import worker_loop
 
+from aionos_control.routes import router as plugins_router
+
 app = FastAPI(title="AION Control API")
 
 app.middleware("http")(tenancy_middleware())
@@ -60,9 +62,18 @@ async def stop_workers() -> None:
         await task
 
 
+async def _health_response() -> dict[str, str]:
+    return {"status": "ok", "service": "control"}
+
+
 @app.get("/healthz")
 async def healthz() -> dict[str, str]:
-    return {"status": "ok"}
+    return await _health_response()
+
+
+@app.get("/health")
+async def health() -> dict[str, str]:
+    return await _health_response()
 
 
 app.include_router(admin_onboarding_router)
@@ -78,4 +89,5 @@ app.include_router(router_policy_router)
 app.include_router(datasources_router)
 app.include_router(modules_router)
 app.include_router(health_router)
+app.include_router(plugins_router)
 app.include_router(webhook_router)

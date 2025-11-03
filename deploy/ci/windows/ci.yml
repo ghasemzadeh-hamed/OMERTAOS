@@ -1,0 +1,23 @@
+name: aion-windows-ci
+on:
+  workflow_call:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install -U pip
+          pip install -r requirements.txt
+      - name: Run training (CI mode)
+        run: python scripts/train_eval.py --config policies/training.yaml --ci
+      - name: Guard generalization
+        run: python scripts/guard_generalization.py
+      - name: Run CLI smoke test
+        run: python -m cli.main status --artifacts artifacts/metrics.json

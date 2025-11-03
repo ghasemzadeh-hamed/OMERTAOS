@@ -27,6 +27,29 @@ services:
       - redis
       - mongo
       - kafka
+  kernel:
+    build:
+      context: ..
+      dockerfile: kernel/Dockerfile
+    environment:
+      AION_POLICY_PATH: /app/policies/training.yaml
+    volumes:
+      - ../policies:/app/policies
+    ports:
+      - "8070:8010"
+    depends_on:
+      - control
+  console:
+    build:
+      context: ../console
+      dockerfile: Dockerfile
+    environment:
+      NEXT_PUBLIC_API_URL: http://gateway:8080
+      NEXT_PUBLIC_WS_URL: ws://gateway:8080/ws
+    ports:
+      - "3001:3000"
+    depends_on:
+      - gateway
   postgres:
     image: postgres:15
     environment:

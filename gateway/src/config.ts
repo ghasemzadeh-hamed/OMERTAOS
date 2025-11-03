@@ -1,5 +1,26 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { config } from 'dotenv';
-config();
+
+const inferredEnvFiles = new Set<string>();
+const explicitEnv = process.env.ENV_FILE;
+if (explicitEnv) {
+  inferredEnvFiles.add(path.resolve(explicitEnv));
+}
+
+inferredEnvFiles.add(path.resolve(process.cwd(), '.env'));
+inferredEnvFiles.add(path.resolve(process.cwd(), '..', '.env'));
+
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+inferredEnvFiles.add(path.resolve(moduleDir, '..', '.env'));
+inferredEnvFiles.add(path.resolve(moduleDir, '..', '..', '.env'));
+
+for (const envFile of inferredEnvFiles) {
+  if (fs.existsSync(envFile)) {
+    config({ path: envFile, override: false });
+  }
+}
 
 export interface GatewayConfig {
   port: number;
