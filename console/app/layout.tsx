@@ -6,6 +6,7 @@ import { QueryProvider } from '../providers/QueryProvider';
 import { I18nProvider } from '../providers/I18nProvider';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '../providers/AuthProvider';
+import TouchProvider from './(providers)/TouchProvider';
 
 export const metadata: Metadata = {
   title: 'aionOS Console',
@@ -20,8 +21,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ThemeProvider>
             <AuthProvider>
               <QueryProvider>
-                {children}
-                <Toaster richColors position="bottom-right" closeButton />
+                <TouchProvider>
+                  <>
+                    {children}
+                    <Toaster richColors position="bottom-right" closeButton />
+                  </>
+                </TouchProvider>
               </QueryProvider>
             </AuthProvider>
           </ThemeProvider>
