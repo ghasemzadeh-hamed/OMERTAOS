@@ -1,0 +1,38 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:9464"
+  logging:
+    loglevel: info
+  otlp:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+processors:
+  memory_limiter:
+    limit_mib: 128
+    spike_limit_mib: 32
+    check_interval: 5s
+  batch:
+    send_batch_size: 512
+    timeout: 5s
+
+service:
+  telemetry:
+    logs:
+      level: "warn"
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [prometheus, logging]
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp, logging]

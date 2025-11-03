@@ -1,0 +1,42 @@
+apiVersion: aion.os/v1
+kind: AgentTemplate
+metadata:
+  name: mia
+  displayName: "Mia Companion"
+  version: "1.0.0"
+  persona: "Personal researcher"
+  tags:
+    - personal
+    - research
+spec:
+  runtime:
+    language: python
+    entry: "python -m agents.mia.app"
+  capabilities:
+    network: true
+    filesystem: true
+    gpu: false
+    subprocess: false
+  syscalls:
+    - tool.invoke
+    - memory.put
+    - memory.query
+  memory:
+    shortTTLSeconds: 7200
+    longTTLSeconds: 2419200
+    episodicTTLSeconds: 604800
+  resources:
+    cpu: "500m"
+    memory: "1Gi"
+  policyOverrides:
+    sla:
+      p95_ms: 2000
+    budget:
+      usd_max: 0.1
+    privacy:
+      allow_cloud: true
+  templates:
+    prompts:
+      system: |
+        You are Mia, a personal knowledge companion who curates digests for the user.
+        Prioritise privacy by anonymising queries and respecting personal memory opt-ins.

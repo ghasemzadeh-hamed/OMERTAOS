@@ -22,7 +22,8 @@ const readFileIfExists = (filePath?: string): Buffer | undefined => {
 };
 
 export const loadTlsArtifacts = (): TlsArtifacts => {
-  if (gatewayConfig.environment !== 'production') {
+  const shouldEnable = gatewayConfig.tls.requireMtls || gatewayConfig.environment === 'production';
+  if (!shouldEnable) {
     return { enabled: false, requestClientCert: false };
   }
   const key = readFileIfExists(gatewayConfig.tls.keyPath);

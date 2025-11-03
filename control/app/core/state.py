@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 import hashlib
+import json
 import time
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
@@ -39,9 +41,20 @@ class Module:
 
 
 @dataclass
+class RouterPolicySnapshot:
+    revision: int
+    checksum: str
+    version: str
+    document: Dict
+    applied_at: float = field(default_factory=lambda: time.time())
+
+
+@dataclass
 class RouterPolicy:
     revision: int = 0
     document: Dict = field(default_factory=dict)
+    checksum: str = ""
+    version: str = "0.0.0"
 
 
 @dataclass
@@ -61,6 +74,7 @@ class ControlState:
         self.datasources: Dict[str, DataSource] = {}
         self.modules: Dict[str, Module] = {}
         self.router_policy = RouterPolicy()
+        self.router_policy_history: List[RouterPolicySnapshot] = []
         self.latencies: Dict[str, float] = {}
         self.idempotency: Dict[str, float] = {}
         self.jobs: List[JobRecord] = []
@@ -87,9 +101,52 @@ class ControlState:
 
     async def set_router_policy(self, document: Dict) -> RouterPolicy:
         async with self.lock:
+            if self.router_policy.revision > 0:
+                snapshot = RouterPolicySnapshot(
+                    revision=self.router_policy.revision,
+                    checksum=self.router_policy.checksum,
+                    version=self.router_policy.version,
+                    document=copy.deepcopy(self.router_policy.document),
+                )
+                self.router_policy_history.append(snapshot)
+                self.router_policy_history = self.router_policy_history[-20:]
             self.router_policy.revision += 1
-            self.router_policy.document = document
+            self.router_policy.document = copy.deepcopy(document)
+            self.router_policy.version = str(document.get("version", "0.0.0"))
+            serialized = json.dumps(self.router_policy.document, sort_keys=True).encode("utf-8")
+            self.router_policy.checksum = hashlib.sha256(serialized).hexdigest()
             return self.router_policy
+
+    async def rollback_router_policy(self, revision: Optional[int] = None) -> RouterPolicy:
+        async with self.lock:
+            if not self.router_policy_history:
+                raise ValueError("no policy history available")
+            if revision is None:
+                target_snapshot = self.router_policy_history.pop()
+            else:
+                index = next(
+                    (i for i, snapshot in enumerate(self.router_policy_history) if snapshot.revision == revision),
+                    None,
+                )
+                if index is None:
+                    raise ValueError("requested revision not found")
+                target_snapshot = self.router_policy_history.pop(index)
+            current_snapshot = RouterPolicySnapshot(
+                revision=self.router_policy.revision,
+                checksum=self.router_policy.checksum,
+                version=self.router_policy.version,
+                document=copy.deepcopy(self.router_policy.document),
+            )
+            self.router_policy_history.append(current_snapshot)
+            self.router_policy_history = self.router_policy_history[-20:]
+            self.router_policy.revision += 1
+            self.router_policy.document = copy.deepcopy(target_snapshot.document)
+            self.router_policy.version = target_snapshot.version
+            self.router_policy.checksum = target_snapshot.checksum
+            return self.router_policy
+
+    def get_router_policy_history(self, limit: int = 10) -> List[RouterPolicySnapshot]:
+        return self.router_policy_history[-limit:]
 
     async def record_latency(self, name: str, value_ms: float) -> None:
         async with self.lock:
@@ -121,6 +178,8 @@ class ControlState:
                 "modules": len(self.modules),
                 "datasources": len(self.datasources),
                 "router_policy_rev": self.router_policy.revision,
+                "router_policy_checksum": self.router_policy.checksum,
+                "router_policy_version": self.router_policy.version,
                 "queue_depth": self.event_queue.qsize(),
             },
             "latencies": self.latencies,

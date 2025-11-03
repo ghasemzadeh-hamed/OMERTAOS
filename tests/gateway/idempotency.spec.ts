@@ -15,7 +15,7 @@ describe('idempotency middleware', () => {
 
   it('returns cached payload when available', async () => {
     vi.spyOn(redisModule, 'getIdempotency').mockResolvedValue('{"taskId":"1"}');
-    const request: any = { headers: { 'idempotency-key': 'abc', 'x-tenant': 'tenant-1' }, log: { error: vi.fn() } };
+    const request: any = { headers: { 'idempotency-key': 'abc', 'tenant-id': 'tenant-1' }, log: { error: vi.fn() } };
     const reply: any = buildReply();
     const cached = await idempotencyMiddleware(request, reply);
     expect(cached).toEqual({ taskId: '1' });

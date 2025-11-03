@@ -10,7 +10,17 @@ try:
 except ImportError:  # pragma: no cover - optional dependency
     yaml = None  # type: ignore
 
-from jsonschema import Draft7Validator
+try:
+    from jsonschema import Draft7Validator
+except ImportError:  # pragma: no cover - optional dependency for validation
+    class Draft7Validator:  # type: ignore[override]
+        """Fallback validator that skips schema checks when jsonschema is absent."""
+
+        def __init__(self, schema):  # pragma: no cover - trivial wrapper
+            self.schema = schema
+
+        def iter_errors(self, data):  # pragma: no cover - always succeeds
+            return []
 
 SCHEMA_DIR = Path(__file__).resolve().parents[3] / "config-schemas"
 

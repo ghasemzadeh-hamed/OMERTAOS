@@ -7,9 +7,16 @@ CONFIG_DIR="${ROOT_DIR}/config"
 CONFIG_FILE="${CONFIG_DIR}/aionos.config.yaml"
 MODEL_NAME="${AIONOS_LOCAL_MODEL:-llama3.2:3b}"
 NONINTERACTIVE=false
+COMPOSE_FILE="docker-compose.yml"
+LOCAL_MODE=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --local)
+      LOCAL_MODE=true
+      COMPOSE_FILE="docker-compose.local.yml"
+      shift
+      ;;
     --noninteractive)
       NONINTERACTIVE=true
       shift
@@ -27,6 +34,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 cd "$ROOT_DIR"
+
+if [[ ! -f "$COMPOSE_FILE" ]]; then
+  echo "Expected compose file '$COMPOSE_FILE' was not found." >&2
+  exit 1
+fi
 
 if [[ -x "${TOOLS_DIR}/preflight.sh" ]]; then
   if $NONINTERACTIVE; then
@@ -83,7 +95,7 @@ ensure_compose() {
   local attempt=1
   local max_attempts=3
   while (( attempt <= max_attempts )); do
-    if docker compose up -d --build; then
+    if docker compose -f "$COMPOSE_FILE" up -d --build; then
       return 0
     fi
     echo "docker compose failed (attempt ${attempt}/${max_attempts}); retrying..." >&2
@@ -116,7 +128,19 @@ if [[ -x scripts/install_local_llm.sh ]]; then
 fi
 
 if ! $NONINTERACTIVE; then
-  cat <<MSG
+  if $LOCAL_MODE; then
+    cat <<MSG
+OMERTAOS personal stack installation complete.
+To launch the stack:
+  docker compose -f docker-compose.local.yml up -d
+
+Personal mode services:
+  Kernel API:       http://localhost:8010
+  Gateway (REST):   http://localhost:8080
+  Console UI:       http://localhost:3000
+MSG
+  else
+    cat <<MSG
 OMERTAOS installation complete.
 To launch the stack:
   docker compose up -d
@@ -124,4 +148,5 @@ To launch the stack:
 Run the smoke test:
   scripts/smoke_e2e.sh
 MSG
+  fi
 fi

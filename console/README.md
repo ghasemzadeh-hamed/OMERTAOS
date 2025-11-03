@@ -26,6 +26,23 @@ The app expects the gateway and control plane to run locally using `docker compo
 
 NextAuth handles credential and Google OAuth logins. Credentials are validated against the gateway `/v1/auth/login` endpoint, while Google uses OAuth tokens to map to existing platform users. Roles (admin, manager, user) are embedded in the session token and consumed via the `useAuth` hook.
 
+Required environment variables:
+
+| Variable | Purpose |
+| --- | --- |
+| `NEXTAUTH_SECRET` | Random 32+ byte secret used to sign session cookies. Generate with `openssl rand -base64 32`. |
+| `NEXTAUTH_URL` | Public URL where the console is served (e.g. `http://localhost:3000`). |
+| `NEXT_PUBLIC_GATEWAY_URL` | Base URL for REST/gRPC proxies exposed by the gateway (defaults to `http://localhost:8080`). |
+| `NEXT_PUBLIC_CONTROL_URL` | Base URL for the control plane API (defaults to `http://localhost:8001`). |
+
+### Credentials flow
+
+Add the credential provider to `providers/credentials.ts` (already wired) and ensure the gateway exposes `/v1/auth/login`. The console will POST `{ email, password }` to the gateway and expects a JSON body with `token`, `roles`, and optional `tenant`. Set `AION_GATEWAY_BASE` accordingly in `.env.local` if you are not using Docker defaults.
+
+### Google OAuth flow
+
+Populate `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env.local`. In the Google Cloud Console configure an OAuth consent screen and add an authorized redirect URI pointing to `${NEXTAUTH_URL}/api/auth/callback/google`. The provider automatically maps Google email addresses to existing AION users by email and reuses the RBAC roles provisioned in the control plane.
+
 ## Real-time updates
 
 The console listens for task updates with SSE first and falls back to WebSockets. Optimistic updates leverage TanStack Query for client-side cache management.

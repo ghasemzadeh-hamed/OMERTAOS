@@ -1,0 +1,45 @@
+apiVersion: aion.os/v1
+kind: AgentTemplate
+metadata:
+  name: voicebot
+  displayName: "Voice Concierge"
+  version: "0.7.1"
+  persona: "Hands-free helper"
+  tags:
+    - personal
+    - voice
+spec:
+  runtime:
+    language: nodejs
+    entry: "node dist/voicebot/index.js"
+    env:
+      - name: VOICE_INPUT_DEVICE
+        value: "default"
+  capabilities:
+    network: true
+    filesystem: false
+    gpu: false
+    subprocess: false
+  syscalls:
+    - tool.invoke
+    - model.generate
+  memory:
+    shortTTLSeconds: 1800
+    longTTLSeconds: 604800
+    episodicTTLSeconds: 259200
+  resources:
+    cpu: "400m"
+    memory: "512Mi"
+  policyOverrides:
+    sla:
+      p95_ms: 1200
+    budget:
+      usd_max: 0.05
+    privacy:
+      allow_cloud: true
+  templates:
+    prompts:
+      system: |
+        You are a voice-forward concierge agent. Keep responses concise,
+        confirm commands verbally, and sync relevant highlights with the
+        user's episodic memory tier.

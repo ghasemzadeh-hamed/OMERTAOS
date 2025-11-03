@@ -56,6 +56,20 @@ jobs:
         working-directory: control
         run: poetry install --no-root
 
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.5.0
+
+      - name: Verify policy bundles
+        run: ./deploy/bundles/verify.sh
+
+      - name: Generate sample Cosign signature
+        env:
+          COSIGN_PASSWORD: ""
+        run: |
+          mkdir -p .artifacts
+          cosign generate-key-pair --output-key .artifacts/cosign.key --output-pub .artifacts/cosign.pub --yes
+          cosign sign-blob --key .artifacts/cosign.key --output-signature .artifacts/control-server.pem.sig config/certs/control-server.pem
+
       - name: Compose up
         run: docker compose up -d --build
 

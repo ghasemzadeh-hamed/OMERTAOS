@@ -3,6 +3,7 @@ import compress from '@fastify/compress';
 import helmet from '@fastify/helmet';
 import websocket from '@fastify/websocket';
 import { authPreHandler } from './auth/index.js';
+import { tenantFromHeader } from './auth/claims.js';
 import { gatewayConfig } from './config.js';
 import cors from '@fastify/cors';
 import fastifySsePlugin from 'fastify-sse-v2';
@@ -54,14 +55,17 @@ const invokeControlUnary = (method: 'Submit' | 'StatusById', payload: any, metad
   });
 };
 
+const resolveTenantHeader = (request: FastifyRequest): string | undefined => tenantFromHeader(request);
+
 const buildMetadata = (request: FastifyRequest) => {
   const metadata = new Metadata();
   metadata.add('x-request-id', request.id);
   if (request.headers['authorization']) {
     metadata.add('authorization', String(request.headers['authorization']));
   }
-  if (request.headers['x-tenant']) {
-    metadata.add('x-tenant', String(request.headers['x-tenant']));
+  const tenantFromHeader = resolveTenantHeader(request);
+  if (tenantFromHeader) {
+    metadata.add('tenant-id', tenantFromHeader);
   }
   if (request.headers['traceparent']) {
     metadata.add('traceparent', String(request.headers['traceparent']));
@@ -132,7 +136,7 @@ app.post<{ Body: TaskRequestInput }>('/v1/tasks', async (request, reply) => {
   }
 
   const idempotencyKey = typeof request.headers['idempotency-key'] === 'string' ? request.headers['idempotency-key'] : undefined;
-  const tenantId = (request.headers['x-tenant'] as string | undefined) ?? undefined;
+  const tenantId = resolveTenantHeader(request);
 
   const taskId = randomUUID();
   const payload = {

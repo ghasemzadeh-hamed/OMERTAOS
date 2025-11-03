@@ -35,9 +35,12 @@ from .api import (
     webhook_router,
 )
 from .core.deps import get_state
+from .core.tenancy import tenancy_middleware
 from .core.workers import worker_loop
 
 app = FastAPI(title="AION Control API")
+
+app.middleware("http")(tenancy_middleware())
 
 
 @app.on_event("startup")

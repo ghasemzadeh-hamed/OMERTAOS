@@ -1,0 +1,33 @@
+{
+  "id": null,
+  "uid": "tasks-overview",
+  "title": "Tasks Overview",
+  "timezone": "",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Active Stream Acknowledgements",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(otelcol_receiver_accepted_spans)",
+          "legendFormat": "spans"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "OTLP Spans Ingested",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 6 },
+      "targets": [
+        {
+          "expr": "sum(rate(otelcol_receiver_accepted_spans[5m]))",
+          "legendFormat": "spans/s"
+        }
+      ]
+    }
+  ]
+}

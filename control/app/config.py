@@ -22,6 +22,12 @@ class Settings(BaseSettings):
     local_latency_p95: int = 600
     api_latency_p95: int = 2000
     hybrid_latency_p95: int = 2300
+    grpc_host: str = "0.0.0.0"
+    grpc_port: int = 50051
+    grpc_tls_cert: str = "config/certs/control-server.pem"
+    grpc_tls_key: str = "config/certs/control-server-key.pem"
+    grpc_tls_client_ca: str | None = "config/certs/dev-ca.pem"
+    grpc_require_client_cert: bool = True
 
     class Config:
         env_prefix = "AION_CONTROL_"

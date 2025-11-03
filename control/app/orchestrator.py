@@ -50,10 +50,25 @@ class Orchestrator:
             "cost_usd": min(task.sla.get("budget_usd", 0.02), 0.2),
             "tokens": len(str(task.result)),
         }
+        cursor = f"{task.task_id}-final"
+        task.stream_state.cursor = cursor
+        task.stream_state.requires_ack = True
+        task.stream_state.backpressure_hint = "ack-before-new-tasks"
+        task.stream_state.retry_attempt = 0
+        task.stream_state.max_attempts = 5
+        task.stream_state.retry_after_ms = 250
         return task
 
     def get_task(self, task_id: str) -> Optional[Task]:
         return self._tasks.get(task_id)
+
+    def acknowledge_stream(self, task_id: str, cursor: str, consumer_id: str) -> bool:
+        task = self._tasks.get(task_id)
+        if not task or task.stream_state.cursor != cursor:
+            return False
+        task.stream_state.mark_acked(consumer_id)
+        task.stream_state.requires_ack = False
+        return True
 
 
 orchestrator = Orchestrator()

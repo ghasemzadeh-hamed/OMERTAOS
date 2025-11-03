@@ -76,10 +76,10 @@ export const gatewayConfig: GatewayConfig = {
   idempotencyTtlSeconds: Number(process.env.AION_IDEMPOTENCY_TTL || 900),
   environment: (process.env.NODE_ENV as GatewayConfig['environment']) || 'development',
   tls: {
-    certPath: process.env.AION_TLS_CERT,
-    keyPath: process.env.AION_TLS_KEY,
-    caPaths: parseCaPaths(process.env.AION_TLS_CA_CHAIN),
-    requireMtls: process.env.AION_TLS_REQUIRE_MTLS === 'true',
+    certPath: process.env.AION_TLS_CERT || 'config/certs/gateway-client.pem',
+    keyPath: process.env.AION_TLS_KEY || 'config/certs/gateway-client-key.pem',
+    caPaths: parseCaPaths(process.env.AION_TLS_CA_CHAIN || 'config/certs/dev-ca.pem'),
+    requireMtls: process.env.AION_TLS_REQUIRE_MTLS !== 'false',
   },
   telemetry: {
     enabled: process.env.AION_OTEL_ENABLED === 'true',
