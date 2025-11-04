@@ -1,0 +1,5 @@
+services:
+  gateway:
+    profiles: ["user"]
+  control:
+    profiles: ["user"]

@@ -1,0 +1,14 @@
+llm:
+  local: true
+  provider: "ollama"
+  model: "llama3.1:8b-instruct"
+strategy:
+  update: "lora"
+  adapter_rank: 8
+budget:
+  gpus: 1
+  max_steps: 200
+  max_hours: 2
+objective:
+  metric: "accuracy"
+  delta_min: 0.02

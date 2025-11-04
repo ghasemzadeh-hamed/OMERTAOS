@@ -1,0 +1,14 @@
+inherits: base
+name: user
+features:
+  quickstart: true
+  autoconfig: true
+  chatops: basic
+services:
+  explorer: disabled
+  terminal: disabled
+  iot_bridge: disabled
+limits:
+  rate_limit_rps: 2
+observability:
+  otel: light

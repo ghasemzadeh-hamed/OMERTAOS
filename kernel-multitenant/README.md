@@ -1,0 +1,44 @@
+# Multi-Kernel Stack (User / Professional / Enterprise-VIP)
+
+This package provides three switchable runtime profiles built on a shared gateway and control plane. It runs without Docker on Linux or Windows using Node.js 20+ and Python 3.10+.
+
+## Quick Start
+
+```bash
+cd kernel-multitenant
+make install
+make run-user    # or run-pro / run-ent
+```
+
+Windows PowerShell:
+
+```powershell
+cd kernel-multitenant
+.\scripts\install_windows.ps1
+.\scripts\run_windows.ps1   # use $env:PROFILE=user|pro|ent before running
+```
+
+## Endpoints
+
+* `GET /healthz` → gateway liveness and SEAL flag.
+* `POST /v1/config/{propose|apply|revert}` → ChatOps configurator (admin token required).
+* `POST /v1/router/policy/reload` → refresh router and rollout policy.
+* `POST /v1/seal/jobs` → Enterprise-VIP only (requires `PROFILE=ent` and matching admin token).
+
+## Acceptance Checklist
+
+* Switch profiles using `make run-user`, `make run-pro`, or `make run-ent` without editing code.
+* `GET /healthz` returns `{ ok: true }` across all profiles.
+* `POST /v1/config/propose|apply|revert` persists pending configuration state to `configs/pending.json`.
+* Enterprise-VIP profile enables SEAL endpoints, streams job status, and emits artifacts under `registry/storage/experiments/`.
+* All files are ASCII-only and scripts support Linux/Windows without Docker.
+
+## Directory Highlights
+
+* `profiles/` – declarative kernel definitions inheriting from `kernel.base.yaml`.
+* `deploy/` – future docker-compose overlays for CI orchestration.
+* `shared/gateway/` – Express/TypeScript gateway with ChatOps and SEAL proxy routes.
+* `shared/control/` – FastAPI control plane with profile loader, ChatOps configurator, and SEAL orchestration.
+* `registry/` – artifact layout and indexer helper.
+* `configs/` – rollout policies and SEAL defaults.
+* `scripts/` – installation and runtime helpers (Linux/Windows).
