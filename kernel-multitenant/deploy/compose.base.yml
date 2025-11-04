@@ -1,0 +1,8 @@
+version: "3.9"
+services:
+  gateway:
+    image: "local/gw"
+    profiles: ["base"]
+  control:
+    image: "local/ctrl"
+    profiles: ["base"]

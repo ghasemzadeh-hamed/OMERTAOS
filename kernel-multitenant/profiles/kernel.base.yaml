@@ -1,0 +1,23 @@
+name: base
+services:
+  gateway: enabled
+  control: enabled
+  vector_db: qdrant-lite
+  storage:
+    postgres: true
+    redis: true
+features:
+  chatops: enabled
+  router:
+    default_mode: auto
+    local_provider: ollama
+    local_model: "llama3.1-8b-instruct"
+limits:
+  rate_limit_rps: 2
+  max_tokens: 32000
+observability:
+  otel: light
+  logs_retention_days: 3
+security:
+  mtls: disabled
+  module_signing: disabled

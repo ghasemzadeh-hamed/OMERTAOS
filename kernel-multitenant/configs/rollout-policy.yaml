@@ -1,0 +1,10 @@
+gates:
+  min_delta: 0.02
+  max_toxicity: 0.02
+  eval_sets: ["core-dev", "safety-dev"]
+rollout:
+  stages: ["shadow", "canary", "live"]
+  abort_on_regression: true
+budget_limits:
+  daily_updates: 4
+  max_concurrent_jobs: 2
