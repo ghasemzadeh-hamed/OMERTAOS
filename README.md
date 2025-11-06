@@ -1,7 +1,4 @@
 
----
-
-```markdown
 # AION-OS (OMERTAOS)
 پلتفرم ماژولار ارکستراسیون ایجنت‌های هوش مصنوعی؛ شامل **Gateway (Node/TypeScript)**، **Control Plane (FastAPI/Python)**، **Console (Next.js)**، هسته‌های اجرا و **ماژول‌های Rust**، به‌همراه ابزارهای استقرار (Docker Compose) و اسناد مشارکت/امنیت.
 
@@ -488,10 +485,6 @@ docker compose down --volumes --remove-orphans
 
 ```
 
----
 
-
-::contentReference[oaicite:18]{index=18}
-```
 
 [1]: https://github.com/Hamedghz/OMERTAOS "GitHub - Hamedghz/OMERTAOS: aionOS is a modular AI orchestration platform combining a TypeScript gateway, FastAPI control plane, and Rust execution modules."
