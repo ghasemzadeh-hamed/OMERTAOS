@@ -6,7 +6,7 @@ import datetime as _dt
 import hashlib
 import json
 from pathlib import Path
-from typing import Dict, Iterable, List
+from typing import Any, Dict, Iterable, List
 
 import yaml
 
@@ -20,6 +20,15 @@ MANIFEST_DIRS = {
     "services": REGISTRY_ROOT / "services",
 }
 
+# Providers that require API keys before their manifests can be used.
+API_KEY_REQUIRED_PROVIDERS: set[str] = {
+    "openai",
+    "google",
+    "alibaba",
+    "deepseek",
+    "mistral",
+}
+
 REQUIRED_FIELDS = {
     "models": ["kind", "name", "provider", "version", "download"],
     "algorithms": ["kind", "name", "type", "entrypoint"],
@@ -27,11 +36,30 @@ REQUIRED_FIELDS = {
 }
 
 
-def _manifest_relative_paths(kind: str) -> List[str]:
+def _requires_api_key(kind: str, path: Path) -> bool:
+    if kind != "models":
+        return False
+    try:
+        relative = path.relative_to(REGISTRY_ROOT)
+    except ValueError:
+        return False
+    parts = relative.parts
+    if len(parts) < 2:
+        return False
+    provider = parts[1].lower()
+    return provider in API_KEY_REQUIRED_PROVIDERS
+
+
+def _manifest_relative_paths(kind: str) -> List[Dict[str, Any]]:
     base = MANIFEST_DIRS[kind]
-    manifests: List[str] = []
+    manifests: List[Dict[str, Any]] = []
     for path in sorted(base.rglob("*.yaml")):
-        manifests.append(path.relative_to(REGISTRY_ROOT).as_posix())
+        manifests.append(
+            {
+                "path": path.relative_to(REGISTRY_ROOT).as_posix(),
+                "requiresApiKey": _requires_api_key(kind, path),
+            }
+        )
     return manifests
 
 
