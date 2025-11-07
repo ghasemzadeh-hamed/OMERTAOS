@@ -1,4 +1,6 @@
-﻿services:
+version: "3.9"
+
+services:
   postgres:
     image: postgres:16
     environment:
@@ -11,28 +13,33 @@
       test: ["CMD-SHELL", "pg_isready -U ${AION_DB_USER:-aion} -d ${AION_DB_NAME:-aion} || exit 1"]
       interval: 5s
       timeout: 3s
-      retries: 60
-    networks: [aionos]
+      retries: 30
+    networks:
+      - aionos
 
   redis:
     image: redis:7
-    ports: ["6379:6379"]
+    ports:
+      - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
-      retries: 60
-    networks: [aionos]
+      retries: 30
+    networks:
+      - aionos
 
   qdrant:
     image: qdrant/qdrant:latest
-    ports: ["6333:6333"]
+    ports:
+      - "6333:6333"
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:6333/readyz"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:6333/"]
       interval: 5s
       timeout: 3s
-      retries: 60
-    networks: [aionos]
+      retries: 30
+    networks:
+      - aionos
 
   minio:
     image: minio/minio:latest
@@ -47,16 +54,14 @@
       test: ["CMD", "curl", "-fsS", "http://localhost:9000/minio/health/ready"]
       interval: 5s
       timeout: 5s
-      retries: 60
-    networks: [aionos]
+      retries: 30
+    networks:
+      - aionos
     volumes:
       - minio-data:/data
 
   control:
-    build:
-      context: .
-      dockerfile: control/Dockerfile
-    env_file: .env
+    build:`n      context: .`n      dockerfile: control/Dockerfile
     environment:
       AION_CONTROL_API_PREFIX: ${AION_CONTROL_API_PREFIX}
       AION_CONTROL_REDIS_URL: ${AION_CONTROL_REDIS_URL}
@@ -90,13 +95,11 @@
       timeout: 3s
       retries: 60
     command: ["bash", "-lc", "poetry run python -m app.grpc_server & exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]
-    networks: [aionos]
+    networks:
+      - aionos
 
   gateway:
-    build:
-      context: .
-      dockerfile: gateway/Dockerfile
-    env_file: .env
+    build:`n      context: .`n      dockerfile: gateway/Dockerfile
     environment:
       AION_GATEWAY_PORT: ${AION_GATEWAY_PORT}
       AION_GATEWAY_HOST: ${AION_GATEWAY_HOST}
@@ -123,15 +126,13 @@
       interval: 5s
       timeout: 3s
       retries: 60
-    networks: [aionos]
+    networks:
+      - aionos
     volumes:
       - ./config/certs:/app/config/certs:ro
 
   console:
-    build:
-      context: .
-      dockerfile: console/Dockerfile
-    env_file: .env
+    build:`n      context: .`n      dockerfile: console/Dockerfile
     environment:
       NEXTAUTH_URL: ${NEXTAUTH_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
@@ -147,10 +148,11 @@
       interval: 5s
       timeout: 3s
       retries: 60
-    networks: [aionos]
+    networks:
+      - aionos
 
 volumes:
-  minio-data: {}
+  minio-data:
 
 networks:
   aionos:
