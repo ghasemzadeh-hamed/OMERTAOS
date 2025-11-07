@@ -2,4 +2,4 @@
 
 from __future__ import annotations
 
-__all__ = ["control", "kernel", "shared"]
+__all__ = ["config", "control", "kernel", "llm", "shared", "utils"]

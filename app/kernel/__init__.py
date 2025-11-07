@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
-import importlib
-import sys
+from importlib import import_module
+from pkgutil import extend_path
 
-_module = importlib.import_module("os.kernel")
-sys.modules[__name__] = _module
+__path__ = extend_path(__path__, __name__)
 
-globals().update({k: v for k, v in vars(_module).items() if k not in globals()})
+_os_kernel = import_module("os.kernel")
 
-__all__ = getattr(_module, "__all__", [])
+for _name in dir(_os_kernel):
+    if _name.startswith("_"):
+        continue
+    globals().setdefault(_name, getattr(_os_kernel, _name))
+
+__all__ = list(getattr(_os_kernel, "__all__", []))

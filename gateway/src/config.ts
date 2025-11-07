@@ -51,6 +51,11 @@ export interface GatewayConfig {
   profile: 'user' | 'professional' | 'enterprise-vip';
   featureSeal: boolean;
   adminToken: string;
+  devKernel: {
+    enabled: boolean;
+    url: string;
+    profile: string;
+  };
 }
 
 const parseApiKeys = (): Record<string, { roles: string[]; tenant?: string }> => {
@@ -115,4 +120,9 @@ export const gatewayConfig: GatewayConfig = {
   profile,
   featureSeal,
   adminToken: process.env.AION_ADMIN_TOKEN || process.env.AUTH_TOKEN || '',
+  devKernel: {
+    enabled: process.env.AION_DEV_KERNEL_ENABLED !== 'false',
+    url: process.env.AION_DEV_KERNEL_URL || 'http://dev-kernel:9100/kernel',
+    profile: process.env.AION_DEV_KERNEL_PROFILE || 'dev-qwen-coder',
+  },
 };

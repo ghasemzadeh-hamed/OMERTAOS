@@ -1,0 +1,48 @@
+profile: dev-qwen-coder
+mode: orchestrated-coding
+
+orchestrator:
+  enabled: true
+  provider: "${ORCH_PROVIDER}"
+  model: "${ORCH_MODEL}"
+  endpoint: "${ORCH_ENDPOINT}"
+  api_key: "${ORCH_API_KEY}"
+  timeout_ms: 8000
+
+coder:
+  enabled: true
+  provider: "${CODER_PROVIDER}"
+  model: "${CODER_MODEL}"
+  endpoint: "${CODER_ENDPOINT}"
+  api_key: "${CODER_API_KEY}"
+  timeout_ms: 20000
+
+fallback:
+  offline_router_enabled: true
+  offline_patterns:
+    code_keywords:
+      - "code"
+      - "function"
+      - "class"
+      - "def "
+      - "import "
+      - "docker-compose"
+      - "Dockerfile"
+      - "PR"
+      - "patch"
+      - "error:"
+      - "traceback"
+      - ".py"
+      - ".ts"
+      - ".tsx"
+      - "refactor"
+      - "test"
+    doc_keywords:
+      - "explain"
+      - "describe"
+      - "document"
+      - "architecture"
+      - "design"
+      - "diagram"
+  coder_required_on_hard_tasks: true
+  on_coder_unavailable: "return_explained_plan"
