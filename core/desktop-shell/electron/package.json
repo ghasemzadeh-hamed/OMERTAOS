@@ -1,0 +1,8 @@
+{
+  "name": "aionos-desktop",
+  "version": "0.1.0",
+  "main": "main.ts",
+  "type": "module",
+  "dependencies": { "electron": "^30.0.0" },
+  "scripts": { "start": "electron ." }
+}

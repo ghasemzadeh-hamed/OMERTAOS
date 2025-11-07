@@ -1,0 +1,11 @@
+:root { --bg: #0b0f1a; --fg: #e6edf3; --accent: #1f6feb; --muted: #8b949e; }
+.aionos-wizard { background: var(--bg); color: var(--fg); min-height: 100vh; padding: 2rem; }
+.aionos-wizard .head h1 { margin-bottom: 1.5rem; }
+.aionos-wizard button { background: var(--accent); color: var(--fg); border: none; padding: 0.6rem 1.2rem; border-radius: 0.25rem; cursor: pointer; }
+.aionos-wizard button:disabled { opacity: 0.4; cursor: not-allowed; }
+.nav button { margin-right: 0.5rem; }
+
+.aionos-wizard .grid { display: flex; gap: 0.75rem; margin: 1rem 0; flex-wrap: wrap; }
+.aionos-wizard .grid button.sel { box-shadow: 0 0 0 2px var(--fg); }
+.aionos-wizard input { display: block; margin-top: 0.25rem; margin-bottom: 0.75rem; padding: 0.4rem 0.6rem; background: #11162b; color: var(--fg); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.25rem; }
+
