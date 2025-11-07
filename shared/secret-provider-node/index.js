@@ -1,17 +1,34 @@
 /* eslint-disable no-console */
-const DEFAULT_MOUNT = 'kv';
+const DEFAULT_MOUNT =
+  process.env.AION_VAULT_KV_MOUNT || process.env.VAULT_KV_MOUNT || 'secret';
 
 class SecretProviderError extends Error {}
 
 export class SecretProvider {
-  constructor({ vaultAddr, authMethod, namespace } = {}) {
-    this.vaultAddr = (vaultAddr || process.env.VAULT_ADDR || '').trim();
+  constructor({ vaultAddr, authMethod, namespace, kvMount } = {}) {
+    this.vaultAddr = (
+      vaultAddr || process.env.AION_VAULT_ADDR || process.env.VAULT_ADDR || ''
+    ).trim();
     if (!this.vaultAddr) {
-      throw new SecretProviderError('VAULT_ADDR must be defined');
+      throw new SecretProviderError('AION_VAULT_ADDR must be defined');
     }
 
-    this.authMethod = (authMethod || process.env.VAULT_AUTH_METHOD || 'token').toLowerCase();
-    this.namespace = namespace || process.env.VAULT_NAMESPACE;
+    this.authMethod = (
+      authMethod ||
+      process.env.AION_VAULT_AUTH_METHOD ||
+      process.env.VAULT_AUTH_METHOD ||
+      'token'
+    ).toLowerCase();
+    this.namespace =
+      namespace || process.env.AION_VAULT_NAMESPACE || process.env.VAULT_NAMESPACE;
+    this.kvMount = (
+      kvMount ||
+      process.env.AION_VAULT_KV_MOUNT ||
+      process.env.VAULT_KV_MOUNT ||
+      DEFAULT_MOUNT
+    )
+      .trim()
+      .replace(/^\/+|\/+$/g, '') || DEFAULT_MOUNT;
     this.token = null;
     this._authPromise = null;
   }
@@ -29,18 +46,22 @@ export class SecretProvider {
 
   async authenticate() {
     if (this.authMethod === 'token') {
-      const token = process.env.VAULT_TOKEN;
+      const token = process.env.AION_VAULT_TOKEN || process.env.VAULT_TOKEN;
       if (!token) {
-        throw new SecretProviderError('VAULT_TOKEN must be set for token authentication');
+        throw new SecretProviderError(
+          'AION_VAULT_TOKEN must be set for token authentication',
+        );
       }
       return token;
     }
     if (this.authMethod === 'approle') {
-      const roleId = process.env.VAULT_APPROLE_ROLE_ID;
-      const secretId = process.env.VAULT_APPROLE_SECRET_ID;
+      const roleId =
+        process.env.AION_VAULT_APPROLE_ROLE_ID || process.env.VAULT_APPROLE_ROLE_ID;
+      const secretId =
+        process.env.AION_VAULT_APPROLE_SECRET_ID || process.env.VAULT_APPROLE_SECRET_ID;
       if (!roleId || !secretId) {
         throw new SecretProviderError(
-          'VAULT_APPROLE_ROLE_ID and VAULT_APPROLE_SECRET_ID must be provided for AppRole auth',
+          'AION_VAULT_APPROLE_ROLE_ID and AION_VAULT_APPROLE_SECRET_ID must be provided for AppRole auth',
         );
       }
       const url = new URL('/v1/auth/approle/login', this.vaultAddr);
@@ -64,7 +85,9 @@ export class SecretProvider {
       }
       return token;
     }
-    throw new SecretProviderError(`Unsupported VAULT_AUTH_METHOD '${this.authMethod}'`);
+    throw new SecretProviderError(
+      `Unsupported AION_VAULT_AUTH_METHOD '${this.authMethod}'`,
+    );
   }
 
   splitPath(path) {
@@ -74,7 +97,7 @@ export class SecretProvider {
     }
     const segments = cleaned.split('/');
     if (segments.length === 1) {
-      return { mount: DEFAULT_MOUNT, secretPath: segments[0] };
+      return { mount: this.kvMount, secretPath: segments[0] };
     }
     if (segments.length >= 3 && segments[1] === 'data') {
       return { mount: segments[0], secretPath: segments.slice(2).join('/') };

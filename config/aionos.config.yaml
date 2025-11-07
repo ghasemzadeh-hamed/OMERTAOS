@@ -12,17 +12,28 @@ console:
 
 gateway:
   port: 8080
-  apiKey: ""
+  secrets:
+    api_keys: "secret/aionos/dev/gateway-api-keys"
+    admin_token: "secret/aionos/dev/admin-token"
+    tls: "secret/aionos/dev/gateway-tls"
+    mtls_ca: "secret/aionos/dev/mtls-ca"
 
 control:
   httpPort: 8000
   grpcPort: 50051
+  secrets:
+    database: "secret/aionos/dev/db-main"
+    minio: "secret/aionos/dev/minio"
+    tls: "secret/aionos/dev/control-tls"
+    client_ca: "secret/aionos/dev/mtls-ca"
 
 data:
-  postgres: { host: "postgres", port: 5432, user: "aionos", password: "aionos", db: "aionos" }
+  postgres:
+    secret_ref: "secret/aionos/dev/db-main"
   redis:    { host: "redis", port: 6379 }
   qdrant:   { host: "qdrant", port: 6333 }
-  minio:    { endpoint: "http://minio:9000", accessKey: "minioadmin", secretKey: "minioadmin", bucket: "aionos" }
+  minio:
+    secret_ref: "secret/aionos/dev/minio"
 
 models:
   provider: "local"        # local | openai | gemini | ...
@@ -49,7 +60,7 @@ agent:
       - "press"
 
 security:
-  agent_api_token: ""
+  agent_api_token_ref: "secret/aionos/dev/admin-token"
 
 telemetry:
   otelEnabled: true

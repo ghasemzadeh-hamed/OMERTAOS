@@ -51,9 +51,8 @@ class Settings(BaseSettings):
     hybrid_latency_p95: int = 2300
     grpc_host: str = "0.0.0.0"
     grpc_port: int = 50051
-    grpc_tls_cert: str = "config/certs/control-server.pem"
-    grpc_tls_key: str = "config/certs/control-server-key.pem"
-    grpc_tls_client_ca: str | None = "config/certs/dev-ca.pem"
+    grpc_tls_secret_path: str | None = "secret/aionos/dev/control-tls"
+    grpc_tls_client_ca_secret_path: str | None = None
     grpc_require_client_cert: bool = True
 
     postgres_secret_path: str = "kv/data/aionos/db-main"
@@ -62,14 +61,22 @@ class Settings(BaseSettings):
     _postgres_dsn: str | None = PrivateAttr(default=None)
     _minio_config: Dict[str, Any] | None = PrivateAttr(default=None)
     _secret_provider: SecretProvider | None = PrivateAttr(default=None)
+    _grpc_tls_certificate: bytes | None = PrivateAttr(default=None)
+    _grpc_tls_private_key: bytes | None = PrivateAttr(default=None)
+    _grpc_tls_client_ca: bytes | None = PrivateAttr(default=None)
 
     class Config:
         env_prefix = "AION_CONTROL_"
         env_file = ".env"
+        fields = {"environment": {"env": "AION_ENV"}}
+
+    environment: str = "dev"
 
     def initialise_secrets(self, provider: SecretProvider | None = None) -> None:
         disable_env = os.getenv("AION_CONTROL_DISABLE_SECRETS")
-        disable_secrets = disable_env == "1" or (disable_env is None and not os.getenv("VAULT_ADDR"))
+        disable_secrets = disable_env == "1" or (
+            disable_env is None and not os.getenv("AION_VAULT_ADDR")
+        )
 
         if disable_secrets:
             self._postgres_dsn = os.getenv(
@@ -105,6 +112,8 @@ class Settings(BaseSettings):
                 "secure": bool(minio_secret.get("secure", False)),
                 "bucket": minio_secret.get("bucket", "aion-raw"),
             }
+
+            self._load_tls_materials()
         except SecretProviderError:
             # Fall back to environment configuration when Vault integration is unavailable.
             self._postgres_dsn = os.getenv(
@@ -119,6 +128,15 @@ class Settings(BaseSettings):
                 "bucket": os.getenv("AION_CONTROL_MINIO_BUCKET", "aion-raw"),
             }
 
+            cert_env = os.getenv("AION_CONTROL_TLS_CERT")
+            key_env = os.getenv("AION_CONTROL_TLS_KEY")
+            ca_env = os.getenv("AION_CONTROL_TLS_CA")
+            if cert_env and key_env:
+                self._grpc_tls_certificate = cert_env.encode()
+                self._grpc_tls_private_key = key_env.encode()
+            if ca_env:
+                self._grpc_tls_client_ca = ca_env.encode()
+
     @property
     def postgres_dsn(self) -> str:
         if not self._postgres_dsn:
@@ -130,6 +148,79 @@ class Settings(BaseSettings):
         if not self._minio_config:
             raise SecretProviderError("MinIO configuration requested before secrets were initialised")
         return self._minio_config
+
+    @property
+    def grpc_tls_certificate(self) -> bytes | None:
+        return self._grpc_tls_certificate
+
+    @property
+    def grpc_tls_private_key(self) -> bytes | None:
+        return self._grpc_tls_private_key
+
+    @property
+    def grpc_tls_client_ca(self) -> bytes | None:
+        return self._grpc_tls_client_ca
+
+    def _load_tls_materials(self) -> None:
+        secret_path = os.getenv(
+            "AION_CONTROL_TLS_SECRET_PATH",
+            self.grpc_tls_secret_path or "",
+        ).strip()
+        client_ca_path = os.getenv(
+            "AION_CONTROL_TLS_CLIENT_CA_SECRET_PATH",
+            self.grpc_tls_client_ca_secret_path or "",
+        ).strip()
+
+        if secret_path:
+            payload = self._secret_provider.get_secret(secret_path)
+            if isinstance(payload, str):
+                raise SecretProviderError(
+                    "Control TLS secret must be an object containing certificate and private_key"
+                )
+            certificate = _first_string(payload, ["certificate", "cert", "public_cert"])
+            private_key = _first_string(payload, ["private_key", "key"])
+            ca_chain = _normalise_chain(payload.get("ca_chain") or payload.get("ca") or payload.get("certificate_authority"))
+            if not certificate or not private_key:
+                raise SecretProviderError(
+                    "Control TLS secret must include 'certificate' and 'private_key' fields"
+                )
+            self._grpc_tls_certificate = certificate.encode()
+            self._grpc_tls_private_key = private_key.encode()
+            if ca_chain:
+                self._grpc_tls_client_ca = b"\n".join([entry.encode() for entry in ca_chain])
+
+        if client_ca_path:
+            payload = self._secret_provider.get_secret(client_ca_path)
+            if isinstance(payload, str):
+                self._grpc_tls_client_ca = payload.encode()
+            else:
+                ca_chain = _normalise_chain(
+                    payload.get("ca_chain") or payload.get("ca") or payload.get("certificate")
+                )
+                if ca_chain:
+                    self._grpc_tls_client_ca = b"\n".join([entry.encode() for entry in ca_chain])
+
+
+def _first_string(payload: Dict[str, Any], keys: List[str]) -> str | None:
+    for key in keys:
+        value = payload.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return None
+
+
+def _normalise_chain(value: Any) -> list[str] | None:
+    if not value:
+        return None
+    if isinstance(value, str):
+        return [value.strip()]
+    if isinstance(value, list):
+        result: list[str] = []
+        for item in value:
+            if isinstance(item, str) and item.strip():
+                result.append(item.strip())
+        return result or None
+    return None
 
 
 @lru_cache()

@@ -21,13 +21,34 @@ class SecretProvider:
         vault_addr: str | None = None,
         auth_method: str | None = None,
         namespace: str | None = None,
+        kv_mount: str | None = None,
     ) -> None:
-        self._url = (vault_addr or os.getenv("VAULT_ADDR") or "").strip()
+        self._url = (
+            vault_addr
+            or os.getenv("AION_VAULT_ADDR")
+            or os.getenv("VAULT_ADDR")
+            or ""
+        ).strip()
         if not self._url:
-            raise SecretProviderError("VAULT_ADDR must be set to contact Vault")
+            raise SecretProviderError("AION_VAULT_ADDR must be set to contact Vault")
 
-        self._auth_method = (auth_method or os.getenv("VAULT_AUTH_METHOD") or "token").lower()
-        self._namespace = namespace or os.getenv("VAULT_NAMESPACE")
+        self._auth_method = (
+            auth_method
+            or os.getenv("AION_VAULT_AUTH_METHOD")
+            or os.getenv("VAULT_AUTH_METHOD")
+            or "token"
+        ).lower()
+        self._namespace = (
+            namespace
+            or os.getenv("AION_VAULT_NAMESPACE")
+            or os.getenv("VAULT_NAMESPACE")
+        )
+        self._kv_mount = (
+            kv_mount
+            or os.getenv("AION_VAULT_KV_MOUNT")
+            or os.getenv("VAULT_KV_MOUNT")
+            or "secret"
+        ).strip().strip("/")
         self._client = hvac.Client(url=self._url, namespace=self._namespace)
         self._token: str | None = None
         self._authenticate()
@@ -37,17 +58,23 @@ class SecretProvider:
     # ------------------------------------------------------------------
     def _authenticate(self) -> None:
         if self._auth_method == "token":
-            token = os.getenv("VAULT_TOKEN")
+            token = os.getenv("AION_VAULT_TOKEN") or os.getenv("VAULT_TOKEN")
             if not token:
-                raise SecretProviderError("VAULT_TOKEN must be set when using token auth")
+                raise SecretProviderError(
+                    "AION_VAULT_TOKEN must be set when using token auth"
+                )
             self._client.token = token
             self._token = token
         elif self._auth_method == "approle":
-            role_id = os.getenv("VAULT_APPROLE_ROLE_ID")
-            secret_id = os.getenv("VAULT_APPROLE_SECRET_ID")
+            role_id = os.getenv("AION_VAULT_APPROLE_ROLE_ID") or os.getenv(
+                "VAULT_APPROLE_ROLE_ID"
+            )
+            secret_id = os.getenv("AION_VAULT_APPROLE_SECRET_ID") or os.getenv(
+                "VAULT_APPROLE_SECRET_ID"
+            )
             if not role_id or not secret_id:
                 raise SecretProviderError(
-                    "VAULT_APPROLE_ROLE_ID and VAULT_APPROLE_SECRET_ID are required for approle auth"
+                    "AION_VAULT_APPROLE_ROLE_ID and AION_VAULT_APPROLE_SECRET_ID are required for approle auth"
                 )
             response = self._client.auth.approle.login(role_id=role_id, secret_id=secret_id)
             token = response.get("auth", {}).get("client_token")
@@ -93,14 +120,13 @@ class SecretProvider:
         raise SecretProviderError(f"Unexpected payload type for secret '{path}'")
 
     # ------------------------------------------------------------------
-    @staticmethod
-    def _split_mount_and_path(path: str) -> Tuple[str, str]:
+    def _split_mount_and_path(self, path: str) -> Tuple[str, str]:
         cleaned = path.strip().strip("/")
         if not cleaned:
             raise SecretProviderError("Secret path must not be empty")
         segments = cleaned.split("/")
         if len(segments) == 1:
-            return "kv", segments[0]
+            return self._kv_mount or "secret", segments[0]
         mount = segments[0]
         if len(segments) >= 3 and segments[1] == "data":
             return mount, "/".join(segments[2:])
@@ -109,6 +135,6 @@ class SecretProvider:
 
 @lru_cache(maxsize=1)
 def get_secret_provider() -> SecretProvider:
-    """Return a cached :class:`SecretProvider` instance configured from ``VAULT_*`` env vars."""
+    """Return a cached :class:`SecretProvider` instance configured from env vars."""
 
     return SecretProvider()
