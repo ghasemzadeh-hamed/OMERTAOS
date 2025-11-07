@@ -4,7 +4,7 @@ CLI=PYTHONPATH=cli python -m aion.cli
 PY ?= python
 
 dev-control:
-	cd control && uvicorn app.main:app --reload --port 8001
+cd control && uvicorn app.control.main:app --reload --port 8001
 
 doctor:
 	$(CLI) doctor --verbose

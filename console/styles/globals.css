@@ -4,17 +4,41 @@
 
 :root {
   color-scheme: dark;
+  --bg1: #0b1020;
+  --bg2: #101632;
+}
+
+html,
+body {
+  min-height: 100%;
 }
 
 body {
-  background: radial-gradient(circle at top left, rgba(76, 29, 149, 0.4), transparent 45%),
-    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.35), transparent 40%),
-    #020617;
+  background:
+    radial-gradient(1200px 800px at 12% 12%, rgba(93, 211, 255, 0.13), transparent),
+    radial-gradient(900px 700px at 82% 28%, rgba(255, 119, 230, 0.13), transparent),
+    linear-gradient(180deg, var(--bg1), var(--bg2));
+  color: rgb(226 232 240);
   min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: -20vmax;
+  z-index: -1;
+  background:
+    radial-gradient(40% 30% at 18% 72%, rgba(255, 255, 255, 0.12), transparent 65%),
+    radial-gradient(35% 26% at 78% 18%, rgba(255, 255, 255, 0.07), transparent 65%);
+  filter: blur(70px) saturate(120%);
+  transform: translateZ(0);
 }
 
 a {
   color: inherit;
+  transition: color 0.3s ease;
 }
 
 a:hover {
@@ -22,17 +46,20 @@ a:hover {
 }
 
 .glass {
-  @apply rounded-2xl border border-white/10 bg-white/5 shadow-xl backdrop-blur-md;
+  @apply rounded-2xl border border-white/10 bg-white/10 text-white/80 shadow-glass;
+  backdrop-filter: blur(18px) saturate(140%);
+  background-clip: padding-box;
 }
 
 .glass-accent {
-  background: radial-gradient(1200px 400px at 100% 0%, rgba(99, 102, 241, 0.08), transparent),
-    radial-gradient(800px 300px at 0% 100%, rgba(236, 72, 153, 0.08), transparent);
+  background:
+    radial-gradient(1200px 400px at 100% 0%, rgba(99, 102, 241, 0.12), transparent),
+    radial-gradient(800px 300px at 0% 100%, rgba(236, 72, 153, 0.12), transparent);
 }
 
 .glass-button {
   @apply rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white shadow-glass transition;
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(16px) saturate(130%);
 }
 
 .glass-button:hover {
@@ -45,6 +72,12 @@ a:hover {
 }
 
 .glass-input {
-  @apply w-full rounded-xl border border-white/20 bg-slate-950/40 px-3 py-2 text-sm text-white shadow-inner transition focus:border-cyan-300 focus:outline-none;
-  backdrop-filter: blur(18px);
+  @apply w-full rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-sm text-white shadow-inner transition focus:border-cyan-200 focus:outline-none;
+  backdrop-filter: blur(16px);
+}
+
+@supports not (backdrop-filter: blur(10px)) {
+  .glass {
+    background-color: rgba(15, 23, 42, 0.75);
+  }
 }

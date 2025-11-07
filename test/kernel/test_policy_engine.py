@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from kernel.policy_engine import PolicyEngine
+from app.kernel.policy_engine import PolicyEngine
 
 
 def test_policy_denies_role(tmp_path: Path) -> None:

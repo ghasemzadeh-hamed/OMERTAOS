@@ -6,11 +6,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-GRPC_PATH = ROOT / "control" / "app" / "grpc"
-if str(GRPC_PATH) not in sys.path:
-    sys.path.insert(0, str(GRPC_PATH))
-
-from control.app.core.state import ControlState
+from app.control.app.core.state import ControlState
 
 
 @pytest.mark.asyncio
