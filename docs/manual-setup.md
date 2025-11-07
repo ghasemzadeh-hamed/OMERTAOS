@@ -31,7 +31,7 @@ cd OMERTAOS
 Create `.env` files for the root project, console, and control plane. Copy the examples and adjust values to match your environment.
 
 ```bash
-cp .env.example .env
+cp config/templates/.env.example .env
 cp console/.env.example console/.env
 cp control/.env.example control/.env
 ```

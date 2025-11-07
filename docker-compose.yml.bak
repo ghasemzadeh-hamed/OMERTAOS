@@ -61,7 +61,7 @@ services:
       - minio-data:/data
 
   control:
-    build:`n      context: .`n      dockerfile: app/control/Dockerfile
+    build:`n      context: .`n      dockerfile: os/control/Dockerfile
     environment:
       AION_CONTROL_API_PREFIX: ${AION_CONTROL_API_PREFIX}
       AION_CONTROL_REDIS_URL: ${AION_CONTROL_REDIS_URL}
@@ -94,7 +94,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 60
-    command: ["python", "-m", "app.control.app.main"]
+    command: ["python", "-m", "os.control.os.main"]
     networks:
       - aionos
 

@@ -48,8 +48,8 @@ if [[ -x "${TOOLS_DIR}/preflight.sh" ]]; then
   fi
 fi
 
-if [[ ! -f .env && -f .env.example ]]; then
-  cp .env.example .env
+if [[ ! -f .env && -f config/templates/.env.example ]]; then
+  cp config/templates/.env.example .env
 fi
 
 if ! $NONINTERACTIVE; then

@@ -20,6 +20,7 @@ if ($Local) {
 
 Require-Cmd git
 Require-Cmd docker
+Require-Cmd python
 
 try {
   $wslv = wsl -l -v 2>$null
@@ -94,6 +95,12 @@ if ($targetDir -ne $scriptDir) {
   try { git pull origin $branch | Out-Null } catch {}
 }
 
+if ($env:PYTHONPATH) {
+  $env:PYTHONPATH = "$targetDir;$($env:PYTHONPATH)"
+} else {
+  $env:PYTHONPATH = $targetDir
+}
+
 Write-Host ""
 Write-Host "Select AION-OS kernel profile:"
 Write-Host "  1) user           - Quickstart, local-only, minimal"
@@ -109,23 +116,44 @@ switch ($choice) {
 
 $envPath = Join-Path $targetDir ".env"
 if (-not (Test-Path $envPath)) {
-  if (Test-Path (Join-Path $targetDir ".env.example")) {
-    Copy-Item (Join-Path $targetDir ".env.example") $envPath
+  if (Test-Path (Join-Path $targetDir "config/templates/.env.example")) {
+    Copy-Item (Join-Path $targetDir "config/templates/.env.example") $envPath
   } else {
     New-Item -ItemType File -Path $envPath | Out-Null
   }
 }
 
-(Get-Content $envPath) |
-  Where-Object {$_ -notmatch '^AION_PROFILE=' -and $_ -notmatch '^FEATURE_SEAL='} |
-  Set-Content $envPath
+$nextAuthSecret = [Guid]::NewGuid().ToString("N")
 
-Add-Content $envPath "AION_PROFILE=$profile"
-if ($profile -eq "enterprise-vip") {
-  Add-Content $envPath "FEATURE_SEAL=1"
-} else {
-  Add-Content $envPath "FEATURE_SEAL=0"
+$envOverrides = @{
+  "AION_GATEWAY_PORT"       = $gwPort
+  "CONTROL_PORT"            = $apiPort
+  "CONSOLE_PORT"            = $uiPort
+  "NEXTAUTH_URL"            = "http://localhost:$uiPort"
+  "NEXTAUTH_SECRET"         = $nextAuthSecret
+  "NEXT_PUBLIC_GATEWAY_URL" = "http://localhost:$gwPort"
+  "NEXT_PUBLIC_CONTROL_URL" = "http://localhost:$apiPort"
+  "AION_CONTROL_POSTGRES_DSN" = "postgresql://$pgUser:$pgPass@postgres:5432/$pgDb"
+  "AION_CONTROL_REDIS_URL"  = $redisUrl
+  "AION_GATEWAY_API_KEYS"   = "demo-key:admin|manager"
+  "TENANCY_MODE"            = "single"
 }
+
+$cliArgs = @("profile", "apply", $profile, "--root", $targetDir, "--env-file", $envPath)
+foreach ($entry in $envOverrides.GetEnumerator()) {
+  $cliArgs += @("--set", ("{0}={1}" -f $entry.Key, $entry.Value))
+}
+
+python -m aionos_core.cli @cliArgs
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "Profile rendering failed." -ForegroundColor Red
+  exit $LASTEXITCODE
+}
+
+$filteredEnv = Get-Content $envPath | Where-Object {$_ -notmatch '^ADMIN_USER=' -and $_ -notmatch '^ADMIN_PASS='}
+$filteredEnv | Set-Content $envPath
+Add-Content $envPath "ADMIN_USER=$adminUser"
+Add-Content $envPath "ADMIN_PASS=$adminPass"
 
 $profileDir = Join-Path $targetDir ".aionos"
 if (-not (Test-Path $profileDir)) {
@@ -150,7 +178,7 @@ $GATEWAY_URL = "http://gateway:$gwPort"
 
 $consoleEnv = @"
 NEXT_PUBLIC_API_BASE=$GATEWAY_URL
-NEXTAUTH_SECRET=$([Guid]::NewGuid().ToString("N"))
+NEXTAUTH_SECRET=$nextAuthSecret
 NEXTAUTH_URL=http://localhost:$uiPort
 DATABASE_URL=postgresql://$pgUser:$pgPass@postgres:5432/$pgDb
 REDIS_URL=$redisUrl

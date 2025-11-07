@@ -1,22 +1,13 @@
-"""Kernel package exports for AION-OS runtime."""
-from .ai_router import AIRouter, RouteContext, RouteDecision
-from .governance_hook import GovernanceHook
-from .integration_layer import ControlClient, IntegrationLayer
-from .personal_mode import PersonalKernel, PersonalKernelConfig
-from .policy_engine import PolicyEngine, PolicyResult
-from .scheduler import KernelScheduler, ScheduledTask
+"""Canonical import location for the AION-OS kernel runtime."""
 
-__all__ = [
-    "AIRouter",
-    "RouteContext",
-    "RouteDecision",
-    "GovernanceHook",
-    "IntegrationLayer",
-    "ControlClient",
-    "PersonalKernel",
-    "PersonalKernelConfig",
-    "PolicyEngine",
-    "PolicyResult",
-    "KernelScheduler",
-    "ScheduledTask",
-]
+from __future__ import annotations
+
+import importlib
+import sys
+
+_module = importlib.import_module("os.kernel")
+sys.modules[__name__] = _module
+
+globals().update({k: v for k, v in vars(_module).items() if k not in globals()})
+
+__all__ = getattr(_module, "__all__", [])

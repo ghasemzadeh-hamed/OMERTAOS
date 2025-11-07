@@ -4,7 +4,7 @@ from typing import Dict
 
 import pytest
 
-from app.control.routes.kernel_proposals import (
+from os.control.routes.kernel_proposals import (
     AdminActionRequest,
     ProposalRequest,
     apply_now,
@@ -13,7 +13,7 @@ from app.control.routes.kernel_proposals import (
     reject_proposal,
     submit_proposal,
 )
-from app.kernel.runtime import get_runtime, reset_runtime
+from os.kernel.runtime import get_runtime, reset_runtime
 
 
 @pytest.fixture(autouse=True)

@@ -1,10 +1,12 @@
 [project]
-name = "aionos-app"
-version = "0.1.0"
-description = "AION-OS core and control application package"
+name = "aionos-core"
+version = "0.2.0"
+description = "Unified AION-OS core meta-package and CLI"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "pyyaml>=6.0",
+]
 
 [project.optional-dependencies]
 control = [
@@ -66,9 +68,15 @@ all-ml = [
     "mitosheet",
 ]
 
+[project.scripts]
+aionos = "aionos_core.cli:main"
+
 [build-system]
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+py-modules = ["sitecustomize"]
+
 [tool.setuptools.packages.find]
-include = ["app*", "aionos_control*"]
+include = ["aionos_core*", "app*", "os*", "aionos_control*"]

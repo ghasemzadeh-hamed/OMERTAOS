@@ -2,7 +2,7 @@ FROM python:3.11-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH="/app:/app/app"
+    PYTHONPATH="/app:/app/os"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -18,7 +18,8 @@ WORKDIR /app
 
 COPY pyproject.toml ./pyproject.toml
 COPY README.md ./README.md
-COPY app /app/app
+COPY os /app/os
+COPY sitecustomize.py /app/sitecustomize.py
 COPY control/aionos_control /app/aionos_control
 
 RUN pip install --upgrade pip setuptools wheel
@@ -31,4 +32,4 @@ COPY control/ /app/control
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.control.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "os.control.main:app", "--host", "0.0.0.0", "--port", "8000"]

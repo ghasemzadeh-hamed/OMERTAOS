@@ -1,10 +1,10 @@
 .PHONY: dev-control doctor bundle edge-setup test status logs restart start stop setup train train-ci guard model-all
 
-CLI=PYTHONPATH=cli python -m aion.cli
+CLI=PYTHONPATH=$(CURDIR):cli python -m aion.cli
 PY ?= python
 
 dev-control:
-cd control && uvicorn app.control.main:app --reload --port 8001
+	cd control && PYTHONPATH=$(CURDIR):$(CURDIR)/os uvicorn os.control.main:app --reload --port 8001
 
 doctor:
 	$(CLI) doctor --verbose
@@ -16,7 +16,7 @@ edge-setup:
 	sudo deploy/scripts/aion_edge_setup.sh
 
 test:
-	pytest -q
+	PYTHONPATH=$(CURDIR) pytest -q
 
 APP_DIR ?= /opt/omerta/OMERTAOS
 

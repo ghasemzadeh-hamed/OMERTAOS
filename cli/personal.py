@@ -4,7 +4,7 @@ import argparse
 import json
 from dataclasses import asdict
 
-from app.kernel.osci import linux_kernel_entry, windows_kernel_entry
+from os.kernel.osci import linux_kernel_entry, windows_kernel_entry
 
 
 def register(parser: argparse.ArgumentParser) -> None:

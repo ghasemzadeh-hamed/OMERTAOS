@@ -1,0 +1,15 @@
+[Unit]
+Description=AIONOS Gateway API
+After=network.target
+
+[Service]
+Type=simple
+User=aionos
+WorkingDirectory=/opt/omertaos/gateway
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/env bash -lc 'npm run start'
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=aionos.target

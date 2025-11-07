@@ -99,7 +99,7 @@ if (Test-Path $preflight) {
 }
 
 $envFile = Join-Path $Root '.env'
-$envExample = Join-Path $Root '.env.example'
+$envExample = Join-Path $Root 'config/templates/.env.example'
 if (-not (Test-Path $envFile) -and (Test-Path $envExample)) {
   Copy-Item $envExample $envFile -Force
 }

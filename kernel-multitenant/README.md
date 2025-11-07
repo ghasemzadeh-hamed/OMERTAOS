@@ -51,7 +51,7 @@ Use `make run-user`, `make run-pro`, or `make run-ent` on Linux/macOS. On Window
 
 ## Directory Highlights
 
-* `profiles/` – declarative kernel definitions inheriting from `kernel.base.yaml`.
+* `config/profiles/` – declarative kernel definitions inheriting from `kernel.base.yaml`.
 * `deploy/` – future docker-compose overlays for CI orchestration.
 * `shared/gateway/` – Express/TypeScript gateway with ChatOps and SEAL proxy routes.
 * `shared/control/` – FastAPI control plane with profile loader, ChatOps configurator, and SEAL orchestration.

@@ -1,6 +1,6 @@
 import time
 
-from app.kernel.scheduler import KernelScheduler
+from os.kernel.scheduler import KernelScheduler
 
 
 def test_scheduler_prefers_critical_queue() -> None:
