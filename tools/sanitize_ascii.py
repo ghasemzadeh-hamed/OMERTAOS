@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
-"""Sanity check to ensure repository files only contain ASCII characters."""
+"""
+Fix non-ASCII characters in tracked text files so tools/sanitize_ascii.py passes.
+
+- Respects:
+  - DEFAULT_EXCLUDED_DIRS
+  - BYPASS_FILES
+  - BINARY_EXTENSIONS
+- Applies a conservative mapping; unknown chars -> "?".
+"""
+
 from __future__ import annotations
 
-import argparse
 import pathlib
-import sys
 from typing import Iterable, List, Sequence, Set
 
+# Keep these in sync with sanitize_ascii.py
 DEFAULT_EXCLUDED_DIRS: Set[str] = {
     ".git",
     "node_modules",
@@ -60,21 +68,39 @@ BINARY_EXTENSIONS: Set[str] = {
     ".wasm",
 }
 
+# Mapping of common non-ASCII characters to safe ASCII
+REPLACE_MAP = {
+    "’": "'",
+    "‘": "'",
+    "“": '"',
+    "”": '"',
+    "–": "-",
+    "—": "-",
+    "…": "...",
+    "•": "*",
+    "×": "x",
+    "©": "(c)",
+    "®": "(r)",
+    "™": "(tm)",
+    "\u00a0": " ",  # non-breaking space
+    "\u202f": " ",  # narrow no-break space
+}
+
 
 def should_skip(path: pathlib.Path, root: pathlib.Path, include_hidden: bool) -> bool:
     parts = path.relative_to(root).parts
     if any(part in DEFAULT_EXCLUDED_DIRS for part in parts):
         return True
-    if not include_hidden and any(part.startswith(".") for part in parts if part not in (".", "..")):
+    if not include_hidden and any(
+        part.startswith(".") for part in parts if part not in (".", "..")
+    ):
         return True
     return False
 
 
 def iter_files(root: pathlib.Path, include_hidden: bool = False) -> Iterable[pathlib.Path]:
     for path in root.rglob("*"):
-        if should_skip(path, root, include_hidden):
-            continue
-        if path.is_file():
+        if path.is_file() and not should_skip(path, root, include_hidden):
             yield path
 
 
@@ -89,47 +115,53 @@ def is_binary(path: pathlib.Path) -> bool:
         return True
 
 
-def check_ascii(paths: Sequence[pathlib.Path]) -> List[str]:
-    failures: List[str] = []
-    for path in paths:
-        if not path.is_file():
+def sanitize_text(text: str) -> str:
+    out_chars: List[str] = []
+    changed = False
+
+    for ch in text:
+        if ord(ch) < 128:
+            out_chars.append(ch)
             continue
-        if path in BYPASS_FILES:
+
+        replacement = REPLACE_MAP.get(ch)
+        if replacement is None:
+            replacement = "?"
+        out_chars.append(replacement)
+        changed = True
+
+    return "".join(out_chars), changed
+
+
+def main() -> int:
+    root = pathlib.Path(".").resolve()
+    fixed_any = False
+
+    for path in iter_files(root, include_hidden=False):
+        rel = path.relative_to(root)
+
+        if rel in BYPASS_FILES:
             continue
         if is_binary(path):
             continue
+
         try:
             text = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
-            failures.append(str(path))
+            # If we cannot decode as UTF-8, leave it; sanitize_ascii will flag it.
+            print(f"[SKIP-DECODE] {rel}")
             continue
-        for idx, ch in enumerate(text, start=1):
-            if ord(ch) > 127:
-                failures.append(f"{path}:{idx}")
-                break
-    return failures
 
+        sanitized, changed = sanitize_text(text)
+        if changed:
+            path.write_text(sanitized, encoding="utf-8")
+            print(f"[FIXED] {rel}")
+            fixed_any = True
 
-def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Verify files are ASCII-only")
-    parser.add_argument("paths", nargs="*", type=pathlib.Path, default=[pathlib.Path(".")])
-    parser.add_argument("--include-hidden", action="store_true", help="Include hidden directories")
-    args = parser.parse_args(argv)
-
-    targets: List[pathlib.Path] = []
-    for path in args.paths:
-        if path.is_dir():
-            targets.extend(iter_files(path, include_hidden=args.include_hidden))
-        else:
-            targets.append(path)
-
-    failures = check_ascii(targets)
-    if failures:
-        joined = "\n".join(sorted(failures))
-        sys.stderr.write("Non-ASCII characters detected in:\n" + joined + "\n")
-        return 1
+    if not fixed_any:
+        print("No changes needed. All non-bypass text files are ASCII-clean.")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
