@@ -4,6 +4,7 @@ from app.control.app.routes.admin_onboarding import router as admin_onboarding_r
 from app.control.app.routes.ai_chat import router as ai_chat_router
 from app.control.app.routes.agent import router as agent_router
 from app.control.app.routes.config import router as config_router
+from app.control.app.routes.profile import router as profile_router
 from app.control.app.routes.kernel_proposals import router as kernel_router
 from app.control.app.routes.memory import router as memory_router
 from app.control.app.routes.models import router as models_router
@@ -21,6 +22,7 @@ __all__ = [
     "ai_chat_router",
     "agent_router",
     "config_router",
+    "profile_router",
     "kernel_router",
     "memory_router",
     "models_router",

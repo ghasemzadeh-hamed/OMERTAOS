@@ -14,6 +14,7 @@ try:  # pragma: no cover - compatibility with legacy package layout
         ai_chat_router,
         agent_router,
         config_router,
+        profile_router,
         kernel_router,
         memory_router,
         models_router,
@@ -26,6 +27,7 @@ except Exception:  # pragma: no cover
         ai_chat_router,
         agent_router,
         config_router,
+        profile_router,
         kernel_router,
         memory_router,
         models_router,
@@ -98,6 +100,7 @@ app.include_router(admin_onboarding_router)
 app.include_router(ai_chat_router)
 app.include_router(agent_router)
 app.include_router(config_router)
+app.include_router(profile_router)
 app.include_router(kernel_router)
 app.include_router(memory_router)
 app.include_router(models_router)

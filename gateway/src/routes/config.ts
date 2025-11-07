@@ -60,6 +60,16 @@ export const registerConfigRoutes = (app: FastifyInstance) => {
     return proxyControl('GET', '/v1/config/status');
   });
 
+  app.get('/v1/config/profile', async () => {
+    return proxyControl('GET', '/v1/config/profile');
+  });
+
+  app.post('/v1/config/profile', async (request, _reply) => {
+    requireAdmin(request);
+    const payload = (request.body ?? {}) as Record<string, unknown>;
+    return proxyControl('POST', '/v1/config/profile', payload);
+  });
+
   app.get('/v1/models', async () => {
     try {
       return await proxyControl('GET', '/models');

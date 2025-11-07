@@ -94,6 +94,49 @@ if ($targetDir -ne $scriptDir) {
   try { git pull origin $branch | Out-Null } catch {}
 }
 
+Write-Host ""
+Write-Host "Select AION-OS kernel profile:"
+Write-Host "  1) user           - Quickstart, local-only, minimal"
+Write-Host "  2) professional   - Explorer + Terminal + IoT"
+Write-Host "  3) enterprise-vip - SEAL, GPU, advanced routing"
+$choice = Read-Host "Enter 1-3 [1]"
+
+switch ($choice) {
+  "2" { $profile = "professional" }
+  "3" { $profile = "enterprise-vip" }
+  default { $profile = "user" }
+}
+
+$envPath = Join-Path $targetDir ".env"
+if (-not (Test-Path $envPath)) {
+  if (Test-Path (Join-Path $targetDir ".env.example")) {
+    Copy-Item (Join-Path $targetDir ".env.example") $envPath
+  } else {
+    New-Item -ItemType File -Path $envPath | Out-Null
+  }
+}
+
+(Get-Content $envPath) |
+  Where-Object {$_ -notmatch '^AION_PROFILE=' -and $_ -notmatch '^FEATURE_SEAL='} |
+  Set-Content $envPath
+
+Add-Content $envPath "AION_PROFILE=$profile"
+if ($profile -eq "enterprise-vip") {
+  Add-Content $envPath "FEATURE_SEAL=1"
+} else {
+  Add-Content $envPath "FEATURE_SEAL=0"
+}
+
+$profileDir = Join-Path $targetDir ".aionos"
+if (-not (Test-Path $profileDir)) {
+  New-Item -ItemType Directory -Force -Path $profileDir | Out-Null
+}
+$profileFile = Join-Path $profileDir "profile.json"
+$profileObject = @{ profile = $profile; setupDone = $true; updatedAt = [DateTime]::UtcNow.ToString("o") }
+$profileObject | ConvertTo-Json | Set-Content -Path $profileFile
+
+Write-Host "Selected kernel profile: $profile"
+
 function Write-EnvFile {
   param([string]$path, [string]$content)
   $dir = Split-Path $path -Parent

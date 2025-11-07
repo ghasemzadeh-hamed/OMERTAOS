@@ -266,6 +266,9 @@ cd OMERTAOS
 ./install.sh
 ```
 
+در حین اجرای اسکریپت، یکی از پروفایل‌های هسته (`user`، `professional` یا `enterprise-vip`) را انتخاب می‌کنید.
+این انتخاب در فایل‌های `.env` و `.aionos/profile.json` ذخیره می‌شود و تمام سرویس‌ها آن را می‌خوانند.
+
 روش دستی (سطرهای کلیدی):
 
 ```bash
@@ -317,6 +320,8 @@ git clone https://github.com/Hamedghz/OMERTAOS.git
 cd OMERTAOS
 .\install_all_win.ps1
 ```
+
+نسخهٔ Windows نیز همان انتخاب پروفایل را انجام می‌دهد و مقدار نهایی را در `.env` و `.aionos/profile.json` قرار می‌دهد.
 
 روش دستی (خلاصهٔ گام‌ها):
 
