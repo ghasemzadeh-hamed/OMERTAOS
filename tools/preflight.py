@@ -23,7 +23,7 @@ OPTIONAL_EXECUTABLES: Tuple[str, ...] = ("ollama",)
 ROOT = Path(__file__).resolve().parents[1]
 ENV_FILE = ROOT / ".env"
 ENV_SCHEMA = ROOT / ".env.schema"
-ENV_EXAMPLE = ROOT / ".env.example"
+ENV_EXAMPLE = ROOT / "config" / "templates" / ".env.example"
 CONFIG_DIR = ROOT / "config"
 DEFAULT_CONFIG_FILE = CONFIG_DIR / "aionos.config.yaml"
 

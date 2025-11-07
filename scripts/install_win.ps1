@@ -51,7 +51,7 @@ if (-not (Test-Path (Join-Path $AppDir '.git'))) {
 }
 
 if (-not (Test-Path $EnvFile)) {
-    Copy-Item (Join-Path $AppDir '.env.example') $EnvFile
+    Copy-Item (Join-Path $AppDir 'config/templates/.env.example') $EnvFile
 }
 
 foreach ($project in @('console', 'gateway')) {
@@ -95,7 +95,7 @@ pnpm build | Out-Null
 Pop-Location
 
 if (-not (Test-Path $EnvFile)) {
-    Copy-Item (Join-Path $AppDir '.env.example') $EnvFile
+    Copy-Item (Join-Path $AppDir 'config/templates/.env.example') $EnvFile
 }
 
 function Get-EnvValue {

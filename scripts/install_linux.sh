@@ -152,7 +152,7 @@ PY
 create_env_file() {
   if [ ! -f "$ENV_FILE" ]; then
     echo "Creating environment file"
-    run_as_app "cp '$APP_DIR/.env.example' '$ENV_FILE'"
+    run_as_app "cp '$APP_DIR/config/templates/.env.example' '$ENV_FILE'"
   fi
 
   run_as_app "cd '$APP_DIR' && ln -sf ../.env gateway/.env"

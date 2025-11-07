@@ -73,7 +73,7 @@ $env:DB_PASS = 'SuperSecret123!'
 
 ## Linux installation
 
-1. Review `.env.example` and set any desired environment overrides (ports, database name, secrets).
+1. Review `config/templates/.env.example` and set any desired environment overrides (ports, database name, secrets).
 2. Run `scripts/install_linux.sh` (or use the curl one-liner shown above). The script performs:
    - Package installation via `apt`.
    - Creation of the `omerta` service account and checkout of the repository into `/opt/omerta/OMERTAOS` (override with `APP_ROOT`).
@@ -101,7 +101,7 @@ services.
    - Clone or update the repository into `C:\Omerta\OMERTAOS` (override with `APP_ROOT`).
    - Create/update a Python virtual environment and install control-plane dependencies.
    - Install `pnpm` globally (if missing), then install/build the console and gateway.
-   - Copy `.env.example` to `.env` (first run) and keep gateway/console copies in sync.
+   - Copy `config/templates/.env.example` to `.env` (first run) and keep gateway/console copies in sync.
    - Provision PostgreSQL objects when `psql` is available (warnings are printed if skipped).
    - Register three Windows Services using NSSM: `OmertaControl`, `OmertaGateway`, `OmertaConsole`.
    - Start all services automatically.

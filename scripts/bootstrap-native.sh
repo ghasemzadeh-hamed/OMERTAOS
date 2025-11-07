@@ -57,7 +57,7 @@ cd "${REPO_DIR}"
 export PYTHONPATH="${REPO_DIR}"
 
 if [[ ! -f .env ]]; then
-  cp .env.example .env
+  cp config/templates/.env.example .env
 fi
 if [[ -d bigdata && -f bigdata/.env.example && ! -f bigdata/.env ]]; then
   cp bigdata/.env.example bigdata/.env

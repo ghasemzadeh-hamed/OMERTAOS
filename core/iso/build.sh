@@ -67,18 +67,25 @@ sudo rsync -a \
   --exclude '.github' \
   --exclude 'node_modules' \
   "$REPO_ROOT/" "$CHROOT/opt/omertaos/"
+# 5) Register the meta-package so first boot can call ``aionos``.
+sudo chroot "$CHROOT" /bin/bash <<EOF_INSTALL
+set -e
+cd /opt/omertaos
+python3 -m pip install --no-deps --upgrade pip
+python3 -m pip install --no-deps -e .
+EOF_INSTALL
 
-# 5) Produce the squashfs filesystem image.
+# 6) Produce the squashfs filesystem image.
 mkdir -p "$ISO_TREE/casper" "$ISO_TREE/EFI/boot" "$ISO_TREE/boot/grub"
 sudo mksquashfs "$CHROOT" "$ISO_TREE/casper/filesystem.squashfs" -e boot
 
-# 6) Copy kernel and initrd artifacts from the chroot.
+# 7) Copy kernel and initrd artifacts from the chroot.
 KERNEL=$(cd "$CHROOT/boot" && ls vmlinuz-* | head -n1)
 INITRD=$(cd "$CHROOT/boot" && ls initrd.img-* | head -n1)
 sudo cp "$CHROOT/boot/$KERNEL" "$ISO_TREE/casper/vmlinuz"
 sudo cp "$CHROOT/boot/$INITRD" "$ISO_TREE/casper/initrd"
 
-# 7) Write a simple GRUB configuration for the live environment.
+# 8) Write a simple GRUB configuration for the live environment.
 cat > "$ISO_TREE/boot/grub/grub.cfg" <<'EOF_GRUB'
 set default=0
 set timeout=5
@@ -89,7 +96,7 @@ menuentry "AION-OS Installer" {
 }
 EOF_GRUB
 
-# 8) Build the hybrid ISO with grub-mkrescue.
+# 9) Build the hybrid ISO with grub-mkrescue.
 ISO_OUT="$ROOT/../aionos-installer.iso"
 grub-mkrescue -o "$ISO_OUT" "$ISO_TREE" --compress=xz
 

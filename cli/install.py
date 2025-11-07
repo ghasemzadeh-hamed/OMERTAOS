@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 def register(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--profile", default="profiles/user/config.profile.yaml", help="Profile to install")
+    parser.add_argument("--profile", default="config/profiles/user/config.profile.yaml", help="Profile to install")
     parser.add_argument("--dry-run", action="store_true", help="Validate without applying changes")
 
 

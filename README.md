@@ -77,15 +77,27 @@ OMERTAOS/
 ├─ config-schemas/            # اسکیماهای یکنواخت برای کانفیگ
 ├─ config/ , configs/         # کانفیگ‌های اجرای سرویس‌ها
 ├─ console/                   # کنسول وب (Next.js)
-├─ control/                   # Control Plane (FastAPI/Python)
+├─ app/                       # هستهٔ سرویس‌ها (نام‌های canonical)
+│   ├─ control/               # Control Plane (FastAPI/Python)
+│   ├─ kernel/                # Runtime schedulers و policy engine
+│   └─ shared/                # کتابخانه‌های مشترک کانفیگ/پروفایل
+├─ core/                      # ابزار نصب و بوت
+│   ├─ iso/                   # ساخت ایمیج بوتیبل (Ubuntu Jammy)
+│   ├─ installer/             # منطق مشترک نصب (Python)
+│   ├─ installer-ui/          # تنظیمات Calamares / UI نصب
+│   ├─ firstboot/             # سرویس‌ها و اسکریپت بوت اولیه
+│   ├─ systemd/               # یونیت‌های AIONOS برای نصب native
+│   └─ windows/               # راه‌اندازهای Windows / NSSM
+├─ config/                    # تنظیمات مشترک
+│   ├─ profiles/              # پروفایل‌های user/pro/enterprise
+│   └─ templates/             # تمپلیت‌های .env و کانفیگ پایه
 ├─ deploy/                    # فایل‌ها/اسکریپت‌های استقرار
 ├─ execution/                 # لایه‌های اجرای وظیفه
 ├─ explorer/                  # ابزارهای اکتشافی/دیباگ
-├─ gateway/                   # API Gateway (TypeScript/Node)
-├─ kernel/ , kernel-multitenant/   # هستهٔ اجرا (تک/چند مستاجر)
 ├─ modules/                   # ماژول‌های Rust (اجرا/درایورها)
+├─ gateway/                   # API Gateway (TypeScript/Node)
+├─ console/                   # Glass UI (Next.js)
 ├─ policies/                  # سیاست‌ها/قوانین/Workflowها
-├─ profiles/                  # پروفایل‌ها/تمپلیت‌های اجرا
 ├─ protos/aion/v1/            # پروتکل‌ها/تعاریف (gRPC/Proto)
 ├─ schemas/                   # اسکیماهای داده
 ├─ scripts/                   # اسکریپت‌های کمکی (ساخت/دیپلوی)
@@ -98,7 +110,7 @@ OMERTAOS/
 ├─ docker-compose.local.yml   # تنظیمات محلی/توسعه
 │
 ├─ .editorconfig  .gitignore  .pre-commit-config.yaml
-├─ .env.example               # نمونهٔ متغیرهای محیطی
+├─ config/templates/.env.example  # نمونهٔ متغیرهای محیطی
 ├─ Makefile                   # اهداف ساخت/تست/کمک
 ├─ install.sh / uninstall.sh  # نصب/حذف برای Unix
 ├─ install.ps1 / uninstall.ps1
@@ -125,7 +137,7 @@ OMERTAOS/
 ## پیکربندی (Environment)
 ۱) یک فایل پیکربندی بسازید:
 ```bash
-cp .env.example .env
+cp config/templates/.env.example .env
 ````
 
 ۲) کلیدهای متداول (بنا به نیاز پروژه):
@@ -154,7 +166,7 @@ JWT_SECRET=change_me
 CORS_ORIGINS=*
 ```
 
-> مقادیر پیش‌فرض را مطابق نیاز محیط خود اصلاح کنید. نمونهٔ `.env.example` در ریشه موجود است. ([GitHub][1])
+> مقادیر پیش‌فرض را مطابق نیاز محیط خود اصلاح کنید. نمونهٔ `.env.example` در مسیر `config/templates/` نگه‌داری می‌شود. ([GitHub][1])
 
 ---
 
@@ -293,7 +305,7 @@ cargo build --release
 cd ..
 
 # 5) تنظیم متغیرها
-cp .env.example .env
+cp config/templates/.env.example .env
 # ویرایش .env و پورت‌ها/URL ها را ست کنید
 
 # 6) اجرای سرویس‌ها (در ترمینال‌های جداگانه یا با tmux)
@@ -482,7 +494,7 @@ cargo build --release
 
 ```bash
 # ساخت فایل env
-cp .env.example .env
+cp config/templates/.env.example .env
 
 # Docker پایه
 docker compose -f docker-compose.yml up -d
