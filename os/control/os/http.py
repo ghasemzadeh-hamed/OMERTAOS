@@ -40,6 +40,7 @@ from os.control.os.api.datasets import router as datasets_router
 from os.control.os.api.packages import router as packages_router
 from os.control.os.api.backup import router as backup_router
 from os.control.os.api.update import router as update_router
+from os.control.os.api.provisioner import router as provisioner_router
 from os.control.aionos_profiles import get_profile
 from os.control.os.core.deps import get_state
 from os.control.os.core.tenancy import tenancy_middleware
@@ -145,3 +146,4 @@ app.include_router(datasets_router)
 app.include_router(packages_router)
 app.include_router(backup_router)
 app.include_router(update_router)
+app.include_router(provisioner_router)

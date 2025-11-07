@@ -1,0 +1,10 @@
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    ports:
+      - "{{N8N_PORT}}:5678"
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: "false"
+    volumes:
+      - "{{N8N_DATA_DIR}}:/home/node/.n8n"
