@@ -1,9 +1,0 @@
-services:
-  gateway:
-    profiles: ["ent"]
-  control:
-    profiles: ["ent"]
-  seal:
-    profiles: ["ent"]
-  gpu:
-    profiles: ["ent"]

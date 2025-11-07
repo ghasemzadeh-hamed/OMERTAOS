@@ -1,0 +1,114 @@
+services:
+  gateway:
+    profiles: ["enterprise"]
+    environment:
+      AION_GATEWAY_RATE_LIMIT: ${AION_GATEWAY_RATE_LIMIT:-1000}
+      AION_GATEWAY_TELEMETRY: "enterprise"
+      AION_GATEWAY_GLOBAL_ROUTER: policy-router
+    depends_on:
+      - policy-router
+
+  control:
+    profiles: ["enterprise"]
+    env_file:
+      - ./env.enterprise
+    environment:
+      AION_ROUTER_MODE: policy
+      AION_MODEL_DEFAULT_PROVIDER: registry
+      AION_BIGDATA_EVENT_BUS: kafka:9092
+      AION_OBSERVABILITY_ENDPOINT: http://otel-collector:4318
+    depends_on:
+      - seal-orchestrator
+      - kafka
+      - clickhouse
+
+  kernel:
+    profiles: ["enterprise"]
+    env_file:
+      - ./env.enterprise
+    environment:
+      AION_SCHEDULER_MAX_CONCURRENCY: ${AION_MAX_PARALLEL_TASKS:-32}
+      AION_MODEL_BUNDLE: gpu-dedicated
+      AION_SEAL_ENDPOINT: http://seal-orchestrator:8080
+      AION_AUDIT_LOG_ENDPOINT: http://opensearch:9200
+    depends_on:
+      - seal-orchestrator
+      - kafka
+
+  console:
+    profiles: ["enterprise"]
+    environment:
+      NEXT_PUBLIC_API_PROFILE: enterprise
+      NEXT_PUBLIC_ENABLE_MONITORING: "true"
+      NEXT_PUBLIC_ENTERPRISE_CONTROLS: "true"
+
+  postgres:
+    profiles: ["enterprise"]
+    environment:
+      POSTGRES_DB: aionos_enterprise
+
+  redis:
+    profiles: ["enterprise"]
+    environment:
+      REDIS_MAXMEMORY: 2048mb
+
+  minio:
+    profiles: ["enterprise"]
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: ${AION_MINIO_ROOT_PASSWORD:-minioenterprise}
+
+  model-registry:
+    profiles: ["enterprise"]
+    environment:
+      REGISTRY_PROFILE: enterprise
+      REGISTRY_AUDIT_LOG_ENDPOINT: http://opensearch:9200
+
+  kernel-worker-gpu:
+    profiles: ["enterprise"]
+    deploy:
+      replicas: 2
+
+  mqtt-broker:
+    profiles: ["enterprise"]
+
+  nats:
+    profiles: ["enterprise"]
+
+  seal-orchestrator:
+    profiles: ["enterprise"]
+    environment:
+      SEAL_AUDIT_SINK: clickhouse:8123
+      SEAL_POLICY_REGISTRY: http://model-registry:8080
+
+  kafka:
+    profiles: ["enterprise"]
+
+  zookeeper:
+    profiles: ["enterprise"]
+
+  clickhouse:
+    profiles: ["enterprise"]
+
+  opensearch:
+    profiles: ["enterprise"]
+
+  otel-collector:
+    profiles: ["enterprise"]
+
+  prometheus:
+    profiles: ["enterprise"]
+
+  grafana:
+    profiles: ["enterprise"]
+
+  policy-router:
+    profiles: ["enterprise"]
+    environment:
+      POLICY_ROUTER_CONTROL_ENDPOINT: http://control:8000
+      POLICY_ROUTER_SEAL_ENDPOINT: http://seal-orchestrator:8080
+      POLICY_ROUTER_DEFAULT_STRATEGY: latency-aware
+    depends_on:
+      - seal-orchestrator
+      - control
+      - kafka

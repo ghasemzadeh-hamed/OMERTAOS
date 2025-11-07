@@ -1,9 +1,0 @@
-services:
-  gateway:
-    profiles: ["pro"]
-  control:
-    profiles: ["pro"]
-  explorer:
-    profiles: ["pro"]
-  terminal:
-    profiles: ["pro"]

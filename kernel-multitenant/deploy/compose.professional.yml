@@ -1,0 +1,67 @@
+services:
+  gateway:
+    profiles: ["professional"]
+    environment:
+      AION_GATEWAY_RATE_LIMIT: ${AION_GATEWAY_RATE_LIMIT:-250}
+      AION_GATEWAY_TELEMETRY: "basic"
+
+  control:
+    profiles: ["professional"]
+    env_file:
+      - ./env.professional
+    environment:
+      AION_ROUTER_MODE: advanced
+      AION_MODEL_DEFAULT_PROVIDER: registry
+      AION_IOT_EVENT_BUS: nats://nats:4222
+    depends_on:
+      - model-registry
+      - nats
+
+  kernel:
+    profiles: ["professional"]
+    env_file:
+      - ./env.professional
+    environment:
+      AION_SCHEDULER_MAX_CONCURRENCY: ${AION_MAX_PARALLEL_TASKS:-8}
+      AION_MODEL_BUNDLE: gpu-shared
+      AION_IOT_BROKER_URL: mqtt://mqtt-broker:1883
+    depends_on:
+      - model-registry
+
+  console:
+    profiles: ["professional"]
+    environment:
+      NEXT_PUBLIC_API_PROFILE: professional
+      NEXT_PUBLIC_ENABLE_MONITORING: "true"
+
+  postgres:
+    profiles: ["professional"]
+    environment:
+      POSTGRES_DB: aionos_pro
+
+  redis:
+    profiles: ["professional"]
+    environment:
+      REDIS_MAXMEMORY: 1024mb
+
+  qdrant:
+    profiles: ["professional"]
+
+  minio:
+    profiles: ["professional"]
+
+  model-registry:
+    profiles: ["professional"]
+    environment:
+      REGISTRY_PROFILE: professional
+
+  kernel-worker-gpu:
+    profiles: ["professional"]
+    deploy:
+      replicas: 1
+
+  mqtt-broker:
+    profiles: ["professional"]
+
+  nats:
+    profiles: ["professional"]

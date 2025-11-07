@@ -1,5 +1,57 @@
 services:
   gateway:
     profiles: ["user"]
+    environment:
+      AION_GATEWAY_RATE_LIMIT: ${AION_GATEWAY_RATE_LIMIT:-50}
+      AION_GATEWAY_TELEMETRY: "disabled"
+
   control:
     profiles: ["user"]
+    env_file:
+      - ./env.user
+    environment:
+      AION_ROUTER_MODE: basic
+      AION_MODEL_DEFAULT_PROVIDER: local
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 2g
+
+  kernel:
+    profiles: ["user"]
+    env_file:
+      - ./env.user
+    environment:
+      AION_SCHEDULER_MAX_CONCURRENCY: ${AION_MAX_PARALLEL_TASKS:-2}
+      AION_MODEL_BUNDLE: local-cpu
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 4g
+
+  console:
+    profiles: ["user"]
+    environment:
+      NEXT_PUBLIC_API_PROFILE: user
+
+  postgres:
+    profiles: ["user"]
+    environment:
+      POSTGRES_DB: aionos_user
+
+  redis:
+    profiles: ["user"]
+    environment:
+      REDIS_MAXMEMORY: 256mb
+
+  vector-lite:
+    profiles: ["user"]
+    environment:
+      POSTGRES_DB: vectors_user
+      POSTGRES_MAX_CONNECTIONS: 50
+    deploy:
+      resources:
+        limits:
+          memory: 1g
