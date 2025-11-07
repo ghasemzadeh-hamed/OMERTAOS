@@ -120,8 +120,8 @@ if [[ -n "$APP_MODULE" ]]; then
   MOD="${MOD//\//.}"
   UVICORN_APP="${MOD}:app"
 else
-  # fallback commonly used path per README (app.main:app)
-  UVICORN_APP="app.main:app"
+  # fallback commonly used path per README (app.control.main:app)
+  UVICORN_APP="app.control.main:app"
 fi
 echo "$UVICORN_APP" > .uvicorn_app
 deactivate

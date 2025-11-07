@@ -1,19 +1,9 @@
-import sys
-from pathlib import Path
-
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-GRPC_PATH = ROOT / "control" / "app" / "grpc"
-if str(GRPC_PATH) not in sys.path:
-    sys.path.insert(0, str(GRPC_PATH))
-
-from control.app.grpc.aion.v1 import tasks_pb2
-from control.app.grpc_server import AionTasksService
-from control.app.orchestrator import orchestrator
-from control.app.router_engine import decision_engine
+from app.control.app.aion_grpc.aion.v1 import tasks_pb2
+from app.control.app.grpc_server import AionTasksService
+from app.control.app.orchestrator import orchestrator
+from app.control.app.router_engine import decision_engine
 
 
 @pytest.mark.asyncio

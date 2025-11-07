@@ -55,7 +55,7 @@
   control:
     build:
       context: .
-      dockerfile: control/Dockerfile
+      dockerfile: app/control/Dockerfile
     env_file: .env
     environment:
       AION_CONTROL_API_PREFIX: ${AION_CONTROL_API_PREFIX}
@@ -69,6 +69,7 @@
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      PYTHONPATH: /srv/app:/srv/app/app
     volumes:
       - ./policies:${AION_CONTROL_POLICIES_DIRECTORY}
       - ./config/certs:/app/config/certs:ro
@@ -78,7 +79,7 @@
       redis:
         condition: service_healthy
       qdrant:
-        condition: service_healthy
+        condition: service_started
       minio:
         condition: service_healthy
     ports:
@@ -89,7 +90,7 @@
       interval: 5s
       timeout: 3s
       retries: 60
-    command: ["bash", "-lc", "poetry run python -m app.grpc_server & exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+    command: ["python", "-m", "app.control.app.main"]
     networks: [aionos]
 
   gateway:
