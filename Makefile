@@ -53,3 +53,12 @@ guard:
 	$(PY) scripts/guard_generalization.py
 
 model-all: setup train guard
+
+run-user:
+	AION_PROFILE=user docker compose -f docker-compose.yml up -d
+
+run-pro:
+	AION_PROFILE=professional docker compose -f docker-compose.yml up -d
+
+run-ent:
+	AION_PROFILE=enterprise-vip FEATURE_SEAL=1 docker compose -f docker-compose.yml up -d

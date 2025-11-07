@@ -184,6 +184,25 @@ docker compose down
 
 > فایل `docker-compose.yml` در ریشه موجود است. ([GitHub][1])
 
+### انتخاب پروفایل کرنل
+
+با استفاده از متغیر محیطی `AION_PROFILE` می‌توانید بین پروفایل‌های `user`, `professional` و `enterprise-vip` جابجا شوید. برای فعال کردن SEAL و رجیستری آرتیفکت‌ها در حالت Enterprise، متغیر `FEATURE_SEAL=1` را نیز ست کنید.
+
+نمونه‌های رایج:
+
+```bash
+# اجرا با Docker Compose
+make run-user
+make run-pro
+make run-ent
+
+# نصب بومی بدون Docker
+AION_PROFILE=professional ./install.sh
+AION_PROFILE=user ./install.ps1
+```
+
+در حالت Enterprise-VIP، Control Plane و Gateway به صورت خودکار سرویس‌های SEAL، GPU runtime و رجیستری آرتیفکت را فعال می‌کنند.
+
 ### پروفایل vLLM / سروینگ مدل
 
 برای راه‌اندازی سروینگ مدل (LLM) با vLLM:

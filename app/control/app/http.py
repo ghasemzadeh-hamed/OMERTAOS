@@ -5,25 +5,32 @@ import asyncio
 
 from fastapi import FastAPI
 
+import asyncio
+import os
+
 try:  # pragma: no cover - compatibility with legacy package layout
     from app.control.app.routes import (
         admin_onboarding_router,
         ai_chat_router,
         agent_router,
+        config_router,
         kernel_router,
         memory_router,
         models_router,
         rag_router,
+        seal_router,
     )
 except Exception:  # pragma: no cover
     from routes import (  # type: ignore
         admin_onboarding_router,
         ai_chat_router,
         agent_router,
+        config_router,
         kernel_router,
         memory_router,
         models_router,
         rag_router,
+        seal_router,
     )
 
 from app.control.app.api import (
@@ -34,6 +41,7 @@ from app.control.app.api import (
     router_policy_router,
     webhook_router,
 )
+from app.control.aionos_profiles import get_profile
 from app.control.app.core.deps import get_state
 from app.control.app.core.tenancy import tenancy_middleware
 from app.control.app.core.workers import worker_loop
@@ -46,6 +54,11 @@ except ImportError:  # pragma: no cover
     plugins_router = APIRouter()
 
 app = FastAPI(title="AION Control API")
+
+
+def _seal_enabled() -> bool:
+    profile_name, _ = get_profile()
+    return os.getenv("FEATURE_SEAL") == "1" or profile_name == "enterprise-vip"
 
 app.middleware("http")(tenancy_middleware())
 
@@ -84,6 +97,7 @@ async def health() -> dict[str, str]:
 app.include_router(admin_onboarding_router)
 app.include_router(ai_chat_router)
 app.include_router(agent_router)
+app.include_router(config_router)
 app.include_router(kernel_router)
 app.include_router(memory_router)
 app.include_router(models_router)
@@ -95,4 +109,6 @@ app.include_router(datasources_router)
 app.include_router(modules_router)
 app.include_router(health_router)
 app.include_router(plugins_router)
+if _seal_enabled():
+    app.include_router(seal_router)
 app.include_router(webhook_router)

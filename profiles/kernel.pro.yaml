@@ -1,0 +1,20 @@
+inherits: base
+name: professional
+services:
+  explorer: enabled
+  terminal: enabled
+  iot_bridge: enabled
+features:
+  chatops: terminal
+  webhooks_inbound: "allowlist+hmac"
+  webhooks_outbound: "hmac+retry"
+  router:
+    default_mode: hybrid
+    tools:
+      - terminal
+      - iot
+limits:
+  rate_limit_rps: 10
+observability:
+  otel: standard
+  logs_retention_days: 14
