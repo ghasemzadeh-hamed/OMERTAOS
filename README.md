@@ -27,6 +27,7 @@
 - [عیب‌یابی (Troubleshooting)](#عیبیابی-troubleshooting)
 - [امنیت، مجوز، مشارکت و حاکمیت](#امنیت-مجوز-مشارکت-و-حاکمیت)
 - [FAQ](#faq)
+- [مستندات تکمیلی](#مستندات-تکمیلی)
 
 ---
 
@@ -519,3 +520,9 @@ docker compose down --volumes --remove-orphans
 
 
 [1]: https://github.com/Hamedghz/OMERTAOS "GitHub - Hamedghz/OMERTAOS: aionOS is a modular AI orchestration platform combining a TypeScript gateway, FastAPI control plane, and Rust execution modules."
+
+## مستندات تکمیلی
+- [docs/architecture.md](docs/architecture.md)
+- [docs/runbook.md](docs/runbook.md)
+- [docs/security.md](docs/security.md)
+- [docs/tools.md](docs/tools.md)
