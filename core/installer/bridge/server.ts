@@ -1,5 +1,5 @@
 import express from 'express';
-import { probeHw } from './tasks/disk';
+import { applyPartition, allowDiskMode, planPartition, probeHw } from './tasks/disk';
 import { applyDrivers } from './tasks/driver';
 import { applySecurity } from './tasks/security';
 
@@ -25,13 +25,14 @@ app.post('/task', async (req, res) => {
       return res.json(await probeHw());
     }
     if (task === 'plan.partition') {
-      return res.json({ plan: 'preview-only', payload });
+      return res.json(await planPartition(payload));
     }
     if (task === 'apply.partition') {
-      if (!(isRoot() && allowInstall())) {
+      const mode = payload?.mode;
+      if (!(isRoot() && allowInstall() && allowDiskMode(typeof mode === 'string' ? mode : undefined))) {
         throw new Error('not-allowed');
       }
-      return res.json({ ok: true });
+      return res.json(await applyPartition(payload));
     }
     if (task === 'apply.drivers') {
       if (!isRoot()) {
@@ -43,7 +44,7 @@ app.post('/task', async (req, res) => {
       if (!isRoot()) {
         throw new Error('root-required');
       }
-      return res.json(await applySecurity());
+      return res.json(await applySecurity({ refreshInstaller: Boolean(payload?.refreshInstaller) }));
     }
     if (task === 'profiles.list') {
       return res.json({ items: ['user', 'pro', 'enterprise'] });

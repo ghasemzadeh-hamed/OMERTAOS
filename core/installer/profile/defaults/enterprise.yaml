@@ -3,8 +3,17 @@ services:
   gateway: true
   control: true
   console: true
-ai:
-  tensorflow: true
-  pytorch: true
+features:
+  mlflow:
+    enabled: true
+  jupyter:
+    enabled: true
+  docker:
+    enabled: true
+  k8s:
+    enabled: true
+  ldap:
+    enabled: true
 security:
-  hardening: true
+  hardening:
+    level: cis-lite

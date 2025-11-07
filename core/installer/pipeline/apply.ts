@@ -17,6 +17,12 @@ export function applyProfile(profileName: string, root: string, templatePath: st
     AION_GATEWAY: String(profile.services.gateway),
     AION_CONTROL: String(profile.services.control),
     AION_CONSOLE: String(profile.services.console),
+    AION_MLFLOW_ENABLED: String(profile.features.mlflow.enabled),
+    AION_JUPYTER_ENABLED: String(profile.features.jupyter.enabled),
+    AION_DOCKER_ENABLED: String(profile.features.docker.enabled),
+    AION_K8S_ENABLED: String(profile.features.k8s.enabled),
+    AION_LDAP_ENABLED: String(profile.features.ldap.enabled),
+    AION_HARDENING_LEVEL: profile.security.hardening.level,
   };
   renderEnv(templatePath, path.join(root, '.env'), vars);
   return profile;
