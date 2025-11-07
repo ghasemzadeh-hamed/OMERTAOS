@@ -13,6 +13,7 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from minio import Minio
 from pydantic import BaseModel
 
+from os.control.os.config import get_settings
 from os.control.os.routes.deps import get_clickhouse_client, get_pg_conn
 
 router = APIRouter(prefix="/api/ingest/excel", tags=["ingest:excel"])
@@ -165,12 +166,20 @@ async def apply_mapping(payload: ApplyMappingIn) -> Dict[str, Any]:
             "ENGINE = MergeTree ORDER BY ingested_at"
         )
 
-        bucket = os.getenv("MINIO_BUCKET", "aion-processed")
+        settings = get_settings()
+        minio_config = settings.minio_config
+        endpoint = str(minio_config.get("endpoint"))
+        access_key = minio_config.get("access_key")
+        secret_key = minio_config.get("secret_key")
+        bucket = str(minio_config.get("bucket"))
+        if not access_key or not secret_key:
+            raise HTTPException(status_code=500, detail="MinIO credentials are not configured")
+
         minio_client = Minio(
-            os.getenv("MINIO_ENDPOINT", "minio:9000"),
-            access_key=os.getenv("MINIO_ACCESS_KEY", "minioadmin"),
-            secret_key=os.getenv("MINIO_SECRET_KEY", "minioadmin"),
-            secure=os.getenv("MINIO_SECURE", "false").lower() == "true",
+            endpoint,
+            access_key=str(access_key),
+            secret_key=str(secret_key),
+            secure=bool(minio_config.get("secure", False)),
         )
         if not minio_client.bucket_exists(bucket):
             minio_client.make_bucket(bucket)

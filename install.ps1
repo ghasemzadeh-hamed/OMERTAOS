@@ -133,9 +133,12 @@ $envOverrides = @{
   "NEXTAUTH_SECRET"         = $nextAuthSecret
   "NEXT_PUBLIC_GATEWAY_URL" = "http://localhost:$gwPort"
   "NEXT_PUBLIC_CONTROL_URL" = "http://localhost:$apiPort"
-  "AION_CONTROL_POSTGRES_DSN" = "postgresql://$pgUser:$pgPass@postgres:5432/$pgDb"
   "AION_CONTROL_REDIS_URL"  = $redisUrl
-  "AION_GATEWAY_API_KEYS"   = "demo-key:admin|manager"
+  "AION_DB_SECRET_PATH"     = "kv/data/aionos/db-main"
+  "AION_MINIO_SECRET_PATH"  = "kv/data/aionos/minio"
+  "AION_GATEWAY_API_KEYS_SECRET_PATH" = "kv/data/aionos/gateway-api-keys"
+  "AION_JWT_SECRET_PATH"    = "kv/data/aionos/jwt"
+  "AION_ADMIN_TOKEN_SECRET_PATH" = "kv/data/aionos/admin-token"
   "TENANCY_MODE"            = "single"
 }
 

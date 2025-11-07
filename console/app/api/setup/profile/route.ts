@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getConsoleSecrets } from '@/lib/serverConfig';
+
 const gatewayBase = process.env.NEXT_PUBLIC_GATEWAY_BASE ?? 'http://localhost:8080';
-const adminToken = process.env.AION_SETUP_TOKEN ?? process.env.NEXT_PUBLIC_SETUP_TOKEN ?? '';
+const secretsPromise = getConsoleSecrets();
 
 export async function GET() {
   try {
@@ -22,6 +24,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
+  const { adminToken } = await secretsPromise;
   try {
     const res = await fetch(`${gatewayBase}/v1/config/profile`, {
       method: 'POST',
