@@ -1,7 +1,7 @@
 llm:
   local: true
   provider: "ollama"
-  model: "llama3.1:8b-instruct"
+  model: "llama3.2:3b"
 strategy:
   update: "lora"
   adapter_rank: 8

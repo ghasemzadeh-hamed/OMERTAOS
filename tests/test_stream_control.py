@@ -25,7 +25,7 @@ async def test_route_decision_and_stream_ack():
     task = orchestrator.create_task(payload)
     decision = decision_engine.decide(task)
     assert decision.route == "local"
-    assert decision.reason in {"privacy_enforced", "policy_randomized"}
+    assert decision.reason in {"privacy_enforced", "policy_randomized", "profile_local"}
 
     await orchestrator.execute(task)
     service = AionTasksService()

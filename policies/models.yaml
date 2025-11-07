@@ -11,20 +11,21 @@ defaults:
     hard_cap_usd: 100.0
 
 models:
-  - name: llama3-8b
-    display_name: Llama 3 8B Instruct
+  - name: "llama3.2:3b"
+    display_name: Llama 3.2 3B Instruct
     provider: ollama
     mode: local
     engine: chat
     privacy: local-only
     intents: [general, summarize, code]
-    latency_budget_ms: 1200
+    latency_budget_ms: 900
     health:
       endpoint: http://localhost:11434/api/tags
       method: GET
     metadata:
+      registry_ref: model://ollama/llama3.2-3b
       format: gguf
-      size_gb: 5.1
+      size_gb: 2.1
       install_script: scripts/install_llm.sh
       engine: ollama
   - name: mixtral-8x7b

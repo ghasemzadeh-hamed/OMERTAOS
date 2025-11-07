@@ -3,8 +3,7 @@ llm_providers:
     kind: local
     base_url: http://127.0.0.1:11434
     models:
-      - qwen2.5:7b
-      - llama3.1:8b
+      - model://ollama/llama3.2-3b
     healthcheck:
       path: /api/tags
       timeout_ms: 1500

@@ -253,7 +253,7 @@ function DashboardSection() {
         </CardHeader>
         <CardContent className="space-y-3">
           <KeyValue k="Policy" v="auto (fa->local, long->api)" />
-          <KeyValue k="Local Provider" v="Ollama (qwen2.5:7b)" />
+          <KeyValue k="Local Provider" v="Ollama (llama3.2:3b)" />
           <KeyValue k="API Provider" v="OpenAI (gpt-4o)" />
           <Button className="w-full bg-white/20 hover:bg-white/30">Edit policy</Button>
         </CardContent>
@@ -342,7 +342,7 @@ function UpdatesSection() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Cpu className="h-4 w-4" />
-              <span>Ollama (qwen2.5:7b)</span>
+              <span>Ollama (llama3.2:3b)</span>
             </div>
             <Button size="sm" variant="secondary" className="bg-white/20">
               Update
@@ -424,7 +424,7 @@ function ConfigSection() {
             <label className="text-sm opacity-80">Custom YAML rules</label>
             <Textarea
               className={`${glass} min-h-[160px]`}
-              placeholder={`rules:\n  - match:\n      lang: fa\n      max_input_tokens: 2000\n    route: local\n    provider: ollama\n    model: qwen2.5:7b`}
+              placeholder={`rules:\n  - match:\n      lang: fa\n      max_input_tokens: 2000\n    route: local\n    provider: ollama\n    model: llama3.2:3b`}
             />
             <div className="mt-3 flex gap-2">
               <Button className="bg-white/20 hover:bg-white/30">Apply and reload</Button>
@@ -542,7 +542,7 @@ function HealthSection() {
         <CardContent>
           <div className="whitespace-pre-wrap text-sm/7 opacity-90">
             {["[21:03:11] router: policy reloaded (rev=17)",
-              "[21:03:15] chat: route=local model=qwen2.5:7b tokens=512",
+              "[21:03:15] chat: route=local model=llama3.2:3b tokens=512",
               "[21:03:21] summarizer: job=92a1 done in 682ms",
               "[21:03:26] vector: p95 latency 1.2s (warning)"].join('\n')}
           </div>

@@ -9,7 +9,7 @@ features:
   jupyter:
     enabled: false
   docker:
-    enabled: false
+    enabled: true
   k8s:
     enabled: false
   ldap:

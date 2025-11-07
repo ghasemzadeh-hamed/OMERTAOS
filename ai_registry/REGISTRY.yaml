@@ -1,6 +1,7 @@
 registry_version: '1.0'
 catalog:
   models:
+  - models/ollama/llama3.2-3b.yaml
   - models/alibaba/qwen-2.5-max.yaml
   - models/deepseek/deepseek-v3.yaml
   - models/google/gemini-2.5-pro.yaml

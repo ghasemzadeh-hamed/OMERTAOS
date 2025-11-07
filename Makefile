@@ -1,13 +1,13 @@
-.PHONY: dev-control doctor bundle edge-setup test status logs restart start stop setup train train-ci guard model-all
+.PHONY: dev-control doctor bundle edge-setup test status logs restart start stop setup train train-ci guard model-all run-user run-pro run-ent
 
-CLI=PYTHONPATH=$(CURDIR):cli python -m aion.cli
-PY ?= python
+PY ?= python3
+CLI=$(PY) -m aionos_core.cli
 
 dev-control:
 	cd control && PYTHONPATH=$(CURDIR):$(CURDIR)/os uvicorn os.control.main:app --reload --port 8001
 
 doctor:
-	$(CLI) doctor --verbose
+	$(CLI) doctor
 
 bundle:
 	@tar czf deploy/bundles/example.tgz -C deploy/bundles/example .
@@ -18,30 +18,30 @@ edge-setup:
 test:
 	PYTHONPATH=$(CURDIR) pytest -q
 
-APP_DIR ?= /opt/omerta/OMERTAOS
+APP_DIR ?= /opt/aionos/OMERTAOS
 
 status:
-	systemctl status omerta-control || true
-	systemctl status omerta-gateway || true
-	systemctl status omerta-console || true
+	systemctl status aionos-control || true
+	systemctl status aionos-gateway || true
+	systemctl status aionos-console || true
 
 logs:
-	journalctl -u omerta-control -n 50 --no-pager
-	journalctl -u omerta-gateway -n 50 --no-pager
-	journalctl -u omerta-console -n 50 --no-pager
+	journalctl -u aionos-control -n 50 --no-pager
+	journalctl -u aionos-gateway -n 50 --no-pager
+	journalctl -u aionos-console -n 50 --no-pager
 
 restart:
-	systemctl restart omerta-control omerta-gateway omerta-console
+	systemctl restart aionos-control aionos-gateway aionos-console
 
 start:
-	systemctl start omerta-control omerta-gateway omerta-console
+	systemctl start aionos-control aionos-gateway aionos-console
 
 stop:
-	systemctl stop omerta-control omerta-gateway omerta-console
+	systemctl stop aionos-control aionos-gateway aionos-console
 
 setup:
-	$(PY) -m pip install -U pip
-	pip install -r requirements.txt
+        $(PY) -m pip install -U pip
+        $(PY) -m pip install -e .[dev]
 
 train:
 	$(PY) scripts/train_eval.py --config policies/training.yaml
