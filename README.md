@@ -22,11 +22,21 @@ A short quick-start for each supported mode is available in [`docs/quickstart.md
 | Windows / WSL | Launch the wizard without disk actions, apply a profile, and start services through WSL integration. |
 | Docker | Bring the stack up with Compose, pick a profile, and validate services through the embedded console. |
 
+## Docker Compose overlays
+
+`docker-compose.yml` is the canonical definition for the production stack. Overlays extend it for targeted scenarios:
+
+- [`docker-compose.local.yml`](docker-compose.local.yml) – local-only developer profile with lightweight defaults.
+- [`docker-compose.obsv.yml`](docker-compose.obsv.yml) – optional observability extras (OTel collector, dashboards).
+- [`docker-compose.vllm.yml`](docker-compose.vllm.yml) – GPU-enabled vLLM runtime for larger model experiments.
+
+Use overlays with `docker compose -f docker-compose.yml -f <overlay> up -d` to avoid drifting configurations.
+
 ## Profiles
 
 | Profile | Default scope | ML tooling | Platform add-ons | Hardening |
 | --- | --- | --- | --- | --- |
-| user | Gateway, control, console | Disabled | None | none |
+| user | Gateway, control, console | Disabled | Docker (lightweight) | none |
 | pro | Gateway, control, console | Jupyter, MLflow | Docker | standard |
 | enterprise | Gateway, control, console | Jupyter, MLflow | Docker, Kubernetes hooks, LDAP | cis-lite |
 
@@ -52,6 +62,7 @@ All enterprise-facing documentation is rooted at [`docs/README.md`](docs/README.
 - Profile descriptions (`docs/profiles`).
 - Security baseline and update guidance (`docs/security`).
 - Hardware compatibility matrix (`docs/hcl`).
+- AI registry catalog (`ai_registry/REGISTRY.yaml`) used by agent templates and policies via `model://` references.
 - Troubleshooting, release, and privacy references.
 
 ## Contributing

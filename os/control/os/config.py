@@ -68,26 +68,56 @@ class Settings(BaseSettings):
         env_file = ".env"
 
     def initialise_secrets(self, provider: SecretProvider | None = None) -> None:
-        self._secret_provider = provider or get_secret_provider()
-        db_secret = self._secret_provider.get_secret(self.postgres_secret_path)
-        if isinstance(db_secret, str):
-            raise SecretProviderError(
-                "Database secret must be an object containing connection parameters"
-            )
-        self._postgres_dsn = _build_postgres_dsn(db_secret)
+        disable_env = os.getenv("AION_CONTROL_DISABLE_SECRETS")
+        disable_secrets = disable_env == "1" or (disable_env is None and not os.getenv("VAULT_ADDR"))
 
-        minio_secret = self._secret_provider.get_secret(self.minio_secret_path)
-        if isinstance(minio_secret, str):
-            raise SecretProviderError(
-                "MinIO secret must be an object containing endpoint and credentials"
+        if disable_secrets:
+            self._postgres_dsn = os.getenv(
+                "AION_CONTROL_POSTGRES_DSN",
+                "postgresql://postgres:postgres@localhost:5432/aionos",
             )
-        self._minio_config = {
-            "endpoint": minio_secret.get("endpoint", "minio:9000"),
-            "access_key": minio_secret.get("access_key"),
-            "secret_key": minio_secret.get("secret_key"),
-            "secure": bool(minio_secret.get("secure", False)),
-            "bucket": minio_secret.get("bucket", "aion-raw"),
-        }
+            self._minio_config = {
+                "endpoint": os.getenv("AION_CONTROL_MINIO_ENDPOINT", "minio:9000"),
+                "access_key": os.getenv("AION_CONTROL_MINIO_ACCESS_KEY", "minio"),
+                "secret_key": os.getenv("AION_CONTROL_MINIO_SECRET_KEY", "miniosecret"),
+                "secure": bool(int(os.getenv("AION_CONTROL_MINIO_SECURE", "0"))),
+                "bucket": os.getenv("AION_CONTROL_MINIO_BUCKET", "aion-raw"),
+            }
+            return
+        self._secret_provider = provider or get_secret_provider()
+        try:
+            db_secret = self._secret_provider.get_secret(self.postgres_secret_path)
+            if isinstance(db_secret, str):
+                raise SecretProviderError(
+                    "Database secret must be an object containing connection parameters"
+                )
+            self._postgres_dsn = _build_postgres_dsn(db_secret)
+
+            minio_secret = self._secret_provider.get_secret(self.minio_secret_path)
+            if isinstance(minio_secret, str):
+                raise SecretProviderError(
+                    "MinIO secret must be an object containing endpoint and credentials"
+                )
+            self._minio_config = {
+                "endpoint": minio_secret.get("endpoint", "minio:9000"),
+                "access_key": minio_secret.get("access_key"),
+                "secret_key": minio_secret.get("secret_key"),
+                "secure": bool(minio_secret.get("secure", False)),
+                "bucket": minio_secret.get("bucket", "aion-raw"),
+            }
+        except SecretProviderError:
+            # Fall back to environment configuration when Vault integration is unavailable.
+            self._postgres_dsn = os.getenv(
+                "AION_CONTROL_POSTGRES_DSN",
+                "postgresql://postgres:postgres@localhost:5432/aionos",
+            )
+            self._minio_config = {
+                "endpoint": os.getenv("AION_CONTROL_MINIO_ENDPOINT", "minio:9000"),
+                "access_key": os.getenv("AION_CONTROL_MINIO_ACCESS_KEY", "minio"),
+                "secret_key": os.getenv("AION_CONTROL_MINIO_SECRET_KEY", "miniosecret"),
+                "secure": bool(int(os.getenv("AION_CONTROL_MINIO_SECURE", "0"))),
+                "bucket": os.getenv("AION_CONTROL_MINIO_BUCKET", "aion-raw"),
+            }
 
     @property
     def postgres_dsn(self) -> str:

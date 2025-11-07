@@ -21,8 +21,11 @@ def deep_merge(a: Dict[str, Any], b: Dict[str, Any]) -> Dict[str, Any]:
 def load_profile(name: str, root: str | Path = ".") -> Dict[str, Any]:
     """Load a profile definition, honoring optional inheritance."""
     base_dir = Path(root)
-    base_path = base_dir / "profiles" / "kernel.base.yaml"
-    profile_path = base_dir / "profiles" / f"kernel.{name}.yaml"
+    profiles_dir = base_dir / "profiles"
+    if not profiles_dir.exists():
+        profiles_dir = base_dir / "config" / "profiles"
+    base_path = profiles_dir / "kernel.base.yaml"
+    profile_path = profiles_dir / f"kernel.{name}.yaml"
 
     base = yaml.safe_load(base_path.read_text())
     profile = yaml.safe_load(profile_path.read_text())

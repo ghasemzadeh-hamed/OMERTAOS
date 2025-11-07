@@ -17,7 +17,7 @@ cd gateway && npm ci && npm run dev
 
 # Control
 cd control && python3.11 -m venv .venv && source .venv/bin/activate
-pip install -U pip wheel && pip install -r requirements.txt
+python -m pip install -U pip wheel && python -m pip install -e .[dev]
 uvicorn os.control.main:app --host 0.0.0.0 --port 50052 --reload
 ```
 

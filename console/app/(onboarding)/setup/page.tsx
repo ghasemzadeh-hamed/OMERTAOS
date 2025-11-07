@@ -20,6 +20,8 @@ type StepContent = {
 
 export default function SetupPage() {
   const [activeStep, setActiveStep] = useState<StepIndex>(0);
+  const telemetryDefault = (process.env.NEXT_PUBLIC_TELEMETRY_OPT_IN ?? 'false').toLowerCase() === 'true';
+  const [telemetryOptIn, setTelemetryOptIn] = useState<boolean>(telemetryDefault);
 
   const stepContent = useMemo<StepContent[]>(
     () => [
@@ -138,6 +140,18 @@ export default function SetupPage() {
                 <li>• دسترسی کنسول ایمن‌سازی شده است</li>
               </ul>
             </div>
+            <label className="flex items-center justify-between rounded-2xl border border-white/15 bg-white/5 px-4 py-3">
+              <span className="text-sm text-white/75">ارسال تلمتری ناشناس (اختیاری)</span>
+              <input
+                type="checkbox"
+                className="h-5 w-5 cursor-pointer accent-emerald-500"
+                checked={telemetryOptIn}
+                onChange={(event) => setTelemetryOptIn(event.target.checked)}
+              />
+            </label>
+            <p className="text-xs leading-6 text-white/60">
+              مقدار پیش‌فرض با متغیر محیطی <code className="rounded bg-white/10 px-1">AION_TELEMETRY_OPT_IN</code> کنترل می‌شود و تا زمانی که به طور صریح فعال نشود، هیچ داده‌ای ارسال نمی‌گردد.
+            </p>
             <p className="text-sm leading-7 text-white/70">
               با تأیید، سرویس‌های AION-OS بر اساس تنظیمات وارد شده راه‌اندازی می‌شوند و داشبورد زنده می‌شود.
             </p>
@@ -145,7 +159,7 @@ export default function SetupPage() {
         ),
       },
     ],
-    [],
+    [telemetryOptIn],
   );
 
   const goToStep = (direction: 'prev' | 'next') => {

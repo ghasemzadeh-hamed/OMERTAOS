@@ -8,7 +8,7 @@ features:
   router:
     default_mode: auto
     local_provider: "ollama"
-    local_model: "llama3.1-8b-instruct"
+    local_model: "llama3.2:3b"
 limits:
   rate_limit_rps: 2
   max_tokens: 32000

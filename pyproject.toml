@@ -7,6 +7,7 @@ requires-python = ">=3.11"
 dependencies = [
     "pyyaml>=6.0",
     "requests>=2.32",
+    "typer>=0.12",
 ]
 
 [project.optional-dependencies]
@@ -52,6 +53,17 @@ ml-ppl = ["pyro-ppl"]
 ml-timeseries = ["stumpy", "pysindy"]
 ml-ui = ["taipy"]
 notebook-addons = ["mitoinstaller", "mitosheet", "jupyterlab>=4"]
+ml-local = [
+    "numpy>=1.26,<2.0",
+    "pandas>=2.2,<3.0",
+    "scikit-learn>=1.5,<2.0",
+    "xgboost>=2.0,<3.0",
+    "lightgbm>=4.3,<5.0",
+    "tensorflow>=2.16,<3.0 ; platform_system != \"Windows\"",
+    "torch>=2.3,<3.0",
+    "cleanlab>=2.6,<3.0",
+    "httpx>=0.27,<0.28",
+]
 all = [
     "aionos-app[control,kernel]",
 ]

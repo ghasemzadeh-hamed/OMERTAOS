@@ -27,6 +27,12 @@
     },
     {
       "kind": "model",
+      "name": "llama3.2-3b",
+      "path": "models/ollama/llama3.2-3b.yaml",
+      "sha256": "067d7f589f9dc6a9c55d766964457228d18d510d6b9c45ed4051ef27162582f9"
+    },
+    {
+      "kind": "model",
       "name": "qwen-2.5-max",
       "path": "models/alibaba/qwen-2.5-max.yaml",
       "sha256": "d26b348f8587cf12335e88dbbce39cd28cccc439b884931f4dd876fbecaf1e36"

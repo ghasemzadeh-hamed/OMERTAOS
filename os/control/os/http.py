@@ -2,39 +2,23 @@
 from __future__ import annotations
 
 import asyncio
+import os
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
 
-import asyncio
-import os
-
-try:  # pragma: no cover - compatibility with legacy package layout
-    from os.control.os.routes import (
-        admin_onboarding_router,
-        ai_chat_router,
-        agent_router,
-        config_router,
-        profile_router,
-        kernel_router,
-        memory_router,
-        models_router,
-        rag_router,
-        seal_router,
-    )
-except Exception:  # pragma: no cover
-    from routes import (  # type: ignore
-        admin_onboarding_router,
-        ai_chat_router,
-        agent_router,
-        config_router,
-        profile_router,
-        kernel_router,
-        memory_router,
-        models_router,
-        rag_router,
-        seal_router,
-    )
+from os.control.os.routes import (
+    admin_onboarding_router,
+    ai_chat_router,
+    agent_router,
+    config_router,
+    profile_router,
+    kernel_router,
+    memory_router,
+    models_router,
+    rag_router,
+    seal_router,
+)
 
 from os.control.os.api import (
     datasources_router,

@@ -78,6 +78,15 @@ if (-not $Local) {
   $useBigData = $useBigData.ToLower() -eq "y"
 }
 
+$telemetryDefault = if ($env:AION_TELEMETRY_OPT_IN) { $env:AION_TELEMETRY_OPT_IN } else { "false" }
+$telemetryResponse = Read-Host "Opt into anonymous telemetry? (y/N) [$telemetryDefault]"
+if ([string]::IsNullOrWhiteSpace($telemetryResponse)) {
+  $telemetryOptIn = $telemetryDefault.ToLower() -in @("y", "yes", "true", "1")
+} else {
+  $telemetryOptIn = $telemetryResponse.ToLower() -in @("y", "yes", "true", "1")
+}
+$telemetryEndpoint = if ($env:AION_TELEMETRY_ENDPOINT) { $env:AION_TELEMETRY_ENDPOINT } else { "http://localhost:4317" }
+
 if ($targetDir -ne $scriptDir) {
   if (Test-Path (Join-Path $targetDir ".git")) {
     Write-Host "Found existing OMERTAOS folder; pulling latest changes." -ForegroundColor Yellow
@@ -133,12 +142,16 @@ $envOverrides = @{
   "NEXTAUTH_SECRET"         = $nextAuthSecret
   "NEXT_PUBLIC_GATEWAY_URL" = "http://localhost:$gwPort"
   "NEXT_PUBLIC_CONTROL_URL" = "http://localhost:$apiPort"
+  "NEXT_PUBLIC_TELEMETRY_OPT_IN" = ($telemetryOptIn.ToString().ToLower())
   "AION_CONTROL_REDIS_URL"  = $redisUrl
   "AION_DB_SECRET_PATH"     = "kv/data/aionos/db-main"
   "AION_MINIO_SECRET_PATH"  = "kv/data/aionos/minio"
   "AION_GATEWAY_API_KEYS_SECRET_PATH" = "kv/data/aionos/gateway-api-keys"
   "AION_JWT_SECRET_PATH"    = "kv/data/aionos/jwt"
   "AION_ADMIN_TOKEN_SECRET_PATH" = "kv/data/aionos/admin-token"
+  "AION_TELEMETRY_OPT_IN"   = ($telemetryOptIn.ToString().ToLower())
+  "AION_TELEMETRY_ENDPOINT" = $telemetryEndpoint
+  "AIONOS_LOCAL_MODEL"      = "llama3.2:3b"
   "TENANCY_MODE"            = "single"
 }
 
@@ -188,6 +201,7 @@ REDIS_URL=$redisUrl
 ADMIN_SEED_USER=$adminUser
 ADMIN_SEED_PASS=$adminPass
 FASTAPI_URL=$FASTAPI_URL
+NEXT_PUBLIC_TELEMETRY_OPT_IN=$($telemetryOptIn.ToString().ToLower())
 "@
 Write-EnvFile "console/.env" $consoleEnv
 

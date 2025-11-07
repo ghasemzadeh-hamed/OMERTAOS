@@ -6,6 +6,14 @@ TOOLS_DIR="${ROOT_DIR}/tools"
 CONFIG_DIR="${ROOT_DIR}/config"
 CONFIG_FILE="${CONFIG_DIR}/aionos.config.yaml"
 MODEL_NAME="${AIONOS_LOCAL_MODEL:-llama3.2:3b}"
+TELEMETRY_OPT_IN_RAW="${AION_TELEMETRY_OPT_IN:-false}"
+TELEMETRY_OPT_IN="$(printf '%s' "${TELEMETRY_OPT_IN_RAW}" | tr '[:upper:]' '[:lower:]')"
+if [[ "${TELEMETRY_OPT_IN}" == "true" || "${TELEMETRY_OPT_IN}" == "1" ]]; then
+  TELEMETRY_ENABLED_VALUE=true
+else
+  TELEMETRY_ENABLED_VALUE=false
+fi
+TELEMETRY_ENDPOINT="${AION_TELEMETRY_ENDPOINT:-http://localhost:4317}"
 NONINTERACTIVE=false
 COMPOSE_FILE="docker-compose.yml"
 LOCAL_MODE=false
@@ -103,7 +111,7 @@ echo "Selected kernel profile: ${AION_PROFILE}"
 
 mkdir -p "$CONFIG_DIR"
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  cat > "$CONFIG_FILE" <<'YAML'
+  cat > "$CONFIG_FILE" <<YAML
 version: 1
 locale: en-US
 console:
@@ -135,8 +143,8 @@ storage:
     secretKey: miniosecret
     bucket: aion-raw
 telemetry:
-  otelEnabled: false
-  endpoint: http://localhost:4317
+  otelEnabled: ${TELEMETRY_ENABLED_VALUE}
+  endpoint: "${TELEMETRY_ENDPOINT}"
 YAML
 fi
 

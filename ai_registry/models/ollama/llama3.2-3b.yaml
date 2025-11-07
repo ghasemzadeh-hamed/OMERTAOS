@@ -1,0 +1,25 @@
+kind: model
+name: llama3.2-3b
+provider: ollama
+version: "3.2.0"
+release_date: "2024-09-25"
+modality:
+  - text
+license: llama-community
+access: ollama
+description: >-
+  Lightweight Meta Llama 3.2 3B instruct model served locally through Ollama.
+download:
+  url: "ollama://llama3.2:3b"
+  method: ollama
+  install_script: "scripts/install_local_llm.sh llama3.2:3b"
+integrity:
+  signature: "local-registry"
+resources:
+  vram_gb: 6
+  context_tokens: 8192
+configurable: true
+compat:
+  agent_api: ">=1.0"
+auto_update: false
+admin_approval_required: false

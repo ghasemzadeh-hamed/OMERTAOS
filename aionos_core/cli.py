@@ -63,6 +63,21 @@ def build_parser() -> argparse.ArgumentParser:
     services_parser.add_argument("--unit", action="append", default=[], help="Service unit override")
     services_parser.set_defaults(func=_cmd_services_manage)
 
+    install_parser = subparsers.add_parser("install", help="Run the bundled installer script")
+    install_parser.add_argument("--target", choices=("linux", "windows"), default="linux")
+    install_parser.add_argument("--noninteractive", action="store_true", help="Skip prompts for the Linux installer")
+    install_parser.set_defaults(func=_cmd_install)
+
+    setup_parser = subparsers.add_parser("setup", help="Render an .env file for a profile")
+    setup_parser.add_argument("--profile", default="user", help="Profile name to apply")
+    setup_parser.add_argument("--env-file", type=Path, default=Path(".env"))
+    setup_parser.add_argument("--root", type=Path, default=Path.cwd())
+    setup_parser.add_argument("--set", action="append", default=[], help="Override KEY=VALUE entries")
+    setup_parser.set_defaults(func=_cmd_setup)
+
+    explorer_parser = subparsers.add_parser("explorer", help="Launch the terminal explorer UI")
+    explorer_parser.set_defaults(func=_cmd_explorer)
+
     return parser
 
 
@@ -134,6 +149,54 @@ def _cmd_services_manage(args: argparse.Namespace) -> int:
         cmd = ["systemctl", args.action, unit]
         print("$", " ".join(cmd))
         subprocess.run(cmd, check=False)
+    return 0
+
+
+def _cmd_install(args: argparse.Namespace) -> int:
+    repo_root = Path(__file__).resolve().parents[1]
+    if args.target == "windows":
+        script = repo_root / "install.ps1"
+        shell = shutil.which("pwsh") or shutil.which("powershell")
+        if shell is None:
+            print("PowerShell is required to launch the Windows installer.")
+            return 1
+        cmd = [shell, "-NoProfile", "-File", str(script)]
+    else:
+        script = repo_root / "install.sh"
+        cmd = ["bash", str(script)]
+        if args.noninteractive:
+            cmd.append("--noninteractive")
+    if not script.exists():
+        print(f"Installer script {script} not found.")
+        return 1
+    print("$", " ".join(cmd))
+    return subprocess.run(cmd, check=False).returncode
+
+
+def _cmd_setup(args: argparse.Namespace) -> int:
+    try:
+        extra = _parse_key_values(args.set)
+    except argparse.ArgumentTypeError as exc:
+        print(exc)
+        return 2
+    target = apply_profile(args.profile, root=args.root, env_path=args.env_file, extra_env=extra)
+    print(
+        "Rendered {env} using profile '{profile}'. Registry-backed models are available via ai_registry/REGISTRY.yaml.".format(
+            env=target,
+            profile=args.profile,
+        )
+    )
+    return 0
+
+
+def _cmd_explorer(_: argparse.Namespace) -> int:
+    try:
+        from explorer.aion_explorer import ExplorerApp
+    except ImportError as exc:  # pragma: no cover - optional dependency
+        print("Explorer dependencies missing. Install textual via 'pip install textual'.")
+        print(exc)
+        return 1
+    ExplorerApp().run()
     return 0
 
 
