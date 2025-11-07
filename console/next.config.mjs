@@ -1,4 +1,4 @@
-import { createTranslator } from 'next-intl/server';
+import createTranslator from 'next-intl/server';
 
 const locales = ['en', 'fa'];
 

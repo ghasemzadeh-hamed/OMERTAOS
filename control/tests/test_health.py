@@ -1,6 +1,6 @@
 import asyncio
 
-from app.main import health, healthz
+from app.control.main import health, healthz
 
 
 def test_health_endpoint():

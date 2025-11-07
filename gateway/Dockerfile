@@ -1,26 +1,22 @@
-﻿FROM node:20-alpine AS build
+FROM node:20-alpine AS deps
 WORKDIR /app
-# فقط فایلهای مربوط به گیتوی را کپی کن
 COPY gateway/package*.json ./
-RUN npm install
-COPY gateway/ ./
-# مطمئن شو tsconfig در همین /app است
-RUN test -f tsconfig.json || (echo "tsconfig.json missing in /app" && ls -la && exit 1)
-# اگر بیلد داری اجرا کن اگر نداری رد شو
-RUN npm run build || true
+RUN npm ci
+
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY gateway/tsconfig.json ./tsconfig.json
+COPY gateway/src ./src
+COPY --from=deps /app/node_modules ./node_modules
+COPY gateway/package*.json ./
+RUN npm run build
 
 FROM node:20-alpine
 WORKDIR /app
 ENV NODE_ENV=production
-# خروجیهای ضروری را منتقل کن
-COPY --from=build /app/package*.json ./
-COPY --from=build /app/node_modules ./node_modules
-# اگر بیلد TypeScript انجام شده:
+COPY gateway/package*.json ./
+RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
-# برای اطمینان سورس و tsconfig هم کپی شوند (اگر start به src وابسته است)
-COPY --from=build /app/src ./src
-COPY --from=build /app/tsconfig.json ./tsconfig.json
 
 EXPOSE 8080
-# اگر اسکریپت start داری همین خوبه در غیر اینصورت میشه: ["node","dist/server.js"]
-CMD ["npm","run","start"]
+CMD ["npm", "run", "start"]

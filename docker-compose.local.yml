@@ -63,8 +63,10 @@ services:
       - aionos-local
 
   kernel:
-    build: ./kernel
-    command: ["uvicorn", "kernel.devserver:app", "--host", "0.0.0.0", "--port", "8010"]
+    build:
+      context: .
+      dockerfile: kernel/Dockerfile
+    command: ["uvicorn", "app.kernel.devserver:app", "--host", "0.0.0.0", "--port", "8010"]
     environment:
       AION_KERNEL_PERSIST_PATH: /data
       REDIS_URL: redis://redis:6379/5
@@ -98,6 +100,7 @@ services:
       MINIO_ACCESS_KEY: minio
       MINIO_SECRET_KEY: miniosecret
       AION_KERNEL_URL: http://kernel:8010
+      PYTHONPATH: /srv/app:/srv/app/app
     volumes:
       - ./policies:/app/policies
       - ./config/certs:/app/config/certs:ro
@@ -107,12 +110,12 @@ services:
       redis:
         condition: service_healthy
       qdrant:
-        condition: service_healthy
+        condition: service_started
       minio:
         condition: service_healthy
       kernel:
         condition: service_started
-    command: ["bash", "-lc", "poetry run python -m app.grpc_server & exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+    command: ["python", "-m", "app.control.app.main"]
     ports:
       - "8000:8000"
       - "50051:50051"
