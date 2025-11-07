@@ -33,6 +33,7 @@ control = [
     "clickhouse-connect>=0.7",
     "python-multipart>=0.0.9",
     "psycopg2-binary>=2.9",
+    "psutil>=5.9",
 ]
 kernel = [
     "pyyaml>=6.0",
@@ -74,6 +75,7 @@ all-ml = [
 
 [project.scripts]
 aionos = "aionos_core.cli:main"
+aion-pkg = "cli.aion_pkg:main"
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]

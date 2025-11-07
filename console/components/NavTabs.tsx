@@ -23,6 +23,7 @@ const tabs: Tab[] = [
   { href: '/dashboard/tasks', label: 'Tasks', minRole: 'USER' },
   { href: '/dashboard/logs', label: 'Logs', minRole: 'MANAGER' },
   { href: '/dashboard/health', label: 'Health', minRole: 'ADMIN' },
+  { href: '/tools', label: 'Tools', minRole: 'MANAGER' },
 ];
 
 function hasAccess(role: Role, tab: Tab) {
