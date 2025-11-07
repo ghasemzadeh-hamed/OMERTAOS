@@ -1,0 +1,28 @@
+version: 1
+objectives:
+  - name: response_quality
+    metric: bleu
+    threshold: 0.78
+  - name: hallucination_rate
+    metric: hallucination
+    threshold: 0.02
+workflow:
+  stages:
+    - name: self_edits
+      steps:
+        - collect
+        - refine
+    - name: evaluation
+      steps:
+        - offline
+        - reviewers
+    - name: safety
+      steps:
+        - guardrail
+        - policy
+telemetry:
+  sampling: 0.1
+  metrics:
+    - latency_ms
+    - cost_usd
+    - satisfaction

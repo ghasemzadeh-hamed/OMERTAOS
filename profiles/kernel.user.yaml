@@ -1,0 +1,13 @@
+inherits: base
+name: user
+features:
+  quickstart: true
+  autoconfig: true
+  chatops: basic
+  router:
+    default_mode: local
+    tools: []
+services:
+  explorer: disabled
+  terminal: disabled
+  iot_bridge: disabled

@@ -52,6 +52,55 @@ if [[ ! -f .env && -f .env.example ]]; then
   cp .env.example .env
 fi
 
+if ! $NONINTERACTIVE; then
+  echo ""
+  echo "Select AION-OS kernel profile:"
+  echo "  1) user           - Quickstart, local-only, minimal resources"
+  echo "  2) professional   - Explorer + Terminal + IoT-ready"
+  echo "  3) enterprise-vip - SEAL, GPU, advanced routing"
+  read -r -p "Enter 1-3 [1]: " PROFILE_CHOICE || PROFILE_CHOICE=""
+else
+  PROFILE_CHOICE=${AION_PROFILE_CHOICE:-1}
+fi
+
+case "${PROFILE_CHOICE}" in
+  2) AION_PROFILE="professional" ;;
+  3) AION_PROFILE="enterprise-vip" ;;
+  *) AION_PROFILE="user" ;;
+esac
+
+if [[ ! -f .env ]]; then
+  touch .env
+fi
+
+sed -i.bak '/^AION_PROFILE=/d' .env 2>/dev/null || true
+sed -i.bak '/^FEATURE_SEAL=/d' .env 2>/dev/null || true
+rm -f .env.bak
+
+if [[ "${AION_PROFILE}" == "enterprise-vip" ]]; then
+  {
+    echo "AION_PROFILE=enterprise-vip"
+    echo "FEATURE_SEAL=1"
+  } >> .env
+else
+  {
+    echo "AION_PROFILE=${AION_PROFILE}"
+    echo "FEATURE_SEAL=0"
+  } >> .env
+fi
+
+PROFILE_DIR="${ROOT_DIR}/.aionos"
+mkdir -p "${PROFILE_DIR}"
+cat > "${PROFILE_DIR}/profile.json" <<JSON
+{
+  "profile": "${AION_PROFILE}",
+  "setupDone": true,
+  "updatedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+JSON
+
+echo "Selected kernel profile: ${AION_PROFILE}"
+
 mkdir -p "$CONFIG_DIR"
 if [[ ! -f "$CONFIG_FILE" ]]; then
   cat > "$CONFIG_FILE" <<'YAML'

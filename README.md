@@ -184,6 +184,25 @@ docker compose down
 
 > فایل `docker-compose.yml` در ریشه موجود است. ([GitHub][1])
 
+### انتخاب پروفایل کرنل
+
+با استفاده از متغیر محیطی `AION_PROFILE` می‌توانید بین پروفایل‌های `user`, `professional` و `enterprise-vip` جابجا شوید. برای فعال کردن SEAL و رجیستری آرتیفکت‌ها در حالت Enterprise، متغیر `FEATURE_SEAL=1` را نیز ست کنید.
+
+نمونه‌های رایج:
+
+```bash
+# اجرا با Docker Compose
+make run-user
+make run-pro
+make run-ent
+
+# نصب بومی بدون Docker
+AION_PROFILE=professional ./install.sh
+AION_PROFILE=user ./install.ps1
+```
+
+در حالت Enterprise-VIP، Control Plane و Gateway به صورت خودکار سرویس‌های SEAL، GPU runtime و رجیستری آرتیفکت را فعال می‌کنند.
+
 ### پروفایل vLLM / سروینگ مدل
 
 برای راه‌اندازی سروینگ مدل (LLM) با vLLM:
@@ -247,6 +266,9 @@ cd OMERTAOS
 ./install.sh
 ```
 
+در حین اجرای اسکریپت، یکی از پروفایل‌های هسته (`user`، `professional` یا `enterprise-vip`) را انتخاب می‌کنید.
+این انتخاب در فایل‌های `.env` و `.aionos/profile.json` ذخیره می‌شود و تمام سرویس‌ها آن را می‌خوانند.
+
 روش دستی (سطرهای کلیدی):
 
 ```bash
@@ -298,6 +320,8 @@ git clone https://github.com/Hamedghz/OMERTAOS.git
 cd OMERTAOS
 .\install_all_win.ps1
 ```
+
+نسخهٔ Windows نیز همان انتخاب پروفایل را انجام می‌دهد و مقدار نهایی را در `.env` و `.aionos/profile.json` قرار می‌دهد.
 
 روش دستی (خلاصهٔ گام‌ها):
 

@@ -1,0 +1,28 @@
+inherits: professional
+name: enterprise-vip
+services:
+  gpu_runtime:
+    enabled: true
+    provider: nvidia
+    policy: auto-offload
+  seal_advisor: enabled
+  bigdata:
+    kafka: true
+    clickhouse: true
+    airflow: true
+    superset: true
+security:
+  mtls: enforced
+  module_signing: cosign
+  policy_engine: enabled
+features:
+  chatops: admin-gated
+  rl_policy_reload: enabled
+  router:
+    default_mode: remote-canary
+    advisors:
+      seal: true
+    gpu_required: true
+observability:
+  otel: extended
+  logs_retention_days: 90

@@ -48,6 +48,9 @@ export interface GatewayConfig {
     enabled: boolean;
     serviceName: string;
   };
+  profile: 'user' | 'professional' | 'enterprise-vip';
+  featureSeal: boolean;
+  adminToken: string;
 }
 
 const parseApiKeys = (): Record<string, { roles: string[]; tenant?: string }> => {
@@ -76,6 +79,9 @@ const parseCaPaths = (raw?: string): string[] | undefined => {
     .filter(Boolean);
   return paths.length ? paths : undefined;
 };
+
+const profile = (process.env.AION_PROFILE || 'user').toLowerCase() as GatewayConfig['profile'];
+const featureSeal = process.env.FEATURE_SEAL === '1' || profile === 'enterprise-vip';
 
 export const gatewayConfig: GatewayConfig = {
   port: Number(process.env.AION_GATEWAY_PORT || 8080),
@@ -106,4 +112,7 @@ export const gatewayConfig: GatewayConfig = {
     enabled: process.env.AION_OTEL_ENABLED === 'true',
     serviceName: process.env.AION_SERVICE_NAME || 'aionos-gateway',
   },
+  profile,
+  featureSeal,
+  adminToken: process.env.AION_ADMIN_TOKEN || process.env.AUTH_TOKEN || '',
 };

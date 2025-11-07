@@ -17,6 +17,8 @@ import { ZodError } from 'zod';
 import type { TaskRequest, TaskRequestInput, TaskResult } from './types.js';
 import { taskRequestSchema } from './types.js';
 import { shutdownTelemetry, startTelemetry } from './telemetry.js';
+import { registerConfigRoutes } from './routes/config.js';
+import { registerSealRoutes } from './routes/seal.js';
 
 const app = Fastify({
   logger: true,
@@ -42,7 +44,12 @@ app.addHook('onRequest', async (request, reply) => {
 
 const controlClient = createControlClient();
 const streamEmitter = new EventEmitter();
-const healthHandler = async () => ({ status: 'ok', service: 'gateway' });
+const healthHandler = async () => ({
+  status: 'ok',
+  service: 'gateway',
+  profile: gatewayConfig.profile,
+  seal_enabled: gatewayConfig.featureSeal,
+});
 
 const invokeControlUnary = (method: 'Submit' | 'StatusById', payload: any, metadata: Metadata) => {
   return new Promise<any>((resolve, reject) => {
@@ -223,6 +230,9 @@ app.register(async (instance) => {
     socket.once('close', () => clearInterval(heartbeat));
   });
 });
+
+registerConfigRoutes(app);
+registerSealRoutes(app);
 
 app.setErrorHandler((error, request, reply) => {
   request.log.error({ err: error }, 'Unhandled gateway error');

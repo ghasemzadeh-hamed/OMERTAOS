@@ -1,0 +1,22 @@
+version: 1
+phases:
+  - name: shadow
+    traffic_percentage: 0
+    min_duration_minutes: 30
+    success_criteria:
+      metric: response_quality
+      min_delta: 0.02
+  - name: canary
+    traffic_percentage: 10
+    min_duration_minutes: 60
+    guardrails:
+      - hallucination_rate
+      - latency_ms
+  - name: live
+    traffic_percentage: 100
+    promotion_condition: canary_success
+safety:
+  rollback_on:
+    - hallucination_rate
+    - policy_violation
+    - regression_detected
