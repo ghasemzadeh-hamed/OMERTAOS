@@ -1,22 +1,38 @@
 registry_version: '1.0'
 catalog:
   models:
-  - models/ollama/llama3.2-3b.yaml
-  - models/alibaba/qwen-2.5-max.yaml
-  - models/deepseek/deepseek-v3.yaml
-  - models/google/gemini-2.5-pro.yaml
-  - models/meta/llama-4-maverick.yaml
-  - models/openai/gpt-4.5.yaml
+  - path: models/ollama/llama3.2-3b.yaml
+    requiresApiKey: false
+  - path: models/alibaba/qwen-2.5-max.yaml
+    requiresApiKey: true
+  - path: models/deepseek/deepseek-v3.yaml
+    requiresApiKey: true
+  - path: models/google/gemini-2.5-pro.yaml
+    requiresApiKey: true
+  - path: models/meta/llama-4-maverick.yaml
+    requiresApiKey: true
+  - path: models/openai/gpt-4.5.yaml
+    requiresApiKey: true
+  - path: models/custom/local-echo.yaml
+    requiresApiKey: false
   algorithms:
-  - algorithms/memory/vector-cache.yaml
-  - algorithms/planning/react.yaml
-  - algorithms/rag/rag-lite.yaml
-  - algorithms/tot/tree-of-thought.yaml
+  - path: algorithms/memory/vector-cache.yaml
+    requiresApiKey: false
+  - path: algorithms/planning/react.yaml
+    requiresApiKey: false
+  - path: algorithms/rag/rag-lite.yaml
+    requiresApiKey: false
+  - path: algorithms/tot/tree-of-thought.yaml
+    requiresApiKey: false
   services:
-  - services/database/mongodb.yaml
-  - services/storage/minio.yaml
-  - services/vector/qdrant.yaml
-  - services/workflow/n8n.yaml
+  - path: services/database/mongodb.yaml
+    requiresApiKey: false
+  - path: services/storage/minio.yaml
+    requiresApiKey: false
+  - path: services/vector/qdrant.yaml
+    requiresApiKey: false
+  - path: services/workflow/n8n.yaml
+    requiresApiKey: false
 installed:
   models: {}
   algorithms: {}

@@ -5,6 +5,7 @@ from os.control.os.api.datasources import router as datasources_router
 from os.control.os.api.modules import router as modules_router
 from os.control.os.api.health import router as health_router
 from os.control.os.api.webhooks import router as webhook_router
+from os.control.os.api.registry import router as registry_router
 
 __all__ = [
     "providers_router",
@@ -13,4 +14,5 @@ __all__ = [
     "modules_router",
     "health_router",
     "webhook_router",
+    "registry_router",
 ]

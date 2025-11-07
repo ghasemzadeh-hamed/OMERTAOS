@@ -25,6 +25,7 @@ from os.control.os.api import (
     health_router,
     modules_router,
     providers_router,
+    registry_router,
     router_policy_router,
     webhook_router,
 )
@@ -130,6 +131,7 @@ app.include_router(plugins_router)
 if _seal_enabled():
     app.include_router(seal_router)
 app.include_router(webhook_router)
+app.include_router(registry_router)
 app.include_router(files_router)
 app.include_router(data_router)
 app.include_router(config_center_router)
