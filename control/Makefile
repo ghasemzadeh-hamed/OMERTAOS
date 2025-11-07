@@ -1,5 +1,7 @@
 .PHONY: install install-extras run lint test
 
+export PYTHONPATH ?= ../:../app
+
 install:
 	pip install --upgrade pip setuptools wheel
 	pip install -e .
@@ -9,7 +11,7 @@ install-extras:
 	pip install -e .[$$EXTRAS]
 
 run:
-	uvicorn aionos_control.main:app --host 0.0.0.0 --port 8080 --reload
+	uvicorn app.control.main:app --host 0.0.0.0 --port 8080 --reload
 
 lint:
 	ruff --fix .
