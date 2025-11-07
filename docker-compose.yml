@@ -1,4 +1,40 @@
 ﻿services:
+  vault:
+    image: hashicorp/vault:1.16
+    container_name: aionos-vault
+    environment:
+      VAULT_LOCAL_CONFIG: |
+        {
+          "disable_mlock": true,
+          "ui": true,
+          "listener": [
+            {
+              "tcp": {
+                "address": "0.0.0.0:8200",
+                "tls_disable": 1
+              }
+            }
+          ],
+          "storage": {
+            "raft": {
+              "path": "/vault/data"
+            }
+          }
+        }
+    command: vault server -config=/vault/config/local.json
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "8200:8200"
+    healthcheck:
+      test: ["CMD", "vault", "status", "-format=json"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+    volumes:
+      - vault-data:/vault/data
+    networks: [aionos]
+
   postgres:
     image: postgres:16
     environment:
@@ -67,12 +103,10 @@
       TENANCY_MODE: ${TENANCY_MODE}
       AION_DB_SECRET_PATH: ${AION_DB_SECRET_PATH}
       AION_MINIO_SECRET_PATH: ${AION_MINIO_SECRET_PATH}
-      VAULT_ADDR: ${VAULT_ADDR}
-      VAULT_AUTH_METHOD: ${VAULT_AUTH_METHOD}
-      VAULT_NAMESPACE: ${VAULT_NAMESPACE}
-      VAULT_TOKEN: ${VAULT_TOKEN}
-      VAULT_APPROLE_ROLE_ID: ${VAULT_APPROLE_ROLE_ID}
-      VAULT_APPROLE_SECRET_ID: ${VAULT_APPROLE_SECRET_ID}
+      AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
+      AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
+      AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
+      AION_ENV: ${AION_ENV:-dev}
       PYTHONPATH: /srv/app:/srv/app/os
 volumes:
   - ./policies:${AION_CONTROL_POLICIES_DIRECTORY:-/srv/app/policies}
@@ -84,6 +118,8 @@ volumes:
       qdrant:
         condition: service_started
       minio:
+        condition: service_healthy
+      vault:
         condition: service_healthy
     ports:
       - "8000:8000"
@@ -115,18 +151,18 @@ volumes:
       AION_JWT_SECRET_PATH: ${AION_JWT_SECRET_PATH}
       AION_GATEWAY_API_KEYS_SECRET_PATH: ${AION_GATEWAY_API_KEYS_SECRET_PATH}
       AION_ADMIN_TOKEN_SECRET_PATH: ${AION_ADMIN_TOKEN_SECRET_PATH}
-      VAULT_ADDR: ${VAULT_ADDR}
-      VAULT_AUTH_METHOD: ${VAULT_AUTH_METHOD}
-      VAULT_NAMESPACE: ${VAULT_NAMESPACE}
-      VAULT_TOKEN: ${VAULT_TOKEN}
-      VAULT_APPROLE_ROLE_ID: ${VAULT_APPROLE_ROLE_ID}
-      VAULT_APPROLE_SECRET_ID: ${VAULT_APPROLE_SECRET_ID}
+      AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
+      AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
+      AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
+      AION_ENV: ${AION_ENV:-dev}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
       control:
+        condition: service_healthy
+      vault:
         condition: service_healthy
     ports:
       - "8080:8080"
@@ -136,8 +172,6 @@ volumes:
       timeout: 3s
       retries: 60
     networks: [aionos]
-    volumes:
-      - ./config/certs:/app/config/certs:ro
 
   console:
     build:
@@ -150,14 +184,14 @@ volumes:
       NEXT_PUBLIC_GATEWAY_URL: ${NEXT_PUBLIC_GATEWAY_URL}
       NEXT_PUBLIC_CONTROL_URL: ${NEXT_PUBLIC_CONTROL_URL}
       AION_ADMIN_TOKEN_SECRET_PATH: ${AION_ADMIN_TOKEN_SECRET_PATH}
-      VAULT_ADDR: ${VAULT_ADDR}
-      VAULT_AUTH_METHOD: ${VAULT_AUTH_METHOD}
-      VAULT_NAMESPACE: ${VAULT_NAMESPACE}
-      VAULT_TOKEN: ${VAULT_TOKEN}
-      VAULT_APPROLE_ROLE_ID: ${VAULT_APPROLE_ROLE_ID}
-      VAULT_APPROLE_SECRET_ID: ${VAULT_APPROLE_SECRET_ID}
+      AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
+      AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
+      AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
+      AION_ENV: ${AION_ENV:-dev}
     depends_on:
       gateway:
+        condition: service_healthy
+      vault:
         condition: service_healthy
     ports:
       - "3000:3000"
@@ -186,6 +220,9 @@ volumes:
       CODER_MODEL: ${CODER_MODEL}
       CODER_ENDPOINT: ${CODER_ENDPOINT}
       CODER_API_KEY: ${CODER_API_KEY}
+      AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
+      AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
+      AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
     volumes:
       - ./app:/app/app
       - ./config:/app/config
@@ -193,6 +230,7 @@ volumes:
       - "9101:9100"
     depends_on:
       - llm-gateway
+      - vault
     profiles: ["dev-kernel"]
     networks: [aionos]
 
@@ -208,6 +246,7 @@ volumes:
 
 volumes:
   minio-data: {}
+  vault-data: {}
 
 networks:
   aionos:

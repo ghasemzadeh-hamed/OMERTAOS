@@ -2,6 +2,7 @@ export interface SecretProviderOptions {
   vaultAddr?: string;
   authMethod?: string;
   namespace?: string;
+  kvMount?: string;
 }
 
 export class SecretProviderError extends Error {}

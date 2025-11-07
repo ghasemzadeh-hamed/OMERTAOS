@@ -1,6 +1,42 @@
 version: "3.9"
 
 services:
+  vault:
+    image: hashicorp/vault:1.16
+    environment:
+      VAULT_LOCAL_CONFIG: |
+        {
+          "disable_mlock": true,
+          "ui": true,
+          "listener": [
+            {
+              "tcp": {
+                "address": "0.0.0.0:8200",
+                "tls_disable": 1
+              }
+            }
+          ],
+          "storage": {
+            "raft": {
+              "path": "/vault/data"
+            }
+          }
+        }
+    command: vault server -config=/vault/config/local.json
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "8200:8200"
+    healthcheck:
+      test: ["CMD", "vault", "status", "-format=json"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+    volumes:
+      - vault-data:/vault/data
+    networks:
+      - aionos-local
+
   postgres:
     image: postgres:16
     environment:
@@ -91,19 +127,21 @@ services:
     environment:
       AION_CONTROL_API_PREFIX: /api
       AION_CONTROL_REDIS_URL: redis://redis:6379/0
-      AION_CONTROL_POSTGRES_DSN: postgresql://aion:aion@postgres:5432/aion
       AION_CONTROL_QDRANT_URL: http://qdrant:6333
       AION_CONTROL_MODELS_DIRECTORY: /app/models
       AION_CONTROL_POLICIES_DIRECTORY: /app/policies
       TENANCY_MODE: single
-      MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: minio
-      MINIO_SECRET_KEY: miniosecret
-      AION_KERNEL_URL: http://kernel:8010
+      AION_DB_SECRET_PATH: secret/aionos/dev/db-main
+      AION_MINIO_SECRET_PATH: secret/aionos/dev/minio
+      AION_CONTROL_TLS_SECRET_PATH: secret/aionos/dev/control-tls
+      AION_CONTROL_TLS_CLIENT_CA_SECRET_PATH: secret/aionos/dev/mtls-ca
+      AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
+      AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
+      AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
+      AION_ENV: ${AION_ENV:-dev}
       PYTHONPATH: /srv/app:/srv/app/os
     volumes:
       - ./policies:/app/policies
-      - ./config/certs:/app/config/certs:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -115,6 +153,8 @@ services:
         condition: service_healthy
       kernel:
         condition: service_started
+      vault:
+        condition: service_healthy
     command: ["python", "-m", "os.control.os.main"]
     ports:
       - "8000:8000"
@@ -129,7 +169,6 @@ services:
       AION_GATEWAY_HOST: 0.0.0.0
       AION_CONTROL_GRPC: http://control:50051
       AION_CONTROL_BASE: http://control:8000
-      AION_GATEWAY_API_KEYS: "demo-key:admin|manager"
       AION_REDIS_URL: redis://redis:6379/1
       AION_RATE_LIMIT_MAX: "1000"
       AION_RATE_LIMIT_PER_IP: "true"
@@ -137,17 +176,25 @@ services:
       AION_IDEMPOTENCY_TTL: "600"
       AION_TLS_REQUIRE_MTLS: "false"
       AION_KERNEL_URL: http://kernel:8010
+      AION_GATEWAY_API_KEYS_SECRET_PATH: secret/aionos/dev/gateway-api-keys
+      AION_ADMIN_TOKEN_SECRET_PATH: secret/aionos/dev/admin-token
+      AION_TLS_SECRET_PATH: secret/aionos/dev/gateway-tls
+      AION_TLS_CLIENT_CA_SECRET_PATH: secret/aionos/dev/mtls-ca
+      AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
+      AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
+      AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
+      AION_ENV: ${AION_ENV:-dev}
     depends_on:
       control:
-        condition: service_started
+        condition: service_healthy
       redis:
+        condition: service_healthy
+      vault:
         condition: service_healthy
     ports:
       - "8080:8080"
     networks:
       - aionos-local
-    volumes:
-      - ./config/certs:/app/config/certs:ro
 
   console:
     build: ./console
@@ -157,9 +204,16 @@ services:
       NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080
       NEXT_PUBLIC_CONTROL_URL: http://localhost:8000
       NEXT_PUBLIC_KERNEL_URL: http://localhost:8010
+      AION_ADMIN_TOKEN_SECRET_PATH: secret/aionos/dev/admin-token
+      AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
+      AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
+      AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
+      AION_ENV: ${AION_ENV:-dev}
     depends_on:
       gateway:
-        condition: service_started
+        condition: service_healthy
+      vault:
+        condition: service_healthy
     ports:
       - "3000:3000"
     networks:
@@ -169,6 +223,7 @@ volumes:
   minio-data:
   qdrant-data:
   kernel-data:
+  vault-data:
 
 networks:
   aionos-local:

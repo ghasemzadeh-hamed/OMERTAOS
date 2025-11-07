@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from pathlib import Path
 
 from google.protobuf.json_format import MessageToDict
 import grpc
@@ -141,16 +140,10 @@ def create_grpc_server(host: str | None = None, port: int | None = None) -> aio.
     server = aio.server()
     tasks_pb2_grpc.add_AionTasksServicer_to_server(AionTasksService(), server)
 
-    cert_path = Path(settings.grpc_tls_cert)
-    key_path = Path(settings.grpc_tls_key)
-    if cert_path.exists() and key_path.exists():
-        private_key = key_path.read_bytes()
-        certificate_chain = cert_path.read_bytes()
-        root_certificates = None
-        if settings.grpc_tls_client_ca:
-            ca_path = Path(settings.grpc_tls_client_ca)
-            if ca_path.exists():
-                root_certificates = ca_path.read_bytes()
+    certificate_chain = settings.grpc_tls_certificate
+    private_key = settings.grpc_tls_private_key
+    if certificate_chain and private_key:
+        root_certificates = settings.grpc_tls_client_ca
         credentials = grpc.ssl_server_credentials(
             [(private_key, certificate_chain)],
             root_certificates=root_certificates,
@@ -158,7 +151,9 @@ def create_grpc_server(host: str | None = None, port: int | None = None) -> aio.
         )
         server.add_secure_port(f"{resolved_host}:{resolved_port}", credentials)
     else:
-        logger.warning("TLS cert/key missing, falling back to insecure gRPC listener")
+        logger.warning(
+            "TLS cert/key missing or Vault not initialised, falling back to insecure gRPC listener"
+        )
         server.add_insecure_port(f"{resolved_host}:{resolved_port}")
     return server
 

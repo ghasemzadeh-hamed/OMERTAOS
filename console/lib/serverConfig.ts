@@ -5,7 +5,7 @@ export interface ConsoleSecrets {
 }
 
 let secretProvider: SecretProvider | null = null;
-if (process.env.VAULT_ADDR) {
+if (process.env.AION_VAULT_ADDR || process.env.VAULT_ADDR) {
   try {
     secretProvider = new SecretProvider({});
   } catch (error) {

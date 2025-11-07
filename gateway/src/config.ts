@@ -41,10 +41,12 @@ export interface GatewayConfig {
   idempotencyTtlSeconds: number;
   environment: 'development' | 'test' | 'production';
   tls: {
-    certPath?: string;
-    keyPath?: string;
-    caPaths?: string[];
     requireMtls: boolean;
+    secretPath?: string;
+    clientCaSecretPath?: string;
+    certPem?: string;
+    keyPem?: string;
+    caPem?: string[];
   };
   telemetry: {
     enabled: boolean;
@@ -110,22 +112,11 @@ const parseApiKeysSecret = (secret: Record<string, unknown> | string): Record<st
   return keys;
 };
 
-const parseCaPaths = (raw?: string): string[] | undefined => {
-  if (!raw) {
-    return undefined;
-  }
-  const paths = raw
-    .split(',')
-    .map((value) => value.trim())
-    .filter(Boolean);
-  return paths.length ? paths : undefined;
-};
-
 const profile = (process.env.AION_PROFILE || 'user').toLowerCase() as GatewayConfig['profile'];
 const featureSeal = process.env.FEATURE_SEAL === '1' || profile === 'enterprise-vip';
 
 let secretProvider: SecretProvider | null = null;
-if (process.env.VAULT_ADDR) {
+if (process.env.AION_VAULT_ADDR || process.env.VAULT_ADDR) {
   try {
     secretProvider = new SecretProvider({});
   } catch (error) {
@@ -193,11 +184,93 @@ const resolveApiKeys = async (): Promise<Record<string, { roles: string[]; tenan
   return parseApiKeysSecret(payload);
 };
 
+const takeString = (candidate: unknown): string | undefined => {
+  if (typeof candidate === 'string' && candidate.trim()) {
+    return candidate.trim();
+  }
+  return undefined;
+};
+
+const normalisePemArray = (value: unknown): string[] | undefined => {
+  if (!value) {
+    return undefined;
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed ? [trimmed] : undefined;
+  }
+  if (Array.isArray(value)) {
+    const entries = value
+      .map((item) => (typeof item === 'string' ? item.trim() : ''))
+      .filter((item) => item.length > 0);
+    return entries.length ? entries : undefined;
+  }
+  return undefined;
+};
+
+const resolveTlsMaterials = async (): Promise<{
+  secretPath?: string;
+  clientCaSecretPath?: string;
+  certPem?: string;
+  keyPem?: string;
+  caPem?: string[];
+}> => {
+  const secretPath = process.env.AION_TLS_SECRET_PATH;
+  const clientCaSecretPath = process.env.AION_TLS_CLIENT_CA_SECRET_PATH;
+  let certPem = takeString(process.env.AION_TLS_CERT_PEM || process.env.AION_TLS_CERT);
+  let keyPem = takeString(process.env.AION_TLS_KEY_PEM || process.env.AION_TLS_KEY);
+  let caPem = normalisePemArray(process.env.AION_TLS_CA_PEM || process.env.AION_TLS_CA_CHAIN);
+
+  if (secretPath) {
+    const provider = requireSecretProvider(secretPath);
+    const payload = await provider.getSecret(secretPath);
+    if (typeof payload === 'string') {
+      throw new SecretProviderError(
+        `TLS secret '${secretPath}' must be an object with certificate and private_key fields`,
+      );
+    }
+    certPem =
+      takeString(payload.certificate) ||
+      takeString(payload.cert) ||
+      takeString(payload.public_cert) ||
+      certPem;
+    keyPem = takeString(payload.private_key) || takeString(payload.key) || keyPem;
+    caPem =
+      normalisePemArray(payload.ca_chain) ||
+      normalisePemArray(payload.ca) ||
+      normalisePemArray(payload.certificate_authority) ||
+      caPem;
+  }
+
+  if (clientCaSecretPath) {
+    const provider = requireSecretProvider(clientCaSecretPath);
+    const payload = await provider.getSecret(clientCaSecretPath);
+    if (typeof payload === 'string') {
+      caPem = normalisePemArray(payload) || caPem;
+    } else {
+      caPem =
+        normalisePemArray(payload.ca_chain) ||
+        normalisePemArray(payload.ca) ||
+        normalisePemArray(payload.certificate) ||
+        caPem;
+    }
+  }
+
+  return {
+    secretPath,
+    clientCaSecretPath,
+    certPem,
+    keyPem,
+    caPem,
+  };
+};
+
 async function buildGatewayConfig(): Promise<GatewayConfig> {
-  const [apiKeys, jwtPublicKey, adminToken] = await Promise.all([
+  const [apiKeys, jwtPublicKey, adminToken, tlsMaterials] = await Promise.all([
     resolveApiKeys(),
     resolveJwtPublicKey(),
     resolveAdminToken(),
+    resolveTlsMaterials(),
   ]);
 
   return {
@@ -218,12 +291,19 @@ async function buildGatewayConfig(): Promise<GatewayConfig> {
       perIp: Number(process.env.AION_RATE_LIMIT_PER_IP || 30),
     },
     idempotencyTtlSeconds: Number(process.env.AION_IDEMPOTENCY_TTL || 900),
-    environment: (process.env.NODE_ENV as GatewayConfig['environment']) || 'development',
+    environment: (process.env.AION_ENV || process.env.NODE_ENV || 'development') as GatewayConfig['environment'],
     tls: {
-      certPath: process.env.AION_TLS_CERT || 'config/certs/gateway-client.pem',
-      keyPath: process.env.AION_TLS_KEY || 'config/certs/gateway-client-key.pem',
-      caPaths: parseCaPaths(process.env.AION_TLS_CA_CHAIN || 'config/certs/dev-ca.pem'),
-      requireMtls: process.env.AION_TLS_REQUIRE_MTLS !== 'false',
+      requireMtls:
+        process.env.AION_TLS_REQUIRE_MTLS === '1' ||
+        process.env.AION_TLS_REQUIRE_MTLS === 'true' ||
+        process.env.AION_TLS_REQUIRE_MTLS === 'yes' ||
+        process.env.AION_TLS_REQUIRE_MTLS === 'on' ||
+        profile === 'enterprise-vip',
+      secretPath: tlsMaterials.secretPath,
+      clientCaSecretPath: tlsMaterials.clientCaSecretPath,
+      certPem: tlsMaterials.certPem,
+      keyPem: tlsMaterials.keyPem,
+      caPem: tlsMaterials.caPem,
     },
     telemetry: {
       enabled: process.env.AION_OTEL_ENABLED === 'true',

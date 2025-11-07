@@ -1,5 +1,3 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { gatewayConfig } from '../config.js';
 
 export interface TlsArtifacts {
@@ -10,32 +8,21 @@ export interface TlsArtifacts {
   requestClientCert: boolean;
 }
 
-const readFileIfExists = (filePath?: string): Buffer | undefined => {
-  if (!filePath) {
-    return undefined;
-  }
-  const resolved = path.resolve(filePath);
-  if (!fs.existsSync(resolved)) {
-    throw new Error(`TLS file not found: ${resolved}`);
-  }
-  return fs.readFileSync(resolved);
-};
-
 export const loadTlsArtifacts = (): TlsArtifacts => {
   const shouldEnable = gatewayConfig.tls.requireMtls || gatewayConfig.environment === 'production';
   if (!shouldEnable) {
     return { enabled: false, requestClientCert: false };
   }
-  const key = readFileIfExists(gatewayConfig.tls.keyPath);
-  const cert = readFileIfExists(gatewayConfig.tls.certPath);
-  const ca = gatewayConfig.tls.caPaths?.map((p) => readFileIfExists(p)).filter(Boolean) as Buffer[];
-  if (!key || !cert) {
-    throw new Error('TLS key and cert are required in production');
+  const keyPem = gatewayConfig.tls.keyPem;
+  const certPem = gatewayConfig.tls.certPem;
+  const caPem = gatewayConfig.tls.caPem;
+  if (!keyPem || !certPem) {
+    throw new Error('TLS key and certificate must be available from Vault or environment');
   }
   return {
-    key,
-    cert,
-    ca,
+    key: Buffer.from(keyPem, 'utf8'),
+    cert: Buffer.from(certPem, 'utf8'),
+    ca: caPem?.map((entry) => Buffer.from(entry, 'utf8')),
     enabled: true,
     requestClientCert: gatewayConfig.tls.requireMtls,
   };

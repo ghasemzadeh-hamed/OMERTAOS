@@ -9,13 +9,18 @@ keys.
 
 All services understand the following Vault configuration variables:
 
-- `VAULT_ADDR` – URL of the Vault API endpoint (for example `https://127.0.0.1:8200`).
-- `VAULT_AUTH_METHOD` – authentication strategy (`token` for local development or
-  `approle` in production).
-- `VAULT_NAMESPACE` – optional namespace when using HCP Vault or Enterprise Vault.
-- `VAULT_TOKEN` – development token when using `VAULT_AUTH_METHOD=token`.
-- `VAULT_APPROLE_ROLE_ID` / `VAULT_APPROLE_SECRET_ID` – credentials for the
-  AppRole associated with the service when `VAULT_AUTH_METHOD=approle`.
+- `AION_VAULT_ADDR` – URL of the Vault API endpoint (for example
+  `http://vault:8200`).
+- `AION_VAULT_KV_MOUNT` – mount name of the KV-v2 engine that stores secrets
+  (defaults to `secret`).
+- `AION_VAULT_TOKEN` – development token when using token authentication.
+- `AION_VAULT_AUTH_METHOD` – optional override of the authentication strategy
+  (`token` for local development or `approle` in production).
+- `AION_VAULT_APPROLE_ROLE_ID` / `AION_VAULT_APPROLE_SECRET_ID` – credentials for
+  the AppRole associated with the service when `AION_VAULT_AUTH_METHOD=approle`.
+- `AION_VAULT_NAMESPACE` – optional namespace when operating against HCP Vault or
+  Vault Enterprise.
+- `AION_ENV` – deployment environment label (`dev`, `staging`, `prod`, …).
 
 Each service consumes only Vault secret paths:
 
@@ -40,28 +45,31 @@ services. For example, the database secret should contain:
 
 ## Local development
 
-A helper script bootstraps a TLS-enabled Vault dev cluster with integrated Raft storage
-and creates read-only policies for each service:
+A helper script bootstraps a Vault dev cluster with integrated Raft storage, enables the
+`secret/` KV engine, seeds development secrets and provisions a scoped token:
 
 ```bash
-scripts/setup_vault_local.sh
+scripts/bootstrap_vault_dev.py
 ```
 
-The script expects the Vault CLI and `jq`. It performs the following:
-
-1. Enables a KV-v2 engine mounted at `kv/` (configurable via `SECRETS_MOUNT`).
-2. Seeds sample secrets for the database, MinIO, JWT, API keys and admin token.
-3. Installs least-privilege policies from `policies/vault/*.hcl`.
-4. Enables the AppRole auth method and generates role credentials for control, gateway,
-   console and kernel services, writing them to `./.vault/<service>.env` for convenience.
-
-Use the emitted `.env` snippet when launching services locally, for example:
+The script starts the `vault` service defined in `docker-compose.yml`, initialises and
+unseals it (storing the unseal key under `.vault/dev-unseal.json`), generates a fresh
+development certificate authority and service certificates, seeds Vault with those
+artifacts and writes a reusable development token to `.env.vault.dev`. Source that file
+alongside your regular `.env` before running the stack:
 
 ```bash
-export VAULT_ADDR=https://127.0.0.1:8200
-export VAULT_AUTH_METHOD=approle
-source ./.vault/aion-control.env
+source .env
+source .env.vault.dev
+docker compose up -d
 ```
+
+Replace the placeholder TLS certificates inside Vault with material generated from the
+freshly-created development CA before exposing services.
+
+> **Note**: The bootstrap script depends on the `hvac`, `cryptography` and `requests`
+> Python packages. Install them via `pip install hvac cryptography requests` if they are
+> not already available in your environment.
 
 ## Production and HCP Vault
 
@@ -71,7 +79,7 @@ service to an AppRole and distribute only the role ID and wrapped secret ID at d
 
 - Rotate credentials by updating the KV entry; services automatically pick up the new
   values without redeploying.
-- Use namespaced mounts when operating with HCP Vault by setting `VAULT_NAMESPACE`.
+- Use namespaced mounts when operating with HCP Vault by setting `AION_VAULT_NAMESPACE`.
 - Restrict network access so only platform hosts can reach Vault.
 
 ## Updating backend services
