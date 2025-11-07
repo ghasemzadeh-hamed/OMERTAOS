@@ -1,0 +1,58 @@
+catalog:
+  data:
+    - {name: numpy,          docs: "https://numpy.org",                 pypi: numpy,          repo: "https://github.com/numpy/numpy"}
+    - {name: pandas,         docs: "https://pandas.pydata.org",         pypi: pandas,         repo: "https://github.com/pandas-dev/pandas"}
+    - {name: dask,           docs: "https://www.dask.org",              pypi: "dask[dataframe]", repo: "https://github.com/dask/dask"}
+    - {name: polars,         docs: "https://pola.rs",                   pypi: polars,         repo: "https://github.com/pola-rs/polars"}
+
+  ml:
+    - {name: scikit-learn,   docs: "https://scikit-learn.org",          pypi: scikit-learn,   repo: "https://github.com/scikit-learn/scikit-learn"}
+    - {name: xgboost,        docs: "https://xgboost.readthedocs.io",    pypi: xgboost,        repo: "https://github.com/dmlc/xgboost"}
+    - {name: lightgbm,       docs: "https://lightgbm.readthedocs.io",   pypi: lightgbm,       repo: "https://github.com/microsoft/LightGBM"}
+    - {name: catboost,       docs: "https://catboost.ai/en/docs/",      pypi: catboost,       repo: "https://github.com/catboost/catboost"}
+
+  dl:
+    - {name: torch,          docs: "https://pytorch.org/docs",          pypi: torch,          repo: "https://github.com/pytorch/pytorch"}
+    - {name: tensorflow,     docs: "https://www.tensorflow.org",        pypi: tensorflow,     repo: "https://github.com/tensorflow/tensorflow"}
+    - {name: keras,          docs: "https://keras.io",                  pypi: keras,          repo: "https://github.com/keras-team/keras"}
+    - {name: jax,            docs: "https://jax.readthedocs.io",        pypi: "jax jaxlib",   repo: "https://github.com/google/jax"}
+
+  tracking:
+    - {name: mlflow,         docs: "https://mlflow.org/docs/latest",    pypi: mlflow,         repo: "https://github.com/mlflow/mlflow"}
+    - {name: wandb,          docs: "https://docs.wandb.ai",             pypi: wandb,          repo: "https://github.com/wandb/wandb"}
+    - {name: comet-ml,       docs: "https://www.comet.com/docs",        pypi: comet-ml,       repo: "https://github.com/comet-ml/comet-ml"}
+    - {name: neptune,        docs: "https://docs.neptune.ai",           pypi: neptune,        repo: "https://github.com/neptune-ai/neptune-client"}
+
+  viz:
+    - {name: matplotlib,     docs: "https://matplotlib.org/stable",     pypi: matplotlib,     repo: "https://github.com/matplotlib/matplotlib"}
+    - {name: seaborn,        docs: "https://seaborn.pydata.org",        pypi: seaborn,        repo: "https://github.com/mwaskom/seaborn"}
+    - {name: plotly,         docs: "https://plotly.com/python",         pypi: plotly,         repo: "https://github.com/plotly/plotly.py"}
+    - {name: altair,         docs: "https://altair-viz.github.io",      pypi: altair,         repo: "https://github.com/altair-viz/altair"}
+
+  eval:
+    - {name: evidently,      docs: "https://docs.evidentlyai.com",      pypi: evidently,      repo: "https://github.com/evidentlyai/evidently"}
+    - {name: deepchecks,     docs: "https://docs.deepchecks.com",       pypi: deepchecks,     repo: "https://github.com/deepchecks/deepchecks"}
+    - {name: great_expectations, docs: "https://docs.greatexpectations.io", pypi: great_expectations, repo: "https://github.com/great-expectations/great_expectations"}
+    - {name: scikit-plot,    docs: "https://scikit-plot.readthedocs.io",pypi: scikit-plot,    repo: "https://github.com/reiinakano/scikit-plot"}
+
+  fe:
+    - {name: featuretools,   docs: "https://featuretools.alteryx.com",  pypi: featuretools,   repo: "https://github.com/alteryx/featuretools"}
+    - {name: category-encoders, docs: "https://contrib.scikit-learn.org/category_encoders/", pypi: category-encoders, repo: "https://github.com/scikit-learn-contrib/category_encoders"}
+    - {name: tsfresh,        docs: "https://tsfresh.readthedocs.io",    pypi: tsfresh,        repo: "https://github.com/blue-yonder/tsfresh"}
+
+  serve:
+    - {name: fastapi,        docs: "https://fastapi.tiangolo.com",      pypi: "fastapi uvicorn[standard]", repo: "https://github.com/tiangolo/fastapi"}
+    - {name: bentoml,        docs: "https://docs.bentoml.org",          pypi: bentoml,        repo: "https://github.com/bentoml/BentoML"}
+    - {name: gradio,         docs: "https://gradio.app/docs",           pypi: gradio,         repo: "https://github.com/gradio-app/gradio"}
+    - {name: streamlit,      docs: "https://docs.streamlit.io",         pypi: streamlit,      repo: "https://github.com/streamlit/streamlit"}
+
+  mlops:
+    - {name: apache-airflow, docs: "https://airflow.apache.org",        pypi: apache-airflow, repo: "https://github.com/apache/airflow", tags: [security]}
+    - {name: prefect,        docs: "https://docs.prefect.io",           pypi: prefect,        repo: "https://github.com/PrefectHQ/prefect", tags: [security]}
+    - {name: dagster,        docs: "https://docs.dagster.io",           pypi: dagster,        repo: "https://github.com/dagster-io/dagster", tags: [security]}
+    - {name: kfp,            docs: "https://www.kubeflow.org/docs",     pypi: kfp,            repo: "https://github.com/kubeflow/pipelines", tags: [security]}
+
+    # Cross-cutting security tools (برچسب security)
+    - {name: presidio-analyzer,   docs: "https://microsoft.github.io/presidio", pypi: presidio-analyzer, repo: "https://github.com/microsoft/presidio", tags: [security]}
+    - {name: presidio-anonymizer, docs: "https://microsoft.github.io/presidio", pypi: presidio-anonymizer, repo: "https://github.com/microsoft/presidio", tags: [security]}
+    - {name: syft,           docs: "https://docs.openmined.org",        pypi: syft,          repo: "https://github.com/OpenMined/PySyft", tags: [security]}

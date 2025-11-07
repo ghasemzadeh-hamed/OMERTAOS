@@ -16,6 +16,7 @@ control = [
     "uvicorn[standard]>=0.30",
     "pydantic>=2.9",
     "httpx>=0.27",
+    "sqlalchemy>=2.0",
     "redis>=5",
     "orjson>=3.10",
     "pydantic-settings>=2.2",
@@ -36,6 +37,7 @@ control = [
     "python-multipart>=0.0.9",
     "psycopg2-binary>=2.9",
     "psutil>=5.9",
+    "pycryptodome>=3.20",
 ]
 kernel = [
     "pyyaml>=6.0",
@@ -98,4 +100,4 @@ build-backend = "setuptools.build_meta"
 py-modules = ["sitecustomize"]
 
 [tool.setuptools.packages.find]
-include = ["aionos_core*", "app*", "os*", "aionos_control*"]
+include = ["aionos_core*", "app*", "os*", "aionos_control*", "aion*"]

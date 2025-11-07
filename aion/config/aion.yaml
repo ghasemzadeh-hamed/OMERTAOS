@@ -1,0 +1,20 @@
+catalog:
+  sync_every_days: 7
+  seed_file: config/catalog.seed.yaml
+  default_env: default
+
+vault:
+  provider: ${AION_VAULT_PROVIDER:-file}
+  file:
+    path: ./var/vault.json
+  hashicorp:
+    addr: ${VAULT_ADDR:-http://vault:8200}
+    token: ${VAULT_TOKEN:-}
+    mount: secret
+
+rbac:
+  roles:
+    - {name: viewer,    perms: [catalog.read]}
+    - {name: operator,  perms: [catalog.read, install.run, install.remove]}
+    - {name: developer, perms: [catalog.read, install.run, install.remove, install.editable, vault.read, vault.write]}
+  default_role: viewer
