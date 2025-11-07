@@ -14,11 +14,23 @@ import { createControlClient } from './server/grpc.js';
 import { idempotencyMiddleware, persistIdempotency } from './middleware/idempotency.js';
 import { rateLimitMiddleware } from './middleware/rateLimit.js';
 import { ZodError } from 'zod';
-import type { TaskRequest, TaskRequestInput, TaskResult } from './types.js';
-import { taskRequestSchema } from './types.js';
+import type {
+  DevKernelRequest,
+  DevKernelResponse,
+  TaskRequest,
+  TaskRequestInput,
+  TaskResult,
+} from './types.js';
+import { devKernelRequestSchema, taskRequestSchema } from './types.js';
 import { shutdownTelemetry, startTelemetry } from './telemetry.js';
 import { registerConfigRoutes } from './routes/config.js';
 import { registerSealRoutes } from './routes/seal.js';
+import {
+  buildDevKernelPayload,
+  callDevKernel,
+  devKernelEnabled,
+  shouldUseDevKernel,
+} from './server/devKernelProxy.js';
 
 const app = Fastify({
   logger: true,
@@ -119,6 +131,38 @@ app.addHook('preHandler', authPreHandler(['user', 'manager', 'admin']));
 app.get('/healthz', healthHandler);
 app.get('/health', healthHandler);
 
+app.post<{ Body: DevKernelRequest }>('/api/dev/kernel', async (request, reply) => {
+  if (!devKernelEnabled()) {
+    throw reply.serviceUnavailable('Dev kernel is disabled');
+  }
+
+  let payload: DevKernelRequest;
+  try {
+    payload = devKernelRequestSchema.parse(request.body);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return reply.status(400).send({
+        error: 'ValidationError',
+        message: 'Invalid dev kernel request',
+        issues: error.issues.map((issue) => ({
+          path: issue.path.join('.'),
+          message: issue.message,
+          code: issue.code,
+        })),
+      });
+    }
+    throw error;
+  }
+
+  try {
+    const response = await callDevKernel(payload);
+    return response;
+  } catch (error) {
+    request.log.error({ err: error }, 'Dev kernel proxy request failed');
+    throw reply.serviceUnavailable('Dev kernel unavailable');
+  }
+});
+
 app.post<{ Body: TaskRequestInput }>('/v1/tasks', async (request, reply) => {
   let validatedBody: TaskRequest;
   try {
@@ -148,6 +192,62 @@ app.post<{ Body: TaskRequestInput }>('/v1/tasks', async (request, reply) => {
   const tenantId = resolveTenantHeader(request);
 
   const taskId = randomUUID();
+  if (shouldUseDevKernel(request)) {
+    if (!devKernelEnabled()) {
+      throw reply.serviceUnavailable('Dev kernel is disabled');
+    }
+
+    let devResponse: DevKernelResponse;
+    try {
+      const payload = buildDevKernelPayload(validatedBody, request);
+      devResponse = await callDevKernel(payload);
+    } catch (error) {
+      request.log.error({ err: error }, 'Dev kernel invocation failed');
+      throw reply.serviceUnavailable('Dev kernel unavailable');
+    }
+
+    const status: TaskResult['status'] = devResponse.type === 'error' ? 'ERROR' : 'OK';
+    const resultPayload =
+      devResponse.type === 'error'
+        ? undefined
+        : { type: devResponse.type, content: devResponse.content };
+    const errorPayload =
+      devResponse.type === 'error'
+        ? {
+            code: 'DEV_KERNEL_ERROR',
+            message:
+              typeof devResponse.content === 'string'
+                ? devResponse.content
+                : 'Dev kernel reported an error',
+          }
+        : null;
+
+    const result: TaskResult = {
+      schemaVersion: validatedBody.schemaVersion,
+      taskId,
+      intent: validatedBody.intent,
+      status,
+      engine: {
+        route: 'dev-kernel',
+        chosen_by: 'gateway',
+        reason: 'Requested via dev mode header',
+      },
+      result: resultPayload ? { devKernel: resultPayload } : undefined,
+      error: errorPayload,
+    };
+
+    if (idempotencyKey) {
+      try {
+        await persistIdempotency(idempotencyKey, result, tenantId);
+      } catch (error) {
+        request.log.error({ err: error }, 'Failed to persist idempotency result');
+        throw reply.serviceUnavailable('Idempotency cache unavailable');
+      }
+    }
+
+    return result;
+  }
+
   const payload = {
     ...validatedBody,
     taskId,

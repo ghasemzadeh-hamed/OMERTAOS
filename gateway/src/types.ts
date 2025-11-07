@@ -44,3 +44,18 @@ export interface TaskResult {
     message: string;
   } | null;
 }
+
+export const devKernelRequestSchema = z
+  .object({
+    message: z.string().min(1, 'message is required'),
+    metadata: z.record(z.unknown()).optional(),
+  })
+  .strict();
+
+export type DevKernelRequestInput = z.input<typeof devKernelRequestSchema>;
+export type DevKernelRequest = z.output<typeof devKernelRequestSchema>;
+
+export interface DevKernelResponse {
+  type: 'patch' | 'text' | 'plan' | 'error';
+  content: unknown;
+}

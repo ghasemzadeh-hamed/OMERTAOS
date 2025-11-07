@@ -150,6 +150,44 @@
       retries: 60
     networks: [aionos]
 
+  dev-kernel:
+    build:
+      context: .
+      dockerfile: app/kernel/Dockerfile
+    container_name: aionos-dev-kernel
+    env_file:
+      - .env
+    environment:
+      AION_ENV: dev
+      AION_KERNEL_PROFILE: dev-qwen-coder
+      ORCH_PROVIDER: ${ORCH_PROVIDER}
+      ORCH_MODEL: ${ORCH_MODEL}
+      ORCH_ENDPOINT: ${ORCH_ENDPOINT}
+      ORCH_API_KEY: ${ORCH_API_KEY}
+      CODER_PROVIDER: ${CODER_PROVIDER}
+      CODER_MODEL: ${CODER_MODEL}
+      CODER_ENDPOINT: ${CODER_ENDPOINT}
+      CODER_API_KEY: ${CODER_API_KEY}
+    volumes:
+      - ./app:/app/app
+      - ./config:/app/config
+    ports:
+      - "9101:9100"
+    depends_on:
+      - llm-gateway
+    profiles: ["dev-kernel"]
+    networks: [aionos]
+
+  llm-gateway:
+    image: your-llm-gateway:latest
+    container_name: aionos-llm-gateway
+    environment:
+      DUMMY: "1"
+    ports:
+      - "8008:8008"
+    profiles: ["dev-kernel"]
+    networks: [aionos]
+
 volumes:
   minio-data: {}
 
