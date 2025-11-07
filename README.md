@@ -1,15 +1,23 @@
-# AION-OS (Agent Web-OS)
+🧠 AION-OS (Hybrid AI Platform for Autonomous Agents)
 
-AION-OS delivers a single, opinionated stack for building and operating AI agent workloads across bare metal, virtual machines, WSL, and containerized environments. One kernel, one installer, and one UI surface make it possible to keep dev, staging, and production in sync while retaining enterprise controls.
+AION-OS is a hybrid, modular operating system designed for building, orchestrating, and scaling intelligent AI agents across bare-metal, virtualized, and web environments.
+It unifies kernel-level control, web-based orchestration, and developer SDKs into one cohesive platform — enabling seamless integration between Edge, Cloud, and Enterprise deployments.
 
-## Why AION-OS instead of Ubuntu AI
+🚀 Core Highlights
 
-- **Unified kernel**: one kernel and module set is shipped for ISO/Kiosk, Linux native installs, WSL, and Docker images.
-- **Unified UI**: the installer wizard and management shell are powered by the same Next.js + React stack with `@aionos/ui-core` components.
-- **Operational profiles**: user, pro, and enterprise profiles model Canonical-style MLOps bundles with predictable service enablement.
-- **Hardware enablement**: automatic detection and enablement for NVIDIA, AMD, and Intel GPUs plus key NIC and Wi-Fi firmware.
-- **Security posture**: first-boot patching, optional secure boot and full-disk encryption, and a hardened baseline for enterprise tenants.
-- **Documentation**: end-to-end playbooks for installation, compatibility, hardening, troubleshooting, and release governance.
+Unified Architecture — One shared kernel and deployment model for native Linux, ISO/Kiosk, WSL, and containerized runtimes.
+
+Agent-Centric Design — Native runtime for multi-agent orchestration with memory, model, and policy subsystems.
+
+Web-OS Console — Browser-based management UI (Next.js + React) for setup, monitoring, and policy automation.
+
+AI Registry — Built-in model, algorithm, and service registry for reproducible, self-signed deployments.
+
+Adaptive Profiles — User, Professional, and Enterprise tiers with modular service activation.
+
+Security & Hardening — First-boot patching, role-based access, optional secure boot, and encrypted storage.
+
+Developer SDK & CLI — Full Python/TypeScript SDK and CLI tools for building custom agents and control modules.
 
 ## Quick start
 
