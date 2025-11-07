@@ -1,0 +1,9 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    restart: unless-stopped
+    ports:
+      - "{{CLICKHOUSE_HTTP_PORT}}:8123"
+      - "{{CLICKHOUSE_TCP_PORT}}:9000"
+    volumes:
+      - "{{CLICKHOUSE_DATA_DIR}}:/var/lib/clickhouse"

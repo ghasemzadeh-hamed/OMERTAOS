@@ -1,0 +1,17 @@
+global:
+  default_mode: AUTO
+  auto_on_no_messaging: true
+
+capabilities:
+  qdrant.readwrite:
+    mode: AUTO
+  minio.objectstore:
+    mode: AUTO
+  mongo.registry:
+    mode: AUTO
+  clickhouse.analytics:
+    mode: ASK
+  kafka.stream:
+    mode: ASK
+  n8n.workflow:
+    mode: ASK
