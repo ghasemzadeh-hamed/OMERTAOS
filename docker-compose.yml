@@ -74,9 +74,8 @@
       VAULT_APPROLE_ROLE_ID: ${VAULT_APPROLE_ROLE_ID}
       VAULT_APPROLE_SECRET_ID: ${VAULT_APPROLE_SECRET_ID}
       PYTHONPATH: /srv/app:/srv/app/os
-    volumes:
-      - ./policies:${AION_CONTROL_POLICIES_DIRECTORY}
-      - ./config/certs:/app/config/certs:ro
+volumes:
+  - ./policies:${AION_CONTROL_POLICIES_DIRECTORY:-/srv/app/policies}
     depends_on:
       postgres:
         condition: service_healthy
