@@ -62,9 +62,11 @@ Install-PackageId 'OpenJS.NodeJS.LTS' 'nodejs-lts'
 Install-PackageId 'Docker.DockerDesktop' 'docker-desktop'
 Install-PackageId 'Ollama.Ollama' 'ollama'
 
-if (-not (Have 'wsl')) {
-  Write-Host '[*] Installing WSL Ubuntu distribution'
-  try { & wsl --install -d Ubuntu } catch { Write-Warning "wsl --install failed: $($_.Exception.Message)" }
+$hasUbuntu = (wsl -l -q) -contains 'Ubuntu'
+if (-not $hasUbuntu) {
+  wsl --install -d Ubuntu
+} else {
+  Write-Host "[*] WSL Ubuntu already exists, skipping install."
 }
 
 Write-Host '[*] Starting Docker Desktop'
