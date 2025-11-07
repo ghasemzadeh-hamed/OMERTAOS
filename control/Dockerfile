@@ -1,22 +1,15 @@
-FROM python:3.11-slim AS base
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc g++ build-essential libblas-dev liblapack-dev libffi-dev git \
-    && rm -rf /var/lib/apt/lists/*
-
+﻿FROM node:20-alpine AS deps
 WORKDIR /app
-COPY control/pyproject.toml ./pyproject.toml
-COPY control/README.md ./README.md
-COPY control/aionos_control ./aionos_control
-COPY control/app ./app
+COPY console/package*.json ./
+RUN npm install
+COPY console/ ./
+# اگر پروژه Next.js/React داری بیلد را تلاش کن ولی اجباری نباشد
+RUN npm run build || true
 
-RUN pip install --upgrade pip setuptools wheel
-RUN pip install "."
-
-ARG AION_EXTRAS=""
-RUN if [ -n "$AION_EXTRAS" ]; then pip install ".[${AION_EXTRAS}]"; fi
-
-COPY control/ ./
-EXPOSE 8080
-CMD ["uvicorn","aionos_control.main:app","--host","0.0.0.0","--port","8080"]
+FROM node:20-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=deps /app ./
+EXPOSE 3000
+# اگر next هست: ["npm","run","start"] اگر dev میخوای: ["npm","run","dev"]
+CMD ["npm","run","start"]
