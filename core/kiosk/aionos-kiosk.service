@@ -1,0 +1,13 @@
+[Unit]
+Description=AIONOS Kiosk
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Environment=AIONOS_ALLOW_INSTALL=1
+ExecStart=/usr/bin/chromium --kiosk --app=http://localhost:3000/wizard --incognito --noerrdialogs --disable-translate
+Restart=always
+User=root
+
+[Install]
+WantedBy=graphical.target

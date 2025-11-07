@@ -1,0 +1,10 @@
+name: pro
+services:
+  gateway: true
+  control: true
+  console: true
+ai:
+  tensorflow: true
+  pytorch: true
+security:
+  hardening: true

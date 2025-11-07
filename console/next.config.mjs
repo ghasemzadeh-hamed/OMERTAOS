@@ -3,6 +3,7 @@ import createTranslator from 'next-intl/server';
 const locales = ['en', 'fa'];
 
 const nextConfig = {
+  transpilePackages: ['@aionos/ui-core'],
   experimental: {
     serverActions: true,
   },

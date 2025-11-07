@@ -1,0 +1,11 @@
+{
+  "name": "aionos-installer-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "dependencies": {
+    "yaml": "^2.4.2",
+    "zod": "^3.25.76"
+  }
+}

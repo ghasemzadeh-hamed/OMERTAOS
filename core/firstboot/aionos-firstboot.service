@@ -1,11 +1,11 @@
 [Unit]
-Description=AIONOS first boot setup
+Description=AIONOS First Boot
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/aionos-firstboot/aionos-firstboot.sh
+ExecStart=/bin/bash /usr/local/sbin/aionos-firstboot.sh
 
 [Install]
 WantedBy=multi-user.target
