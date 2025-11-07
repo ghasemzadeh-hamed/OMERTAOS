@@ -70,5 +70,8 @@ all-ml = [
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+py-modules = ["sitecustomize"]
+
 [tool.setuptools.packages.find]
-include = ["app*", "aionos_control*"]
+include = ["os*", "aionos_control*"]

@@ -5,6 +5,8 @@ echo "AION-OS Interactive Installer (Native, no Docker)"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_DIR"
 
+export PYTHONPATH="$REPO_DIR"
+
 # ---- 0) Sanity & sudo
 if [ "$EUID" -ne 0 ]; then
   echo "Please run via: sudo bash scripts/install.sh"
@@ -120,8 +122,8 @@ if [[ -n "$APP_MODULE" ]]; then
   MOD="${MOD//\//.}"
   UVICORN_APP="${MOD}:app"
 else
-  # fallback commonly used path per README (app.control.main:app)
-  UVICORN_APP="app.control.main:app"
+  # fallback commonly used path per README (os.control.main:app)
+  UVICORN_APP="os.control.main:app"
 fi
 echo "$UVICORN_APP" > .uvicorn_app
 deactivate

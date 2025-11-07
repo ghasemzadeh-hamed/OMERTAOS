@@ -1,9 +1,9 @@
 import pytest
 
-from app.control.app.aion_grpc.aion.v1 import tasks_pb2
-from app.control.app.grpc_server import AionTasksService
-from app.control.app.orchestrator import orchestrator
-from app.control.app.router_engine import decision_engine
+from os.control.os.aion_grpc.aion.v1 import tasks_pb2
+from os.control.os.grpc_server import AionTasksService
+from os.control.os.orchestrator import orchestrator
+from os.control.os.router_engine import decision_engine
 
 
 @pytest.mark.asyncio

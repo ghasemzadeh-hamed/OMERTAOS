@@ -18,7 +18,7 @@ cd gateway && npm ci && npm run dev
 # Control
 cd control && python3.11 -m venv .venv && source .venv/bin/activate
 pip install -U pip wheel && pip install -r requirements.txt
-uvicorn app.control.main:app --host 0.0.0.0 --port 50052 --reload
+uvicorn os.control.main:app --host 0.0.0.0 --port 50052 --reload
 ```
 
 Optional services: Redis/Postgres/Mongo/Qdrant/MinIO — enable only what your change needs.

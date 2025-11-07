@@ -6,7 +6,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from app.control.app.core.state import ControlState
+from os.control.os.core.state import ControlState
 
 
 @pytest.mark.asyncio

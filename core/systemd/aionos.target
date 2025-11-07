@@ -1,0 +1,7 @@
+[Unit]
+Description=AIONOS Stack Target
+Requires=aionos-gateway.service aionos-control.service aionos-console.service
+After=network.target
+
+[Install]
+WantedBy=multi-user.target

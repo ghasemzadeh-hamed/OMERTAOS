@@ -89,6 +89,6 @@
 
 ## Retention
 
-- Mongo TTL indexes created by `control/app/db/retention_mongo.py` enforce 7-14 day (dev) or 30-90 day (prod) log expiry.
+- Mongo TTL indexes created by `os/control/os/db/retention_mongo.py` enforce 7-14 day (dev) or 30-90 day (prod) log expiry.
 - ClickHouse TTL scripts under `bigdata/sql/clickhouse_retention.sql` can be applied via `clickhouse-client -f`.
 - Override retention by exporting `AION_LOG_TTL_DAYS` and `AION_CLICKHOUSE_TTL_DAYS`.

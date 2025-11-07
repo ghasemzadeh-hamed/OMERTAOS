@@ -13,10 +13,10 @@ from fastapi.testclient import TestClient
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
-from app.control.app.core.deps import get_state  # type: ignore  # noqa: E402
-from app.control.app.core.state import ControlState  # type: ignore  # noqa: E402
-from app.control.main import app  # type: ignore  # noqa: E402
-from app.control.app.api import webhooks as webhooks_module  # type: ignore  # noqa: E402
+from os.control.os.core.deps import get_state  # type: ignore  # noqa: E402
+from os.control.os.core.state import ControlState  # type: ignore  # noqa: E402
+from os.control.main import app  # type: ignore  # noqa: E402
+from os.control.os.api import webhooks as webhooks_module  # type: ignore  # noqa: E402
 
 
 @pytest.fixture()

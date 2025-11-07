@@ -1,0 +1,15 @@
+[Unit]
+Description=AIONOS Control Plane
+After=network.target
+
+[Service]
+Type=simple
+User=aionos
+WorkingDirectory=/opt/omertaos
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 -m os.control.main
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=aionos.target

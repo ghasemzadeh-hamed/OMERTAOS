@@ -54,6 +54,8 @@ REPO_DIR=$(cd "${SCRIPT_DIR}/.." && pwd)
 
 cd "${REPO_DIR}"
 
+export PYTHONPATH="${REPO_DIR}"
+
 if [[ ! -f .env ]]; then
   cp .env.example .env
 fi
@@ -112,7 +114,7 @@ run_as_user "cd \"${REPO_DIR}/console\" && pnpm install && pnpm build"
 
 cat <<INFO
 [bootstrap-native] environment prepared.
-- Control (FastAPI) env ready. Run: (cd control && python -m app.control.main)
+- Control (FastAPI) env ready. Run: (cd control && python -m os.control.main)
 - Gateway ready. Run: (cd gateway && pnpm start)
 - Console ready. Run: (cd console && pnpm start)
 INFO

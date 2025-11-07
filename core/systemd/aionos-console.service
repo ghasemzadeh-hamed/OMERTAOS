@@ -1,0 +1,15 @@
+[Unit]
+Description=AIONOS Web Console
+After=network.target
+
+[Service]
+Type=simple
+User=aionos
+WorkingDirectory=/opt/omertaos/console
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/env bash -lc 'npm run start'
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=aionos.target

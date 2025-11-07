@@ -66,7 +66,7 @@ services:
     build:
       context: .
       dockerfile: kernel/Dockerfile
-    command: ["uvicorn", "app.kernel.devserver:app", "--host", "0.0.0.0", "--port", "8010"]
+    command: ["uvicorn", "os.kernel.devserver:app", "--host", "0.0.0.0", "--port", "8010"]
     environment:
       AION_KERNEL_PERSIST_PATH: /data
       REDIS_URL: redis://redis:6379/5
@@ -100,7 +100,7 @@ services:
       MINIO_ACCESS_KEY: minio
       MINIO_SECRET_KEY: miniosecret
       AION_KERNEL_URL: http://kernel:8010
-      PYTHONPATH: /srv/app:/srv/app/app
+      PYTHONPATH: /srv/app:/srv/app/os
     volumes:
       - ./policies:/app/policies
       - ./config/certs:/app/config/certs:ro
@@ -115,7 +115,7 @@ services:
         condition: service_healthy
       kernel:
         condition: service_started
-    command: ["python", "-m", "app.control.app.main"]
+    command: ["python", "-m", "os.control.os.main"]
     ports:
       - "8000:8000"
       - "50051:50051"

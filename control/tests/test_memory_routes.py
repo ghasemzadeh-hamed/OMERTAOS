@@ -10,7 +10,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 import pytest
 from fastapi.testclient import TestClient
 
-from app import config as config_module
+from os import config as config_module
 
 
 @pytest.fixture()
@@ -19,7 +19,7 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("AION_CONTROL_MEMORY_STORAGE_PATH", str(storage_dir))
     reload(config_module)
     config_module.get_settings.cache_clear()
-    from app import main as main_module
+    from os import main as main_module
 
     reload(main_module)
     return TestClient(main_module.app)
