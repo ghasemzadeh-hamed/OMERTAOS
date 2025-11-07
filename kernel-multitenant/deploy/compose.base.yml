@@ -1,8 +1,267 @@
 version: "3.9"
+
+x-restart-policy: &default_restart
+  restart: unless-stopped
+
 services:
   gateway:
-    image: "local/gw"
-    profiles: ["base"]
+    <<: *default_restart
+    build:
+      context: ../../gateway
+      dockerfile: Dockerfile
+    environment:
+      AION_GATEWAY_PORT: ${AION_GATEWAY_PORT:-8080}
+      AION_CONTROL_GRPC: control:50051
+      AION_REDIS_URL: redis://redis:6379/0
+    ports:
+      - "${AION_GATEWAY_PORT:-8080}:8080"
+    depends_on:
+      - control
+    profiles: ["user", "professional", "enterprise"]
+
   control:
-    image: "local/ctrl"
-    profiles: ["base"]
+    <<: *default_restart
+    build:
+      context: ../../control
+      dockerfile: Dockerfile
+    environment:
+      AION_CONTROL_API_PREFIX: /v1
+      AION_CONTROL_REDIS_URL: redis://redis:6379/0
+      AION_CONTROL_DATABASE_URL: postgresql://aionos:aionos@postgres:5432/aionos
+    ports:
+      - "${AION_CONTROL_PORT:-8000}:8000"
+    depends_on:
+      - postgres
+      - redis
+    profiles: ["user", "professional", "enterprise"]
+
+  kernel:
+    <<: *default_restart
+    build:
+      context: ../..
+      dockerfile: kernel/Dockerfile
+    environment:
+      AION_POLICY_PATH: /app/policies/training.yaml
+    volumes:
+      - ../../policies:/app/policies:ro
+    ports:
+      - "${AION_KERNEL_PORT:-8070}:8010"
+    depends_on:
+      - control
+    profiles: ["user", "professional", "enterprise"]
+
+  console:
+    <<: *default_restart
+    build:
+      context: ../../console
+      dockerfile: Dockerfile
+    environment:
+      NEXT_PUBLIC_API_URL: http://gateway:8080
+      NEXT_PUBLIC_WS_URL: ws://gateway:8080/ws
+    ports:
+      - "${AION_CONSOLE_PORT:-3001}:3000"
+    depends_on:
+      - gateway
+    profiles: ["user", "professional", "enterprise"]
+
+  postgres:
+    <<: *default_restart
+    image: postgres:15
+    environment:
+      POSTGRES_DB: aionos
+      POSTGRES_USER: aionos
+      POSTGRES_PASSWORD: aionos
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    profiles: ["user", "professional", "enterprise"]
+
+  redis:
+    <<: *default_restart
+    image: redis:7-alpine
+    ports:
+      - "${AION_REDIS_PORT:-6379}:6379"
+    profiles: ["user", "professional", "enterprise"]
+
+  vector-lite:
+    <<: *default_restart
+    image: ankane/pgvector:latest
+    environment:
+      POSTGRES_DB: vectors
+      POSTGRES_USER: vector
+      POSTGRES_PASSWORD: vector
+    volumes:
+      - vectorlite-data:/var/lib/postgresql/data
+    ports:
+      - "${AION_VECTOR_LITE_PORT:-6543}:5432"
+    profiles: ["user"]
+
+  qdrant:
+    <<: *default_restart
+    image: qdrant/qdrant:v1.7.0
+    volumes:
+      - qdrant-data:/qdrant/storage
+    ports:
+      - "${AION_QDRANT_PORT:-6333}:6333"
+    profiles: ["professional", "enterprise"]
+
+  minio:
+    <<: *default_restart
+    image: minio/minio:RELEASE.2024-03-15T02-53-53Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    ports:
+      - "${AION_MINIO_API_PORT:-9000}:9000"
+      - "${AION_MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/data
+    profiles: ["professional", "enterprise"]
+
+  model-registry:
+    <<: *default_restart
+    image: ghcr.io/omertaos/model-registry:latest
+    environment:
+      REGISTRY_STORAGE_ENDPOINT: http://minio:9000
+      REGISTRY_VECTOR_ENDPOINT: http://qdrant:6333
+      REGISTRY_DATABASE_URL: postgresql://aionos:aionos@postgres:5432/aionos
+    depends_on:
+      - minio
+      - qdrant
+      - postgres
+    ports:
+      - "${AION_MODEL_REGISTRY_PORT:-8088}:8080"
+    profiles: ["professional", "enterprise"]
+
+  kernel-worker-gpu:
+    <<: *default_restart
+    build:
+      context: ../..
+      dockerfile: kernel/Dockerfile
+    environment:
+      AION_KERNEL_ROLE: worker
+      AION_KERNEL_ACCELERATOR: gpu
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+    depends_on:
+      - control
+    profiles: ["professional", "enterprise"]
+
+  mqtt-broker:
+    <<: *default_restart
+    image: eclipse-mosquitto:2.0
+    ports:
+      - "${AION_MQTT_PORT:-1883}:1883"
+    profiles: ["professional", "enterprise"]
+
+  nats:
+    <<: *default_restart
+    image: nats:2.10
+    ports:
+      - "${AION_NATS_PORT:-4222}:4222"
+    profiles: ["professional", "enterprise"]
+
+  policy-router:
+    <<: *default_restart
+    image: ghcr.io/omertaos/policy-router:latest
+    environment:
+      POLICY_ROUTER_CONTROL_ENDPOINT: http://control:8000
+      POLICY_ROUTER_DEFAULT_STRATEGY: latency-aware
+    depends_on:
+      - control
+    profiles: ["enterprise"]
+
+  seal-orchestrator:
+    <<: *default_restart
+    image: ghcr.io/omertaos/seal-orchestrator:latest
+    environment:
+      SEAL_CONTROL_ENDPOINT: http://control:8000
+      SEAL_EVENT_BUS: kafka:9092
+      SEAL_POLICY_REGISTRY: http://model-registry:8080
+    depends_on:
+      - control
+      - kafka
+      - model-registry
+    ports:
+      - "${AION_SEAL_PORT:-8085}:8080"
+    profiles: ["enterprise"]
+
+  kafka:
+    <<: *default_restart
+    image: bitnami/kafka:3.6.1
+    environment:
+      KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+    ports:
+      - "${AION_KAFKA_PORT:-9092}:9092"
+    depends_on:
+      - zookeeper
+    profiles: ["enterprise"]
+
+  zookeeper:
+    <<: *default_restart
+    image: bitnami/zookeeper:3.9.1
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+    ports:
+      - "${AION_ZOOKEEPER_PORT:-2181}:2181"
+    profiles: ["enterprise"]
+
+  clickhouse:
+    <<: *default_restart
+    image: clickhouse/clickhouse-server:23.8
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+    ports:
+      - "${AION_CLICKHOUSE_PORT:-8123}:8123"
+    profiles: ["enterprise"]
+
+  opensearch:
+    <<: *default_restart
+    image: opensearchproject/opensearch:2.11.1
+    environment:
+      discovery.type: single-node
+      plugins.security.disabled: "true"
+    ports:
+      - "${AION_OPENSEARCH_PORT:-9200}:9200"
+    profiles: ["enterprise"]
+
+  otel-collector:
+    <<: *default_restart
+    image: otel/opentelemetry-collector:0.92.0
+    command: ["--config=/etc/otel/config.yaml"]
+    volumes:
+      - ../../deploy/observability/otel-collector.yaml:/etc/otel/config.yaml:ro
+    ports:
+      - "${AION_OTEL_COLLECTOR_PORT:-4318}:4318"
+    profiles: ["enterprise"]
+
+  prometheus:
+    <<: *default_restart
+    image: prom/prometheus:v2.50.0
+    volumes:
+      - ../../deploy/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "${AION_PROMETHEUS_PORT:-9090}:9090"
+    profiles: ["enterprise"]
+
+  grafana:
+    <<: *default_restart
+    image: grafana/grafana:10.2.3
+    ports:
+      - "${AION_GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    profiles: ["enterprise"]
+
+volumes:
+  postgres-data:
+  vectorlite-data:
+  qdrant-data:
+  minio-data:
+  clickhouse-data:
+  grafana-data:
