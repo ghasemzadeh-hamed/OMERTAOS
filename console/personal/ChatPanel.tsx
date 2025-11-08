@@ -1,43 +1,218 @@
 'use client';
 
-import React, { useState } from "react";
-import { createWebSocket } from "../utils/websocket";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-const ChatPanel: React.FC = () => {
-  const [messages, setMessages] = useState<{ id: number; role: string; content: string }[]>([]);
-  const [input, setInput] = useState("");
+type ChatMessage = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  pending?: boolean;
+  taskId?: string;
+};
 
-  const handleSend = () => {
-    if (!input.trim()) {
+type ChatPanelProps = {
+  intent?: string;
+  title?: string;
+  autoConfirm?: boolean;
+};
+
+const buildHistory = (messages: ChatMessage[]): { role: string; content: string }[] =>
+  messages
+    .filter((message) => message.content && (message.role === 'user' || message.role === 'assistant'))
+    .map((message) => ({ role: message.role, content: message.content }));
+
+const parseEventsText = (raw: unknown): string => {
+  if (!raw) {
+    return '';
+  }
+  let events: unknown = raw;
+  if (typeof raw === 'string') {
+    try {
+      events = JSON.parse(raw);
+    } catch (error) {
+      return raw;
+    }
+  }
+  if (!Array.isArray(events)) {
+    return '';
+  }
+  let final = '';
+  let deltas = '';
+  for (const item of events) {
+    if (item && typeof item === 'object') {
+      const delta = (item as Record<string, unknown>).delta;
+      if (typeof delta === 'string') {
+        deltas += delta;
+      }
+      const text = (item as Record<string, unknown>).text;
+      if (typeof text === 'string' && text.trim().length > 0) {
+        final = text;
+      }
+    }
+  }
+  return final || deltas;
+};
+
+const ChatPanel: React.FC<ChatPanelProps> = ({ intent = 'chat', title = 'Chat', autoConfirm = false }) => {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState('');
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const sessionId = useMemo(
+    () => (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `session-${Date.now()}`),
+    [],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+    };
+  }, []);
+
+  const closeStream = () => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+  };
+
+  const updateAssistantMessage = (id: string, content: string, pending: boolean) => {
+    setMessages((prev) =>
+      prev.map((message) => (message.id === id ? { ...message, content, pending, taskId: message.taskId } : message)),
+    );
+  };
+
+  const subscribeToTask = (taskId: string, messageId: string) => {
+    closeStream();
+    const source = new EventSource(`/api/proxy/stream/${taskId}`);
+    eventSourceRef.current = source;
+
+    source.onmessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+        const status = payload?.status ?? payload?.result?.status;
+        const agentText = typeof payload?.result?.agent === 'string' ? payload.result.agent : '';
+        const eventsText = parseEventsText(payload?.result?.events);
+        const errorText = typeof payload?.error?.message === 'string' ? payload.error.message : '';
+        const content = errorText || agentText || eventsText;
+        updateAssistantMessage(messageId, content, status !== 'OK' && !errorText);
+        if (status === 'OK' || errorText) {
+          closeStream();
+        }
+      } catch (err) {
+        updateAssistantMessage(messageId, 'پاسخ نامعتبر از استریم دریافت شد.', false);
+        closeStream();
+      }
+    };
+
+    source.onerror = () => {
+      updateAssistantMessage(messageId, 'ارتباط استریم قطع شد.', false);
+      closeStream();
+    };
+  };
+
+  const handleSend = async (event?: React.FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
+    const text = input.trim();
+    if (!text || sending) {
       return;
     }
-    const socket = createWebSocket();
-    const nextMessage = { id: Date.now(), role: "user", content: input };
-    setMessages((prev) => [...prev, nextMessage]);
-    socket.send(JSON.stringify({ type: "personal_chat", payload: input }));
-    setInput("");
+    setSending(true);
+    setError(null);
+
+    const userMessage: ChatMessage = { id: `user-${Date.now()}`, role: 'user', content: text };
+    const assistantMessage: ChatMessage = {
+      id: `assistant-${Date.now()}`,
+      role: 'assistant',
+      content: '',
+      pending: true,
+    };
+    setMessages((prev) => [...prev, userMessage, assistantMessage]);
+    setInput('');
+
+    const history = [...buildHistory(messages), { role: 'user', content: text }];
+
+    try {
+      const response = await fetch('/api/proxy/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          schemaVersion: '1.0',
+          intent,
+          params: {
+            history,
+            message: text,
+            session_id: sessionId,
+            auto_confirm: autoConfirm,
+          },
+          preferredEngine: 'auto',
+          priority: 'normal',
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        const message = typeof data?.message === 'string' ? data.message : 'درخواست ناموفق بود.';
+        throw new Error(message);
+      }
+
+      const taskId = data?.taskId as string | undefined;
+      const resultText = typeof data?.result?.agent === 'string' ? data.result.agent : '';
+      const eventsText = parseEventsText(data?.result?.events);
+      const content = resultText || eventsText;
+
+      if (taskId) {
+        updateAssistantMessage(assistantMessage.id, content, !content);
+        subscribeToTask(taskId, assistantMessage.id);
+      } else {
+        updateAssistantMessage(assistantMessage.id, content || 'پاسخی دریافت نشد.', false);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'خطای ناشناخته رخ داد.';
+      setError(message);
+      updateAssistantMessage(assistantMessage.id, message, false);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
-    <div className="flex h-64 flex-col rounded border border-slate-200 bg-white">
-      <div className="flex-1 space-y-2 overflow-y-auto p-4">
+    <div className="flex h-80 flex-col rounded border border-slate-200 bg-white">
+      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+        <h2 className="text-sm font-semibold text-slate-800">{title}</h2>
+        {sending && <span className="text-xs text-slate-500">در حال ارسال…</span>}
+      </div>
+      <div className="flex-1 space-y-2 overflow-y-auto p-4 text-sm">
         {messages.map((message) => (
-          <div key={message.id} className="text-sm">
-            <span className="font-semibold text-slate-700">{message.role}:</span> {message.content}
+          <div key={message.id} className="leading-relaxed">
+            <span className="font-semibold text-slate-700">{message.role === 'user' ? 'کاربر' : 'دستیار'}:</span>{' '}
+            <span className={message.pending ? 'text-slate-400' : 'text-slate-800'}>
+              {message.content || '…'}
+            </span>
           </div>
         ))}
+        {error && <div className="text-xs text-red-600">{error}</div>}
       </div>
-      <div className="flex gap-2 border-t border-slate-200 p-3">
+      <form className="flex gap-2 border-t border-slate-200 p-3" onSubmit={handleSend}>
         <input
           className="flex-1 rounded border border-slate-300 px-3 py-2 text-sm"
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder="Ask your personal agent"
+          placeholder="سوالی بپرس یا وظیفه‌ای تعریف کن"
+          disabled={sending}
         />
-        <button className="rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white" onClick={handleSend}>
-          Send
+        <button
+          type="submit"
+          className="rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          disabled={!input.trim() || sending}
+        >
+          ارسال
         </button>
-      </div>
+      </form>
     </div>
   );
 };

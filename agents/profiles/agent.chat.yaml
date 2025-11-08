@@ -1,0 +1,19 @@
+schemaVersion: "1.0"
+id: "agent.chat"
+name: "Agent Chat"
+description: "دستیار اجرایی با ابزارها و حافظه"
+llm:
+  resolution_order: ["openai:gpt-4.5", "ollama:qwen2.5:7b", "vllm:llama-3.2-3b-instruct", "local:phi-3-mini"]
+  temperature: 0.2
+  max_tokens: 1024
+  confirm_before_exec: true
+memory:
+  provider: "redis"
+  ttl_seconds: 2592000
+tools:
+  - "rag.search"
+  - "file.read"
+  - "ops.shell"
+  - "http.get"
+policies:
+  confirm_before_exec: true
