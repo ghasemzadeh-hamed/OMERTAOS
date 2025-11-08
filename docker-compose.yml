@@ -108,8 +108,8 @@
       AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
       AION_ENV: ${AION_ENV:-dev}
       PYTHONPATH: /srv/app:/srv/app/os
-volumes:
-  - ./policies:${AION_CONTROL_POLICIES_DIRECTORY:-/srv/app/policies}
+    volumes:
+      - ./policies:${AION_CONTROL_POLICIES_DIRECTORY:-/srv/app/policies}
     depends_on:
       postgres:
         condition: service_healthy
