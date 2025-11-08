@@ -1,0 +1,26 @@
+services:
+  # این سرویس باید یک سرور OpenAI-compatible روی /v1 ارائه کند.
+  # می‌توانی sglang یا vLLM را جایگزین کنی، طبق داکیومنت رسمی همان انجین.
+  k2-local:
+    image: <your-sglang-or-vllm-image>
+    container_name: k2-local
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    shm_size: "16g"
+    environment:
+      HF_TOKEN: ${HF_TOKEN}
+      # مسیر مدل را روی ولوم بده؛ برای INT4 (Thinking) از چک‌پوینت INT4 استفاده کن.
+    volumes:
+      - /data/models/kimi-k2:/models/kimi-k2
+    command: >
+      bash -lc "
+      python3 -m <engine>.launch_server
+        --model-path /models/kimi-k2
+        --port 8000
+        --tensor-parallel-size 8
+        --enable-moe
+        --max-model-len 131072
+      "
+
+# برای راه‌اندازی توزیع‌شده/Disaggregated سروینگ و MoE-EP، راهنماهای SGLang Router / PD-disaggregation را ببین.

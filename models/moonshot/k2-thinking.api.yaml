@@ -1,0 +1,11 @@
+id: kimi-k2-thinking
+display_name: Kimi K2 Thinking (API)
+provider: openai-compatible
+base_url: ${K2_API_BASE_URL}
+api_key_env: K2_API_KEY
+model: ${K2_THINKING_MODEL_ID}
+max_input_tokens: 256000
+max_output_tokens: 8192
+supports_tools: true
+tier: enterprise
+enabled: true
