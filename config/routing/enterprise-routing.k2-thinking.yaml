@@ -1,0 +1,11 @@
+profile: enterprise
+rules:
+  - name: "Prefer K2 Thinking for long-context & agentic"
+    if:
+      any:
+        - input.tokens >= 64000
+        - task.type in ["agentic", "multi_tool", "complex_code"]
+        - user.plan in ["enterprise", "enterprise-vip"]
+    then:
+      route_to: ["kimi-k2-thinking", "kimi-k2-thinking-local"]
+      fallback: ["kimi-k2-instruct", "kimi-k2-instruct-local"]
