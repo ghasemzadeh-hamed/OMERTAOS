@@ -42,7 +42,15 @@ app.register(helmet, { global: true });
 app.register(compress);
 app.register(websocket);
 app.register(fastifySsePlugin);
-app.register(cors, { origin: gatewayConfig.corsOrigins, credentials: true });
+const corsOriginSetting =
+  gatewayConfig.corsOrigins.length === 1 && gatewayConfig.corsOrigins[0] === '*'
+    ? true
+    : gatewayConfig.corsOrigins;
+
+app.register(cors, {
+  origin: corsOriginSetting,
+  credentials: gatewayConfig.corsAllowCredentials,
+});
 
 app.addHook('onRequest', async (request, reply) => {
   reply.header('x-request-id', request.id);

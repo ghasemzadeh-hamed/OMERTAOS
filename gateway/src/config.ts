@@ -24,6 +24,8 @@ for (const envFile of inferredEnvFiles) {
   }
 }
 
+type GatewayEnvironment = 'development' | 'test' | 'production';
+
 export interface GatewayConfig {
   port: number;
   host: string;
@@ -33,13 +35,14 @@ export interface GatewayConfig {
   apiKeys: Record<string, { roles: string[]; tenant?: string }>;
   jwtPublicKey: string | undefined;
   corsOrigins: string[];
+  corsAllowCredentials: boolean;
   rateLimit: {
     max: number;
     timeWindow: string;
     perIp: number;
   };
   idempotencyTtlSeconds: number;
-  environment: 'development' | 'test' | 'production';
+  environment: GatewayEnvironment;
   tls: {
     requireMtls: boolean;
     secretPath?: string;
@@ -114,6 +117,52 @@ const parseApiKeysSecret = (secret: Record<string, unknown> | string): Record<st
 
 const profile = (process.env.AION_PROFILE || 'user').toLowerCase() as GatewayConfig['profile'];
 const featureSeal = process.env.FEATURE_SEAL === '1' || profile === 'enterprise-vip';
+
+const parseCorsOrigins = (raw: string | undefined): string[] => {
+  if (!raw) {
+    return [];
+  }
+  return raw
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+};
+
+const normaliseCorsOrigins = (origins: string[]): string[] => {
+  return Array.from(new Set(origins));
+};
+
+const resolveCorsConfiguration = (
+  rawOrigins: string | undefined,
+  environment: GatewayEnvironment,
+): { origins: string[]; allowCredentials: boolean } => {
+  const parsedOrigins = parseCorsOrigins(rawOrigins);
+  const origins = normaliseCorsOrigins(parsedOrigins);
+  if (origins.length === 0) {
+    if (environment === 'production') {
+      throw new Error(
+        'AION_CORS_ORIGINS must be configured with one or more allowed origins in production environments.',
+      );
+    }
+    return { origins: ['*'], allowCredentials: false };
+  }
+
+  if (origins.includes('*')) {
+    if (origins.length > 1) {
+      throw new Error(
+        'Wildcard CORS origin (*) cannot be combined with explicit origins. Remove the wildcard or list specific origins.',
+      );
+    }
+    if (environment === 'production') {
+      throw new Error(
+        'Wildcard CORS origins (*) are not permitted in production. Set explicit origins via AION_CORS_ORIGINS.',
+      );
+    }
+    return { origins: ['*'], allowCredentials: false };
+  }
+
+  return { origins, allowCredentials: true };
+};
 
 let secretProvider: SecretProvider | null = null;
 if (process.env.AION_VAULT_ADDR || process.env.VAULT_ADDR) {
@@ -265,13 +314,16 @@ const resolveTlsMaterials = async (): Promise<{
   };
 };
 
-async function buildGatewayConfig(): Promise<GatewayConfig> {
+export async function buildGatewayConfig(): Promise<GatewayConfig> {
   const [apiKeys, jwtPublicKey, adminToken, tlsMaterials] = await Promise.all([
     resolveApiKeys(),
     resolveJwtPublicKey(),
     resolveAdminToken(),
     resolveTlsMaterials(),
   ]);
+
+  const environment = (process.env.AION_ENV || process.env.NODE_ENV || 'development') as GatewayEnvironment;
+  const cors = resolveCorsConfiguration(process.env.AION_CORS_ORIGINS, environment);
 
   return {
     port: Number(process.env.AION_GATEWAY_PORT || 8080),
@@ -281,17 +333,15 @@ async function buildGatewayConfig(): Promise<GatewayConfig> {
     redisUrl: process.env.AION_REDIS_URL || 'redis://redis:6379',
     apiKeys,
     jwtPublicKey,
-    corsOrigins: (process.env.AION_CORS_ORIGINS || '*')
-      .split(',')
-      .map((origin) => origin.trim())
-      .filter(Boolean),
+    corsOrigins: cors.origins,
+    corsAllowCredentials: cors.allowCredentials,
     rateLimit: {
       max: Number(process.env.AION_RATE_LIMIT_MAX || 60),
       timeWindow: process.env.AION_RATE_LIMIT_WINDOW || '1 minute',
       perIp: Number(process.env.AION_RATE_LIMIT_PER_IP || 30),
     },
     idempotencyTtlSeconds: Number(process.env.AION_IDEMPOTENCY_TTL || 900),
-    environment: (process.env.AION_ENV || process.env.NODE_ENV || 'development') as GatewayConfig['environment'],
+    environment,
     tls: {
       requireMtls:
         process.env.AION_TLS_REQUIRE_MTLS === '1' ||
