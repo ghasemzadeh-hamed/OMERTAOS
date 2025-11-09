@@ -3,6 +3,7 @@ import { cacheIdempotency, getIdempotency } from '../redis.js';
 import { gatewayConfig } from '../config.js';
 import type { TaskResult } from '../types.js';
 import { tenantFromHeader } from '../auth/claims.js';
+import { createHttpError } from '../httpErrors.js';
 
 export const idempotencyMiddleware = async (
   request: FastifyRequest,
@@ -23,7 +24,7 @@ export const idempotencyMiddleware = async (
     request.headers['x-idempotency-hit'] = 'miss';
   } catch (error) {
     request.log.error({ err: error }, 'Idempotency lookup failed');
-    throw reply.serviceUnavailable('Idempotency service unavailable');
+    throw createHttpError(503, 'Idempotency service unavailable', 'IDEMPOTENCY_UNAVAILABLE');
   }
 };
 

@@ -21,12 +21,12 @@ class HttpGetTool:
         parsed = urlparse(url)
         host = parsed.hostname or ""
         if not host:
-            return "آدرس نامعتبر است."
+            return "\u0622\u062f\u0631\u0633 \u0646\u0627\u0645\u0639\u062a\u0628\u0631 \u0627\u0633\u062a."
         if not any(host.endswith(domain) for domain in self.allow):
-            return "دامنه مجاز نیست."
+            return "\u062f\u0627\u0645\u0646\u0647 \u0645\u062c\u0627\u0632 \u0646\u06cc\u0633\u062a."
         try:
             response = requests.get(url, timeout=timeout)
             response.raise_for_status()
             return response.text[:20_000]
         except Exception as exc:
-            return f"درخواست با خطا مواجه شد: {exc}"
+            return f"\u062f\u0631\u062e\u0648\u0627\u0633\u062a \u0628\u0627 \u062e\u0637\u0627 \u0645\u0648\u0627\u062c\u0647 \u0634\u062f: {exc}"

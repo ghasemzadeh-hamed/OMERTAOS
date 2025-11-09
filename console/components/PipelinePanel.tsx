@@ -33,7 +33,7 @@ export function PipelinePanel({ runs }: { runs: PipelineRun[] }) {
         </thead>
         <tbody className="divide-y divide-white/5 text-sm text-slate-200">
           {runs.map((run) => (
-            <tr key={`${run.name}-${run.branch}`}> 
+            <tr key={`${run.name}-${run.branch}`}>
               <td className="px-4 py-3 font-medium text-white">{run.name}</td>
               <td className="px-4 py-3 font-mono text-xs text-slate-300">{run.branch}</td>
               <td className="px-4 py-3">

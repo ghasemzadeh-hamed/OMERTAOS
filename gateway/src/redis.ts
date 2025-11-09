@@ -47,8 +47,24 @@ export const withRateLimitCounter = async (
   const bucket = rateKey(prefix, identifier, tenantId);
   const windowKey = `${bucket}:${Math.floor(Date.now() / windowMs)}`;
   const ttl = Math.ceil(windowMs / 1000);
-  const [[, count], [, _]] = await redis.multi().incr(windowKey).expire(windowKey, ttl).exec();
-  const requests = Number(count);
+  const execResult = await redis.multi().incr(windowKey).expire(windowKey, ttl).exec();
+
+  if (!execResult) {
+    throw new Error('Rate limit pipeline failed');
+  }
+
+  const [incrResult, expireResult] = execResult;
+  const [incrError, count] = incrResult;
+  if (incrError) {
+    throw incrError;
+  }
+
+  const [expireError] = expireResult;
+  if (expireError) {
+    throw expireError;
+  }
+
+  const requests = Number(count ?? 0);
   const remaining = Math.max(limit - requests, 0);
   return { requests, remaining };
 };

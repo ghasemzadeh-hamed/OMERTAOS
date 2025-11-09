@@ -63,4 +63,3 @@ normalize_boolean() {
       ;;
   esac
 }
-

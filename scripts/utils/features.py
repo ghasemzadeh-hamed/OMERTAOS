@@ -61,4 +61,3 @@ def make_preprocessor(
         raise ValueError("No features available for preprocessing.")
 
     return ColumnTransformer(transformers=transformers)
-
