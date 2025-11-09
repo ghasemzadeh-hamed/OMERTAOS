@@ -31,7 +31,7 @@ This guide condenses each supported deployment into ten steps or fewer. Run ever
 ## Windows / WSL
 
 1. Enable WSL2 and install Ubuntu from the Microsoft Store.
-2. Inside the Ubuntu shell, clone the repository and run `sudo ./install.sh wsl`.
+2. Inside the Ubuntu shell, clone the repository and run `sudo ./scripts/quicksetup.sh --profile professional --local`.
 3. Launch the wizard (`pnpm dev` in `console`) and open it in Windows Edge/Chrome.
 4. Select **WSL** mode in the wizard; storage options will be disabled automatically.
 5. Apply a profile to render `.env` and configure services.

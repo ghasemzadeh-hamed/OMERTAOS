@@ -41,7 +41,7 @@ AION-OS v2 باید یک «سیستم‌عامل کامل برای عامل‌ه
 | Kernel | Core Platform | `kernel/`, `config/`, `policies/` | Seccomp profiles, Policy Brain، Telemetry |
 | SDK | Dev Experience | `sdk/python/aion_sdk/`, `sdk/ts/aion-sdk/` | Kernel APIs, Auth secrets |
 | UX / Console | Design + Frontend | `console/app/(kernel)/*` | Telemetry APIs, Event streams |
-| Personal Mode | Growth | `install.sh --local`, `docker-compose.local.yml`, `agents/templates/` | SDK، Kernel، Desktop bridge |
+| Personal Mode | Growth | `scripts/quicksetup.sh --local`, `docker-compose.local.yml`, `agents/templates/` | SDK، Kernel، Desktop bridge |
 | IoT | Edge Team | `kernel/iot/`, `console/app/(iot)/*` | Scheduler priority lanes, Device registry |
 | CLI | Developer Tools | `cli/aion/commands/local.py`, `cli/aion/services/` | Docker, Templates, Kernel APIs |
 
@@ -78,7 +78,7 @@ AION-OS v2 باید یک «سیستم‌عامل کامل برای عامل‌ه
 **Personal Mode**
 
 - [ ] `docker-compose.local.yml` برای اجرای سبک
-- [ ] `install.sh --local` جهت راه‌اندازی خودکار + offline hints
+- [ ] `scripts/quicksetup.sh --local` جهت راه‌اندازی خودکار + offline hints
 - [ ] Agent Templates (Jarvis، Mia، Analyst، VoiceBot)
 - [ ] حافظه شخصی رمزنگاری‌شده + sync اختیاری
 - [ ] CLI `aionctl local start/stop/status/templates`
@@ -125,7 +125,7 @@ AION-OS v2 باید یک «سیستم‌عامل کامل برای عامل‌ه
 | ماژول پیشنهادی | هدف | مسیر توسعه |
 | --- | --- | --- |
 | Local-Dev Compose | اجرای ساده در PC / Pi | `docker-compose.local.yml` |
-| Quick Installer | نصب خودکار همه سرویس‌ها | `install.sh --local` / `install.ps1 --local` |
+| Quick Installer | نصب خودکار همه سرویس‌ها | `scripts/quicksetup.sh --local` / `scripts/quicksetup.ps1 --local` |
 | Agent Templates | Jarvis / Mia / Analyst / VoiceBot | `agents/templates/` |
 | User Profile Memory | حافظهٔ محلی رمزگذاری‌شده + Sync | `memory/personal/` |
 | CLI Tool (aionctl) | کنترل Agentها از ترمینال | `cli/aion/commands/local.py` |
@@ -195,7 +195,7 @@ AION-OS v2 باید یک «سیستم‌عامل کامل برای عامل‌ه
 | Kernel API latency | < 50 ms avg, < 200 ms p95 (per syscall) |
 | Scheduler throughput | 10k tasks/min per node یا 160 req/s پایدار |
 | Memory query time | < 300 ms (RAG Qdrant, k=8) |
-| Setup time (Personal Mode) | < 5 min با دستور واحد `install.sh --local` |
+| Setup time (Personal Mode) | < 5 min با دستور واحد `scripts/quicksetup.sh --local` |
 | Signed modules ratio | 100٪ ماژول‌ها امضای Cosign معتبر داشته باشند |
 | Policy adaptation loop | < 10 min بین پیشنهاد و استقرار سیاست جدید |
 | Agent store installs | ≥ 20 template فعال با حداقل 500 نصب در ماه اول |

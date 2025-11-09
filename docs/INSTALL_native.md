@@ -4,6 +4,11 @@ This document describes how to install and operate **OMERTAOS/AION-OS** without 
 Linux (Ubuntu/Debian) and Windows 11 environments and explains how to run the system as managed
 services.
 
+> **Note**
+> The container-first installation flow is now provided by `scripts/quicksetup.sh` and
+> `scripts/quicksetup.ps1`. The native installers described below are considered legacy and are kept
+> for operators that require systemd/NSSM deployments.
+
 - [Prerequisites](#prerequisites)
 - [Quick start](#quick-start)
 - [Linux installation](#linux-installation)

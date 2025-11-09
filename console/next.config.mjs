@@ -1,5 +1,3 @@
-import createTranslator from 'next-intl/server';
-
 const locales = ['en', 'fa'];
 
 const nextConfig = {
@@ -35,5 +33,3 @@ const nextConfig = {
 };
 
 export default nextConfig;
-
-export const { getTranslator } = createTranslator({ locale: 'en', messages: {} });

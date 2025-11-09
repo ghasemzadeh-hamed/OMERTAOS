@@ -1,0 +1,7 @@
+[
+  {
+    "title": "refactor/install-quicksetup-unification",
+    "description": "ادغام همه اسکریپت‌های نصب در ساختار scripts/, معرفی quicksetup.sh/ps1 به عنوان نقطه ورود رسمی، ماژولارسازی منطق نصب و علامت‌گذاری اسکریپت‌های قدیمی به‌عنوان deprecated.",
+    "related_issues": ["ISSUE005"]
+  }
+]

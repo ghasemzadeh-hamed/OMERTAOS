@@ -1,6 +1,9 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# DEPRECATED: use scripts/quicksetup.ps1 for container-based bootstrap. This native installer will
+# be removed in a future release once replacements are available.
+
 function Assert-Command {
     param(
         [Parameter(Mandatory = $true)][string]$Name,
@@ -26,7 +29,11 @@ function Assert-Command {
 
 $AppRoot = if ($env:APP_ROOT) { $env:APP_ROOT } else { 'C:\\Omerta' }
 $Repo = if ($env:REPO) { $env:REPO } else { 'https://github.com/Hamedghz/OMERTAOS.git' }
-$AppDir = Join-Path $AppRoot 'OMERTAOS'
+if (Test-Path (Join-Path $AppRoot '.git')) {
+    $AppDir = $AppRoot
+} else {
+    $AppDir = Join-Path $AppRoot 'OMERTAOS'
+}
 $EnvFile = Join-Path $AppDir '.env'
 $NssmPath = if ($env:NSSM_PATH) { $env:NSSM_PATH } else { 'C:\\nssm\\nssm.exe' }
 
@@ -38,7 +45,9 @@ if (-not (Test-Path $NssmPath)) {
     throw "NSSM executable not found at '$NssmPath'. Set NSSM_PATH to override."
 }
 
-New-Item -ItemType Directory -Force -Path $AppRoot | Out-Null
+if (-not (Test-Path $AppRoot)) {
+    New-Item -ItemType Directory -Force -Path $AppRoot | Out-Null
+}
 
 if (-not (Test-Path (Join-Path $AppDir '.git'))) {
     Write-Host "Cloning repository into $AppDir"
@@ -67,7 +76,7 @@ if (-not (Test-Path $venvPath)) {
 }
 
 Write-Host 'Installing Python dependencies'
-Push-Location (Join-Path $AppDir 'control')
+Push-Location $AppDir
 & $venvPython -m pip install --upgrade pip setuptools wheel | Out-Null
 & $venvPython -m pip install .
 Pop-Location
@@ -127,7 +136,7 @@ $dbUser = if ($env:DB_USER) { $env:DB_USER } elseif ($existingUser) { $existingU
 $dbPass = if ($env:DB_PASS) { $env:DB_PASS } elseif ($existingPass) { $existingPass } else { ([guid]::NewGuid().ToString('N').Substring(0, 24)) }
 $dbName = if ($env:DB_NAME) { $env:DB_NAME } elseif ($existingName) { $existingName } else { 'omerta_db' }
 
-$databaseUrl = "postgresql://$dbUser:$dbPass@127.0.0.1:5432/$dbName"
+$databaseUrl = "postgresql://${dbUser}:${dbPass}@127.0.0.1:5432/$dbName"
 
 if (Get-Command psql -ErrorAction SilentlyContinue) {
     Write-Host "Ensuring PostgreSQL role $dbUser"
@@ -183,8 +192,9 @@ function Install-Or-UpdateService {
         [hashtable]$Environment
     )
 
-    $exists = (& $NssmPath status $Name 2>$null)
-    if ($LASTEXITCODE -eq 0) {
+    $null = & $NssmPath status $Name 2>$null
+    $exists = $LASTEXITCODE -eq 0
+    if ($exists) {
         & $NssmPath stop $Name | Out-Null
         & $NssmPath set $Name Application $Executable | Out-Null
         & $NssmPath set $Name AppParameters $Arguments | Out-Null
