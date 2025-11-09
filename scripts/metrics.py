@@ -54,7 +54,13 @@ def compute_regression_metrics(y_true, y_pred) -> Dict[str, float]:
 
 
 def psi(expected: Iterable[float], actual: Iterable[float], bins: int = 10) -> float:
-    """Compute the population stability index between two distributions."""
+    """Compute the population stability index between two distributions.
+
+    Quantile-based binning is used to make the PSI measurement robust for
+    sharply peaked or low-support probability distributions that commonly
+    appear in CI fixtures. Fallback logic ensures we still emit a meaningful
+    score when the reference distribution is close to constant.
+    """
 
     expected_arr = np.asarray(list(expected), dtype=float)
     actual_arr = np.asarray(list(actual), dtype=float)
@@ -62,10 +68,18 @@ def psi(expected: Iterable[float], actual: Iterable[float], bins: int = 10) -> f
     if expected_arr.size == 0 or actual_arr.size == 0:
         raise ValueError("PSI requires non-empty inputs.")
 
-    if np.allclose(np.max(expected_arr), np.min(expected_arr)):
-        breakpoints = np.linspace(np.min(expected_arr) - 0.5, np.max(expected_arr) + 0.5, bins + 1)
+    quantile_edges = np.quantile(expected_arr, np.linspace(0.0, 1.0, bins + 1))
+    breakpoints = np.unique(quantile_edges)
+
+    if breakpoints.size < 2:
+        width = max(abs(expected_arr[0]), 1.0)
+        centre = expected_arr[0]
+        breakpoints = np.array([centre - width, centre + width], dtype=float)
     else:
-        breakpoints = np.linspace(np.min(expected_arr), np.max(expected_arr), bins + 1)
+        lower = min(expected_arr.min(), actual_arr.min())
+        upper = max(expected_arr.max(), actual_arr.max())
+        breakpoints[0] = min(breakpoints[0], lower)
+        breakpoints[-1] = max(breakpoints[-1], upper)
 
     expected_counts, _ = np.histogram(expected_arr, bins=breakpoints)
     actual_counts, _ = np.histogram(actual_arr, bins=breakpoints)
