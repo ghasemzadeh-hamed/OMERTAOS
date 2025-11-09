@@ -44,14 +44,25 @@ The new QuickSetup scripts implement a unified workflow:
   - Supports `--profile`, `--local`, `--compose-file`, `--noninteractive`, `--update`, `--repo`, and
     `--branch` flags.
   - Copies `.env` from `config/templates/.env.example` and normalizes profile/telemetry variables.
-  - Persists `.aionos/profile.json` metadata and seeds `config/aionos.config.yaml`.
+  - Persists `.aionos/profile.json` metadata, seeds `config/aionos.config.yaml`, and ensures `policies`
+    and `volumes` directories exist (configurable via `AION_POLICY_DIR`/`AION_VOLUME_ROOT`).
   - Invokes `tools/preflight.sh` when available, installs optional Ollama models, and starts the stack
     via Docker Compose with retries.
+  - Delegates shared filesystem, environment, and docker logic to modular helpers in `scripts/lib/`.
 - `scripts/quicksetup.ps1`
   - Mirrors the bash behaviour for Windows users, including optional repository update/clone and
     profile metadata.
   - Detects Docker Compose v2 or classic `docker-compose`, enforces prerequisites, and shares the
-    same configuration defaults.
+    same configuration defaults, including policy/volume directory creation and environment updates.
+
+The reusable modules introduced for QuickSetup are:
+
+- `scripts/lib/common.sh` – logging, command detection, path utilities, and boolean normalization.
+- `scripts/lib/env.sh` – `.env` templating, profile/telemetry propagation, and profile metadata export.
+- `scripts/lib/config.sh` – deterministic generation of `config/aionos.config.yaml` with standard ports
+  and directory references.
+- `scripts/lib/docker.sh` – Compose detection, retries, and command string rendering for summaries.
+- `scripts/lib/preflight.sh` – Opt-in execution of `tools/preflight.sh` with non-interactive handling.
 
 ## Deprecations and redirects
 
