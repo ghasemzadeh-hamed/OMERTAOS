@@ -36,10 +36,10 @@ Use `make run-user`, `make run-pro`, or `make run-ent` on Linux/macOS. On Window
 
 ## Endpoints
 
-* `GET /healthz` → gateway liveness and SEAL flag.
-* `POST /v1/config/{propose|apply|revert}` → ChatOps configurator (admin token required).
-* `POST /v1/router/policy/reload` → refresh router and rollout policy.
-* `POST /v1/seal/jobs` → Enterprise-VIP only (requires `PROFILE=ent` and matching admin token).
+* `GET /healthz` &#x2192; gateway liveness and SEAL flag.
+* `POST /v1/config/{propose|apply|revert}` &#x2192; ChatOps configurator (admin token required).
+* `POST /v1/router/policy/reload` &#x2192; refresh router and rollout policy.
+* `POST /v1/seal/jobs` &#x2192; Enterprise-VIP only (requires `PROFILE=ent` and matching admin token).
 
 ## Acceptance Checklist
 
@@ -51,10 +51,10 @@ Use `make run-user`, `make run-pro`, or `make run-ent` on Linux/macOS. On Window
 
 ## Directory Highlights
 
-* `config/profiles/` – declarative kernel definitions inheriting from `kernel.base.yaml`.
-* `deploy/` – future docker-compose overlays for CI orchestration.
-* `shared/gateway/` – Express/TypeScript gateway with ChatOps and SEAL proxy routes.
-* `shared/control/` – FastAPI control plane with profile loader, ChatOps configurator, and SEAL orchestration.
-* `registry/` – artifact layout and indexer helper.
-* `configs/` – rollout policies and SEAL defaults.
-* `scripts/` – installation and runtime helpers (Linux/Windows).
+* `config/profiles/` - declarative kernel definitions inheriting from `kernel.base.yaml`.
+* `deploy/` - future docker-compose overlays for CI orchestration.
+* `shared/gateway/` - Express/TypeScript gateway with ChatOps and SEAL proxy routes.
+* `shared/control/` - FastAPI control plane with profile loader, ChatOps configurator, and SEAL orchestration.
+* `registry/` - artifact layout and indexer helper.
+* `configs/` - rollout policies and SEAL defaults.
+* `scripts/` - installation and runtime helpers (Linux/Windows).

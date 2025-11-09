@@ -215,4 +215,3 @@ docker compose restart console control gateway
 | Missing BigData overlay | Ensure `bigdata/docker-compose.bigdata.yml` exists before enabling the overlay. |
 
 For additional operations guidance, see [`docs/runbook.md`](runbook.md).
-

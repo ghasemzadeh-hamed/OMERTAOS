@@ -89,4 +89,3 @@ def psi(expected: Iterable[float], actual: Iterable[float], bins: int = 10) -> f
 
     psi_values = (actual_ratio - expected_ratio) * np.log(actual_ratio / expected_ratio)
     return float(np.sum(psi_values))
-

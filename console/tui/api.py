@@ -258,4 +258,3 @@ class CommandProcessor:
                 key, value = token.split("=", 1)
                 params[key.strip().lower()] = value.strip()
         return params
-

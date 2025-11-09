@@ -21,9 +21,9 @@ class FileReadTool:
     def run(self, path: str, max_bytes: int = 20_000) -> str:
         candidate = pathlib.Path(path).expanduser().resolve()
         if not self._is_allowed(candidate):
-            return "دسترسی مجاز نیست."
+            return "\u062f\u0633\u062a\u0631\u0633\u06cc \u0645\u062c\u0627\u0632 \u0646\u06cc\u0633\u062a."
         if not candidate.exists() or candidate.is_dir():
-            return "پرونده یافت نشد."
+            return "\u067e\u0631\u0648\u0646\u062f\u0647 \u06cc\u0627\u0641\u062a \u0646\u0634\u062f."
         data = candidate.read_bytes()[:max_bytes]
         try:
             return data.decode("utf-8", errors="ignore")

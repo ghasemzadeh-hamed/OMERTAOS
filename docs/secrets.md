@@ -9,26 +9,26 @@ keys.
 
 All services understand the following Vault configuration variables:
 
-- `AION_VAULT_ADDR` – URL of the Vault API endpoint (for example
+- `AION_VAULT_ADDR` - URL of the Vault API endpoint (for example
   `http://vault:8200`).
-- `AION_VAULT_KV_MOUNT` – mount name of the KV-v2 engine that stores secrets
+- `AION_VAULT_KV_MOUNT` - mount name of the KV-v2 engine that stores secrets
   (defaults to `secret`).
-- `AION_VAULT_TOKEN` – development token when using token authentication.
-- `AION_VAULT_AUTH_METHOD` – optional override of the authentication strategy
+- `AION_VAULT_TOKEN` - development token when using token authentication.
+- `AION_VAULT_AUTH_METHOD` - optional override of the authentication strategy
   (`token` for local development or `approle` in production).
-- `AION_VAULT_APPROLE_ROLE_ID` / `AION_VAULT_APPROLE_SECRET_ID` – credentials for
+- `AION_VAULT_APPROLE_ROLE_ID` / `AION_VAULT_APPROLE_SECRET_ID` - credentials for
   the AppRole associated with the service when `AION_VAULT_AUTH_METHOD=approle`.
-- `AION_VAULT_NAMESPACE` – optional namespace when operating against HCP Vault or
+- `AION_VAULT_NAMESPACE` - optional namespace when operating against HCP Vault or
   Vault Enterprise.
-- `AION_ENV` – deployment environment label (`dev`, `staging`, `prod`, …).
+- `AION_ENV` - deployment environment label (`dev`, `staging`, `prod`, ...).
 
 Each service consumes only Vault secret paths:
 
-- `AION_DB_SECRET_PATH` – PostgreSQL (and future relational) credentials.
-- `AION_MINIO_SECRET_PATH` – object storage endpoint and credentials.
-- `AION_JWT_SECRET_PATH` – JWT public key bundle for the gateway.
-- `AION_GATEWAY_API_KEYS_SECRET_PATH` – API key catalogue for gateway clients.
-- `AION_ADMIN_TOKEN_SECRET_PATH` – privileged bearer token shared by gateway and console.
+- `AION_DB_SECRET_PATH` - PostgreSQL (and future relational) credentials.
+- `AION_MINIO_SECRET_PATH` - object storage endpoint and credentials.
+- `AION_JWT_SECRET_PATH` - JWT public key bundle for the gateway.
+- `AION_GATEWAY_API_KEYS_SECRET_PATH` - API key catalogue for gateway clients.
+- `AION_ADMIN_TOKEN_SECRET_PATH` - privileged bearer token shared by gateway and console.
 
 Secret payloads are stored in a KV-v2 engine and may be updated without restarting
 services. For example, the database secret should contain:
@@ -36,7 +36,7 @@ services. For example, the database secret should contain:
 ```json
 {
   "username": "aionos",
-  "password": "…",
+  "password": "...",
   "host": "postgres",
   "port": 5432,
   "database": "aionos"
@@ -93,7 +93,7 @@ secret(s) only:
   control service rebuilds its client on next access.
 - Rotate gateway API keys or JWT material by writing new data to their respective secrets.
 
-No configuration files or `.env` entries require editing—restart services only if the
+No configuration files or `.env` entries require editing-restart services only if the
 underlying infrastructure changed (for example, hostname migrations).
 
 ## Secret provider libraries

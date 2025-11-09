@@ -52,7 +52,7 @@ catalog:
     - {name: dagster,        docs: "https://docs.dagster.io",           pypi: dagster,        repo: "https://github.com/dagster-io/dagster", tags: [security]}
     - {name: kfp,            docs: "https://www.kubeflow.org/docs",     pypi: kfp,            repo: "https://github.com/kubeflow/pipelines", tags: [security]}
 
-    # Cross-cutting security tools (برچسب security)
+    # Cross-cutting security tools (\u0628\u0631\u0686\u0633\u0628 security)
     - {name: presidio-analyzer,   docs: "https://microsoft.github.io/presidio", pypi: presidio-analyzer, repo: "https://github.com/microsoft/presidio", tags: [security]}
     - {name: presidio-anonymizer, docs: "https://microsoft.github.io/presidio", pypi: presidio-anonymizer, repo: "https://github.com/microsoft/presidio", tags: [security]}
     - {name: syft,           docs: "https://docs.openmined.org",        pypi: syft,          repo: "https://github.com/OpenMined/PySyft", tags: [security]}

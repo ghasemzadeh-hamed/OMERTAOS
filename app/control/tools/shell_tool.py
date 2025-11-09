@@ -18,10 +18,10 @@ class ShellTool:
 
     def run(self, cmd: str) -> str:
         if not cmd.strip():
-            return "دستور نامعتبر است."
+            return "\u062f\u0633\u062a\u0648\u0631 \u0646\u0627\u0645\u0639\u062a\u0628\u0631 \u0627\u0633\u062a."
         head = shlex.split(cmd)[0]
         if head not in self.allow:
-            return f"اجازه اجرای '{head}' وجود ندارد."
+            return f"\u0627\u062c\u0627\u0632\u0647 \u0627\u062c\u0631\u0627\u06cc '{head}' \u0648\u062c\u0648\u062f \u0646\u062f\u0627\u0631\u062f."
         try:
             result = subprocess.run(
                 cmd,
@@ -32,6 +32,6 @@ class ShellTool:
                 timeout=15,
             )
         except subprocess.TimeoutExpired:
-            return "اجرای فرمان زمان‌بر شد و متوقف گردید."
+            return "\u0627\u062c\u0631\u0627\u06cc \u0641\u0631\u0645\u0627\u0646 \u0632\u0645\u0627\u0646\u200c\u0628\u0631 \u0634\u062f \u0648 \u0645\u062a\u0648\u0642\u0641 \u06af\u0631\u062f\u06cc\u062f."
         output = result.stdout or result.stderr
-        return (output or "بدون خروجی.")[:10_000]
+        return (output or "\u0628\u062f\u0648\u0646 \u062e\u0631\u0648\u062c\u06cc.")[:10_000]
