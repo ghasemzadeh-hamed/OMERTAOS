@@ -2,6 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { gatewayConfig } from '../config.js';
 import { withRateLimitCounter } from '../redis.js';
 import { tenantFromHeader } from '../auth/claims.js';
+import { createHttpError } from '../httpErrors.js';
 
 const parseWindowMs = (window: string) => {
   const [value, unit] = window.split(' ');
@@ -40,24 +41,32 @@ export const rateLimitMiddleware = async (request: FastifyRequest, reply: Fastif
   const perKeyLimit = gatewayConfig.rateLimit.max;
   const perIpLimit = gatewayConfig.rateLimit.perIp;
 
+  let perKeyRequests = 0;
+  let perIpRequests = 0;
+
   try {
-    const [{ requests: perKeyRequests }, { requests: perIpRequests }] = await Promise.all([
+    const [perKeyResult, perIpResult] = await Promise.all([
       withRateLimitCounter(identifier, windowMs, perKeyLimit, tenant, 'rl:key'),
       withRateLimitCounter(request.ip, windowMs, perIpLimit, tenant, 'rl:ip'),
     ]);
 
+    perKeyRequests = perKeyResult.requests;
+    perIpRequests = perIpResult.requests;
+
     reply.header('x-rate-limit-limit', String(perKeyLimit));
     reply.header('x-rate-limit-remaining', String(Math.max(perKeyLimit - perKeyRequests, 0)));
     reply.header('x-rate-limit-reset', String(Math.ceil(Date.now() / 1000) + windowMs / 1000));
-
-    if (perKeyRequests > perKeyLimit || perIpRequests > perIpLimit) {
-      throw reply.tooManyRequests('Rate limit exceeded');
-    }
   } catch (error) {
     request.log.error({ err: error }, 'Rate limit check failed');
     reply.header('x-rate-limit-limit', 'unavailable');
     reply.header('x-rate-limit-remaining', 'unavailable');
     reply.header('x-rate-limit-reset', 'unavailable');
     return;
+  }
+
+  if (perKeyRequests > perKeyLimit || perIpRequests > perIpLimit) {
+    reply.header('retry-after', String(Math.ceil(windowMs / 1000)));
+    request.log.warn({ identifier, perKeyRequests, perIpRequests }, 'Rate limit exceeded');
+    throw createHttpError(429, 'Rate limit exceeded', 'RATE_LIMIT_EXCEEDED');
   }
 };

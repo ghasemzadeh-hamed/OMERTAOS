@@ -123,4 +123,3 @@ else:
 policy_file.write_text(yaml.safe_dump(data, sort_keys=False))
 print(f"Policy file updated: {policy_file}")
 PY
-

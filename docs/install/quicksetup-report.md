@@ -23,15 +23,15 @@ new standard entrypoints introduced in `scripts/quicksetup.sh` (Linux/macOS) and
 
 The legacy installers touched disparate components:
 
-- **Docker Compose stack** – `install.sh` handled `.env` creation, profile selection (user/pro/enterprise),
+- **Docker Compose stack** - `install.sh` handled `.env` creation, profile selection (user/pro/enterprise),
   telemetry toggles, and `docker compose up -d` with retries.
-- **Service configuration** – `config/aionos.config.yaml` was created only by the bash installer; other
+- **Service configuration** - `config/aionos.config.yaml` was created only by the bash installer; other
   scripts left gaps.
-- **Telemetry** – Environment variables `AION_TELEMETRY_OPT_IN` and `AION_TELEMETRY_ENDPOINT` were set
+- **Telemetry** - Environment variables `AION_TELEMETRY_OPT_IN` and `AION_TELEMETRY_ENDPOINT` were set
   inconsistently across scripts.
-- **Local model provisioning** – Bash installer optionally pulled Ollama models. Windows script offered
+- **Local model provisioning** - Bash installer optionally pulled Ollama models. Windows script offered
   no equivalent guard.
-- **Native installers** (`scripts/install_linux.sh`, `scripts/install_win.ps1`) – provisioned systemd/NSSM
+- **Native installers** (`scripts/install_linux.sh`, `scripts/install_win.ps1`) - provisioned systemd/NSSM
   units, PostgreSQL/Redis, and Node/PNPM builds. These flows remain legacy and are now labeled as such.
 
 ## Standard QuickSetup architecture
@@ -59,12 +59,12 @@ The new QuickSetup scripts implement a unified workflow:
 
 The reusable modules introduced for QuickSetup are:
 
-- `scripts/lib/common.sh` – logging, command detection, path utilities, and boolean normalization.
-- `scripts/lib/env.sh` – `.env` templating, profile/telemetry propagation, and profile metadata export.
-- `scripts/lib/config.sh` – deterministic generation of `config/aionos.config.yaml` with standard ports
+- `scripts/lib/common.sh` - logging, command detection, path utilities, and boolean normalization.
+- `scripts/lib/env.sh` - `.env` templating, profile/telemetry propagation, and profile metadata export.
+- `scripts/lib/config.sh` - deterministic generation of `config/aionos.config.yaml` with standard ports
   and directory references.
-- `scripts/lib/docker.sh` – Compose detection, retries, and command string rendering for summaries.
-- `scripts/lib/preflight.sh` – Opt-in execution of `tools/preflight.sh` with non-interactive handling.
+- `scripts/lib/docker.sh` - Compose detection, retries, and command string rendering for summaries.
+- `scripts/lib/preflight.sh` - Opt-in execution of `tools/preflight.sh` with non-interactive handling.
 
 ## Deprecations and redirects
 

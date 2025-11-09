@@ -213,7 +213,7 @@ def handle_agent_chat(task: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
     try:
         llm = resolve_llm()
     except Exception as exc:
-        error_msg = f"مدل در دسترس نیست: {exc}"
+        error_msg = f"\u0645\u062f\u0644 \u062f\u0631 \u062f\u0633\u062a\u0631\u0633 \u0646\u06cc\u0633\u062a: {exc}"
         logger.error("Agent chat failed to resolve LLM", exc_info=True)
         yield {"text": error_msg, "status": "ERROR"}
         return
@@ -229,7 +229,7 @@ def handle_agent_chat(task: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
             response_text = llm.complete(prompt)
         except Exception as exc:
             logger.exception("Agent chat model invocation failed")
-            yield {"text": f"خطا در فراخوانی مدل: {exc}", "status": "ERROR"}
+            yield {"text": f"\u062e\u0637\u0627 \u062f\u0631 \u0641\u0631\u0627\u062e\u0648\u0627\u0646\u06cc \u0645\u062f\u0644: {exc}", "status": "ERROR"}
             return
 
         text = response_text if isinstance(response_text, str) else json.dumps(response_text)
@@ -246,19 +246,19 @@ def handle_agent_chat(task: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
             action_block = text.split("ACTION:", 1)[1].strip()
             action = _extract_action(action_block)
             if not action:
-                history.append({"role": "assistant", "content": "خطا در ACTION. لطفاً مجدد تلاش کنید."})
-                yield {"delta": "خطا در ACTION. لطفاً مجدد تلاش کنید."}
+                history.append({"role": "assistant", "content": "\u062e\u0637\u0627 \u062f\u0631 ACTION. \u0644\u0637\u0641\u0627\u064b \u0645\u062c\u062f\u062f \u062a\u0644\u0627\u0634 \u06a9\u0646\u06cc\u062f."})
+                yield {"delta": "\u062e\u0637\u0627 \u062f\u0631 ACTION. \u0644\u0637\u0641\u0627\u064b \u0645\u062c\u062f\u062f \u062a\u0644\u0627\u0634 \u06a9\u0646\u06cc\u062f."}
                 continue
             tool_name = str(action.get("tool", ""))
             args = action.get("args") or {}
             tool = _TOOLS.get(tool_name)
             if not tool:
-                message = f"ابزاری با نام {tool_name} در دسترس نیست."
+                message = f"\u0627\u0628\u0632\u0627\u0631\u06cc \u0628\u0627 \u0646\u0627\u0645 {tool_name} \u062f\u0631 \u062f\u0633\u062a\u0631\u0633 \u0646\u06cc\u0633\u062a."
                 history.append({"role": "assistant", "content": message})
                 yield {"delta": message}
                 continue
             if tool_name.startswith("ops.") and not auto_confirm:
-                prompt_msg = f"پیش از اجرای {tool_name} با args={args} تایید می‌کنی؟ (yes/no)"
+                prompt_msg = f"\u067e\u06cc\u0634 \u0627\u0632 \u0627\u062c\u0631\u0627\u06cc {tool_name} \u0628\u0627 args={args} \u062a\u0627\u06cc\u06cc\u062f \u0645\u06cc\u200c\u06a9\u0646\u06cc\u061f (yes/no)"
                 history.append({"role": "assistant", "content": prompt_msg})
                 if session_id:
                     _save_memory(session_id, history)
@@ -267,7 +267,7 @@ def handle_agent_chat(task: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
             try:
                 observation = tool.run(**args)
             except Exception as exc:  # pragma: no cover - runtime dependent
-                observation = f"اجرای ابزار با خطا مواجه شد: {exc}"
+                observation = f"\u0627\u062c\u0631\u0627\u06cc \u0627\u0628\u0632\u0627\u0631 \u0628\u0627 \u062e\u0637\u0627 \u0645\u0648\u0627\u062c\u0647 \u0634\u062f: {exc}"
             scratchpad += f"\nACTION: {tool_name} {json.dumps(args, ensure_ascii=False)}\nOBSERVATION: {observation[:2000]}"
             if len(scratchpad) > MAX_SCRATCHPAD_CHARS:
                 scratchpad = scratchpad[-MAX_SCRATCHPAD_CHARS:]
@@ -279,14 +279,14 @@ def handle_agent_chat(task: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
             history.append({"role": "assistant", "content": text})
             yield {"delta": text}
             if len(partial_buffer) > 1800:
-                clarification = "لطفاً مشخص کن چه کاری می‌خواهی انجام شود."
+                clarification = "\u0644\u0637\u0641\u0627\u064b \u0645\u0634\u062e\u0635 \u06a9\u0646 \u0686\u0647 \u06a9\u0627\u0631\u06cc \u0645\u06cc\u200c\u062e\u0648\u0627\u0647\u06cc \u0627\u0646\u062c\u0627\u0645 \u0634\u0648\u062f."
                 history.append({"role": "assistant", "content": clarification})
                 yield {"text": clarification, "status": "OK"}
                 if session_id:
                     _save_memory(session_id, history)
                 return
 
-    fallback = partial_buffer or "پایان گفتگو."
+    fallback = partial_buffer or "\u067e\u0627\u06cc\u0627\u0646 \u06af\u0641\u062a\u06af\u0648."
     history.append({"role": "assistant", "content": fallback})
     if session_id:
         _save_memory(session_id, history)

@@ -238,4 +238,3 @@ async def trigger_train(payload: TriggerTrainIn) -> Dict[str, Any]:
     job_id = f"train-{uuid4()}"
     # In a full implementation this would enqueue a background task or orchestrator job.
     return {"job_id": job_id, "status": "queued"}
-
