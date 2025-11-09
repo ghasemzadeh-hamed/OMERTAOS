@@ -1,45 +1,43 @@
-apiVersion: v1
-kind: List
-items:
-  - apiVersion: apps/v1
-    kind: StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: aion-redis
+spec:
+  selector:
+    matchLabels:
+      app: aion-redis
+  serviceName: aion-redis
+  replicas: 1
+  template:
     metadata:
-      name: aion-redis
-    spec:
-      selector:
-        matchLabels:
-          app: aion-redis
-      serviceName: aion-redis
-      replicas: 1
-      template:
-        metadata:
-          labels:
-            app: aion-redis
-        spec:
-          containers:
-            - name: redis
-              image: redis:7-alpine
-              ports:
-                - containerPort: 6379
-              volumeMounts:
-                - name: redis-data
-                  mountPath: /data
-      volumeClaimTemplates:
-        - metadata:
-            name: redis-data
-          spec:
-            accessModes: ["ReadWriteOnce"]
-            resources:
-              requests:
-                storage: 1Gi
-  - apiVersion: v1
-    kind: Service
-    metadata:
-      name: aion-redis
-    spec:
-      clusterIP: None
-      selector:
+      labels:
         app: aion-redis
-      ports:
-        - port: 6379
-          targetPort: 6379
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aion-redis
+spec:
+  clusterIP: None
+  selector:
+    app: aion-redis
+  ports:
+    - port: 6379
+      targetPort: 6379

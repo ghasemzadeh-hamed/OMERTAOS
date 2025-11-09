@@ -1,59 +1,57 @@
-apiVersion: v1
-kind: List
-items:
-  - apiVersion: apps/v1
-    kind: Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aion-control
+  labels:
+    app: aion-control
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: aion-control
+  template:
     metadata:
-      name: aion-control
       labels:
         app: aion-control
     spec:
-      replicas: 2
-      selector:
-        matchLabels:
-          app: aion-control
-      template:
-        metadata:
-          labels:
-            app: aion-control
-        spec:
-          containers:
-            - name: control
-              image: ghcr.io/aionos/control:0.1.0
-              ports:
-                - containerPort: 8000
-                - containerPort: 50051
-              env:
-                - name: AION_CONTROL_REDIS_URL
-                  value: redis://aion-redis:6379/0
-                - name: AION_CONTROL_POSTGRES_DSN
-                  value: postgresql://aionos:aionos@aion-postgres:5432/aionos
-              readinessProbe:
-                httpGet:
-                  path: /healthz
-                  port: 8000
-                initialDelaySeconds: 5
-                periodSeconds: 10
-              livenessProbe:
-                httpGet:
-                  path: /healthz
-                  port: 8000
-                initialDelaySeconds: 10
-                periodSeconds: 30
-          nodeSelector:
-            kubernetes.io/os: linux
-  - apiVersion: v1
-    kind: Service
-    metadata:
-      name: aion-control
-    spec:
-      selector:
-        app: aion-control
-      ports:
-        - name: http
-          port: 80
-          targetPort: 8000
-        - name: grpc
-          port: 50051
-          targetPort: 50051
-      type: ClusterIP
+      containers:
+        - name: control
+          image: ghcr.io/aionos/control:0.1.0
+          ports:
+            - containerPort: 8000
+            - containerPort: 50051
+          env:
+            - name: AION_CONTROL_REDIS_URL
+              value: redis://aion-redis:6379/0
+            - name: AION_CONTROL_POSTGRES_DSN
+              value: postgresql://aionos:aionos@aion-postgres:5432/aionos
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+      nodeSelector:
+        kubernetes.io/os: linux
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aion-control
+spec:
+  selector:
+    app: aion-control
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+  type: ClusterIP
