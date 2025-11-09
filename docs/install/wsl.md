@@ -18,7 +18,8 @@ AION-OS supports Windows developers through WSL2. Disk actions are skipped; the 
    sudo npm install -g pnpm
    ```
 3. Clone the repository inside the WSL filesystem (`/home/<user>/aionos`).
-4. From the repo root run `./install.sh wsl` to seed required systemd units.
+4. From the repo root run `./scripts/quicksetup.sh --profile professional --local` to render `.env` and
+   start the containerized stack.
 5. Start the wizard UI with `pnpm dev` inside `console`.
 6. Visit `http://localhost:3000/wizard` from Windows; the bridge runs inside WSL on port `3030`.
 7. Choose **WSL** mode. Storage and bootloader steps will display read-only previews.

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# DEPRECATED: use scripts/quicksetup.sh for Docker-based deployments. This script remains for
+# legacy native installs and will be removed in a future release.
 set -euo pipefail
 
 APP_ROOT=${APP_ROOT:-/opt/omerta}

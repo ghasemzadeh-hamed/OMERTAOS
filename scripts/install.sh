@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
+# DEPRECATED: use scripts/quicksetup.sh instead of this installer.
 set -euo pipefail
-echo "[AIONOS] native install"
-command -v node >/dev/null || curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs
-command -v pnpm >/dev/null || npm i -g pnpm
 
-pnpm i
-pnpm -C console build
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-# start console (systemd unit recommended in production)
-echo "Run: pnpm -C console start"
+echo "[WARN] scripts/install.sh is deprecated. Redirecting to scripts/quicksetup.sh." >&2
+exec "${ROOT_DIR}/scripts/quicksetup.sh" "$@"
