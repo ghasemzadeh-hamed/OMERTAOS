@@ -1,3 +1,4 @@
 # Consolidated dependencies for CI workflows expecting a requirements file.
-# Install the project along with control and kernel extras plus development tooling.
--e .[control,kernel,dev]
+# Install the project along with control and kernel extras plus development tooling
+# and the lightweight model training stack required for CI guard rails.
+-e .[control,kernel,dev,ci-training]
