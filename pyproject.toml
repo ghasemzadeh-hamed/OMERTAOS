@@ -50,8 +50,6 @@ ci-training = [
     "numpy>=1.26,<2.0",
     "pandas>=2.2,<3.0",
     "scikit-learn>=1.5,<2.0",
-    "xgboost>=2.0,<3.0",
-    "lightgbm>=4.3,<5.0",
 ]
 ml-automl = ["pycaret"]
 ml-explain = ["shapash", "aix360", "cleanlab"]

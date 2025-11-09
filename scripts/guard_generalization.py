@@ -34,22 +34,22 @@ def _gap(train_value: float, val_value: float) -> float:
     return abs(train_value - val_value) / baseline
 
 
-def _cv_std_for_metric(cv_summary: Dict[str, Dict[str, float]], metric: str) -> float:
+def _max_cv_std(cv_summary: Dict[str, Dict[str, float]]) -> float:
     if not cv_summary:
         return 0.0
 
-    values = cv_summary.get(metric)
-    if not values:
-        return 0.0
-
-    std_value = values.get("std")
-    if std_value is None:
-        return 0.0
-
-    try:
-        return float(std_value)
-    except (TypeError, ValueError):
-        return 0.0
+    max_std = 0.0
+    for values in cv_summary.values():
+        if not isinstance(values, dict):
+            continue
+        try:
+            std_value = float(values.get("std", 0.0))
+        except (TypeError, ValueError):
+            continue
+        if math.isnan(std_value):
+            continue
+        max_std = max(max_std, std_value)
+    return max_std
 
 
 def main() -> int:
@@ -82,21 +82,23 @@ def main() -> int:
     drift_cfg = cfg.get("monitoring", {}).get("drift", {})
     psi_threshold = float(drift_cfg.get("psi_threshold", 0.2))
 
-    meta = metrics.get("meta", {})
-    dataset_source = str(meta.get("dataset_source", "")).lower()
-    skip_drift = dataset_source.startswith("synthetic")
-
     cv_summary = metrics.get("cv", {})
-    cv_std = _cv_std_for_metric(cv_summary, metric_name)
+    cv_std = _max_cv_std(cv_summary)
 
-    drift_value = float(metrics.get("drift", {}).get("train_val_psi", 0.0))
+    drift_raw = metrics.get("drift", {}).get("train_val_psi", 0.0)
+    try:
+        drift_value = float(drift_raw)
+    except (TypeError, ValueError):
+        drift_value = 0.0
+    if math.isnan(drift_value):
+        drift_value = 0.0
 
     failures = []
     if gap_ratio > max_gap:
         failures.append(f"Train/val gap ratio {gap_ratio:.3f} exceeds threshold {max_gap:.3f}.")
     if cv_std > max_cv_std:
         failures.append(f"Cross-validation std {cv_std:.3f} exceeds threshold {max_cv_std:.3f}.")
-    if not skip_drift and abs(drift_value) > psi_threshold:
+    if abs(drift_value) > psi_threshold:
         failures.append(f"Population stability index {drift_value:.3f} exceeds threshold {psi_threshold:.3f}.")
 
     if failures:

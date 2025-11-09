@@ -76,6 +76,7 @@ def _prepare_pipeline(
     *,
     task: str,
     random_state: int,
+    ci_mode: bool,
 ) -> Pipeline:
     feature_cfg = cfg.get("feature_selection", {})
     filter_cfg = feature_cfg.get("filter", {})
@@ -93,7 +94,7 @@ def _prepare_pipeline(
     if feature_cfg.get("embedded", "") == "select_from_model":
         steps.append(("embedded_selector", _feature_selector(task, random_state)))
 
-    estimator = build_model(task, cfg, random_state=random_state)
+    estimator = build_model(task, cfg, random_state=random_state, ci_mode=ci_mode)
     steps.append(("estimator", estimator))
 
     return Pipeline(steps=steps)
@@ -170,7 +171,7 @@ def main() -> None:
 
     task = _resolve_task(meta, args.task)
 
-    pipeline = _prepare_pipeline(meta, cfg, task=task, random_state=seed)
+    pipeline = _prepare_pipeline(meta, cfg, task=task, random_state=seed, ci_mode=args.ci)
 
     splits = make_splits(X, y, meta, cfg, random_state=seed)
 
