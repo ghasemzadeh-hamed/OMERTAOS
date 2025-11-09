@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -41,11 +42,11 @@
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.25.76",
-    "zustand": "^4.5.2"
+    "zustand": "^4.5.2",
+    "@prisma/client": "^6.18.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.43.1",
-    "@prisma/client": "^6.18.0",
     "@tailwindcss/forms": "^0.5.7",
     "@testing-library/dom": "^9.3.4",
     "@testing-library/jest-dom": "^6.4.2",
