@@ -3,6 +3,18 @@
 # legacy native installs and will be removed in a future release.
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB_DIR="${SCRIPT_DIR}/lib"
+COMMON_LIB="${LIB_DIR}/common.sh"
+
+if [[ -f "${COMMON_LIB}" ]]; then
+  # shellcheck source=lib/common.sh
+  source "${COMMON_LIB}"
+  log_warn "[DEPRECATED] scripts/install_linux.sh will be removed; use scripts/quicksetup.sh for container installs."
+else
+  echo "[WARN] scripts/install_linux.sh is deprecated; use scripts/quicksetup.sh." >&2
+fi
+
 APP_ROOT=${APP_ROOT:-/opt/omerta}
 APP_USER=${APP_USER:-omerta}
 APP_GROUP=${APP_GROUP:-www-data}

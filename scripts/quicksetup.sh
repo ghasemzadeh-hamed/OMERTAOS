@@ -4,15 +4,30 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 LIB_DIR="${SCRIPT_DIR}/lib"
-COMMON_LIB="${LIB_DIR}/common.sh"
 
-if [[ ! -f "${COMMON_LIB}" ]]; then
-  echo "[ERROR] Required library '${COMMON_LIB}' is missing." >&2
-  exit 1
-fi
+COMMON_LIB="${LIB_DIR}/common.sh"
+ENV_LIB="${LIB_DIR}/env.sh"
+CONFIG_LIB="${LIB_DIR}/config.sh"
+DOCKER_LIB="${LIB_DIR}/docker.sh"
+PREFLIGHT_LIB="${LIB_DIR}/preflight.sh"
+
+for lib in "${COMMON_LIB}" "${ENV_LIB}" "${CONFIG_LIB}" "${DOCKER_LIB}" "${PREFLIGHT_LIB}"; do
+  if [[ ! -f "${lib}" ]]; then
+    echo "[ERROR] Required library '${lib}' is missing." >&2
+    exit 1
+  fi
+done
 
 # shellcheck source=lib/common.sh
 source "${COMMON_LIB}"
+# shellcheck source=lib/env.sh
+source "${ENV_LIB}"
+# shellcheck source=lib/config.sh
+source "${CONFIG_LIB}"
+# shellcheck source=lib/docker.sh
+source "${DOCKER_LIB}"
+# shellcheck source=lib/preflight.sh
+source "${PREFLIGHT_LIB}"
 
 PROFILE=""
 PROFILE_OPTION=""
@@ -20,11 +35,13 @@ NONINTERACTIVE=false
 LOCAL_MODE=false
 COMPOSE_FILE="docker-compose.yml"
 MODEL_NAME="${AIONOS_LOCAL_MODEL:-llama3.2:3b}"
-TELEMETRY_OPT_IN_RAW="${AION_TELEMETRY_OPT_IN:-false}"
+TELEMETRY_OPT_IN="$(normalize_boolean "${AION_TELEMETRY_OPT_IN:-false}")"
 TELEMETRY_ENDPOINT="${AION_TELEMETRY_ENDPOINT:-http://localhost:4317}"
 REPO_URL="${AIONOS_REPO_URL:-https://github.com/ghasemzadeh-hamed/OMERTAOS.git}"
 BRANCH_NAME="${AIONOS_REPO_BRANCH:-main}"
 UPDATE_REPO=false
+POLICY_DIR="${AION_POLICY_DIR:-./policies}"
+VOLUME_ROOT="${AION_VOLUME_ROOT:-./volumes}"
 
 usage() {
   cat <<USAGE
@@ -159,21 +176,6 @@ ensure_prerequisites() {
   fi
 }
 
-compose_command=()
-
-detect_compose() {
-  if docker compose version >/dev/null 2>&1; then
-    compose_command=(docker compose)
-    return
-  fi
-  if command_exists docker-compose; then
-    compose_command=(docker-compose)
-    return
-  fi
-  log_error "Docker Compose v2 (docker compose) or v1 (docker-compose) is required."
-  exit 1
-}
-
 update_repository() {
   if [[ -d "${ROOT_DIR}/.git" ]]; then
     if ${UPDATE_REPO}; then
@@ -196,131 +198,32 @@ update_repository() {
   ROOT_DIR="$(cd "${target}" && pwd)"
 }
 
-ensure_env_file() {
-  local env_file="${ROOT_DIR}/.env"
-  local example_file="${ROOT_DIR}/config/templates/.env.example"
-  if [[ ! -f "${env_file}" ]]; then
-    if [[ -f "${example_file}" ]]; then
-      log_info "Creating .env from template"
-      cp "${example_file}" "${env_file}"
-    else
-      log_warn "No .env.example found; creating empty .env"
-      touch "${env_file}"
-    fi
-  fi
-}
-
-update_env_profile() {
-  local env_file="${ROOT_DIR}/.env"
-  python3 - <<PY
-from pathlib import Path
-import os
-from datetime import datetime
-
-env_path = Path(${env_file!r})
-lines = []
-if env_path.exists():
-    lines = [line.rstrip('\n') for line in env_path.read_text().splitlines()]
-
-def keep_line(raw: str) -> bool:
-    if not raw or raw.lstrip().startswith('#') or '=' not in raw:
-        return True
-    key, _ = raw.split('=', 1)
-    return key not in {"AION_PROFILE", "FEATURE_SEAL", "AION_TELEMETRY_OPT_IN", "AION_TELEMETRY_ENDPOINT"}
-
-filtered = [line for line in lines if keep_line(line)]
-
-profile = ${PROFILE!r}
-feature_seal = '1' if profile == 'enterprise-vip' else '0'
-telemetry_raw = ${TELEMETRY_OPT_IN_RAW!r}
-telemetry_value = str(telemetry_raw).lower() in {'1', 'true', 'y', 'yes'}
-telemetry_endpoint = ${TELEMETRY_ENDPOINT!r}
-
-filtered.extend([
-    f"AION_PROFILE={profile}",
-    f"FEATURE_SEAL={feature_seal}",
-    f"AION_TELEMETRY_OPT_IN={'true' if telemetry_value else 'false'}",
-    f"AION_TELEMETRY_ENDPOINT={telemetry_endpoint}",
-])
-
-env_path.write_text("\n".join(filtered) + "\n")
-PY
-}
-
-write_profile_metadata() {
-  local profile_dir="${ROOT_DIR}/.aionos"
-  mkdir -p "${profile_dir}"
-  python3 - <<PY
-from pathlib import Path
-from datetime import datetime
-import json
-
-profile_dir = Path(${profile_dir!r})
-profile_dir.mkdir(parents=True, exist_ok=True)
-profile_file = profile_dir / "profile.json"
-data = {
-    "profile": ${PROFILE!r},
-    "setupDone": True,
-    "updatedAt": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-}
-profile_file.write_text(json.dumps(data, indent=2) + "\n")
-PY
-}
-
-ensure_config_file() {
-  local config_dir="${ROOT_DIR}/config"
-  local config_file="${config_dir}/aionos.config.yaml"
-  mkdir -p "${config_dir}"
-  if [[ -f "${config_file}" ]]; then
+resolve_under_root() {
+  local root_dir=$1
+  local candidate=$2
+  if [[ -z "${candidate}" ]]; then
+    echo "${root_dir}"
     return
   fi
-  cat >"${config_file}" <<'YAML'
-version: 1
-locale: en-US
-console:
-  port: 3000
-  baseUrl: http://localhost:3000
-gateway:
-  port: 8080
-  apiKeys:
-    - demo-key:admin|manager
-control:
-  httpPort: 8000
-  grpcPort: 50051
-storage:
-  postgres:
-    host: postgres
-    port: 5432
-    user: aion
-    password: aion
-    database: aion
-  redis:
-    host: redis
-    port: 6379
-  qdrant:
-    host: qdrant
-    port: 6333
-  minio:
-    endpoint: http://minio:9000
-    accessKey: minio
-    secretKey: miniosecret
-    bucket: aion-raw
-telemetry:
-  otelEnabled: ${TELEMETRY_OPT_IN_RAW}
-  endpoint: "${TELEMETRY_ENDPOINT}"
-YAML
+  if [[ "${candidate}" = /* ]]; then
+    echo "${candidate}"
+  else
+    echo "${root_dir}/${candidate#./}"
+  fi
 }
 
-run_preflight() {
-  local preflight="${ROOT_DIR}/tools/preflight.sh"
-  if [[ -x "${preflight}" ]]; then
-    log_info "Running preflight checks"
-    if ${NONINTERACTIVE}; then
-      "${preflight}" --noninteractive || log_warn "Preflight reported issues"
-    else
-      "${preflight}" || log_warn "Preflight reported issues"
-    fi
-  fi
+prepare_runtime_paths() {
+  local root_dir=$1
+  local policy_dir=$2
+  local volume_root=$3
+  local policy_path
+  local volume_path
+
+  policy_path="$(resolve_under_root "${root_dir}" "${policy_dir}")"
+  volume_path="$(resolve_under_root "${root_dir}" "${volume_root}")"
+
+  ensure_directory "${policy_path}"
+  ensure_directory "${volume_path}"
 }
 
 install_ollama_model() {
@@ -339,28 +242,6 @@ install_ollama_model() {
   fi
 }
 
-bring_up_stack() {
-  detect_compose
-  local compose_file_path="${ROOT_DIR}/${COMPOSE_FILE}"
-  if [[ ! -f "${compose_file_path}" ]]; then
-    log_error "Compose file '${COMPOSE_FILE}' not found in ${ROOT_DIR}."
-    exit 1
-  fi
-  log_info "Starting services with ${compose_command[*]} -f ${COMPOSE_FILE} up -d --build"
-  local attempt=1
-  local max_attempts=3
-  while (( attempt <= max_attempts )); do
-    if (cd "${ROOT_DIR}" && "${compose_command[@]}" -f "${COMPOSE_FILE}" up -d --build); then
-      return
-    fi
-    log_warn "docker compose attempt ${attempt}/${max_attempts} failed; retrying"
-    sleep $((attempt * 5))
-    attempt=$((attempt + 1))
-  done
-  log_error "docker compose failed after ${max_attempts} attempts"
-  exit 1
-}
-
 print_summary() {
   printf '\n[AION-OS] QuickSetup completed.\n'
   printf 'Profile: %s\n' "${PROFILE}"
@@ -372,7 +253,9 @@ print_summary() {
     printf '  Console UI:       http://localhost:3000\n'
   else
     printf 'Next steps:\n'
-    printf '  - Monitor stack: %s -f %s ps\n' "${compose_command[*]}" "${COMPOSE_FILE}"
+    local compose_display
+    compose_display="$(compose_command_string 2>/dev/null || echo 'docker compose')"
+    printf '  - Monitor stack: %s -f %s ps\n' "${compose_display}" "${COMPOSE_FILE}"
     printf '  - Smoke test: scripts/smoke_e2e.sh\n'
   fi
 }
@@ -382,14 +265,21 @@ main() {
   ensure_prerequisites
   update_repository
   confirm_directory "${ROOT_DIR}"
-  run_preflight
-  ensure_env_file
+  run_preflight "${ROOT_DIR}" "${NONINTERACTIVE}"
+  ensure_env_file "${ROOT_DIR}"
+  prepare_runtime_paths "${ROOT_DIR}" "${POLICY_DIR}" "${VOLUME_ROOT}"
+  local policy_path
+  local volume_path
+  policy_path="$(resolve_under_root "${ROOT_DIR}" "${POLICY_DIR}")"
+  volume_path="$(resolve_under_root "${ROOT_DIR}" "${VOLUME_ROOT}")"
+  log_info "Policy directory: ${policy_path}"
+  log_info "Volume root: ${volume_path}"
   select_profile
   log_info "Selected profile: ${PROFILE}"
-  update_env_profile
-  write_profile_metadata
-  ensure_config_file
-  bring_up_stack
+  update_env_profile "${ROOT_DIR}" "${PROFILE}" "${TELEMETRY_OPT_IN}" "${TELEMETRY_ENDPOINT}" "${POLICY_DIR}" "${VOLUME_ROOT}"
+  write_profile_metadata "${ROOT_DIR}" "${PROFILE}"
+  ensure_config_file "${ROOT_DIR}" "${TELEMETRY_OPT_IN}" "${TELEMETRY_ENDPOINT}" "${POLICY_DIR}" "${VOLUME_ROOT}"
+  bring_up_stack "${ROOT_DIR}" "${COMPOSE_FILE}"
   install_ollama_model
   print_summary
 }

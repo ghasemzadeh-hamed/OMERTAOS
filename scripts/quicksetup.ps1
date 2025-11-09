@@ -10,12 +10,16 @@ param(
     [string]$Model = $env:AIONOS_LOCAL_MODEL,
     [switch]$Update,
     [string]$Repo = $env:AIONOS_REPO_URL,
-    [string]$Branch = $env:AIONOS_REPO_BRANCH
+    [string]$Branch = $env:AIONOS_REPO_BRANCH,
+    [string]$PolicyDir = $env:AION_POLICY_DIR,
+    [string]$VolumeRoot = $env:AION_VOLUME_ROOT
 )
 
 if (-not $Model) { $Model = 'llama3.2:3b' }
 if (-not $Repo) { $Repo = 'https://github.com/ghasemzadeh-hamed/OMERTAOS.git' }
 if (-not $Branch) { $Branch = 'main' }
+if (-not $PolicyDir) { $PolicyDir = './policies' }
+if (-not $VolumeRoot) { $VolumeRoot = './volumes' }
 
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" }
 function Write-Warn([string]$Message) { Write-Host "[WARN] $Message" -ForegroundColor Yellow }
@@ -44,6 +48,15 @@ $envPath = Join-Path $rootDir '.env'
 $configDir = Join-Path $rootDir 'config'
 $configFile = Join-Path $configDir 'aionos.config.yaml'
 $profileDir = Join-Path $rootDir '.aionos'
+$resolveUnderRoot = {
+    param([string]$Root, [string]$Path)
+    if ([string]::IsNullOrWhiteSpace($Path)) { return $Root }
+    if ([System.IO.Path]::IsPathRooted($Path)) { return $Path }
+    $trimmed = $Path -replace '^[.][\\/]', ''
+    return Join-Path $Root $trimmed
+}
+$policyPath = & $resolveUnderRoot $rootDir $PolicyDir
+$volumePath = & $resolveUnderRoot $rootDir $VolumeRoot
 $telemetryRaw = if ($env:AION_TELEMETRY_OPT_IN) { $env:AION_TELEMETRY_OPT_IN } else { 'false' }
 $telemetryEndpoint = if ($env:AION_TELEMETRY_ENDPOINT) { $env:AION_TELEMETRY_ENDPOINT } else { 'http://localhost:4317' }
 
@@ -75,12 +88,33 @@ if (-not (Test-Path (Join-Path $rootDir '.git'))) {
 
 if (-not (Test-Path $configDir)) { New-Item -ItemType Directory -Force -Path $configDir | Out-Null }
 if (-not (Test-Path $profileDir)) { New-Item -ItemType Directory -Force -Path $profileDir | Out-Null }
+if (-not (Test-Path $policyPath)) { New-Item -ItemType Directory -Force -Path $policyPath | Out-Null; Write-Info "Created policy directory at $policyPath" }
+if (-not (Test-Path $volumePath)) { New-Item -ItemType Directory -Force -Path $volumePath | Out-Null; Write-Info "Created volume root at $volumePath" }
+Write-Info "Policy directory: $policyPath"
+Write-Info "Volume root: $volumePath"
 
-$exampleEnv = Join-Path $rootDir 'config/templates/.env.example'
+$envTemplates = @(
+    (Join-Path $rootDir '.env.example'),
+    (Join-Path $rootDir 'config/templates/.env.example'),
+    (Join-Path $rootDir 'config/.env.example')
+)
 if (-not (Test-Path $envPath)) {
-    if (Test-Path $exampleEnv) {
-        Write-Info "Creating .env from template"
-        Copy-Item $exampleEnv $envPath
+    $template = $null
+    foreach ($candidate in $envTemplates) {
+        if (Test-Path $candidate) {
+            $template = $candidate
+            break
+        }
+    }
+
+    if ($template) {
+        try {
+            $relative = [System.IO.Path]::GetRelativePath($rootDir, $template)
+        } catch {
+            $relative = Split-Path $template -Leaf
+        }
+        Write-Info "Creating .env from template $relative"
+        Copy-Item $template $envPath
     } else {
         Write-Warn "No .env template found; creating empty .env"
         New-Item -ItemType File -Path $envPath | Out-Null
@@ -171,6 +205,8 @@ $envUpdates['AION_PROFILE'] = $Profile
 $envUpdates['FEATURE_SEAL'] = if ($Profile -eq 'enterprise-vip') { '1' } else { '0' }
 $envUpdates['AION_TELEMETRY_OPT_IN'] = if ($telemetryEnabled) { 'true' } else { 'false' }
 $envUpdates['AION_TELEMETRY_ENDPOINT'] = $telemetryEndpoint
+$envUpdates['AION_POLICY_DIR'] = $PolicyDir
+$envUpdates['AION_VOLUME_ROOT'] = $VolumeRoot
 Set-EnvValues -Path $envPath -Values $envUpdates
 
 $profileFile = Join-Path $profileDir 'profile.json'
@@ -214,6 +250,10 @@ storage:
     accessKey: minio
     secretKey: miniosecret
     bucket: aion-raw
+policies:
+  dir: "$PolicyDir"
+volumes:
+  root: "$VolumeRoot"
 telemetry:
   otelEnabled: $($envUpdates['AION_TELEMETRY_OPT_IN'])
   endpoint: "$telemetryEndpoint"
