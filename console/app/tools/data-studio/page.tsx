@@ -49,6 +49,13 @@ export default function DataStudioPage() {
     }
   };
 
+  const unsupportedPreview =
+    preview && 'unsupported_type' in preview ? preview.unsupported_type : false;
+  const csvPreview =
+    preview && 'type' in preview && preview.type === 'csv' ? preview : null;
+  const jsonPreview =
+    preview && 'type' in preview && preview.type === 'json' ? preview : null;
+
   return (
     <div className="space-y-4 text-right">
       <header>
@@ -86,17 +93,17 @@ export default function DataStudioPage() {
         </button>
       </div>
       {error && <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200">{error}</div>}
-      {preview && preview.unsupported_type && (
+      {unsupportedPreview && (
         <div className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 p-3 text-sm text-yellow-200">
           Unsupported file type. Only CSV and JSON are currently supported.
         </div>
       )}
-      {preview && (preview as CsvPreview).type === 'csv' && (
+      {csvPreview && (
         <div className="overflow-auto rounded-2xl border border-white/10">
           <table className="min-w-full divide-y divide-white/10 text-xs">
             <thead className="bg-white/5">
               <tr>
-                {(preview as CsvPreview).columns.map((col) => (
+                {csvPreview.columns.map((col) => (
                   <th key={col} className="px-3 py-2 text-right font-medium">
                     {col}
                   </th>
@@ -104,7 +111,7 @@ export default function DataStudioPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {(preview as CsvPreview).rows.map((row, idx) => (
+              {csvPreview.rows.map((row, idx) => (
                 <tr key={idx} className="hover:bg-white/5">
                   {row.map((cell, i) => (
                     <td key={`${idx}-${i}`} className="px-3 py-2 text-white/70">
@@ -117,11 +124,11 @@ export default function DataStudioPage() {
           </table>
         </div>
       )}
-      {preview && (preview as JsonPreview).type === 'json' && (
+      {jsonPreview && (
         <div className="space-y-2">
-          <div className="text-xs text-white/60">Top level keys: {(preview as JsonPreview).top_level_keys.join(', ') || '-'}</div>
+          <div className="text-xs text-white/60">Top level keys: {jsonPreview.top_level_keys.join(', ') || '-'}</div>
           <pre className="max-h-[420px] overflow-auto rounded-2xl border border-white/10 bg-black/40 p-4 text-xs text-emerald-100">
-            {JSON.stringify((preview as JsonPreview).content, null, 2)}
+            {JSON.stringify(jsonPreview.content, null, 2)}
           </pre>
         </div>
       )}
