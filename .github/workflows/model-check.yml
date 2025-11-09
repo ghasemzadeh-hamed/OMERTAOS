@@ -32,4 +32,4 @@ jobs:
       - name: Generate SBOM
         run: |
           python -m pip install cyclonedx-bom
-          cyclonedx-py --format json --output sbom.json
+          cyclonedx-py requirements --requirements requirements.txt --format json --output sbom.json
