@@ -43,9 +43,11 @@ The new QuickSetup scripts implement a unified workflow:
   - Validates presence of `git`, `docker`, and either `curl` or `wget`.
   - Supports `--profile`, `--local`, `--compose-file`, `--noninteractive`, `--update`, `--repo`, and
     `--branch` flags.
-  - Copies `.env` from `config/templates/.env.example` and normalizes profile/telemetry variables.
-  - Persists `.aionos/profile.json` metadata, seeds `config/aionos.config.yaml`, and ensures `policies`
-    and `volumes` directories exist (configurable via `AION_POLICY_DIR`/`AION_VOLUME_ROOT`).
+- Copies `.env` from the repository template (`.env.example`, with fallbacks under `config/`) and
+  normalizes profile/telemetry variables.
+- Persists `.aionos/profile.json` metadata, seeds `config/aionos.config.yaml` using the caller's
+  chosen policy and volume directories, and ensures those paths exist on disk (configurable via
+  `AION_POLICY_DIR`/`AION_VOLUME_ROOT`).
   - Invokes `tools/preflight.sh` when available, installs optional Ollama models, and starts the stack
     via Docker Compose with retries.
   - Delegates shared filesystem, environment, and docker logic to modular helpers in `scripts/lib/`.

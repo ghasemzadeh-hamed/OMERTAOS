@@ -278,7 +278,7 @@ main() {
   log_info "Selected profile: ${PROFILE}"
   update_env_profile "${ROOT_DIR}" "${PROFILE}" "${TELEMETRY_OPT_IN}" "${TELEMETRY_ENDPOINT}" "${POLICY_DIR}" "${VOLUME_ROOT}"
   write_profile_metadata "${ROOT_DIR}" "${PROFILE}"
-  ensure_config_file "${ROOT_DIR}" "${TELEMETRY_OPT_IN}" "${TELEMETRY_ENDPOINT}"
+  ensure_config_file "${ROOT_DIR}" "${TELEMETRY_OPT_IN}" "${TELEMETRY_ENDPOINT}" "${POLICY_DIR}" "${VOLUME_ROOT}"
   bring_up_stack "${ROOT_DIR}" "${COMPOSE_FILE}"
   install_ollama_model
   print_summary

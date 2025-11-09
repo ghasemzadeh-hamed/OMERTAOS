@@ -7,6 +7,8 @@ ensure_config_file() {
   local root_dir=$1
   local telemetry_enabled=$2
   local telemetry_endpoint=$3
+  local policy_dir=${4:-./policies}
+  local volume_root=${5:-./volumes}
   local config_dir="${root_dir}/config"
   local config_file="${config_dir}/aionos.config.yaml"
 
@@ -49,9 +51,9 @@ storage:
     secretKey: miniosecret
     bucket: aion-raw
 policies:
-  dir: ./policies
+  dir: "${policy_dir}"
 volumes:
-  root: ./volumes
+  root: "${volume_root}"
 telemetry:
   otelEnabled: ${telemetry_enabled}
   endpoint: "${telemetry_endpoint}"

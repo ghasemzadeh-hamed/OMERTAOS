@@ -93,11 +93,28 @@ if (-not (Test-Path $volumePath)) { New-Item -ItemType Directory -Force -Path $v
 Write-Info "Policy directory: $policyPath"
 Write-Info "Volume root: $volumePath"
 
-$exampleEnv = Join-Path $rootDir 'config/templates/.env.example'
+$envTemplates = @(
+    (Join-Path $rootDir '.env.example'),
+    (Join-Path $rootDir 'config/templates/.env.example'),
+    (Join-Path $rootDir 'config/.env.example')
+)
 if (-not (Test-Path $envPath)) {
-    if (Test-Path $exampleEnv) {
-        Write-Info "Creating .env from template"
-        Copy-Item $exampleEnv $envPath
+    $template = $null
+    foreach ($candidate in $envTemplates) {
+        if (Test-Path $candidate) {
+            $template = $candidate
+            break
+        }
+    }
+
+    if ($template) {
+        try {
+            $relative = [System.IO.Path]::GetRelativePath($rootDir, $template)
+        } catch {
+            $relative = Split-Path $template -Leaf
+        }
+        Write-Info "Creating .env from template $relative"
+        Copy-Item $template $envPath
     } else {
         Write-Warn "No .env template found; creating empty .env"
         New-Item -ItemType File -Path $envPath | Out-Null
@@ -234,9 +251,9 @@ storage:
     secretKey: miniosecret
     bucket: aion-raw
 policies:
-  dir: $PolicyDir
+  dir: "$PolicyDir"
 volumes:
-  root: $VolumeRoot
+  root: "$VolumeRoot"
 telemetry:
   otelEnabled: $($envUpdates['AION_TELEMETRY_OPT_IN'])
   endpoint: "$telemetryEndpoint"

@@ -6,17 +6,30 @@
 ensure_env_file() {
   local root_dir=$1
   local env_file="${root_dir}/.env"
-  local example_file="${root_dir}/config/templates/.env.example"
+  local template_candidates=(
+    "${root_dir}/.env.example"
+    "${root_dir}/config/templates/.env.example"
+    "${root_dir}/config/.env.example"
+  )
 
   if [[ -f "${env_file}" ]]; then
     return
   fi
 
-  if [[ -f "${example_file}" ]]; then
-    log_info "Creating .env from template"
-    cp "${example_file}" "${env_file}"
+  local template=""
+  for candidate in "${template_candidates[@]}"; do
+    if [[ -f "${candidate}" ]]; then
+      template="${candidate}"
+      break
+    fi
+  done
+
+  if [[ -n "${template}" ]]; then
+    local relative_template="${template#${root_dir}/}"
+    log_info "Creating .env from template ${relative_template}"
+    cp "${template}" "${env_file}"
   else
-    log_warn "No .env.example found; creating empty .env"
+    log_warn "No .env template found; creating empty .env"
     : >"${env_file}"
   fi
 }
