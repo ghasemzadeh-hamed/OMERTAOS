@@ -16,7 +16,7 @@ class RagSearchTool:
     """Return knowledge snippets from the internal vector store."""
 
     name = "rag.search"
-    desc = "جستجوی دانش داخلی بر اساس تع嵌ه‌سازی و بردار"
+    desc = "\u062c\u0633\u062a\u062c\u0648\u06cc \u062f\u0627\u0646\u0634 \u062f\u0627\u062e\u0644\u06cc \u0628\u0631 \u0627\u0633\u0627\u0633 \u062a\u0639\u5d4c\u0647\u200c\u0633\u0627\u0632\u06cc \u0648 \u0628\u0631\u062f\u0627\u0631"
 
     def __init__(self, qdrant_url: str | None = None, collection: str = "docs") -> None:
         self.qdrant_url = qdrant_url or os.getenv("AION_QDRANT_URL", "http://qdrant:6333")
@@ -36,7 +36,7 @@ class RagSearchTool:
         if not query.strip():
             return "Query must not be empty."
         if self._client is None:
-            return f"[RAG] نتایج ساختگی برای: {query} (top_k={top_k})"
+            return f"[RAG] \u0646\u062a\u0627\u06cc\u062c \u0633\u0627\u062e\u062a\u06af\u06cc \u0628\u0631\u0627\u06cc: {query} (top_k={top_k})"
         try:
             vector = self._fake_embed(query)
             response = self._client.search(

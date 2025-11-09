@@ -90,12 +90,12 @@ $env:DB_PASS = 'SuperSecret123!'
 
 Environment variables accepted by the script:
 
-- `APP_ROOT` – installation prefix (default `/opt/omerta`).
-- `APP_USER` – service user (default `omerta`).
-- `DB_USER`, `DB_PASS`, `DB_NAME` – override database credentials.
-- `REPO` – alternative Git repository URL.
+- `APP_ROOT` - installation prefix (default `/opt/omerta`).
+- `APP_USER` - service user (default `omerta`).
+- `DB_USER`, `DB_PASS`, `DB_NAME` - override database credentials.
+- `REPO` - alternative Git repository URL.
 
-The script is idempotent – rerunning will pull updates, reinstall dependencies as needed, and restart
+The script is idempotent - rerunning will pull updates, reinstall dependencies as needed, and restart
 services.
 
 ## Windows installation
@@ -113,8 +113,8 @@ services.
 
 Useful environment variables:
 
-- `APP_ROOT`, `REPO`, `DB_USER`, `DB_PASS`, `DB_NAME` – behave like the Linux installer.
-- `NSSM_PATH` – path to `nssm.exe` if not using the default `C:\nssm\nssm.exe`.
+- `APP_ROOT`, `REPO`, `DB_USER`, `DB_PASS`, `DB_NAME` - behave like the Linux installer.
+- `NSSM_PATH` - path to `nssm.exe` if not using the default `C:\nssm\nssm.exe`.
 
 ## Post-install checks
 

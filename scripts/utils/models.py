@@ -319,4 +319,3 @@ def collect_early_stopping_params(
         return params
 
     return {}
-

@@ -1,4 +1,4 @@
-﻿services:
+services:
   vault:
     image: hashicorp/vault:1.16
     container_name: aionos-vault

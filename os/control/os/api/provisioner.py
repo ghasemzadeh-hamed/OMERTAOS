@@ -290,4 +290,3 @@ def ensure_endpoint(request: EnsureRequest) -> dict[str, Any]:
         result.get("already_running"),
     )
     return result
-
