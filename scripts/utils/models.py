@@ -1,6 +1,8 @@
 """Model factory helpers for the anti-overfitting guard stack."""
 from __future__ import annotations
 
+import importlib
+import importlib.util
 from typing import Any, Dict, List, Tuple
 
 from sklearn.base import BaseEstimator
@@ -12,15 +14,27 @@ from sklearn.ensemble import (
 )
 from sklearn.linear_model import LogisticRegression, Ridge
 
-try:  # Optional dependency: LightGBM is not required in CI
-    from lightgbm import LGBMClassifier, LGBMRegressor  # type: ignore
-except ImportError:  # pragma: no cover - optional dependency missing
+
+def _load_optional_module(name: str):
+    spec = importlib.util.find_spec(name)
+    if spec is None:
+        return None
+    return importlib.import_module(name)
+
+
+_lightgbm = _load_optional_module("lightgbm")
+if _lightgbm is not None:
+    LGBMClassifier = getattr(_lightgbm, "LGBMClassifier", None)
+    LGBMRegressor = getattr(_lightgbm, "LGBMRegressor", None)
+else:  # pragma: no cover - optional dependency missing
     LGBMClassifier = None  # type: ignore[assignment]
     LGBMRegressor = None  # type: ignore[assignment]
 
-try:  # Optional dependency: XGBoost is not required in CI
-    from xgboost import XGBClassifier, XGBRegressor  # type: ignore
-except ImportError:  # pragma: no cover - optional dependency missing
+_xgboost = _load_optional_module("xgboost")
+if _xgboost is not None:
+    XGBClassifier = getattr(_xgboost, "XGBClassifier", None)
+    XGBRegressor = getattr(_xgboost, "XGBRegressor", None)
+else:  # pragma: no cover - optional dependency missing
     XGBClassifier = None  # type: ignore[assignment]
     XGBRegressor = None  # type: ignore[assignment]
 

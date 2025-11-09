@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import argparse
+import importlib
+import importlib.util
 import json
 import os
 import random
@@ -26,9 +28,11 @@ from scripts.utils.data import DatasetMeta, load_data, make_splits
 from scripts.utils.features import make_preprocessor
 from scripts.utils.models import build_model, collect_early_stopping_params
 
-try:
-    from sklearn import __version__ as SKLEARN_VERSION
-except ImportError:  # pragma: no cover - scikit-learn missing at runtime
+_sklearn_spec = importlib.util.find_spec("sklearn")
+if _sklearn_spec is not None:
+    _sklearn_module = importlib.import_module("sklearn")
+    SKLEARN_VERSION = getattr(_sklearn_module, "__version__", "0.0")
+else:  # pragma: no cover - scikit-learn missing at runtime
     SKLEARN_VERSION = "0.0"
 
 _SKLEARN_VERSION_PARTS = SKLEARN_VERSION.split(".")
