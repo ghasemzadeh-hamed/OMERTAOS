@@ -4,8 +4,6 @@ import * as redisModule from '../../gateway/src/redis.js';
 
 const buildReply = () => ({
   header: vi.fn(),
-  tooManyRequests: vi.fn((message: string) => ({ statusCode: 429, message })),
-  serviceUnavailable: vi.fn((message: string) => ({ statusCode: 503, message })),
 });
 
 describe('rate limit middleware', () => {
@@ -25,12 +23,16 @@ describe('rate limit middleware', () => {
     const request: any = { headers: { 'x-api-key': 'key' }, ip: '127.0.0.1', log: { error: vi.fn() } };
     const reply: any = buildReply();
     await expect(rateLimitMiddleware(request, reply)).rejects.toMatchObject({ statusCode: 429 });
+    expect(reply.header).toHaveBeenCalledWith('retry-after', expect.any(String));
   });
 
-  it('fails closed if redis unavailable', async () => {
+  it('marks headers when redis unavailable', async () => {
     vi.spyOn(redisModule, 'withRateLimitCounter').mockRejectedValueOnce(new Error('redis down'));
     const request: any = { headers: { 'x-api-key': 'key' }, ip: '127.0.0.1', log: { error: vi.fn() } };
     const reply: any = buildReply();
-    await expect(rateLimitMiddleware(request, reply)).rejects.toMatchObject({ statusCode: 503 });
+    await rateLimitMiddleware(request, reply);
+    expect(reply.header).toHaveBeenCalledWith('x-rate-limit-limit', 'unavailable');
+    expect(reply.header).toHaveBeenCalledWith('x-rate-limit-remaining', 'unavailable');
+    expect(reply.header).toHaveBeenCalledWith('x-rate-limit-reset', 'unavailable');
   });
 });

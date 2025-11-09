@@ -4,7 +4,6 @@ import * as redisModule from '../../gateway/src/redis.js';
 
 const buildReply = () => ({
   header: vi.fn(),
-  serviceUnavailable: vi.fn((message: string) => ({ statusCode: 503, message })),
 });
 
 describe('idempotency middleware', () => {
