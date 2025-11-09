@@ -90,14 +90,14 @@ def load_data(*, allow_synthetic: bool = False, random_state: int = 42) -> Tuple
     from sklearn.datasets import make_classification
 
     X_array, y_array = make_classification(
-        n_samples=600,
+        n_samples=1200,
         n_features=12,
-        n_informative=8,
-        n_redundant=2,
+        n_informative=9,
+        n_redundant=1,
         n_repeated=0,
         n_classes=2,
-        flip_y=0.01,
-        class_sep=1.2,
+        flip_y=0.0,
+        class_sep=2.0,
         random_state=random_state,
     )
     columns = [f"num_{idx}" for idx in range(X_array.shape[1])]

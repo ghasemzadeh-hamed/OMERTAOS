@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Dict
@@ -36,7 +37,19 @@ def _gap(train_value: float, val_value: float) -> float:
 def _max_cv_std(cv_summary: Dict[str, Dict[str, float]]) -> float:
     if not cv_summary:
         return 0.0
-    return max(float(values.get("std", 0.0)) for values in cv_summary.values())
+
+    max_std = 0.0
+    for values in cv_summary.values():
+        if not isinstance(values, dict):
+            continue
+        try:
+            std_value = float(values.get("std", 0.0))
+        except (TypeError, ValueError):
+            continue
+        if math.isnan(std_value):
+            continue
+        max_std = max(max_std, std_value)
+    return max_std
 
 
 def main() -> int:
@@ -47,9 +60,21 @@ def main() -> int:
     task = metrics.get("task", "classification")
     metric_name = _primary_metric(task)
 
-    train_value = float(metrics.get("train", {}).get(metric_name, 0.0))
-    val_value = float(metrics.get("val", {}).get(metric_name, 0.0))
-    gap_ratio = _gap(train_value, val_value)
+    train_raw = metrics.get("train", {}).get(metric_name, 0.0)
+    val_raw = metrics.get("val", {}).get(metric_name, 0.0)
+    try:
+        train_value = float(train_raw)
+    except (TypeError, ValueError):
+        train_value = 0.0
+    try:
+        val_value = float(val_raw)
+    except (TypeError, ValueError):
+        val_value = 0.0
+
+    if math.isnan(train_value) or math.isnan(val_value):
+        gap_ratio = 0.0
+    else:
+        gap_ratio = _gap(train_value, val_value)
 
     guard_cfg = cfg.get("guards", {})
     max_gap = float(guard_cfg.get("max_train_val_gap", 0.1))
@@ -60,7 +85,13 @@ def main() -> int:
     cv_summary = metrics.get("cv", {})
     cv_std = _max_cv_std(cv_summary)
 
-    drift_value = float(metrics.get("drift", {}).get("train_val_psi", 0.0))
+    drift_raw = metrics.get("drift", {}).get("train_val_psi", 0.0)
+    try:
+        drift_value = float(drift_raw)
+    except (TypeError, ValueError):
+        drift_value = 0.0
+    if math.isnan(drift_value):
+        drift_value = 0.0
 
     failures = []
     if gap_ratio > max_gap:

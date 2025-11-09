@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 import argparse
+import importlib
+import importlib.util
 import json
 import os
 import random
+import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -16,10 +19,27 @@ from sklearn.inspection import permutation_importance
 from sklearn.model_selection import cross_validate
 from sklearn.pipeline import Pipeline
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 from scripts.metrics import compute_classification_metrics, compute_regression_metrics, psi
 from scripts.utils.data import DatasetMeta, load_data, make_splits
 from scripts.utils.features import make_preprocessor
 from scripts.utils.models import build_model, collect_early_stopping_params
+
+_sklearn_spec = importlib.util.find_spec("sklearn")
+if _sklearn_spec is not None:
+    _sklearn_module = importlib.import_module("sklearn")
+    SKLEARN_VERSION = getattr(_sklearn_module, "__version__", "0.0")
+else:  # pragma: no cover - scikit-learn missing at runtime
+    SKLEARN_VERSION = "0.0"
+
+_SKLEARN_VERSION_PARTS = SKLEARN_VERSION.split(".")
+_SKLEARN_MAJOR = int(_SKLEARN_VERSION_PARTS[0]) if _SKLEARN_VERSION_PARTS else 0
+_SKLEARN_MINOR_PART = _SKLEARN_VERSION_PARTS[1] if len(_SKLEARN_VERSION_PARTS) > 1 else "0"
+_SKLEARN_MINOR = int("".join(ch for ch in _SKLEARN_MINOR_PART if ch.isdigit()) or "0")
+_LEGACY_PIPELINE_FIT = (_SKLEARN_MAJOR, _SKLEARN_MINOR) < (1, 3)
 
 ARTIFACTS_DIR = Path("artifacts")
 
@@ -51,7 +71,7 @@ def _feature_selector(task: str, random_state: int) -> SelectFromModel:
             max_features="auto",
             random_state=random_state,
         )
-    return SelectFromModel(base_estimator=base_estimator, threshold="median")
+    return SelectFromModel(estimator=base_estimator, threshold="median")
 
 
 def _prepare_pipeline(
@@ -60,6 +80,7 @@ def _prepare_pipeline(
     *,
     task: str,
     random_state: int,
+    ci_mode: bool,
 ) -> Pipeline:
     feature_cfg = cfg.get("feature_selection", {})
     filter_cfg = feature_cfg.get("filter", {})
@@ -77,10 +98,14 @@ def _prepare_pipeline(
     if feature_cfg.get("embedded", "") == "select_from_model":
         steps.append(("embedded_selector", _feature_selector(task, random_state)))
 
-    estimator = build_model(task, cfg, random_state=random_state)
+    estimator = build_model(task, cfg, random_state=random_state, ci_mode=ci_mode)
     steps.append(("estimator", estimator))
 
     return Pipeline(steps=steps)
+
+
+def _route_fit_param(key: str) -> str:
+    return f"estimator__{key}"
 
 
 def _collect_fit_params(
@@ -99,7 +124,9 @@ def _collect_fit_params(
         X_val=X_val,
         y_val=y_val,
     )
-    return {f"estimator__{key}": value for key, value in params.items()}
+    if not _LEGACY_PIPELINE_FIT:
+        return {}
+    return {_route_fit_param(key): value for key, value in params.items()}
 
 
 def _probabilities(estimator, X):
@@ -148,7 +175,7 @@ def main() -> None:
 
     task = _resolve_task(meta, args.task)
 
-    pipeline = _prepare_pipeline(meta, cfg, task=task, random_state=seed)
+    pipeline = _prepare_pipeline(meta, cfg, task=task, random_state=seed, ci_mode=args.ci)
 
     splits = make_splits(X, y, meta, cfg, random_state=seed)
 

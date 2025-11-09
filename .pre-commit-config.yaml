@@ -5,6 +5,11 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+        exclude: ^deploy/k8s/(?:postgres-statefulset|redis-statefulset|gateway-deployment|control-deployment|observability/prometheus|helm-chart)\.yaml$
+      - id: check-yaml
+        name: check-yaml (multi-document manifests)
+        files: ^deploy/k8s/(?:postgres-statefulset|redis-statefulset|gateway-deployment|control-deployment|observability/prometheus|helm-chart)\.yaml$
+        args: ["--allow-multiple-documents"]
       - id: check-json
       - id: check-toml
   - repo: https://github.com/gitleaks/gitleaks
@@ -18,4 +23,4 @@ repos:
         entry: python tools/sanitize_ascii.py
         language: system
         pass_filenames: false
-        stages: [commit]
+        stages: [pre-commit]
