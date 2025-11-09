@@ -31,6 +31,7 @@ import {
   devKernelEnabled,
   shouldUseDevKernel,
 } from './server/devKernelProxy.js';
+import { createHttpError } from './httpErrors.js';
 
 const app = Fastify({
   logger: true,
@@ -141,7 +142,7 @@ app.get('/health', healthHandler);
 
 app.post<{ Body: DevKernelRequest }>('/api/dev/kernel', async (request, reply) => {
   if (!devKernelEnabled()) {
-    throw reply.serviceUnavailable('Dev kernel is disabled');
+    throw createHttpError(503, 'Dev kernel is disabled', 'DEV_KERNEL_DISABLED');
   }
 
   let payload: DevKernelRequest;
@@ -167,7 +168,7 @@ app.post<{ Body: DevKernelRequest }>('/api/dev/kernel', async (request, reply) =
     return response;
   } catch (error) {
     request.log.error({ err: error }, 'Dev kernel proxy request failed');
-    throw reply.serviceUnavailable('Dev kernel unavailable');
+    throw createHttpError(503, 'Dev kernel unavailable', 'DEV_KERNEL_UNAVAILABLE');
   }
 });
 
@@ -202,7 +203,7 @@ app.post<{ Body: TaskRequestInput }>('/v1/tasks', async (request, reply) => {
   const taskId = randomUUID();
   if (shouldUseDevKernel(request)) {
     if (!devKernelEnabled()) {
-      throw reply.serviceUnavailable('Dev kernel is disabled');
+      throw createHttpError(503, 'Dev kernel is disabled', 'DEV_KERNEL_DISABLED');
     }
 
     let devResponse: DevKernelResponse;
@@ -211,7 +212,7 @@ app.post<{ Body: TaskRequestInput }>('/v1/tasks', async (request, reply) => {
       devResponse = await callDevKernel(payload);
     } catch (error) {
       request.log.error({ err: error }, 'Dev kernel invocation failed');
-      throw reply.serviceUnavailable('Dev kernel unavailable');
+      throw createHttpError(503, 'Dev kernel unavailable', 'DEV_KERNEL_UNAVAILABLE');
     }
 
     const status: TaskResult['status'] = devResponse.type === 'error' ? 'ERROR' : 'OK';
@@ -249,7 +250,7 @@ app.post<{ Body: TaskRequestInput }>('/v1/tasks', async (request, reply) => {
         await persistIdempotency(idempotencyKey, result, tenantId);
       } catch (error) {
         request.log.error({ err: error }, 'Failed to persist idempotency result');
-        throw reply.serviceUnavailable('Idempotency cache unavailable');
+        throw createHttpError(503, 'Idempotency cache unavailable', 'IDEMPOTENCY_UNAVAILABLE');
       }
     }
 
@@ -278,7 +279,7 @@ app.post<{ Body: TaskRequestInput }>('/v1/tasks', async (request, reply) => {
       await persistIdempotency(idempotencyKey, result, tenantId);
     } catch (error) {
       request.log.error({ err: error }, 'Failed to persist idempotency result');
-      throw reply.serviceUnavailable('Idempotency cache unavailable');
+      throw createHttpError(503, 'Idempotency cache unavailable', 'IDEMPOTENCY_UNAVAILABLE');
     }
   }
 
@@ -289,7 +290,7 @@ app.get('/v1/tasks/:id', async (request, reply) => {
   const { id } = request.params as { id: string };
   const result = await pollStatus(id, request);
   if (!result) {
-    throw reply.notFound('Task not found');
+    throw createHttpError(404, 'Task not found', 'TASK_NOT_FOUND');
   }
   return result;
 });

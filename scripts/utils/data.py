@@ -224,4 +224,3 @@ def make_splits(
     )
 
     return bundle
-

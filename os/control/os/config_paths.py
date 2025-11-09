@@ -68,4 +68,3 @@ def resolve_config_path(prefer_existing: bool = True) -> Path:
 
 
 __all__ = ["resolve_config_path"]
-

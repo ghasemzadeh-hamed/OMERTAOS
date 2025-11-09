@@ -1,7 +1,7 @@
 schemaVersion: "1.0"
 id: "agent.chat"
 name: "Agent Chat"
-description: "دستیار اجرایی با ابزارها و حافظه"
+description: "\u062f\u0633\u062a\u06cc\u0627\u0631 \u0627\u062c\u0631\u0627\u06cc\u06cc \u0628\u0627 \u0627\u0628\u0632\u0627\u0631\u0647\u0627 \u0648 \u062d\u0627\u0641\u0638\u0647"
 llm:
   resolution_order: ["openai:gpt-4.5", "ollama:qwen2.5:7b", "vllm:llama-3.2-3b-instruct", "local:phi-3-mini"]
   temperature: 0.2

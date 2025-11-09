@@ -1,8 +1,8 @@
 # 🧠 Agent-OS AI Registry (Dynamic Self-Updating Repository)
 
-**Version:** v1.0.0  
-**License:** MIT  
-**Language:** English  
+**Version:** v1.0.0
+**License:** MIT
+**Language:** English
 **Author:** Hatef Project / Agent-OS Core Initiative
 
 ---
