@@ -1,50 +1,52 @@
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: aion-postgres
-spec:
-  selector:
-    matchLabels:
-      app: aion-postgres
-  serviceName: aion-postgres
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: aion-postgres
-    spec:
-      containers:
-        - name: postgres
-          image: postgres:15
-          env:
-            - name: POSTGRES_DB
-              value: aionos
-            - name: POSTGRES_USER
-              value: aionos
-            - name: POSTGRES_PASSWORD
-              value: aionos
-          ports:
-            - containerPort: 5432
-          volumeMounts:
-            - name: pg-data
-              mountPath: /var/lib/postgresql/data
-  volumeClaimTemplates:
-    - metadata:
-        name: pg-data
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        resources:
-          requests:
-            storage: 10Gi
----
 apiVersion: v1
-kind: Service
-metadata:
-  name: aion-postgres
-spec:
-  clusterIP: None
-  selector:
-    app: aion-postgres
-  ports:
-    - port: 5432
-      targetPort: 5432
+kind: List
+items:
+  - apiVersion: apps/v1
+    kind: StatefulSet
+    metadata:
+      name: aion-postgres
+    spec:
+      selector:
+        matchLabels:
+          app: aion-postgres
+      serviceName: aion-postgres
+      replicas: 1
+      template:
+        metadata:
+          labels:
+            app: aion-postgres
+        spec:
+          containers:
+            - name: postgres
+              image: postgres:15
+              env:
+                - name: POSTGRES_DB
+                  value: aionos
+                - name: POSTGRES_USER
+                  value: aionos
+                - name: POSTGRES_PASSWORD
+                  value: aionos
+              ports:
+                - containerPort: 5432
+              volumeMounts:
+                - name: pg-data
+                  mountPath: /var/lib/postgresql/data
+      volumeClaimTemplates:
+        - metadata:
+            name: pg-data
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 10Gi
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: aion-postgres
+    spec:
+      clusterIP: None
+      selector:
+        app: aion-postgres
+      ports:
+        - port: 5432
+          targetPort: 5432
