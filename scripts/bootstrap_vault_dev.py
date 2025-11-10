@@ -60,7 +60,8 @@ BASE_DEV_SECRETS: Dict[str, Dict[str, Any]] = {
         "data": {"token": "dev-admin-token"}
     },
     "secret/data/aionos/dev/gateway-api-keys": {
-        "data": {"dev-key": "admin"}
+        "data": {"dev-key": "admin"},
+    },
 }
 
 
