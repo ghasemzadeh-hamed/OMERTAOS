@@ -75,9 +75,10 @@ jobs:
       - name: Generate sample Cosign signature
         env:
           COSIGN_PASSWORD: ""
+          COSIGN_YES: "true"
         run: |
           mkdir -p .artifacts
-          cosign generate-key-pair --output-key .artifacts/cosign.key --output-pub .artifacts/cosign.pub --yes
+          cosign generate-key-pair --output-key-prefix .artifacts/cosign
           cosign sign-blob --key .artifacts/cosign.key --output-signature .artifacts/control-server.pem.sig config/certs/control-server.pem
 
       - name: Bootstrap development Vault
