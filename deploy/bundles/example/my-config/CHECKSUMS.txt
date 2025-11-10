@@ -1,4 +1,4 @@
 # sha256 sums for bundle artifacts
-0c6e2b92e547004c05839f91591f62a5762aede662542edf117986ef542dea21  providers.yaml
-c533078f1bd0cef2278ff85b9cd0b56f04ad355b8f52aab095c5bcdfa7ffefe1  router.policy.yaml
+097f1f73019e19ac9c269cf50e7df0caea2875c8b19c2004aa9704e5b4d972e7  providers.yaml
+d2b15969ce16a17950a8b92d507f4f5b043692bc553fd6e37fba443e4b00c577  router.policy.yaml
 66ac2bff5132e524e94f657c48c23f03dfe55e5b8ff2b94ab601920466d0082d  data-sources.yaml
