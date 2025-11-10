@@ -5,9 +5,12 @@
   "type": "module",
   "main": "index.ts",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./theme/tokens.css": "./src/theme/tokens.css"
   },
   "dependencies": {
-    "react": "^18.3.0"
-  }
+    "react": "^18.3.0",
+    "@types/react": "^18.2.73"
+  },
+  "devDependencies": {}
 }

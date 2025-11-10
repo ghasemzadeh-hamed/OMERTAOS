@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import '@aionos/ui-core/src/theme/tokens.css';
+import '@aionos/ui-core/theme/tokens.css';
 
 export default function WizardLayout({ children }: { children: ReactNode }) {
-  return <div className="wizard-shell">{children}</div>;
+  return <div className="aionos-wizard">{children}</div>;
 }

@@ -1,10 +1,10 @@
 'use client';
 
 import { NextIntlClientProvider } from 'next-intl';
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, Suspense, useEffect } from 'react';
 import { useLocaleMessages } from '../hooks/useLocaleMessages';
 
-export function I18nProvider({ children }: { children: ReactNode }) {
+function I18nProviderInner({ children }: { children: ReactNode }) {
   const { locale, messages } = useLocaleMessages();
 
   useEffect(() => {
@@ -16,5 +16,13 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     <NextIntlClientProvider locale={locale} messages={messages} timeZone="UTC">
       {children}
     </NextIntlClientProvider>
+  );
+}
+
+export function I18nProvider({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={null}>
+      <I18nProviderInner>{children}</I18nProviderInner>
+    </Suspense>
   );
 }

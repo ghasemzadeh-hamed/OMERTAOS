@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FormEvent, useState } from 'react';
+import { FormEvent, Suspense, useState } from 'react';
 import GlassPanel from '@/components/GlassPanel';
 
-export default function LoginPage() {
+function LoginForm() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const callbackUrl = searchParams.get('callbackUrl') ?? '/dashboard';
+    const callbackUrl = searchParams?.get('callbackUrl') ?? '/dashboard';
     const result = await signIn('credentials', {
       identifier,
       password,
@@ -92,5 +92,13 @@ export default function LoginPage() {
         </div>
       </GlassPanel>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

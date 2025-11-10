@@ -15,7 +15,8 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         const rawIdentifier = credentials?.identifier?.trim();
-        if (!rawIdentifier || !credentials.password) {
+        const password = credentials?.password ?? '';
+        if (!rawIdentifier || !password) {
           return null;
         }
 
@@ -41,7 +42,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const ok = await bcrypt.compare(credentials.password, user.password);
+        const ok = await bcrypt.compare(password, user.password);
         if (!ok) {
           return null;
         }
