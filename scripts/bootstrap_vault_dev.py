@@ -35,6 +35,7 @@ HOST_VAULT_ADDR = (
 ENV_VAULT_ADDR = os.environ.get("AION_VAULT_ADDR_CONTAINER", "http://vault:8200")
 VAULT_KV_MOUNT = os.environ.get("AION_VAULT_KV_MOUNT", "secret")
 AION_ENV = os.environ.get("AION_ENV", "dev")
+BOOTSTRAP_TIMEOUT = float(os.environ.get("AION_VAULT_BOOTSTRAP_TIMEOUT", "180"))
 
 DEV_POLICY_NAME = "aionos-dev"
 BASE_DEV_SECRETS: Dict[str, Dict[str, Any]] = {
@@ -283,7 +284,18 @@ def write_env_file(token: str) -> None:
 def main() -> None:
     print("[vault-bootstrap] Starting Vault dev bootstrap")
     run_compose()
-    wait_for_vault(HOST_VAULT_ADDR)
+    try:
+        wait_for_vault(HOST_VAULT_ADDR, timeout=BOOTSTRAP_TIMEOUT)
+    except TimeoutError:
+        try:
+            subprocess.run(
+                ["docker", "compose", "logs", "--no-color", "vault"],
+                cwd=REPO_ROOT,
+                check=False,
+            )
+        except Exception:  # pragma: no cover - best effort diagnostics
+            pass
+        raise
 
     client = hvac.Client(url=HOST_VAULT_ADDR)
     creds = initialise_and_unseal(client)

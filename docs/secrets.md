@@ -64,6 +64,10 @@ source .env.vault.dev
 docker compose up -d
 ```
 
+If Vault takes longer than the default three minutes to become reachable (for example,
+when pulling the container image for the first time), set
+`AION_VAULT_BOOTSTRAP_TIMEOUT=<seconds>` before running the script to extend the wait.
+
 Replace the placeholder TLS certificates inside Vault with material generated from the
 freshly-created development CA before exposing services.
 
