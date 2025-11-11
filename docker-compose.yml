@@ -34,7 +34,7 @@ services:
       timeout: 10s
       retries: 12
     volumes:
-      - vault-data:/vault/data
+      - ./.vault/data:/vault/data
     networks: [aionos]
 
   postgres:
@@ -248,7 +248,6 @@ services:
 
 volumes:
   minio-data: {}
-  vault-data: {}
 
 networks:
   aionos:

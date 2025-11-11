@@ -53,7 +53,8 @@ scripts/bootstrap_vault_dev.py
 ```
 
 The script starts the `vault` service defined in `docker-compose.yml`, initialises and
-unseals it (storing the unseal key under `.vault/dev-unseal.json`), generates a fresh
+unseals it (storing the unseal key under `.vault/dev-unseal.json`), creates a writable
+bind mount at `.vault/data` for the container's integrated storage, generates a fresh
 development certificate authority and service certificates, seeds Vault with those
 artifacts and writes a reusable development token to `.env.vault.dev`. Source that file
 alongside your regular `.env` before running the stack:

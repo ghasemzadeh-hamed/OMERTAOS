@@ -25,6 +25,7 @@ except ImportError as exc:  # pragma: no cover - dependency hint
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DOT_VAULT = REPO_ROOT / ".vault"
+VAULT_DATA_DIR = DOT_VAULT / "data"
 UNSEAL_FILE = DOT_VAULT / "dev-unseal.json"
 ENV_FILE = REPO_ROOT / ".env.vault.dev"
 HOST_VAULT_ADDR = (
@@ -64,6 +65,16 @@ BASE_DEV_SECRETS: Dict[str, Dict[str, Any]] = {
         "data": {"dev-key": "admin"},
     },
 }
+
+
+def ensure_data_dir() -> None:
+    """Create a writable data directory for the Vault container."""
+
+    VAULT_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        os.chmod(VAULT_DATA_DIR, 0o777)
+    except PermissionError:  # pragma: no cover - best effort on restrictive filesystems
+        pass
 
 
 def run_compose() -> None:
@@ -283,6 +294,7 @@ def write_env_file(token: str) -> None:
 
 def main() -> None:
     print("[vault-bootstrap] Starting Vault dev bootstrap")
+    ensure_data_dir()
     run_compose()
     try:
         wait_for_vault(HOST_VAULT_ADDR, timeout=BOOTSTRAP_TIMEOUT)
