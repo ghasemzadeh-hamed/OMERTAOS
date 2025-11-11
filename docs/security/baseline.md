@@ -2,10 +2,10 @@
 
 AION-OS ships with a configurable hardening baseline. The table below maps levels to actions.
 
-| Level | Actions |
-| --- | --- |
-| none | Security updates only |
-| standard | `apt-get upgrade`, UFW enabled, Fail2Ban enabled |
+| Level    | Actions                                                                  |
+| -------- | ------------------------------------------------------------------------ |
+| none     | Security updates only                                                    |
+| standard | `apt-get upgrade`, UFW enabled, Fail2Ban enabled                         |
 | cis-lite | All standard actions plus Auditd, stricter SSH, and log retention tuning |
 
 ## Controls

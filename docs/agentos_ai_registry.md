@@ -15,16 +15,16 @@ Agent-OS AI Registry is a modular, self-updating repository containing all model
 
 ## 2. Key Features
 
-| Feature | Description |
-| --- | --- |
-| 🧩 Universal Catalog | Unified metadata for models, algorithms, and services. |
+| Feature                   | Description                                                                                        |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| 🧩 Universal Catalog      | Unified metadata for models, algorithms, and services.                                             |
 | 🔁 Self-Updating Registry | Can automatically update from remote sources (GitHub, HuggingFace, etc.) if approved by the admin. |
-| 🔐 Admin Crew Control | Updates and installations require explicit admin approval. |
-| ⚙️ Installer Scripts | Each item includes install commands and integrity checks. |
-| 🔒 Security & Integrity | SHA-256 verification, minisign signatures, and SBOM tracking. |
-| 🚫 No Docker Required | Works with Python/Rust subprocess runners or WASM sandboxes. |
-| 🌍 Offline-First Mode | Updates only when network access is granted. |
-| 🧠 Agent-OS Compatible | Plugs into AION-OS / Agent-OS Control Plane for runtime orchestration. |
+| 🔐 Admin Crew Control     | Updates and installations require explicit admin approval.                                         |
+| ⚙️ Installer Scripts      | Each item includes install commands and integrity checks.                                          |
+| 🔒 Security & Integrity   | SHA-256 verification, minisign signatures, and SBOM tracking.                                      |
+| 🚫 No Docker Required     | Works with Python/Rust subprocess runners or WASM sandboxes.                                       |
+| 🌍 Offline-First Mode     | Updates only when network access is granted.                                                       |
+| 🧠 Agent-OS Compatible    | Plugs into AION-OS / Agent-OS Control Plane for runtime orchestration.                             |
 
 ---
 
@@ -276,16 +276,16 @@ agentos registry update --approve
 
 ## 10. Example External Sources
 
-| Provider | Registry / Endpoint | Notes |
-| --- | --- | --- |
-| OpenAI | https://api.openai.com/v1/models | GPT-series |
-| Google | https://ai.google.dev/models | Gemini & Gemma |
-| Meta | https://huggingface.co/meta-llama | Llama family |
-| Alibaba | https://modelscope.cn/models/qwen | Qwen series |
-| DeepSeek | https://huggingface.co/deepseek-ai | DeepSeek models |
-| Mistral | https://huggingface.co/mistralai | Mistral series |
-| Ollama | https://ollama.com/library | Local LLM hosting |
-| HuggingFace | https://huggingface.co/models | Community registry |
+| Provider    | Registry / Endpoint                | Notes              |
+| ----------- | ---------------------------------- | ------------------ |
+| OpenAI      | https://api.openai.com/v1/models   | GPT-series         |
+| Google      | https://ai.google.dev/models       | Gemini & Gemma     |
+| Meta        | https://huggingface.co/meta-llama  | Llama family       |
+| Alibaba     | https://modelscope.cn/models/qwen  | Qwen series        |
+| DeepSeek    | https://huggingface.co/deepseek-ai | DeepSeek models    |
+| Mistral     | https://huggingface.co/mistralai   | Mistral series     |
+| Ollama      | https://ollama.com/library         | Local LLM hosting  |
+| HuggingFace | https://huggingface.co/models      | Community registry |
 
 ---
 
@@ -300,13 +300,13 @@ agentos registry update --approve
 
 ## 12. Future Enhancements
 
-| Feature | Description |
-| --- | --- |
-| 🌐 Crew AI Updater | Internal agent managing version checks & changelogs. |
-| 🧱 Plugin Builder | Auto-compiles wrappers for new APIs or WASM tools. |
-| 🧠 Memory Layer Integration | Syncs model metadata with Agent-OS memory graph. |
-| 🔄 Version Diff Tool | Compares manifests and highlights differences. |
-| 🧩 Local Cache Proxy | Mirrors remote models for air-gapped deployments. |
+| Feature                     | Description                                          |
+| --------------------------- | ---------------------------------------------------- |
+| 🌐 Crew AI Updater          | Internal agent managing version checks & changelogs. |
+| 🧱 Plugin Builder           | Auto-compiles wrappers for new APIs or WASM tools.   |
+| 🧠 Memory Layer Integration | Syncs model metadata with Agent-OS memory graph.     |
+| 🔄 Version Diff Tool        | Compares manifests and highlights differences.       |
+| 🧩 Local Cache Proxy        | Mirrors remote models for air-gapped deployments.    |
 
 ---
 

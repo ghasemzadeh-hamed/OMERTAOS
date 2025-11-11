@@ -1,10 +1,10 @@
 # NIC and Wi-Fi compatibility
 
-| Vendor | Device | Status | Packages |
-| --- | --- | --- | --- |
-| Intel | X710, AX211 | Supported | `firmware-iwlwifi`, `linux-firmware` |
-| Realtek | RTL8125, RTL8852AE | Supported | `firmware-realtek` |
-| Mellanox | ConnectX-5, ConnectX-6 | Supported | `mlx5-tools` |
+| Vendor   | Device                 | Status    | Packages                             |
+| -------- | ---------------------- | --------- | ------------------------------------ |
+| Intel    | X710, AX211            | Supported | `firmware-iwlwifi`, `linux-firmware` |
+| Realtek  | RTL8125, RTL8852AE     | Supported | `firmware-realtek`                   |
+| Mellanox | ConnectX-5, ConnectX-6 | Supported | `mlx5-tools`                         |
 
 ## Tips
 

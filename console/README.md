@@ -13,14 +13,14 @@ The app expects the gateway and control plane to run locally using `docker compo
 
 ## Scripts
 
-| Command | Description |
-| --- | --- |
-| `pnpm dev` | Run the development server with hot reload |
-| `pnpm build` | Create a production build |
-| `pnpm start` | Start the production server |
-| `pnpm lint` | Run ESLint |
-| `pnpm test` | Execute Vitest unit tests |
-| `pnpm playwright:test` | Run Playwright end-to-end tests |
+| Command                | Description                                |
+| ---------------------- | ------------------------------------------ |
+| `pnpm dev`             | Run the development server with hot reload |
+| `pnpm build`           | Create a production build                  |
+| `pnpm start`           | Start the production server                |
+| `pnpm lint`            | Run ESLint                                 |
+| `pnpm test`            | Execute Vitest unit tests                  |
+| `pnpm playwright:test` | Run Playwright end-to-end tests            |
 
 ## Authentication
 
@@ -28,12 +28,12 @@ NextAuth handles credential and Google OAuth logins. Credentials are validated a
 
 Required environment variables:
 
-| Variable | Purpose |
-| --- | --- |
-| `NEXTAUTH_SECRET` | Random 32+ byte secret used to sign session cookies. Generate with `openssl rand -base64 32`. |
-| `NEXTAUTH_URL` | Public URL where the console is served (e.g. `http://localhost:3000`). |
-| `NEXT_PUBLIC_GATEWAY_URL` | Base URL for REST/gRPC proxies exposed by the gateway (defaults to `http://localhost:8080`). |
-| `NEXT_PUBLIC_CONTROL_URL` | Base URL for the control plane API (defaults to `http://localhost:8001`). |
+| Variable                  | Purpose                                                                                       |
+| ------------------------- | --------------------------------------------------------------------------------------------- |
+| `NEXTAUTH_SECRET`         | Random 32+ byte secret used to sign session cookies. Generate with `openssl rand -base64 32`. |
+| `NEXTAUTH_URL`            | Public URL where the console is served (e.g. `http://localhost:3000`).                        |
+| `NEXT_PUBLIC_GATEWAY_URL` | Base URL for REST/gRPC proxies exposed by the gateway (defaults to `http://localhost:8080`).  |
+| `NEXT_PUBLIC_CONTROL_URL` | Base URL for the control plane API (defaults to `http://localhost:8001`).                     |
 
 ### Credentials flow
 

@@ -16,12 +16,12 @@
 
 ## Incident Response
 
-| Scenario | Action |
-|----------|--------|
-| Gateway returns 429 | Increase rate limit or investigate abuse; verify Redis availability |
-| Task latency spike | Review `aion.metrics.runtime` topic, inspect Grafana Router dashboard |
-| Policy regression | Re-run Airflow `weekly_model_train` DAG and call `/v1/router/policy/reload` |
-| Module failure | Check module host logs, verify Cosign signatures, roll back manifest |
+| Scenario            | Action                                                                      |
+| ------------------- | --------------------------------------------------------------------------- |
+| Gateway returns 429 | Increase rate limit or investigate abuse; verify Redis availability         |
+| Task latency spike  | Review `aion.metrics.runtime` topic, inspect Grafana Router dashboard       |
+| Policy regression   | Re-run Airflow `weekly_model_train` DAG and call `/v1/router/policy/reload` |
+| Module failure      | Check module host logs, verify Cosign signatures, roll back manifest        |
 
 ## Approvals & Guardrails
 

@@ -1,27 +1,64 @@
 # 🧠 AION-OS (Hybrid AI Platform for Autonomous Agents)
+
 AION-OS is a hybrid, modular operating system designed for **building, orchestrating, and scaling intelligent AI agents across bare-metal, virtualized, and web environments.**
 It unifies kernel-level control, web-based orchestration, and developer SDKs into one cohesive platform — enabling seamless integration between Edge, Cloud, and Enterprise deployments.
-________________________________________
-## 🚀 Core Highlights
-•	Unified Architecture — One shared kernel and deployment model for native Linux, ISO/Kiosk, WSL, and containerized runtimes.
-•	Agent-Centric Design — Native runtime for multi-agent orchestration with memory, model, and policy subsystems.
-•	Web-OS Console — Browser-based management UI (Next.js + React) for setup, monitoring, and policy automation.
-•	AI Registry — Built-in model, algorithm, and service registry for reproducible, self-signed deployments.
-•	Adaptive Profiles — User, Professional, and Enterprise tiers with modular service activation.
-•	Security & Hardening — First-boot patching, role-based access, optional secure boot, and encrypted storage.
-•	Developer SDK & CLI — Full Python/TypeScript SDK and CLI tools for building custom agents and control modules.
 
+---
+
+## 🚀 Core Highlights
+
+• Unified Architecture — One shared kernel and deployment model for native Linux, ISO/Kiosk, WSL, and containerized runtimes.
+• Agent-Centric Design — Native runtime for multi-agent orchestration with memory, model, and policy subsystems.
+• Web-OS Console — Browser-based management UI (Next.js + React) for setup, monitoring, and policy automation.
+• AI Registry — Built-in model, algorithm, and service registry for reproducible, self-signed deployments.
+• Adaptive Profiles — User, Professional, and Enterprise tiers with modular service activation.
+• Security & Hardening — First-boot patching, role-based access, optional secure boot, and encrypted storage.
+• Developer SDK & CLI — Full Python/TypeScript SDK and CLI tools for building custom agents and control modules.
 
 ## Quick start
 
-A short quick-start for each supported mode is available in [`docs/quickstart.md`](docs/quickstart.md). Each flow is designed to reach a working environment in ten steps or fewer.
+Use the repository-provided wrappers for the fastest path to a containerized deployment. Both scripts validate prerequisites (Git, Docker Engine/Compose, Python 3.11+) and keep the `.env` file, policy directory, and volume mounts in sync with [`scripts/quicksetup.sh`](scripts/quicksetup.sh) and [`scripts/quicksetup.ps1`](scripts/quicksetup.ps1).
 
-| Mode | Summary |
-| --- | --- |
-| ISO / Kiosk | Boot the kiosk ISO, follow the wizard, and allow gated disk actions with `AIONOS_ALLOW_INSTALL=1`. |
-| Native Linux | Bootstrap from a minimal Ubuntu base, run the installer bridge, and reuse the same wizard as the ISO. |
-| Windows / WSL | Launch the wizard without disk actions, apply a profile, and start services through WSL integration. |
-| Docker | Bring the stack up with Compose, pick a profile, and validate services through the embedded console. |
+### Linux (Docker Engine)
+
+```bash
+git clone https://github.com/ghasemzadeh-hamed/OMERTAOS.git
+cd OMERTAOS
+./install.sh --profile user            # or professional / enterprise-vip
+```
+
+- Append `--local` to target [`docker-compose.local.yml`](docker-compose.local.yml) for lightweight developer setups.
+- Pass `--update` to fetch the latest commits before starting services.
+
+### Windows 11 / WSL2
+
+```powershell
+git clone https://github.com/ghasemzadeh-hamed/OMERTAOS.git
+Set-Location OMERTAOS
+pwsh ./install.ps1 -Profile user       # or professional / enterprise-vip
+```
+
+- The script runs from either Windows or WSL terminals. Docker Desktop must be running with WSL integration enabled.
+- Provide `-Local` for the developer profile or `-Update` to pull new commits before launch.
+
+### Other flows
+
+A ten-step playbook for every supported mode (ISO, native Linux, WSL, Docker) lives in [`docs/quickstart.md`](docs/quickstart.md). The ISO wizard and native installer flows continue to gate destructive actions on the `AIONOS_ALLOW_INSTALL` flag.
+
+## Repository structure
+
+| Path | Description |
+| ---- | ----------- |
+| [`aion/`](aion) | Python services and workers that coordinate agent memory, policy, and task execution. |
+| [`console/`](console) | Next.js + React management UI, including the setup wizard and operational dashboards. |
+| [`gateway/`](gateway) | TypeScript API gateway that proxies model, policy, and control traffic between clients and the core runtime. |
+| [`core/`](core) | Installer assets, first-boot automation, kiosk tooling, and OS packaging logic. |
+| [`kernel/`](kernel) & [`kernel-multitenant/`](kernel-multitenant) | Rust-based kernels and registry definitions for single- and multi-tenant agent scheduling. |
+| [`scripts/`](scripts) | Automation utilities (quick setup, smoke tests, native installers, CI helpers). |
+| [`config/`](config) & [`configs/`](configs) | Environment templates, systemd units, NSSM definitions, and sample reverse-proxy manifests. |
+| [`agents/`](agents) & [`policies/`](policies) | Reference agent definitions, policy bundles, and examples that exercise the runtime. |
+| [`models/`](models) | Model manifests aligned with the AI registry for reproducible deployments. |
+
 
 ## Docker Compose overlays
 
@@ -35,11 +72,11 @@ Use overlays with `docker compose -f docker-compose.yml -f <overlay> up -d` to a
 
 ## Profiles
 
-| Profile | Default scope | ML tooling | Platform add-ons | Hardening |
-| --- | --- | --- | --- | --- |
-| user | Gateway, control, console | Disabled | Docker (lightweight) | none |
-| pro | Gateway, control, console | Jupyter, MLflow | Docker | standard |
-| enterprise | Gateway, control, console | Jupyter, MLflow | Docker, Kubernetes hooks, LDAP | cis-lite |
+| Profile    | Default scope             | ML tooling      | Platform add-ons               | Hardening |
+| ---------- | ------------------------- | --------------- | ------------------------------ | --------- |
+| user       | Gateway, control, console | Disabled        | Docker (lightweight)           | none      |
+| pro        | Gateway, control, console | Jupyter, MLflow | Docker                         | standard  |
+| enterprise | Gateway, control, console | Jupyter, MLflow | Docker, Kubernetes hooks, LDAP | cis-lite  |
 
 Profile definitions live in [`config/profiles`](config/profiles) and [`core/installer/profile/defaults`](core/installer/profile/defaults). The installer pipeline renders `.env` files from [`config/templates/.env.example`](config/templates/.env.example), and first-boot automation turns profile bits into services.
 

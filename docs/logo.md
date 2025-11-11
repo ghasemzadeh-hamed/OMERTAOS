@@ -3,6 +3,7 @@
 ![aionOS logomark](assets/aion-os-logo.svg)
 
 ## Usage Guidelines
+
 - **Primary colors:** Black logomark (#101010) on light neutral background (#F1F1F1).
 - **Clear space:** Keep at least the width of the circular stroke around the symbol free of other elements.
 - **Scaling:** Render as SVG wherever possible. For raster exports, preserve a minimum size of 128×128 px to maintain stroke legibility.
