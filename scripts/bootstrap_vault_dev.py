@@ -67,14 +67,26 @@ BASE_DEV_SECRETS: Dict[str, Dict[str, Any]] = {
 }
 
 
+def _chmod(path: Path, mode: int) -> None:
+    """Best-effort chmod helper that tolerates restrictive filesystems."""
+
+    try:
+        os.chmod(path, mode)
+    except PermissionError:  # pragma: no cover - best effort on restrictive filesystems
+        pass
+
+
 def ensure_data_dir() -> None:
     """Create a writable data directory for the Vault container."""
 
     VAULT_DATA_DIR.mkdir(parents=True, exist_ok=True)
-    try:
-        os.chmod(VAULT_DATA_DIR, 0o777)
-    except PermissionError:  # pragma: no cover - best effort on restrictive filesystems
-        pass
+    _chmod(DOT_VAULT, 0o777)
+    _chmod(VAULT_DATA_DIR, 0o777)
+    for child in VAULT_DATA_DIR.rglob("*"):
+        if child.is_dir():
+            _chmod(child, 0o777)
+        else:
+            _chmod(child, 0o666)
 
 
 def run_compose() -> None:
