@@ -1,0 +1,10 @@
+event_log:
+  required_fields:
+    - case_id        # e.g. task/job/session id
+    - activity       # logical step name
+    - timestamp
+  optional_fields:
+    - resource       # node/agent/container id
+    - status         # success|error|timeout|...
+    - duration_ms
+    - attributes     # free-form JSON
