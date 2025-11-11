@@ -2,12 +2,12 @@
 
 ## Kafka Topics
 
-| Topic | Key | Schema | Description |
-|-------|-----|--------|-------------|
-| `aion.router.decisions` | `task_id` | `schemas/events/router_decision.schema.json` | Records router choices and privacy tier |
-| `aion.tasks.lifecycle` | `task_id` | `schemas/events/tasks_lifecycle.schema.json` | Tracks task state transitions |
-| `aion.metrics.runtime` | `component` | `schemas/events/metrics_runtime.schema.json` | Emits metrics for Prometheus-style aggregation |
-| `aion.audit.activity` | `actor_id` | `schemas/events/audit_activity.schema.json` | Captures administrative changes |
+| Topic                   | Key         | Schema                                       | Description                                    |
+| ----------------------- | ----------- | -------------------------------------------- | ---------------------------------------------- |
+| `aion.router.decisions` | `task_id`   | `schemas/events/router_decision.schema.json` | Records router choices and privacy tier        |
+| `aion.tasks.lifecycle`  | `task_id`   | `schemas/events/tasks_lifecycle.schema.json` | Tracks task state transitions                  |
+| `aion.metrics.runtime`  | `component` | `schemas/events/metrics_runtime.schema.json` | Emits metrics for Prometheus-style aggregation |
+| `aion.audit.activity`   | `actor_id`  | `schemas/events/audit_activity.schema.json`  | Captures administrative changes                |
 
 ## Retention and ACLs
 

@@ -76,10 +76,10 @@ Console operators can trigger the workflow through the **Add Vendor Spec → Bui
 
 The Agents page surfaces installation state for every module using status chips:
 
-* **Installed** – manifest and SBOM verified, module routable.
-* **Not Installed** – module visible in the registry but not present locally.
-* **Needs Update** – newer signed artifact detected in the registry.
-* **Unverified** – artifact pulled without a valid Cosign signature.
+- **Installed** – manifest and SBOM verified, module routable.
+- **Not Installed** – module visible in the registry but not present locally.
+- **Needs Update** – newer signed artifact detected in the registry.
+- **Unverified** – artifact pulled without a valid Cosign signature.
 
 Operators can also inspect SBOM details, re-run Cosign verification, or install modules directly from the registry via dedicated
 buttons.

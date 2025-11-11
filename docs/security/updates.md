@@ -17,12 +17,12 @@ AION-OS treats security updates as a first-boot requirement and encourages regul
 
 ## CVE response SLA
 
-| Severity | Target response |
-| --- | --- |
-| Critical | Patch and release within 24 hours |
-| High | Patch within 72 hours |
-| Medium | Patch in the next scheduled update |
-| Low | Evaluate monthly |
+| Severity | Target response                    |
+| -------- | ---------------------------------- |
+| Critical | Patch and release within 24 hours  |
+| High     | Patch within 72 hours              |
+| Medium   | Patch in the next scheduled update |
+| Low      | Evaluate monthly                   |
 
 ## Reporting
 
