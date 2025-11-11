@@ -32,6 +32,7 @@ import {
   shouldUseDevKernel,
 } from './server/devKernelProxy.js';
 import { createHttpError } from './httpErrors.js';
+import { logInteraction, resolveModelForAgent } from './services/selfEvolving.js';
 
 const app = Fastify({
   logger: true,
@@ -85,6 +86,74 @@ const invokeControlUnary = (method: 'Submit' | 'StatusById', payload: any, metad
 };
 
 const resolveTenantHeader = (request: FastifyRequest): string | undefined => tenantFromHeader(request);
+
+const normaliseString = (value: unknown): string | undefined => {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  }
+  return undefined;
+};
+
+const ensureMetadataRecord = (value: unknown): Record<string, unknown> => {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+  return {};
+};
+
+const extractAgentId = (task: TaskRequest, request: FastifyRequest): string => {
+  const metadata = ensureMetadataRecord(task.metadata);
+  const candidates = [metadata.agent_id, metadata.agentId, metadata.agent];
+  for (const candidate of candidates) {
+    const normalised = normaliseString(candidate);
+    if (normalised) {
+      return normalised;
+    }
+  }
+  return normaliseString(request.aionContext.user?.id) ?? 'unknown-agent';
+};
+
+const extractPreferredModel = (task: TaskRequest): string => {
+  const metadata = ensureMetadataRecord(task.metadata);
+  const candidates = [
+    metadata.model_name,
+    metadata.model,
+    metadata.default_model,
+    metadata.preferred_model,
+  ];
+  for (const candidate of candidates) {
+    const normalised = normaliseString(candidate);
+    if (normalised) {
+      return normalised;
+    }
+  }
+  return 'auto';
+};
+
+const summariseTaskInput = (task: TaskRequest): string => {
+  try {
+    return JSON.stringify({
+      intent: task.intent,
+      params: task.params ?? {},
+      metadata: task.metadata ?? {},
+    });
+  } catch {
+    return task.intent;
+  }
+};
+
+const summariseTaskOutput = (result: TaskResult): string => {
+  const payload = result.result ?? result.error ?? {};
+  try {
+    return JSON.stringify(payload ?? {});
+  } catch {
+    if (typeof payload === 'string') {
+      return payload;
+    }
+    return JSON.stringify({ status: result.status });
+  }
+};
 
 const buildMetadata = (request: FastifyRequest) => {
   const metadata = new Metadata();
@@ -197,10 +266,39 @@ app.post<{ Body: TaskRequestInput }>('/v1/tasks', async (request, reply) => {
     return cached;
   }
 
+  const agentId = extractAgentId(validatedBody, request);
+  const defaultModel = extractPreferredModel(validatedBody);
+  const resolvedModel = await resolveModelForAgent(agentId, defaultModel, request.log);
+  const metadata = ensureMetadataRecord(validatedBody.metadata);
+  if (!metadata.agent_id) {
+    metadata.agent_id = agentId;
+  }
+  metadata.resolved_model = resolvedModel;
+  const routingMetadata = ensureMetadataRecord(metadata.routing);
+  routingMetadata.resolved_model = resolvedModel;
+  routingMetadata.decided_at = new Date().toISOString();
+  metadata.routing = routingMetadata;
+  validatedBody = { ...validatedBody, metadata };
+
   const idempotencyKey = typeof request.headers['idempotency-key'] === 'string' ? request.headers['idempotency-key'] : undefined;
   const tenantId = resolveTenantHeader(request);
 
   const taskId = randomUUID();
+  const inputSummary = summariseTaskInput(validatedBody);
+  const userId = normaliseString(request.aionContext.user?.id);
+  const persistInteraction = (result: TaskResult) => {
+    void logInteraction(
+      {
+        agentId,
+        userId,
+        modelVersion: resolvedModel || result.engine?.route || defaultModel,
+        inputText: inputSummary,
+        outputText: summariseTaskOutput(result),
+        channel: gatewayConfig.selfEvolving.defaultChannel,
+      },
+      request.log,
+    );
+  };
   if (shouldUseDevKernel(request)) {
     if (!devKernelEnabled()) {
       throw createHttpError(503, 'Dev kernel is disabled', 'DEV_KERNEL_DISABLED');
@@ -245,6 +343,8 @@ app.post<{ Body: TaskRequestInput }>('/v1/tasks', async (request, reply) => {
       error: errorPayload,
     };
 
+    persistInteraction(result);
+
     if (idempotencyKey) {
       try {
         await persistIdempotency(idempotencyKey, result, tenantId);
@@ -273,6 +373,8 @@ app.post<{ Body: TaskRequestInput }>('/v1/tasks', async (request, reply) => {
     usage: response.usage,
     error: response.error,
   };
+
+  persistInteraction(result);
 
   if (idempotencyKey) {
     try {
