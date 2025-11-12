@@ -1,0 +1,86 @@
+name: build-and-sign
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      vault:
+        image: hashicorp/vault:1.16
+        ports:
+          - 8200:8200
+        env:
+          VAULT_DEV_ROOT_TOKEN_ID: root
+          VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+        options: >-
+          --cap-add=IPC_LOCK
+          --health-cmd="wget -qO- http://127.0.0.1:8200/v1/sys/health || exit 1"
+          --health-interval=2s
+          --health-timeout=2s
+          --health-retries=30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.5.0
+
+      - name: Wait for Vault
+        env:
+          VAULT_ADDR: http://127.0.0.1:8200
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 60); do
+            if curl -fsS "${VAULT_ADDR}/v1/sys/health" >/dev/null; then
+              echo "Vault is up."
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Vault failed to start in time." >&2
+          exit 1
+
+      - name: Seed dev secrets (DEV only)
+        if: github.event_name != 'release'
+        env:
+          VAULT_ADDR: http://127.0.0.1:8200
+          VAULT_TOKEN: root
+        run: |
+          curl -fsS -H "X-Vault-Token: ${VAULT_TOKEN}" \
+               -H "Content-Type: application/json" \
+               -X POST \
+               -d '{"data":{"COSIGN_PASSWORD":"dev-pass"}}' \
+               "${VAULT_ADDR}/v1/secret/data/ci/cosign"
+
+      - name: Read secrets from Vault
+        uses: hashicorp/vault-action@v2
+        with:
+          url: http://127.0.0.1:8200
+          method: token
+          token: root
+          exports: |
+            COSIGN_PASSWORD: secret/data/ci/cosign data.COSIGN_PASSWORD
+
+      - name: Generate cosign keys and sign blob
+        env:
+          COSIGN_PASSWORD: ${{ env.COSIGN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts
+          ( cd .artifacts && cosign generate-key-pair --yes )
+          cosign version || true
+          cosign sign-blob \
+            --key .artifacts/cosign.key \
+            --output-signature .artifacts/control-server.pem.sig \
+            config/certs/control-server.pem
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cosign-artifacts
+          path: .artifacts/*

@@ -19,6 +19,7 @@ coverage/
 .poetry/
 .envrc
 artifacts/
+.artifacts/
 
 # Private keys
 *.key
