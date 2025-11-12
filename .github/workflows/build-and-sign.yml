@@ -8,66 +8,65 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    services:
-      vault:
-        image: hashicorp/vault:1.16
-        ports:
-          - 8200:8200
-        env:
-          VAULT_DEV_ROOT_TOKEN_ID: root
-          VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
-        options: >-
-          --cap-add=IPC_LOCK
-          --health-cmd="wget -qO- http://127.0.0.1:8200/v1/sys/health || exit 1"
-          --health-interval=2s
-          --health-timeout=2s
-          --health-retries=30
+    env:
+      VAULT_ENABLED: ${{ vars.VAULT_ENABLED || 'false' }}
+      VAULT_ADDR: ${{ vars.VAULT_ADDR || 'http://127.0.0.1:8200' }}
+      VAULT_AUTH_METHOD: ${{ vars.VAULT_AUTH_METHOD || 'token' }}
+      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN || vars.VAULT_TOKEN || '' }}
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Wait for Vault
+      - name: Install Vault CLI
+        if: env.VAULT_ENABLED == 'true'
+        uses: hashicorp/setup-vault@v1
+        with:
+          version: '1.16.3'
+
+      - name: Render secrets to files (Vault Agent)
+        if: env.VAULT_ENABLED == 'true'
         env:
-          VAULT_ADDR: http://127.0.0.1:8200
+          VAULT_TOKEN: ${{ env.VAULT_TOKEN }}
         run: |
           set -euo pipefail
-          for i in $(seq 1 60); do
-            if curl -fsS "${VAULT_ADDR}/v1/sys/health" >/dev/null; then
-              echo "Vault is up."
-              exit 0
-            fi
-            sleep 1
-          done
-          echo "Vault failed to start in time." >&2
-          exit 1
+          : "${VAULT_TOKEN:?VAULT_TOKEN must be set when VAULT_ENABLED is true}"
+          mkdir -p .secrets-out
+          cat > agent.hcl <<'HCL'
+          exit_after_auth = true
+          pid_file = "./vault-agent.pid"
 
-      - name: Seed dev secrets (DEV only)
-        if: github.event_name != 'release'
-        env:
-          VAULT_ADDR: http://127.0.0.1:8200
-          VAULT_TOKEN: root
-        run: |
-          curl -fsS -H "X-Vault-Token: ${VAULT_TOKEN}" \
-               -H "Content-Type: application/json" \
-               -X POST \
-               -d '{"data":{"COSIGN_PASSWORD":"dev-pass"}}' \
-               "${VAULT_ADDR}/v1/secret/data/ci/cosign"
+          auto_auth {
+            method "token" {
+              config = {
+                token = "${VAULT_TOKEN}"
+              }
+            }
+            sink "file" {
+              config = {
+                path = "./vault-agent-token"
+              }
+            }
+          }
 
-      - name: Read secrets from Vault
-        uses: hashicorp/vault-action@v2
-        with:
-          url: http://127.0.0.1:8200
-          method: token
-          token: root # dev token; replace with secrets.VAULT_TOKEN in production
-          exportEnv: true
-          secrets: |
-            secret/data/ci/cosign COSIGN_PASSWORD | COSIGN_PASSWORD
+          template {
+            source      = "templates/cosign.hcl.tpl"
+            destination = ".secrets-out/cosign.password"
+          }
+          HCL
+
+          vault agent -config=agent.hcl -once
+          COSIGN_PASSWORD_FILE="${PWD}/.secrets-out/cosign.password"
+          : "$(cat "${COSIGN_PASSWORD_FILE}")"
+          printf 'COSIGN_PASSWORD_FILE=%s\n' "${COSIGN_PASSWORD_FILE}" >> "${GITHUB_ENV}"
+          printf 'COSIGN_PASSWORD=%s\n' "$(cat "${COSIGN_PASSWORD_FILE}")" >> "${GITHUB_ENV}"
+          rm -f agent.hcl vault-agent-token
 
       - name: Install cosign
+        if: env.VAULT_ENABLED == 'true'
         uses: sigstore/cosign-installer@v3.5.0
 
       - name: Generate cosign keys and sign
+        if: env.VAULT_ENABLED == 'true'
         env:
           COSIGN_PASSWORD: ${{ env.COSIGN_PASSWORD }}
         run: |
@@ -83,6 +82,7 @@ jobs:
             config/certs/control-server.pem
 
       - name: Upload artifacts
+        if: env.VAULT_ENABLED == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: cosign-artifacts

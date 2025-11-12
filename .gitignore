@@ -20,6 +20,7 @@ coverage/
 .envrc
 artifacts/
 .artifacts/
+.secrets-out/
 
 # Private keys
 *.key

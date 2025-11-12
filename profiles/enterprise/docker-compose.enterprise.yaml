@@ -44,8 +44,40 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - aion-memory
-      - aion-model-registry
+      aion-memory:
+        condition: service_started
+      aion-model-registry:
+        condition: service_started
+      render-secrets:
+        condition: service_completed_successfully
+    env_file: ../../.env
+    volumes:
+      - secrets:/run/aion-secrets:ro
+
+  render-secrets:
+    image: hashicorp/vault:1.16
+    profiles: ["vault"]
+    env_file: ../../.env
+    command: >-
+      sh -c '
+      mkdir -p /out &&
+      cat >/agent.hcl <<EOF
+      exit_after_auth = true
+      auto_auth {
+        method "token" { config = { token = "${VAULT_TOKEN}" } }
+        sink "file"    { config = { path  = "/tmp/token" } }
+      }
+      template {
+        source      = "/tpl/cosign.hcl.tpl"
+        destination = "/out/cosign.password"
+      }
+      EOF
+      vault agent -config=/agent.hcl -once
+      '
+    volumes:
+      - secrets:/out
+      - ../../templates:/tpl:ro
 
 volumes:
   seal-models:
+  secrets:
