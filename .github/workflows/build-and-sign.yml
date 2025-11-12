@@ -71,11 +71,15 @@ jobs:
           COSIGN_PASSWORD: ${{ env.COSIGN_PASSWORD }}
         run: |
           set -euo pipefail
+          : "${COSIGN_PASSWORD:?COSIGN_PASSWORD is required}"
           mkdir -p .artifacts
-          ( cd .artifacts && cosign generate-key-pair --yes )
-          cosign version || true
-          cosign sign-blob \
+          (
+            cd .artifacts
+            COSIGN_PASSWORD="${COSIGN_PASSWORD}" cosign generate-key-pair --password-env COSIGN_PASSWORD
+          )
+          COSIGN_PASSWORD="${COSIGN_PASSWORD}" cosign sign-blob \
             --key .artifacts/cosign.key \
+            --password-env COSIGN_PASSWORD \
             --output-signature .artifacts/control-server.pem.sig \
             config/certs/control-server.pem
 
