@@ -27,9 +27,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install cosign
-        uses: sigstore/cosign-installer@v3.5.0
-
       - name: Wait for Vault
         env:
           VAULT_ADDR: http://127.0.0.1:8200
@@ -62,24 +59,25 @@ jobs:
         with:
           url: http://127.0.0.1:8200
           method: token
-          token: root
+          token: ${{ secrets.VAULT_TOKEN }}
           exports: |
             COSIGN_PASSWORD: secret/data/ci/cosign data.COSIGN_PASSWORD
 
-      - name: Generate cosign keys and sign blob
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.5.0
+
+      - name: Generate cosign keys and sign
         env:
-          COSIGN_PASSWORD: ${{ env.COSIGN_PASSWORD }}
+          COSIGN_PASSWORD: ${{ env.COSIGN_PASSWORD || secrets.COSIGN_PASSWORD }}
         run: |
           set -euo pipefail
-          : "${COSIGN_PASSWORD:?COSIGN_PASSWORD is required}"
+          : "${COSIGN_PASSWORD:?COSIGN_PASSWORD is empty}"
+
           mkdir -p .artifacts
-          (
-            cd .artifacts
-            COSIGN_PASSWORD="${COSIGN_PASSWORD}" cosign generate-key-pair --password-env COSIGN_PASSWORD
-          )
-          COSIGN_PASSWORD="${COSIGN_PASSWORD}" cosign sign-blob \
+          ( cd .artifacts && cosign generate-key-pair --yes )
+
+          cosign sign-blob \
             --key .artifacts/cosign.key \
-            --password-env COSIGN_PASSWORD \
             --output-signature .artifacts/control-server.pem.sig \
             config/certs/control-server.pem
 
