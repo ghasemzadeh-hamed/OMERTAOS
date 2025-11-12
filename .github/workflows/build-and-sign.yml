@@ -59,16 +59,17 @@ jobs:
         with:
           url: http://127.0.0.1:8200
           method: token
-          token: ${{ secrets.VAULT_TOKEN }}
-          exports: |
-            COSIGN_PASSWORD: secret/data/ci/cosign data.COSIGN_PASSWORD
+          token: root # dev token; replace with secrets.VAULT_TOKEN in production
+          exportEnv: true
+          secrets: |
+            secret/data/ci/cosign data.COSIGN_PASSWORD | COSIGN_PASSWORD
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v3.5.0
 
       - name: Generate cosign keys and sign
         env:
-          COSIGN_PASSWORD: ${{ env.COSIGN_PASSWORD || secrets.COSIGN_PASSWORD }}
+          COSIGN_PASSWORD: ${{ env.COSIGN_PASSWORD }}
         run: |
           set -euo pipefail
           : "${COSIGN_PASSWORD:?COSIGN_PASSWORD is empty}"
