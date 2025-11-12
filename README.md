@@ -1,6 +1,6 @@
-# 🧠 AION-OS (Hybrid AI Platform for Autonomous Agents)
+# 🧠 oMerTaOS AION (Hybrid AI Platform for Autonomous Agents)
 
-AION-OS is a hybrid, modular operating system designed for **building, orchestrating, and scaling intelligent AI agents across bare-metal, virtualized, and web environments.**
+AION is a hybrid, modular operating system designed for **building, orchestrating, and scaling intelligent AI agents across bare-metal, virtualized, and web environments.**
 It unifies kernel-level control, web-based orchestration, and developer SDKs into one cohesive platform — enabling seamless integration between Edge, Cloud, and Enterprise deployments.
 
 ---
