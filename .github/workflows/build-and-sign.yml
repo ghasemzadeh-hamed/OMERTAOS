@@ -62,7 +62,7 @@ jobs:
           token: root # dev token; replace with secrets.VAULT_TOKEN in production
           exportEnv: true
           secrets: |
-            secret/data/ci/cosign data.COSIGN_PASSWORD | COSIGN_PASSWORD
+            secret/data/ci/cosign COSIGN_PASSWORD | COSIGN_PASSWORD
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v3.5.0
