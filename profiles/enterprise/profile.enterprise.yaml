@@ -1,0 +1,7 @@
+name: "AION-OS Enterprise"
+description: "Enterprise profile with SEAL-style self-adapting LLM and persistent memory."
+services:
+  - aion-gateway
+  - aion-memory
+  - aion-model-registry
+  - aion-seal-adapter

@@ -1,0 +1,10 @@
+metrics:
+  throughput:
+    description: Average number of cases completed per interval
+    unit: cases/minute
+  latency:
+    description: Average time between activity start and completion
+    unit: milliseconds
+  error_rate:
+    description: Percentage of cases ending with failure status
+    unit: percent

@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  aion-memory:
+    build: ../../services/aion-memory
+    container_name: aion-memory
+    environment:
+      - AION_MEMORY_DB_URL=sqlite:///./aion_memory.db
+    ports:
+      - "8080:8080"
+
+  aion-model-registry:
+    build: ../../services/aion-model-registry
+    container_name: aion-model-registry
+    environment:
+      - AION_MODEL_REGISTRY_DB_URL=sqlite:///./aion_model_registry.db
+    ports:
+      - "8081:8081"
+    depends_on:
+      - aion-memory
+
+  aion-seal-adapter:
+    build: ../../services/aion-seal-adapter
+    container_name: aion-seal-adapter
+    environment:
+      - AION_MEMORY_URL=http://aion-memory:8080
+      - AION_MODEL_REGISTRY_URL=http://aion-model-registry:8081
+      - AION_BASE_MODEL_NAME=aion-base
+      - AION_SEAL_OUTPUT_DIR=/models
+    volumes:
+      - seal-models:/models
+    depends_on:
+      - aion-memory
+      - aion-model-registry
+
+  aion-gateway:
+    build:
+      context: ../..
+      dockerfile: services/aion-gateway/Dockerfile
+    container_name: aion-gateway
+    environment:
+      - AION_MODEL_REGISTRY_URL=http://aion-model-registry:8081
+      - AION_MEMORY_URL=http://aion-memory:8080
+    ports:
+      - "8000:8000"
+    depends_on:
+      - aion-memory
+      - aion-model-registry
+
+volumes:
+  seal-models:

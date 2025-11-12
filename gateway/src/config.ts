@@ -32,6 +32,12 @@ export interface GatewayConfig {
   controlGrpcEndpoint: string;
   controlBaseUrl: string;
   redisUrl: string;
+  selfEvolving: {
+    enabled: boolean;
+    modelRegistryUrl: string;
+    memoryUrl: string;
+    defaultChannel: string;
+  };
   apiKeys: Record<string, { roles: string[]; tenant?: string }>;
   jwtPublicKey: string | undefined;
   corsOrigins: string[];
@@ -331,6 +337,14 @@ export async function buildGatewayConfig(): Promise<GatewayConfig> {
     controlGrpcEndpoint: process.env.AION_CONTROL_GRPC || 'control:50051',
     controlBaseUrl: process.env.AION_CONTROL_BASE || 'http://control:8000',
     redisUrl: process.env.AION_REDIS_URL || 'redis://redis:6379',
+    selfEvolving: {
+      enabled:
+        process.env.AION_SELF_EVOLVING_ENABLED !== 'false' &&
+        process.env.AION_SELF_EVOLVING_ENABLED !== '0',
+      modelRegistryUrl: process.env.AION_MODEL_REGISTRY_URL || 'http://aion-model-registry:8081',
+      memoryUrl: process.env.AION_MEMORY_URL || 'http://aion-memory:8080',
+      defaultChannel: process.env.AION_SELF_EVOLVING_CHANNEL || 'enterprise',
+    },
     apiKeys,
     jwtPublicKey,
     corsOrigins: cors.origins,

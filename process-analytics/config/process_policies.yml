@@ -1,0 +1,15 @@
+policies:
+  default:
+    objectives:
+      - minimize_latency
+      - maximize_throughput
+    constraints:
+      max_concurrent_cases: 100
+      max_error_rate: 0.05
+  high_priority:
+    objectives:
+      - minimize_risk
+      - maximize_success_probability
+    constraints:
+      max_concurrent_cases: 20
+      max_error_rate: 0.02
