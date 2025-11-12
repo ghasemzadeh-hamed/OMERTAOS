@@ -11,6 +11,7 @@ Use [`quickstart.md`](quickstart.md) for a guided ten-step launch path across IS
 Mode-specific instructions live under [`install/`](install):
 
 - [`install/iso.md`](install/iso.md) - build and boot the kiosk ISO, including offline cache support.
+- [`install/enterprise_iso_profile.md`](install/enterprise_iso_profile.md) - preconfigure the kiosk ISO for the enterprise profile and SEAL memory stack.
 - [`install/native.md`](install/native.md) - run the installer bridge on an existing Ubuntu host.
 - [`install/wsl.md`](install/wsl.md) - bring the stack to Windows via WSL without touching disks.
 - [`install/docker.md`](install/docker.md) - compose services for local or CI-driven clusters.

@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 import hvac
+from hvac import exceptions as hvac_exceptions
 import requests
 try:
     from cryptography import x509
@@ -27,14 +28,16 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DOT_VAULT = REPO_ROOT / ".vault"
 UNSEAL_FILE = DOT_VAULT / "dev-unseal.json"
 ENV_FILE = REPO_ROOT / ".env.vault.dev"
-HOST_VAULT_ADDR = (
-    os.environ.get("AION_VAULT_ADDR_HOST")
+EXTERNAL_VAULT_ADDR = (
+    os.environ.get("VAULT_ADDR")
     or os.environ.get("AION_VAULT_ADDR")
-    or "http://127.0.0.1:8200"
+    or os.environ.get("AION_VAULT_ADDR_HOST")
 )
+HOST_VAULT_ADDR = os.environ.get("AION_VAULT_ADDR_HOST") or "http://127.0.0.1:8200"
 ENV_VAULT_ADDR = os.environ.get("AION_VAULT_ADDR_CONTAINER", "http://vault:8200")
 VAULT_KV_MOUNT = os.environ.get("AION_VAULT_KV_MOUNT", "secret")
 AION_ENV = os.environ.get("AION_ENV", "dev")
+DEFAULT_VAULT_TOKEN = os.environ.get("VAULT_TOKEN") or os.environ.get("AION_VAULT_TOKEN")
 
 DEV_POLICY_NAME = "aionos-dev"
 BASE_DEV_SECRETS: Dict[str, Dict[str, Any]] = {
@@ -61,6 +64,7 @@ BASE_DEV_SECRETS: Dict[str, Dict[str, Any]] = {
     },
     "secret/data/aionos/dev/gateway-api-keys": {
         "data": {"dev-key": "admin"}
+    },
 }
 
 
@@ -91,6 +95,23 @@ def wait_for_vault(url: str, timeout: float = 60.0) -> None:
             return
         time.sleep(1)
     raise TimeoutError(f"Vault at {url} did not become reachable within {timeout} seconds")
+
+
+def check_existing_vault(addr: str, token: str | None) -> hvac.Client | None:
+    """Return an authenticated client if an external Vault is reachable."""
+
+    if not token:
+        return None
+    client = hvac.Client(url=addr, token=token)
+    try:
+        health = client.sys.read_health_status(method="GET")
+    except (hvac_exceptions.HVACError, requests.RequestException):
+        return None
+    if bool(health.get("sealed")):
+        return None
+    if not client.is_authenticated():
+        return None
+    return client
 
 
 def initialise_and_unseal(client: hvac.Client) -> Dict[str, str]:
@@ -268,12 +289,12 @@ def generate_tls_materials() -> Dict[str, Dict[str, Any]]:
     }
 
 
-def write_env_file(token: str) -> None:
+def write_env_file(token: str, *, addr: str, mount: str = VAULT_KV_MOUNT, env: str = AION_ENV) -> None:
     lines = [
-        f"AION_VAULT_ADDR={ENV_VAULT_ADDR}",
-        f"AION_VAULT_KV_MOUNT={VAULT_KV_MOUNT}",
+        f"AION_VAULT_ADDR={addr}",
+        f"AION_VAULT_KV_MOUNT={mount}",
         f"AION_VAULT_TOKEN={token}",
-        f"AION_ENV={AION_ENV}",
+        f"AION_ENV={env}",
     ]
     ENV_FILE.write_text("\n".join(lines) + "\n")
     os.chmod(ENV_FILE, 0o600)
@@ -281,6 +302,23 @@ def write_env_file(token: str) -> None:
 
 def main() -> None:
     print("[vault-bootstrap] Starting Vault dev bootstrap")
+    if EXTERNAL_VAULT_ADDR:
+        client = check_existing_vault(EXTERNAL_VAULT_ADDR, DEFAULT_VAULT_TOKEN)
+    else:
+        client = None
+    if client:
+        print("[vault-bootstrap] Found active Vault via environment configuration; skipping dev bootstrap")
+        if not EXTERNAL_VAULT_ADDR:
+            raise SystemExit("VAULT_ADDR must be set when providing an external Vault token")
+        if DEFAULT_VAULT_TOKEN is None:
+            raise SystemExit("VAULT_TOKEN must be set to reuse an external Vault")
+        write_env_file(
+            DEFAULT_VAULT_TOKEN,
+            addr=EXTERNAL_VAULT_ADDR,
+        )
+        print(f"[vault-bootstrap] Wrote environment configuration to {ENV_FILE.relative_to(REPO_ROOT)}")
+        return
+
     run_compose()
     wait_for_vault(HOST_VAULT_ADDR)
 
@@ -304,7 +342,7 @@ def main() -> None:
     dev_secrets.update(generate_tls_materials())
     seed_dev_secrets(client, dev_secrets)
     dev_token = ensure_dev_token(client)
-    write_env_file(dev_token)
+    write_env_file(dev_token, addr=ENV_VAULT_ADDR)
 
     print(f"[vault-bootstrap] Wrote development token to {ENV_FILE.relative_to(REPO_ROOT)}")
     print("[vault-bootstrap] Store generated TLS material securely and replace placeholders in Vault.")

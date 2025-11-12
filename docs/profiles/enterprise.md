@@ -20,3 +20,4 @@ The enterprise profile includes the full MLOps stack, directory integration, and
 1. Configure LDAP details in `/etc/ldap/ldap.conf` and restart related services.
 2. Deploy Kubernetes manifests or connect to your cluster using the generated kubeconfig.
 3. Review `/var/log/aionos-firstboot.log` for audit entries and confirm `auditd` is active.
+4. For kiosk ISO deployments, follow [`install/enterprise_iso_profile.md`](../install/enterprise_iso_profile.md) to ensure the SEAL memory stack comes online at first boot.
