@@ -2,7 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { SecretProvider, SecretProviderError } from '@aionos/secret-provider';
+import {
+  SecretProvider,
+  SecretProviderError,
+} from '../../shared/secret-provider-node/index.js';
 import { config } from 'dotenv';
 
 const inferredEnvFiles = new Set<string>();
