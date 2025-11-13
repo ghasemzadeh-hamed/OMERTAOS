@@ -93,49 +93,16 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.5.0
 
-      - name: Install Vault CLI
+      - name: Read secrets from Vault
         if: env.VAULT_ENABLED == 'true'
-        uses: eLco/setup-vault@v1
+        uses: hashicorp/vault-action@v3
         with:
-          vault_version: '1.16.3'
-
-      - name: Render secrets to files (Vault Agent)
-        if: env.VAULT_ENABLED == 'true'
-        env:
-          VAULT_TOKEN: ${{ env.VAULT_TOKEN }}
-        run: |
-          set -euo pipefail
-          : "${VAULT_TOKEN:?VAULT_TOKEN must be set when VAULT_ENABLED is true}"
-          mkdir -p .secrets-out
-          cat > agent.hcl <<'HCL'
-          exit_after_auth = true
-          pid_file = "./vault-agent.pid"
-
-          auto_auth {
-            method "token" {
-              config = {
-                token = "${VAULT_TOKEN}"
-              }
-            }
-            sink "file" {
-              config = {
-                path = "./vault-agent-token"
-              }
-            }
-          }
-
-          template {
-            source      = "templates/cosign.hcl.tpl"
-            destination = ".secrets-out/cosign.password"
-          }
-          HCL
-
-          vault agent -config=agent.hcl -once
-          COSIGN_PASSWORD_FILE="${PWD}/.secrets-out/cosign.password"
-          : "$(cat "${COSIGN_PASSWORD_FILE}")"
-          printf 'COSIGN_PASSWORD_FILE=%s\n' "${COSIGN_PASSWORD_FILE}" >> "${GITHUB_ENV}"
-          printf 'COSIGN_PASSWORD=%s\n' "$(cat "${COSIGN_PASSWORD_FILE}")" >> "${GITHUB_ENV}"
-          rm -f agent.hcl vault-agent-token
+          url: ${{ env.VAULT_ADDR }}
+          method: token
+          token: ${{ env.VAULT_TOKEN }}
+          exportEnv: true
+          secrets: |
+            secret/data/ci/cosign COSIGN_PASSWORD | COSIGN_PASSWORD
 
       - name: Verify policy bundles
         run: ./deploy/bundles/verify.sh
