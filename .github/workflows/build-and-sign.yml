@@ -1,0 +1,56 @@
+name: build-and-sign
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      VAULT_ENABLED: ${{ vars.VAULT_ENABLED || 'false' }}
+      VAULT_ADDR: ${{ vars.VAULT_ADDR || 'http://127.0.0.1:8200' }}
+      VAULT_AUTH_METHOD: ${{ vars.VAULT_AUTH_METHOD || 'token' }}
+      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN || vars.VAULT_TOKEN || '' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read secrets from Vault
+        if: env.VAULT_ENABLED == 'true'
+        uses: hashicorp/vault-action@v3
+        with:
+          url: ${{ env.VAULT_ADDR }}
+          method: token
+          token: ${{ env.VAULT_TOKEN }}
+          exportEnv: true
+          secrets: |
+            secret/data/ci/cosign COSIGN_PASSWORD | COSIGN_PASSWORD
+
+      - name: Install cosign
+        if: env.VAULT_ENABLED == 'true'
+        uses: sigstore/cosign-installer@v3.5.0
+
+      - name: Generate cosign keys and sign
+        if: env.VAULT_ENABLED == 'true'
+        env:
+          COSIGN_PASSWORD: ${{ env.COSIGN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          : "${COSIGN_PASSWORD:?COSIGN_PASSWORD is empty}"
+
+          mkdir -p .artifacts
+          ( cd .artifacts && cosign generate-key-pair --yes )
+
+          cosign sign-blob \
+            --key .artifacts/cosign.key \
+            --output-signature .artifacts/control-server.pem.sig \
+            config/certs/control-server.pem
+
+      - name: Upload artifacts
+        if: env.VAULT_ENABLED == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cosign-artifacts
+          path: .artifacts/*
