@@ -19,9 +19,9 @@ jobs:
 
       - name: Install Vault CLI
         if: env.VAULT_ENABLED == 'true'
-        uses: hashicorp/setup-vault@v1
+        uses: eLco/setup-vault@v1
         with:
-          version: '1.16.3'
+          vault_version: '1.16.3'
 
       - name: Render secrets to files (Vault Agent)
         if: env.VAULT_ENABLED == 'true'
