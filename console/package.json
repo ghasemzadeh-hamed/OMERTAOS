@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "postinstall": "node ./scripts/run-prisma-generate.cjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -11,6 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "playwright:test": "playwright test",
+    "prisma:generate": "node ./scripts/run-prisma-generate.cjs",
+    "prisma:migrate": "prisma migrate deploy",
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
