@@ -1,17 +1,15 @@
-# Stage 1: install deps with pnpm
+# Stage 1: install dependencies with pnpm
 FROM node:20-alpine AS deps
 
 WORKDIR /workspace
 
-# Enable pnpm via corepack
+# Enable pnpm via corepack so the image uses the same package manager version
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy the console manifest and the local file dependencies it relies on
+# Copy the console manifest and the local workspace packages it depends on
 COPY console/package.json console/pnpm-lock.yaml ./console/
 COPY shared/secret-provider-node ./shared/secret-provider-node
-COPY packages/ui-core/package.json ./packages/ui-core/package.json
-COPY packages/ui-core/index.ts ./packages/ui-core/index.ts
-COPY packages/ui-core/src ./packages/ui-core/src
+COPY packages/ui-core ./packages/ui-core
 
 WORKDIR /workspace/console
 
@@ -29,18 +27,17 @@ COPY --from=deps /workspace/console/node_modules ./console/node_modules
 # Copy full source and shared packages required for build-time steps
 COPY console/. ./console
 COPY shared/secret-provider-node ./shared/secret-provider-node
-COPY packages/ui-core/package.json ./packages/ui-core/package.json
-COPY packages/ui-core/index.ts ./packages/ui-core/index.ts
-COPY packages/ui-core/src ./packages/ui-core/src
+COPY packages/ui-core ./packages/ui-core
 
 WORKDIR /workspace/console
 
 # Provide Prisma with a safe build-time DATABASE_URL so it can emit the client without
-# reaching a real service. The value defaults to a local Postgres-style placeholder and
-# runtime deployments are still expected to override DATABASE_URL via environment config.
+# talking to a live database. Runtime deployments still override DATABASE_URL via their
+# own environment configuration (docker-compose, k8s secrets, etc.).
 ARG PRISMA_DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public"
-RUN DATABASE_URL="$PRISMA_DATABASE_URL" pnpm prisma generate
+ENV DATABASE_URL=${PRISMA_DATABASE_URL}
 
+RUN pnpm prisma generate
 RUN pnpm build
 RUN pnpm prune --prod
 
