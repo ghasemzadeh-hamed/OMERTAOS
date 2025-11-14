@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Dict
 
 VAULT_ADDR = os.environ.get("VAULT_ADDR", "http://127.0.0.1:8200").rstrip("/")
-ROOT_TOKEN = os.environ.get("VAULT_DEV_ROOT_TOKEN_ID", "aionos-dev-root")
+ROOT_TOKEN = os.environ.get("VAULT_TOKEN") or os.environ.get("VAULT_DEV_ROOT_TOKEN_ID", "aionos-dev-root")
 KV_MOUNT = os.environ.get("VAULT_KV_MOUNT", "secret").strip("/")
 WAIT_SECONDS = float(os.environ.get("VAULT_WAIT_SECONDS", "120"))
 DEV_CERT_DIR = Path(os.environ.get("AION_DEV_CERT_DIR", "config/certs/dev"))
@@ -114,7 +114,7 @@ def wait_for_vault() -> None:
 
     deadline = time.monotonic() + WAIT_SECONDS
     health_url = f"{VAULT_ADDR}/v1/sys/health"
-    allowed = {200, 204, 429, 472, 473}
+    allowed = {200, 204, 429, 472, 473, 501}
     while time.monotonic() < deadline:
         try:
             with urllib.request.urlopen(health_url, timeout=2) as response:

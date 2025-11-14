@@ -121,36 +121,50 @@ jobs:
         if: env.VAULT_ENABLED != 'true'
         run: python scripts/generate_dev_certs.py
 
-      - name: Compose up (stack)
+      - name: Compose up infrastructure
         run: |
           set -euo pipefail
 
           echo "### Effective docker-compose config"
           docker compose config
 
-          echo "### Bringing up core stack (db + infra + control + gateway + console)..."
+          echo "### Bringing up core infrastructure (db + queue + storage + vault)..."
           docker compose up -d --build \
             postgres \
             redis \
             qdrant \
             minio \
-            vault \
-            control \
-            gateway \
-            console
+            vault
 
-          echo "### Docker compose ps"
+          echo "### Infrastructure status"
           docker compose ps
 
-          echo "### Recent logs for critical services"
-          docker compose logs --tail=80 postgres redis qdrant minio vault control gateway console || true
+          echo "### Recent infrastructure logs"
+          docker compose logs --tail=80 postgres redis qdrant minio vault || true
 
       - name: Bootstrap development Vault
         if: env.VAULT_ENABLED != 'true'
         env:
           VAULT_ADDR: http://127.0.0.1:8200
           VAULT_DEV_ROOT_TOKEN_ID: aionos-dev-root
+          VAULT_TOKEN: aionos-dev-root
         run: python scripts/bootstrap_vault_dev.py
+
+      - name: Compose up application services
+        run: |
+          set -euo pipefail
+
+          echo "### Bringing up application services (control + gateway + console)..."
+          docker compose up -d --build \
+            control \
+            gateway \
+            console
+
+          echo "### Application status"
+          docker compose ps
+
+          echo "### Recent application logs"
+          docker compose logs --tail=80 control gateway console || true
 
       - name: Run smoke test
         run: ./scripts/smoke_e2e.sh
