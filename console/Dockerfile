@@ -8,7 +8,7 @@ ENV SKIP_PRISMA_GENERATE=true
 COPY console/package*.json ./
 COPY console/scripts ./scripts
 
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 # -----------------------------------------------------------------------------
 
