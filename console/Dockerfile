@@ -35,8 +35,12 @@ COPY packages/ui-core/src ./packages/ui-core/src
 
 WORKDIR /workspace/console
 
-# Generate Prisma client and build the Next.js app
-RUN pnpm prisma generate
+# Provide Prisma with a safe build-time DATABASE_URL so it can emit the client without
+# reaching a real service. The value defaults to a local Postgres-style placeholder and
+# runtime deployments are still expected to override DATABASE_URL via environment config.
+ARG PRISMA_DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public"
+RUN DATABASE_URL="$PRISMA_DATABASE_URL" pnpm prisma generate
+
 RUN pnpm build
 RUN pnpm prune --prod
 
