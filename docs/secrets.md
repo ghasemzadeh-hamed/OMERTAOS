@@ -71,6 +71,22 @@ freshly-created development CA before exposing services.
 > Python packages. Install them via `pip install hvac cryptography requests` if they are
 > not already available in your environment.
 
+## Bootstrap without Vault
+
+When `VAULT_ENABLED=false` the installation tooling generates **ephemeral bootstrap
+certificates** so services can start with TLS enabled before Vault provisions the real
+material. Running `install.sh` (or `scripts/quicksetup.sh`) performs the following steps:
+
+1. Ensures `config/certs/bootstrap/` exists and is ignored by Git.
+2. Generates a short-lived certificate authority plus client/server certificates using
+   OpenSSL. The validity window defaults to three days and can be overridden via
+   `AION_BOOTSTRAP_CERT_DAYS`.
+3. Records the generation timestamp in `config/certs/bootstrap/.generated`.
+
+The generated files are intentionally transient—replace them with Vault-managed
+certificates immediately after Vault is initialised. Deleting the `.generated` marker and
+re-running the installer regenerates fresh bootstrap material if needed.
+
 ## Production and HCP Vault
 
 For production deployments the same configuration applies. Provision a Vault cluster with

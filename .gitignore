@@ -27,3 +27,9 @@ artifacts/
 *.key
 *-key.pem
 .vault/
+
+# Generated bootstrap certificates
+config/certs/bootstrap/*.pem
+config/certs/bootstrap/*.key
+config/certs/bootstrap/*.csr
+config/certs/bootstrap/*.srl

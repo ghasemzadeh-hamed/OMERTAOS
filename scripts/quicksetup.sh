@@ -10,8 +10,9 @@ ENV_LIB="${LIB_DIR}/env.sh"
 CONFIG_LIB="${LIB_DIR}/config.sh"
 DOCKER_LIB="${LIB_DIR}/docker.sh"
 PREFLIGHT_LIB="${LIB_DIR}/preflight.sh"
+CERTS_LIB="${LIB_DIR}/certs.sh"
 
-for lib in "${COMMON_LIB}" "${ENV_LIB}" "${CONFIG_LIB}" "${DOCKER_LIB}" "${PREFLIGHT_LIB}"; do
+for lib in "${COMMON_LIB}" "${ENV_LIB}" "${CONFIG_LIB}" "${DOCKER_LIB}" "${PREFLIGHT_LIB}" "${CERTS_LIB}"; do
   if [[ ! -f "${lib}" ]]; then
     echo "[ERROR] Required library '${lib}' is missing." >&2
     exit 1
@@ -28,6 +29,8 @@ source "${CONFIG_LIB}"
 source "${DOCKER_LIB}"
 # shellcheck source=lib/preflight.sh
 source "${PREFLIGHT_LIB}"
+# shellcheck source=lib/certs.sh
+source "${CERTS_LIB}"
 
 PROFILE=""
 PROFILE_OPTION=""
@@ -279,6 +282,7 @@ main() {
   update_env_profile "${ROOT_DIR}" "${PROFILE}" "${TELEMETRY_OPT_IN}" "${TELEMETRY_ENDPOINT}" "${POLICY_DIR}" "${VOLUME_ROOT}"
   write_profile_metadata "${ROOT_DIR}" "${PROFILE}"
   ensure_config_file "${ROOT_DIR}" "${TELEMETRY_OPT_IN}" "${TELEMETRY_ENDPOINT}" "${POLICY_DIR}" "${VOLUME_ROOT}"
+  ensure_ephemeral_certs "${ROOT_DIR}"
   bring_up_stack "${ROOT_DIR}" "${COMPOSE_FILE}"
   install_ollama_model
   print_summary

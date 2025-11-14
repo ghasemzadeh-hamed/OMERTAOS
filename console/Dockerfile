@@ -31,6 +31,11 @@ COPY packages/ui-core ./packages/ui-core
 
 WORKDIR /workspace/console
 
+# Ensure the public directory exists so the runtime stage can copy it even when
+# the application does not ship static assets. This avoids COPY failures on CI
+# when the folder is absent from the source tree.
+RUN mkdir -p public
+
 # Provide Prisma with a safe build-time DATABASE_URL so it can emit the client without
 # talking to a live database. Runtime deployments still override DATABASE_URL via their
 # own environment configuration (docker-compose, k8s secrets, etc.).
