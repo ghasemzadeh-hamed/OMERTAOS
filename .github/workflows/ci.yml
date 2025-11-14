@@ -117,11 +117,9 @@ jobs:
             --output-signature .artifacts/control-server.pem.sig \
             config/certs/control-server.pem
 
-      - name: Bootstrap development Vault
-        if: env.VAULT_ENABLED == 'true'
-        run: |
-          scripts/bootstrap_vault_dev.py
-          cat .env.vault.dev >> $GITHUB_ENV
+      - name: Generate development certificates
+        if: env.VAULT_ENABLED != 'true'
+        run: python scripts/generate_dev_certs.py
 
       - name: Compose up (stack)
         run: |
@@ -146,6 +144,13 @@ jobs:
 
           echo "### Recent logs for critical services"
           docker compose logs --tail=80 postgres redis qdrant minio vault control gateway console || true
+
+      - name: Bootstrap development Vault
+        if: env.VAULT_ENABLED != 'true'
+        env:
+          VAULT_ADDR: http://127.0.0.1:8200
+          VAULT_DEV_ROOT_TOKEN_ID: aionos-dev-root
+        run: python scripts/bootstrap_vault_dev.py
 
       - name: Run smoke test
         run: ./scripts/smoke_e2e.sh

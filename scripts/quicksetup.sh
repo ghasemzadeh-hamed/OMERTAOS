@@ -283,6 +283,11 @@ main() {
   write_profile_metadata "${ROOT_DIR}" "${PROFILE}"
   ensure_config_file "${ROOT_DIR}" "${TELEMETRY_OPT_IN}" "${TELEMETRY_ENDPOINT}" "${POLICY_DIR}" "${VOLUME_ROOT}"
   ensure_ephemeral_certs "${ROOT_DIR}"
+  if command_exists python3; then
+    python3 "${SCRIPT_DIR}/generate_dev_certs.py" || log_warn "Development certificate generation failed"
+  else
+    log_warn "python3 not found; skipping development certificate generation"
+  fi
   bring_up_stack "${ROOT_DIR}" "${COMPOSE_FILE}"
   install_ollama_model
   print_summary

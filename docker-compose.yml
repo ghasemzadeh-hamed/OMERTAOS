@@ -1,38 +1,24 @@
 services:
   vault:
-    image: hashicorp/vault:1.16
+    image: hashicorp/vault:1.17
     container_name: aionos-vault
-    environment:
-      VAULT_LOCAL_CONFIG: |
-        {
-          "disable_mlock": true,
-          "ui": true,
-          "listener": [
-            {
-              "tcp": {
-                "address": "0.0.0.0:8200",
-                "tls_disable": 1
-              }
-            }
-          ],
-          "storage": {
-            "raft": {
-              "path": "/vault/data"
-            }
-          }
-        }
-    command: vault server -config=/vault/config/local.json
+    restart: unless-stopped
     cap_add:
       - IPC_LOCK
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_DEV_ROOT_TOKEN_ID:-aionos-dev-root}
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    command: >-
+      server -dev
+      -dev-root-token-id=${VAULT_DEV_ROOT_TOKEN_ID:-aionos-dev-root}
+      -dev-listen-address=0.0.0.0:8200
     ports:
       - "8200:8200"
     healthcheck:
-      test: ["CMD", "vault", "status", "-format=json"]
-      interval: 10s
-      timeout: 10s
-      retries: 12
-    volumes:
-      - vault-data:/vault/data
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8200/v1/sys/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     networks: [aionos]
 
   postgres:
@@ -116,7 +102,7 @@ services:
       redis:
         condition: service_healthy
       qdrant:
-        condition: service_started
+        condition: service_healthy
       minio:
         condition: service_healthy
       vault:

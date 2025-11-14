@@ -36,3 +36,9 @@ config/certs/bootstrap/*.pem
 config/certs/bootstrap/*.key
 config/certs/bootstrap/*.csr
 config/certs/bootstrap/*.srl
+# Generated development certificates
+config/certs/dev/*.pem
+config/certs/dev/*.key
+config/certs/dev/*.csr
+config/certs/dev/*.srl
+config/certs/dev/.generated

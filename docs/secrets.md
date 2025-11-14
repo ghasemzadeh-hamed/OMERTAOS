@@ -45,31 +45,31 @@ services. For example, the database secret should contain:
 
 ## Local development
 
-A helper script bootstraps a Vault dev cluster with integrated Raft storage, enables the
-`secret/` KV engine, seeds development secrets and provisions a scoped token:
+`scripts/bootstrap_vault_dev.py` prepares a Vault dev server that already runs in
+`-dev` mode (as defined in `docker-compose.yml`). It waits for the container to become
+healthy, ensures the `secret/` KV engine is enabled and seeds deterministic development
+secrets required by the services during smoke tests:
 
 ```bash
-scripts/bootstrap_vault_dev.py
+python scripts/bootstrap_vault_dev.py
 ```
 
-The script starts the `vault` service defined in `docker-compose.yml`, initialises and
-unseals it (storing the unseal key under `.vault/dev-unseal.json`), generates a fresh
-development certificate authority and service certificates, seeds Vault with those
-artifacts and writes a reusable development token to `.env.vault.dev`. Source that file
-alongside your regular `.env` before running the stack:
+The script is idempotent and depends only on the Vault dev root token. Secrets are
+written under `secret/data/aionos/dev/*`, so services that read the default secret paths
+work out of the box once Docker Compose finishes bringing up the stack.
+
+### Development certificates when Vault is disabled
+
+When running the platform with `VAULT_ENABLED=false`, generate short-lived TLS material
+via:
 
 ```bash
-source .env
-source .env.vault.dev
-docker compose up -d
+python scripts/generate_dev_certs.py
 ```
 
-Replace the placeholder TLS certificates inside Vault with material generated from the
-freshly-created development CA before exposing services.
-
-> **Note**: The bootstrap script depends on the `hvac`, `cryptography` and `requests`
-> Python packages. Install them via `pip install hvac cryptography requests` if they are
-> not already available in your environment.
+The helper stores self-signed certificates in `config/certs/dev/` (ignored by Git). These
+artifacts allow the services to negotiate TLS and mTLS until Vault provisions managed
+certificates. Remove the directory or the `.generated` marker to force regeneration.
 
 ## Bootstrap without Vault
 
