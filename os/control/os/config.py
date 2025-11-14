@@ -8,6 +8,13 @@ from pydantic_settings import BaseSettings
 from os.secrets import SecretProvider, SecretProviderError, get_secret_provider
 
 
+def _normalize_boolean(value: str | None) -> bool:
+    if value is None:
+        return False
+    normalised = value.strip().lower()
+    return normalised in {"1", "true", "yes", "on"}
+
+
 def _build_postgres_dsn(payload: Dict[str, Any]) -> str:
     username = payload.get("username") or payload.get("user")
     password = payload.get("password")
@@ -74,9 +81,14 @@ class Settings(BaseSettings):
 
     def initialise_secrets(self, provider: SecretProvider | None = None) -> None:
         disable_env = os.getenv("AION_CONTROL_DISABLE_SECRETS")
-        disable_secrets = disable_env == "1" or (
-            disable_env is None and not os.getenv("AION_VAULT_ADDR")
-        )
+        if disable_env is not None:
+            disable_secrets = disable_env == "1"
+        else:
+            vault_enabled_raw = os.getenv("AION_VAULT_ENABLED") or os.getenv("VAULT_ENABLED")
+            if vault_enabled_raw is not None:
+                disable_secrets = not _normalize_boolean(vault_enabled_raw)
+            else:
+                disable_secrets = not os.getenv("AION_VAULT_ADDR")
 
         if disable_secrets:
             self._postgres_dsn = os.getenv(

@@ -4,8 +4,23 @@ export interface ConsoleSecrets {
   adminToken: string;
 }
 
+const normalizeBoolean = (value: string | undefined): boolean => {
+  if (!value) {
+    return false;
+  }
+  const normalised = value.trim().toLowerCase();
+  return normalised === '1' || normalised === 'true' || normalised === 'yes' || normalised === 'on';
+};
+
 let secretProvider: SecretProvider | null = null;
-if (process.env.AION_VAULT_ADDR || process.env.VAULT_ADDR) {
+const vaultEnabledRaw =
+  process.env.AION_VAULT_ENABLED ?? process.env.VAULT_ENABLED ?? undefined;
+const vaultEnabled =
+  vaultEnabledRaw !== undefined
+    ? normalizeBoolean(vaultEnabledRaw)
+    : Boolean(process.env.AION_VAULT_ADDR || process.env.VAULT_ADDR);
+
+if (vaultEnabled) {
   try {
     secretProvider = new SecretProvider({});
   } catch (error) {

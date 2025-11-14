@@ -12,9 +12,9 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     env:
-      VAULT_ENABLED: ${{ vars.VAULT_ENABLED || 'false' }}
-      VAULT_ADDR: ${{ vars.VAULT_ADDR || 'http://127.0.0.1:8200' }}
-      VAULT_AUTH_METHOD: ${{ vars.VAULT_AUTH_METHOD || 'token' }}
+      VAULT_ENABLED: 'false'
+      VAULT_ADDR: 'http://127.0.0.1:8200'
+      VAULT_AUTH_METHOD: 'token'
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN || vars.VAULT_TOKEN || '' }}
       AION_GATEWAY_API_KEYS: demo-key:admin|manager
     steps:
@@ -128,22 +128,26 @@ jobs:
           echo "### Effective docker-compose config"
           docker compose config
 
-          echo "### Bringing up core infrastructure (db + queue + storage + vault)..."
-          docker compose up -d --build \
-            postgres \
-            redis \
-            qdrant \
-            minio \
-            vault
+          INFRA_SERVICES="postgres redis qdrant minio"
+          if [ "${VAULT_ENABLED}" = "true" ]; then
+            INFRA_SERVICES="${INFRA_SERVICES} vault"
+            echo "### Bringing up core infrastructure (db + queue + storage + vault)..."
+          else
+            echo "### Bringing up core infrastructure (db + queue + storage)..."
+          fi
+
+          # shellcheck disable=SC2086 -- service list is intentionally expanded
+          docker compose up -d --build ${INFRA_SERVICES}
 
           echo "### Infrastructure status"
           docker compose ps
 
           echo "### Recent infrastructure logs"
-          docker compose logs --tail=80 postgres redis qdrant minio vault || true
+          # shellcheck disable=SC2086 -- service list is intentionally expanded
+          docker compose logs --tail=80 ${INFRA_SERVICES} || true
 
       - name: Bootstrap development Vault
-        if: env.VAULT_ENABLED != 'true'
+        if: env.VAULT_ENABLED == 'true'
         env:
           VAULT_ADDR: http://127.0.0.1:8200
           VAULT_DEV_ROOT_TOKEN_ID: aionos-dev-root

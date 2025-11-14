@@ -1,5 +1,6 @@
 services:
   vault:
+    profiles: ["vault"]
     image: hashicorp/vault:1.17
     container_name: aionos-vault
     restart: unless-stopped
@@ -114,8 +115,6 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-      vault:
-        condition: service_healthy
     ports:
       - "8000:8000"
       - "50051:50051"
@@ -157,8 +156,6 @@ services:
         condition: service_healthy
       control:
         condition: service_healthy
-      vault:
-        condition: service_healthy
     ports:
       - "8080:8080"
     healthcheck:
@@ -185,8 +182,6 @@ services:
       AION_ENV: ${AION_ENV:-dev}
     depends_on:
       gateway:
-        condition: service_healthy
-      vault:
         condition: service_healthy
     ports:
       - "3000:3000"

@@ -43,12 +43,34 @@ services. For example, the database secret should contain:
 }
 ```
 
+## QuickStart without Vault
+
+The default installation path (including CI) starts with `VAULT_ENABLED=false`. In this
+mode services avoid talking to Vault entirely and instead rely on values written to the
+`.env` file:
+
+- `AION_GATEWAY_API_KEYS` holds comma-separated API key definitions used by the gateway.
+- `AION_ADMIN_TOKEN` provides the shared administrative bearer token for gateway and
+  console.
+- `AION_JWT_PUBLIC_KEY` can store an optional PEM-encoded JWT verification key.
+
+Running `tools/preflight.sh` or `scripts/quicksetup.sh` ensures those keys exist with
+development defaults. TLS material is sourced from the ephemeral certificates under
+`config/certs/bootstrap/` (or `config/certs/dev/` when the development generator runs).
+These files are regenerated on demand and ignored by Git so long-lived credentials are
+never committed.
+
+When ready to migrate to Vault set `VAULT_ENABLED=true` in `.env`, start the Vault service
+(`docker compose --profile vault up -d vault`) and run the bootstrap helper described
+below.
+
 ## Local development
 
 `scripts/bootstrap_vault_dev.py` prepares a Vault dev server that already runs in
 `-dev` mode (as defined in `docker-compose.yml`). It waits for the container to become
 healthy, ensures the `secret/` KV engine is enabled and seeds deterministic development
-secrets required by the services during smoke tests:
+secrets required by the services during smoke tests. Only execute this step after toggling
+`VAULT_ENABLED=true`:
 
 ```bash
 python scripts/bootstrap_vault_dev.py
