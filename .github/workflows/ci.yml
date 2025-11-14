@@ -16,6 +16,7 @@ jobs:
       VAULT_ADDR: ${{ vars.VAULT_ADDR || 'http://127.0.0.1:8200' }}
       VAULT_AUTH_METHOD: ${{ vars.VAULT_AUTH_METHOD || 'token' }}
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN || vars.VAULT_TOKEN || '' }}
+      AION_GATEWAY_API_KEYS: demo-key:admin|manager
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,6 +48,17 @@ jobs:
 
       - name: Run preflight
         run: tools/preflight.sh --noninteractive
+
+      - name: Show generated .env (sanitized)
+        run: |
+          echo "### .env exists?"
+          ls -l .env || echo "NO .env"
+          if [ -f .env ]; then
+            echo "### Preview of .env (without secrets)"
+            sed -e 's/API_KEY=.*/API_KEY=*****/' \
+                -e 's/TOKEN=.*/TOKEN=*****/' \
+                .env | head -n 50
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -106,8 +118,29 @@ jobs:
           scripts/bootstrap_vault_dev.py
           cat .env.vault.dev >> $GITHUB_ENV
 
-      - name: Compose up
-        run: docker compose up -d --build
+      - name: Compose up (stack)
+        run: |
+          set -euo pipefail
+
+          echo "### Effective docker-compose config"
+          docker compose config
+
+          echo "### Bringing up core stack (db + infra + control + gateway + console)..."
+          docker compose up -d --build \
+            postgres \
+            redis \
+            qdrant \
+            minio \
+            vault \
+            control \
+            gateway \
+            console
+
+          echo "### Docker compose ps"
+          docker compose ps
+
+          echo "### Recent logs for critical services"
+          docker compose logs --tail=80 postgres redis qdrant minio vault control gateway console || true
 
       - name: Run smoke test
         run: ./scripts/smoke_e2e.sh
