@@ -5,7 +5,13 @@ import os
 from functools import lru_cache
 from typing import Any, Dict, Mapping, Tuple
 
-import hvac
+try:  # pragma: no cover - optional dependency at runtime
+    import hvac  # type: ignore
+except ModuleNotFoundError as exc:  # pragma: no cover - handled at runtime
+    hvac = None  # type: ignore
+    _IMPORT_ERROR = exc
+else:
+    _IMPORT_ERROR = None
 
 
 class SecretProviderError(RuntimeError):
@@ -23,6 +29,13 @@ class SecretProvider:
         namespace: str | None = None,
         kv_mount: str | None = None,
     ) -> None:
+        if hvac is None:  # pragma: no cover - dependent on packaging
+            message = (
+                "HashiCorp Vault support requires the optional 'hvac' dependency. "
+                "Install it (e.g. 'pip install hvac' or the 'control' extras) or "
+                "set AION_CONTROL_DISABLE_SECRETS=1 to disable Vault integration."
+            )
+            raise SecretProviderError(message) from _IMPORT_ERROR
         self._url = (
             vault_addr
             or os.getenv("AION_VAULT_ADDR")

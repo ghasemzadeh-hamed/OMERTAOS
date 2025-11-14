@@ -163,10 +163,16 @@ jobs:
           echo "### Bringing up application services (control + gateway + console)..."
           COMPOSE="docker compose -f docker-compose.yml -f deploy/compose/compose.ci.override.yml"
 
-          $COMPOSE up -d --build \
+          if ! $COMPOSE up -d --build \
             control \
             gateway \
             console
+          then
+            echo "### docker compose up failed, dumping service status and logs..."
+            $COMPOSE ps || true
+            $COMPOSE logs --tail=200 control gateway console || true
+            exit 1
+          fi
 
           echo "### Application status"
           $COMPOSE ps
