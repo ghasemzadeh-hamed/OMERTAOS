@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "postinstall": "node ./scripts/run-prisma-generate.cjs",
+    "postinstall": "if [ \"$CI\" != \"true\" ]; then npm run prisma:generate; fi",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "playwright:test": "playwright test",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "prisma:generate": "node ./scripts/run-prisma-generate.cjs"
   },
   "dependencies": {
     "@aionos/secret-provider": "file:../shared/secret-provider-node",

@@ -28,7 +28,7 @@ COPY console/src ./src
 
 # Now prisma schema is present, run prisma generate properly
 ENV SKIP_PRISMA_GENERATE=false
-RUN node ./scripts/run-prisma-generate.cjs
+RUN npm run prisma:generate
 
 # Build Next.js app
 RUN npm run build
