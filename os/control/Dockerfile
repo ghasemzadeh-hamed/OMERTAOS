@@ -12,6 +12,10 @@ COPY os/control/pyproject.toml ./pyproject.toml
 COPY os/control/README.md ./README.md
 COPY os/control/aionos_control ./aionos_control
 COPY os ./os
+COPY aion ./aion
+COPY app ./app
+COPY kernel-multitenant ./kernel-multitenant
+COPY profiles ./profiles
 COPY sitecustomize.py ./sitecustomize.py
 
 RUN pip install --upgrade pip setuptools wheel \
