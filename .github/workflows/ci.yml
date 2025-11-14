@@ -78,8 +78,13 @@ jobs:
         run: npm ci
 
       - name: Build console
-        working-directory: console
-        run: npm run build
+        run: |
+          set -euo pipefail
+          echo "### Building aionos-console image"
+          docker build \
+            -t aionos-console:ci \
+            -f console/Dockerfile \
+            .
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.5.0
