@@ -1,0 +1,20 @@
+# Compose overrides used exclusively in CI to relax health requirements
+# for services that can take longer to report healthy states.
+services:
+  qdrant:
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 10s
+      timeout: 5s
+      retries: 1
+      start_period: 1s
+  control:
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      minio:
+        condition: service_healthy

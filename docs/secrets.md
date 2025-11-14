@@ -43,33 +43,71 @@ services. For example, the database secret should contain:
 }
 ```
 
+## QuickStart without Vault
+
+The default installation path (including CI) starts with `VAULT_ENABLED=false`. In this
+mode services avoid talking to Vault entirely and instead rely on values written to the
+`.env` file:
+
+- `AION_GATEWAY_API_KEYS` holds comma-separated API key definitions used by the gateway.
+- `AION_ADMIN_TOKEN` provides the shared administrative bearer token for gateway and
+  console.
+- `AION_JWT_PUBLIC_KEY` can store an optional PEM-encoded JWT verification key.
+
+Running `tools/preflight.sh` or `scripts/quicksetup.sh` ensures those keys exist with
+development defaults. TLS material is sourced from the ephemeral certificates under
+`config/certs/bootstrap/` (or `config/certs/dev/` when the development generator runs).
+These files are regenerated on demand and ignored by Git so long-lived credentials are
+never committed.
+
+When ready to migrate to Vault set `VAULT_ENABLED=true` in `.env`, start the Vault service
+(`docker compose --profile vault up -d vault`) and run the bootstrap helper described
+below.
+
 ## Local development
 
-A helper script bootstraps a Vault dev cluster with integrated Raft storage, enables the
-`secret/` KV engine, seeds development secrets and provisions a scoped token:
+`scripts/bootstrap_vault_dev.py` prepares a Vault dev server that already runs in
+`-dev` mode (as defined in `docker-compose.yml`). It waits for the container to become
+healthy, ensures the `secret/` KV engine is enabled and seeds deterministic development
+secrets required by the services during smoke tests. Only execute this step after toggling
+`VAULT_ENABLED=true`:
 
 ```bash
-scripts/bootstrap_vault_dev.py
+python scripts/bootstrap_vault_dev.py
 ```
 
-The script starts the `vault` service defined in `docker-compose.yml`, initialises and
-unseals it (storing the unseal key under `.vault/dev-unseal.json`), generates a fresh
-development certificate authority and service certificates, seeds Vault with those
-artifacts and writes a reusable development token to `.env.vault.dev`. Source that file
-alongside your regular `.env` before running the stack:
+The script is idempotent and depends only on the Vault dev root token. Secrets are
+written under `secret/data/aionos/dev/*`, so services that read the default secret paths
+work out of the box once Docker Compose finishes bringing up the stack.
+
+### Development certificates when Vault is disabled
+
+When running the platform with `VAULT_ENABLED=false`, generate short-lived TLS material
+via:
 
 ```bash
-source .env
-source .env.vault.dev
-docker compose up -d
+python scripts/generate_dev_certs.py
 ```
 
-Replace the placeholder TLS certificates inside Vault with material generated from the
-freshly-created development CA before exposing services.
+The helper stores self-signed certificates in `config/certs/dev/` (ignored by Git). These
+artifacts allow the services to negotiate TLS and mTLS until Vault provisions managed
+certificates. Remove the directory or the `.generated` marker to force regeneration.
 
-> **Note**: The bootstrap script depends on the `hvac`, `cryptography` and `requests`
-> Python packages. Install them via `pip install hvac cryptography requests` if they are
-> not already available in your environment.
+## Bootstrap without Vault
+
+When `VAULT_ENABLED=false` the installation tooling generates **ephemeral bootstrap
+certificates** so services can start with TLS enabled before Vault provisions the real
+material. Running `install.sh` (or `scripts/quicksetup.sh`) performs the following steps:
+
+1. Ensures `config/certs/bootstrap/` exists and is ignored by Git.
+2. Generates a short-lived certificate authority plus client/server certificates using
+   OpenSSL. The validity window defaults to three days and can be overridden via
+   `AION_BOOTSTRAP_CERT_DAYS`.
+3. Records the generation timestamp in `config/certs/bootstrap/.generated`.
+
+The generated files are intentionally transient-replace them with Vault-managed
+certificates immediately after Vault is initialised. Deleting the `.generated` marker and
+re-running the installer regenerates fresh bootstrap material if needed.
 
 ## Production and HCP Vault
 

@@ -21,9 +21,18 @@ def deep_merge(a: Dict[str, Any], b: Dict[str, Any]) -> Dict[str, Any]:
 def load_profile(name: str, root: str | Path = ".") -> Dict[str, Any]:
     """Load a profile definition, honoring optional inheritance."""
     base_dir = Path(root)
-    profiles_dir = base_dir / "profiles"
-    if not profiles_dir.exists():
-        profiles_dir = base_dir / "config" / "profiles"
+    candidates = [
+        base_dir / "profiles",
+        base_dir / "config" / "profiles",
+        base_dir / "kernel-multitenant" / "profiles",
+    ]
+    profiles_dir = None
+    for candidate in candidates:
+        if (candidate / "kernel.base.yaml").exists():
+            profiles_dir = candidate
+            break
+    if profiles_dir is None:
+        raise FileNotFoundError("Unable to locate kernel profiles directory")
     base_path = profiles_dir / "kernel.base.yaml"
     profile_path = profiles_dir / f"kernel.{name}.yaml"
 
