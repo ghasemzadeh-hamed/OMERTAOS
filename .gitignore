@@ -11,6 +11,9 @@ __pycache__/
 .mypy_cache/
 pytest.cache/
 target/
+aionos_core.egg-info/
+*.egg-info/
+*.dist-info/
 Cargo.lock
 .idea/
 .vscode/

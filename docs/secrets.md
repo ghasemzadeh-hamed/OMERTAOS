@@ -83,7 +83,7 @@ material. Running `install.sh` (or `scripts/quicksetup.sh`) performs the followi
    `AION_BOOTSTRAP_CERT_DAYS`.
 3. Records the generation timestamp in `config/certs/bootstrap/.generated`.
 
-The generated files are intentionally transient—replace them with Vault-managed
+The generated files are intentionally transient-replace them with Vault-managed
 certificates immediately after Vault is initialised. Deleting the `.generated` marker and
 re-running the installer regenerates fresh bootstrap material if needed.
 
