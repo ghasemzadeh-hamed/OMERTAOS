@@ -125,8 +125,10 @@ jobs:
         run: |
           set -euo pipefail
 
+          COMPOSE="docker compose -f docker-compose.yml -f deploy/compose/compose.ci.override.yml"
+
           echo "### Effective docker-compose config"
-          docker compose config
+          $COMPOSE config
 
           INFRA_SERVICES="postgres redis qdrant minio"
           if [ "${VAULT_ENABLED}" = "true" ]; then
@@ -137,14 +139,14 @@ jobs:
           fi
 
           # shellcheck disable=SC2086 -- service list is intentionally expanded
-          docker compose up -d --build ${INFRA_SERVICES}
+          $COMPOSE up -d --build ${INFRA_SERVICES}
 
           echo "### Infrastructure status"
-          docker compose ps
+          $COMPOSE ps
 
           echo "### Recent infrastructure logs"
           # shellcheck disable=SC2086 -- service list is intentionally expanded
-          docker compose logs --tail=80 ${INFRA_SERVICES} || true
+          $COMPOSE logs --tail=80 ${INFRA_SERVICES} || true
 
       - name: Bootstrap development Vault
         if: env.VAULT_ENABLED == 'true'
@@ -159,23 +161,28 @@ jobs:
           set -euo pipefail
 
           echo "### Bringing up application services (control + gateway + console)..."
-          docker compose up -d --build \
+          COMPOSE="docker compose -f docker-compose.yml -f deploy/compose/compose.ci.override.yml"
+
+          $COMPOSE up -d --build \
             control \
             gateway \
             console
 
           echo "### Application status"
-          docker compose ps
+          $COMPOSE ps
 
           echo "### Recent application logs"
-          docker compose logs --tail=80 control gateway console || true
+          $COMPOSE logs --tail=80 control gateway console || true
 
       - name: Run smoke test
         run: ./scripts/smoke_e2e.sh
 
       - name: Dump compose logs
         if: always()
-        run: docker compose logs > compose.log
+        run: |
+          set -euo pipefail
+          COMPOSE="docker compose -f docker-compose.yml -f deploy/compose/compose.ci.override.yml"
+          $COMPOSE logs > compose.log
 
       - name: Upload logs
         if: always()
@@ -186,7 +193,10 @@ jobs:
 
       - name: Compose down
         if: always()
-        run: docker compose down -v
+        run: |
+          set -euo pipefail
+          COMPOSE="docker compose -f docker-compose.yml -f deploy/compose/compose.ci.override.yml"
+          $COMPOSE down -v
 
   native:
     runs-on: ubuntu-latest
