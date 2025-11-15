@@ -392,11 +392,27 @@ const resolveAdminToken = async (): Promise<string> => {
 };
 
 const resolveApiKeys = async (): Promise<Record<string, { roles: string[]; tenant?: string }>> => {
+  const envValue = process.env.AION_GATEWAY_API_KEYS;
+  if (typeof envValue === 'string' && envValue.trim()) {
+    const parsed = parseApiKeysString(envValue);
+    if (Object.keys(parsed).length > 0) {
+      return parsed;
+    }
+  }
+
   const secretPath = process.env.AION_GATEWAY_API_KEYS_SECRET_PATH;
   if (!secretPath) {
-    return parseApiKeysString(process.env.AION_GATEWAY_API_KEYS);
+    return {};
   }
-  const provider = await requireSecretProvider(secretPath);
+
+  const provider = await getSecretProvider();
+  if (!provider) {
+    throw new SecretProviderError(
+      `Secret provider is not configured; cannot read gateway API keys from '${secretPath}'. ` +
+        `Set AION_GATEWAY_API_KEYS or configure a secret provider.`,
+    );
+  }
+
   const payload = await provider.getSecret(secretPath);
   return parseApiKeysSecret(payload);
 };
