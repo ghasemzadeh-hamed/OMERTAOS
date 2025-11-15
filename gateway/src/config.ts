@@ -372,23 +372,72 @@ const resolveJwtPublicKey = async (): Promise<string | undefined> => {
   return undefined;
 };
 
-const resolveAdminToken = async (): Promise<string> => {
-  const secretPath = process.env.AION_ADMIN_TOKEN_SECRET_PATH;
-  if (!secretPath) {
-    return process.env.AION_ADMIN_TOKEN || process.env.AUTH_TOKEN || '';
+const ADMIN_TOKEN_ENV_KEYS = [
+  'AION_GATEWAY_ADMIN_TOKEN',
+  'AION_ADMIN_TOKEN',
+  'AUTH_TOKEN',
+];
+
+const ADMIN_TOKEN_SECRET_PATH_ENV_KEYS = [
+  'AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH',
+  'AION_ADMIN_TOKEN_SECRET_PATH',
+];
+
+const takeFirstEnvValue = (keys: string[]): string | undefined => {
+  for (const key of keys) {
+    const value = process.env[key];
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
   }
-  const provider = await requireSecretProvider(secretPath);
-  const payload = await provider.getSecret(secretPath);
+  return undefined;
+};
+
+const takeAdminTokenFromPayload = (payload: SecretPayload): string | undefined => {
   if (typeof payload === 'string') {
-    return payload;
+    return payload.trim() || undefined;
   }
-  if (typeof payload.token === 'string') {
-    return payload.token;
+  if (typeof payload.token === 'string' && payload.token.trim()) {
+    return payload.token.trim();
   }
-  if (typeof payload.value === 'string') {
-    return payload.value;
+  if (typeof payload.value === 'string' && payload.value.trim()) {
+    return payload.value.trim();
   }
-  return '';
+  if (typeof payload.admin_token === 'string' && payload.admin_token.trim()) {
+    return payload.admin_token.trim();
+  }
+  return undefined;
+};
+
+const resolveAdminToken = async (): Promise<string> => {
+  const envToken = takeFirstEnvValue(ADMIN_TOKEN_ENV_KEYS);
+  if (envToken) {
+    return envToken;
+  }
+
+  const secretPath = takeFirstEnvValue(ADMIN_TOKEN_SECRET_PATH_ENV_KEYS);
+  if (!secretPath) {
+    throw new SecretProviderError(
+      `Admin token is not configured. Set ${ADMIN_TOKEN_ENV_KEYS[0]} or provide a secret path via ${ADMIN_TOKEN_SECRET_PATH_ENV_KEYS[0]}.`,
+    );
+  }
+
+  const provider = await getSecretProvider();
+  if (!provider) {
+    throw new SecretProviderError(
+      `Secret provider is not configured; cannot read admin token from '${secretPath}'. Set ${ADMIN_TOKEN_ENV_KEYS[0]} or configure a secret provider.`,
+    );
+  }
+
+  const payload = await provider.getSecret(secretPath);
+  const token = takeAdminTokenFromPayload(payload);
+  if (token) {
+    return token;
+  }
+
+  throw new SecretProviderError(
+    `Secret at path '${secretPath}' does not contain an admin token. Populate 'token', 'value', or provide ${ADMIN_TOKEN_ENV_KEYS[0]}.`,
+  );
 };
 
 const resolveApiKeys = async (): Promise<Record<string, { roles: string[]; tenant?: string }>> => {
