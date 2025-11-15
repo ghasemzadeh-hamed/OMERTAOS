@@ -16,7 +16,7 @@ param(
 )
 
 if (-not $Model) { $Model = 'llama3.2:3b' }
-if (-not $Repo) { $Repo = 'https://github.com/ghasemzadeh-hamed/OMERTAOS.git' }
+if (-not $Repo) { $Repo = 'https://github.com/Hamedghz/OMERTAOS.git' }
 if (-not $Branch) { $Branch = 'main' }
 if (-not $PolicyDir) { $PolicyDir = './policies' }
 if (-not $VolumeRoot) { $VolumeRoot = './volumes' }

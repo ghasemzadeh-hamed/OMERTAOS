@@ -24,7 +24,7 @@ This guide walks through configuring AION-OS without the helper scripts. It cove
 ## 2. Clone the Repository
 
 ```bash
-git clone -b AIONOS --single-branch https://github.com/ghasemzadeh-hamed/OMERTAOS.git
+git clone -b AIONOS --single-branch https://github.com/Hamedghz/OMERTAOS.git
 cd OMERTAOS
 ```
 
