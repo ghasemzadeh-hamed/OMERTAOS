@@ -4,6 +4,7 @@ import logging
 from google.protobuf.json_format import MessageToDict
 import grpc
 from grpc import aio
+from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 
 from os.control.os.aion_grpc.aion.v1 import tasks_pb2, tasks_pb2_grpc
 from os.control.os.config import get_settings
@@ -140,6 +141,11 @@ def create_grpc_server(host: str | None = None, port: int | None = None) -> aio.
     server = aio.server()
     tasks_pb2_grpc.add_AionTasksServicer_to_server(AionTasksService(), server)
 
+    health_servicer = health.HealthServicer()
+    health_servicer.set_status("", health_pb2.HealthCheckResponse.NOT_SERVING)
+    health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
+    setattr(server, "_health_servicer", health_servicer)
+
     certificate_chain = settings.grpc_tls_certificate
     private_key = settings.grpc_tls_private_key
     if certificate_chain and private_key:
@@ -161,6 +167,9 @@ def create_grpc_server(host: str | None = None, port: int | None = None) -> aio.
 async def serve() -> None:
     server = create_grpc_server()
     await server.start()
+    health_servicer = getattr(server, "_health_servicer", None)
+    if health_servicer is not None:
+        health_servicer.set_status("", health_pb2.HealthCheckResponse.SERVING)
     logger.info("gRPC server started")
     await server.wait_for_termination()
 

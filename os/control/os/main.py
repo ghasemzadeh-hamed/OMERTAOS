@@ -8,6 +8,7 @@ import signal
 from contextlib import suppress
 
 import uvicorn
+from grpc_health.v1 import health_pb2
 
 from os.control.os.config import get_settings
 from os.control.os.grpc_server import create_grpc_server
@@ -62,6 +63,9 @@ async def _serve_grpc(shutdown: asyncio.Event) -> None:
     settings = get_settings()
     server = create_grpc_server()
     await server.start()
+    health_servicer = getattr(server, "_health_servicer", None)
+    if health_servicer is not None:
+        health_servicer.set_status("", health_pb2.HealthCheckResponse.SERVING)
     logger.info("gRPC server listening on %s:%s", settings.grpc_host, settings.grpc_port)
 
     async def _wait_for_stop() -> None:
@@ -72,6 +76,8 @@ async def _serve_grpc(shutdown: asyncio.Event) -> None:
     try:
         await shutdown.wait()
     finally:
+        if health_servicer is not None:
+            health_servicer.set_status("", health_pb2.HealthCheckResponse.NOT_SERVING)
         await server.stop(grace=5)
         await waiter
 

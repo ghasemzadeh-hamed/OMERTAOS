@@ -128,9 +128,9 @@ services:
       - "8000:8000"
       - "50051:50051"
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8000/healthz"]
+      test: ["CMD", "python", "-m", "os.control.os.healthcheck"]
       interval: 5s
-      timeout: 3s
+      timeout: 5s
       retries: 60
     command: ["python", "-m", "os.control.os.main"]
     networks: [aionos]
