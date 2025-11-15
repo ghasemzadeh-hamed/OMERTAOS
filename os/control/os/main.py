@@ -12,6 +12,7 @@ from grpc_health.v1 import health_pb2
 
 from os.control.os.config import get_settings
 from os.control.os.grpc_server import create_grpc_server
+from os.control.os.http import app as http_app
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ async def _serve_http(shutdown: asyncio.Event) -> None:
     host = _http_host()
     port = _http_port()
     config = uvicorn.Config(
-        "os.control.main:app",
+        http_app,
         host=host,
         port=port,
         loop="asyncio",
