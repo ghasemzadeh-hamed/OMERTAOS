@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Any, Callable
 
 from google.protobuf.json_format import MessageToDict
 import grpc
@@ -134,6 +135,28 @@ class AionTasksService(tasks_pb2_grpc.AionTasksServicer):
         return None
 
 
+def _set_health_status(health_servicer: Any, service: str, status: int) -> None:
+    """Set gRPC health status across grpcio-health-checking API variants."""
+
+    setter: Callable[[str, int], None] | None = getattr(health_servicer, "set", None)
+    if setter is None:
+        setter = getattr(health_servicer, "set_status", None)
+
+    if callable(setter):
+        setter(service, status)
+    else:  # pragma: no cover - defensive guardrail for unexpected implementations
+        logger.warning(
+            "HealthServicer implementation %s lacks set/set_status; health status not updated",
+            type(health_servicer).__name__,
+        )
+
+
+def set_health_status(health_servicer: Any, service: str, status: int) -> None:
+    """Public compatibility wrapper for updating gRPC health status."""
+
+    _set_health_status(health_servicer, service, status)
+
+
 def create_grpc_server(host: str | None = None, port: int | None = None) -> aio.Server:
     settings = get_settings()
     resolved_host = host or settings.grpc_host
@@ -142,7 +165,7 @@ def create_grpc_server(host: str | None = None, port: int | None = None) -> aio.
     tasks_pb2_grpc.add_AionTasksServicer_to_server(AionTasksService(), server)
 
     health_servicer = health.HealthServicer()
-    health_servicer.set("", health_pb2.HealthCheckResponse.NOT_SERVING)
+    set_health_status(health_servicer, "", health_pb2.HealthCheckResponse.NOT_SERVING)
     health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
     setattr(server, "_health_servicer", health_servicer)
 
@@ -169,7 +192,7 @@ async def serve() -> None:
     await server.start()
     health_servicer = getattr(server, "_health_servicer", None)
     if health_servicer is not None:
-        health_servicer.set("", health_pb2.HealthCheckResponse.SERVING)
+        set_health_status(health_servicer, "", health_pb2.HealthCheckResponse.SERVING)
     logger.info("gRPC server started")
     await server.wait_for_termination()
 
