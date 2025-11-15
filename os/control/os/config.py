@@ -5,7 +5,11 @@ from typing import Any, Dict, List
 from pydantic import Field, PrivateAttr
 from pydantic_settings import BaseSettings
 
-from os.secrets import SecretProvider, SecretProviderError, get_secret_provider
+from os.secret_store import (
+    SecretProvider,
+    SecretProviderError,
+    get_secret_provider,
+)
 
 
 def _normalize_boolean(value: str | None) -> bool:

@@ -136,7 +136,7 @@ underlying infrastructure changed (for example, hostname migrations).
 
 ## Secret provider libraries
 
-- Python services use `os.secrets.SecretProvider` (backed by `hvac`) to read Vault
+- Python services use `os.secret_store.SecretProvider` (backed by `hvac`) to read Vault
   secrets and construct connection strings at startup.
 - Node.js services consume `@aionos/secret-provider`, a lightweight fetch-based client
   shared by the gateway and console.
