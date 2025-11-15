@@ -9,7 +9,13 @@ if [[ -f .env ]]; then
   source .env >/dev/null 2>&1 || true
 fi
 
-GATEWAY_URL="${NEXT_PUBLIC_GATEWAY_URL:-http://localhost:8080}"
+GATEWAY_PORT="${AION_GATEWAY_PORT:-8080}"
+GATEWAY_URL="${NEXT_PUBLIC_GATEWAY_URL:-}"
+if [[ -z "${GATEWAY_URL}" ]]; then
+  GATEWAY_URL="http://localhost:${GATEWAY_PORT}"
+elif [[ "${GATEWAY_URL}" =~ ^https?://(gateway|control|console|minio|postgres|redis|qdrant)(:|/|$) ]]; then
+  GATEWAY_URL="http://localhost:${GATEWAY_PORT}"
+fi
 CONTROL_URL="${CONTROL_BASE_URL:-${NEXT_PUBLIC_CONTROL_BASE:-http://localhost:8000}}"
 CONSOLE_URL="${NEXTAUTH_URL:-http://localhost:3000}"
 API_KEY_PAIR="${AION_GATEWAY_API_KEYS:-demo-key:admin|manager}"
