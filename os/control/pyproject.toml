@@ -28,7 +28,8 @@ dependencies = [
   "minio>=7.2",
   "clickhouse-connect>=0.7",
   "python-multipart>=0.0.9",
-  "psycopg2-binary>=2.9"
+  "psycopg2-binary>=2.9",
+  "psutil>=5.9"
 ]
 
 [project.optional-dependencies]
