@@ -17,6 +17,10 @@ jobs:
       VAULT_AUTH_METHOD: 'token'
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN || vars.VAULT_TOKEN || '' }}
       AION_GATEWAY_API_KEYS: demo-key:admin|manager
+      NEXTAUTH_URL: 'http://localhost:3000'
+      NEXTAUTH_SECRET: 'dev-secret-change-me'
+      NEXT_PUBLIC_GATEWAY_URL: 'http://gateway:8080'
+      NEXT_PUBLIC_CONTROL_URL: 'http://control:8000'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -163,10 +167,16 @@ jobs:
           echo "### Bringing up application services (control + gateway + console)..."
           COMPOSE="docker compose -f docker-compose.yml -f deploy/compose/compose.ci.override.yml"
 
-          $COMPOSE up -d --build \
+          if ! $COMPOSE up -d --build \
             control \
             gateway \
             console
+          then
+            echo "### docker compose up failed, dumping service status and logs..."
+            $COMPOSE ps || true
+            $COMPOSE logs --tail=200 control gateway console || true
+            exit 1
+          fi
 
           echo "### Application status"
           $COMPOSE ps

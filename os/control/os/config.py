@@ -5,7 +5,11 @@ from typing import Any, Dict, List
 from pydantic import Field, PrivateAttr
 from pydantic_settings import BaseSettings
 
-from os.secrets import SecretProvider, SecretProviderError, get_secret_provider
+from os.secret_store import (
+    SecretProvider,
+    SecretProviderError,
+    get_secret_provider,
+)
 
 
 def _normalize_boolean(value: str | None) -> bool:
@@ -93,7 +97,7 @@ class Settings(BaseSettings):
         if disable_secrets:
             self._postgres_dsn = os.getenv(
                 "AION_CONTROL_POSTGRES_DSN",
-                "postgresql://postgres:postgres@localhost:5432/aionos",
+                "postgresql://aion:aion@postgres:5432/aion",
             )
             self._minio_config = {
                 "endpoint": os.getenv("AION_CONTROL_MINIO_ENDPOINT", "minio:9000"),
@@ -130,7 +134,7 @@ class Settings(BaseSettings):
             # Fall back to environment configuration when Vault integration is unavailable.
             self._postgres_dsn = os.getenv(
                 "AION_CONTROL_POSTGRES_DSN",
-                "postgresql://postgres:postgres@localhost:5432/aionos",
+                "postgresql://aion:aion@postgres:5432/aion",
             )
             self._minio_config = {
                 "endpoint": os.getenv("AION_CONTROL_MINIO_ENDPOINT", "minio:9000"),

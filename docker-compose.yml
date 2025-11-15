@@ -19,11 +19,11 @@ services:
       test:
         - "CMD-SHELL"
         - >-
-          status=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8200/v1/sys/health || echo 0);
-          if [ "$status" -eq 200 ] || [ "$status" -eq 204 ] || [ "$status" -eq 429 ] || [ "$status" -eq 472 ] || [ "$status" -eq 473 ]; then
+          status=$$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8200/v1/sys/health || echo 0);
+          if [ "$$status" -eq 200 ] || [ "$$status" -eq 204 ] || [ "$$status" -eq 429 ] || [ "$$status" -eq 472 ] || [ "$$status" -eq 473 ]; then
             exit 0;
           fi;
-          echo "Vault health status: $status";
+          echo "Vault health status: $$status";
           exit 1
       interval: 5s
       timeout: 3s
@@ -63,11 +63,11 @@ services:
       test:
         - "CMD-SHELL"
         - >-
-          status=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:6333/readyz || echo 0);
-          if [ "$status" -eq 200 ] || [ "$status" -eq 204 ]; then
+          status=$$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:6333/readyz || echo 0);
+          if [ "$$status" -eq 200 ] || [ "$$status" -eq 204 ]; then
             exit 0;
           fi;
-          echo "Qdrant readiness status: $status";
+          echo "Qdrant readiness status: $$status";
           exit 1
       interval: 10s
       timeout: 5s
@@ -128,9 +128,9 @@ services:
       - "8000:8000"
       - "50051:50051"
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8000/healthz"]
+      test: ["CMD", "python", "-m", "os.control.os.healthcheck"]
       interval: 5s
-      timeout: 3s
+      timeout: 5s
       retries: 60
     command: ["python", "-m", "os.control.os.main"]
     networks: [aionos]
@@ -180,10 +180,10 @@ services:
       dockerfile: console/Dockerfile
     env_file: .env
     environment:
-      NEXTAUTH_URL: ${NEXTAUTH_URL}
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      NEXT_PUBLIC_GATEWAY_URL: ${NEXT_PUBLIC_GATEWAY_URL}
-      NEXT_PUBLIC_CONTROL_URL: ${NEXT_PUBLIC_CONTROL_URL}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev-secret-change-me}
+      NEXT_PUBLIC_GATEWAY_URL: ${NEXT_PUBLIC_GATEWAY_URL:-http://gateway:8080}
+      NEXT_PUBLIC_CONTROL_URL: ${NEXT_PUBLIC_CONTROL_URL:-http://control:8000}
       AION_ADMIN_TOKEN_SECRET_PATH: ${AION_ADMIN_TOKEN_SECRET_PATH}
       AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
       AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}

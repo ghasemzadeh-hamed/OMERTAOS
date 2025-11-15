@@ -22,7 +22,7 @@ Use the repository-provided wrappers for the fastest path to a containerized dep
 ### Linux (Docker Engine)
 
 ```bash
-git clone https://github.com/ghasemzadeh-hamed/OMERTAOS.git
+git clone https://github.com/Hamedghz/OMERTAOS.git
 cd OMERTAOS
 ./install.sh --profile user            # or professional / enterprise-vip
 ```
@@ -33,7 +33,7 @@ cd OMERTAOS
 ### Windows 11 / WSL2
 
 ```powershell
-git clone https://github.com/ghasemzadeh-hamed/OMERTAOS.git
+git clone https://github.com/Hamedghz/OMERTAOS.git
 Set-Location OMERTAOS
 pwsh ./install.ps1 -Profile user       # or professional / enterprise-vip
 ```

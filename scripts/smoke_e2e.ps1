@@ -4,7 +4,12 @@ param(
   [string]$ControlUrl = $env:CONTROL_BASE_URL,
   [string]$ConsoleUrl = $env:NEXTAUTH_URL
 )
-if (-not $GatewayUrl) { $GatewayUrl = 'http://localhost:8080' }
+$gatewayPort = if ($env:AION_GATEWAY_PORT) { $env:AION_GATEWAY_PORT } else { '8080' }
+if (-not $GatewayUrl) {
+  $GatewayUrl = "http://localhost:$gatewayPort"
+} elseif ($GatewayUrl -match '://(gateway|control|console|minio|postgres|redis|qdrant)(:|/|$)') {
+  $GatewayUrl = "http://localhost:$gatewayPort"
+}
 if (-not $ControlUrl) { $ControlUrl = if ($env:NEXT_PUBLIC_CONTROL_BASE) { $env:NEXT_PUBLIC_CONTROL_BASE } else { 'http://localhost:8000' } }
 if (-not $ConsoleUrl) { $ConsoleUrl = 'http://localhost:3000' }
 

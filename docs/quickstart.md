@@ -7,7 +7,7 @@ This guide condenses each supported deployment into ten steps or fewer. Run ever
 ### Linux (Docker Engine)
 
 1. Install Git, Docker Engine 24+ with the Compose plugin, and Python 3.11 or newer.
-2. Clone the repository: `git clone https://github.com/ghasemzadeh-hamed/OMERTAOS.git && cd OMERTAOS`.
+2. Clone the repository: `git clone https://github.com/Hamedghz/OMERTAOS.git && cd OMERTAOS`.
 3. Execute the wrapper: `./install.sh --profile user` (substitute `professional` or `enterprise-vip` as needed).
 4. Add `--local` to target [`docker-compose.local.yml`](../docker-compose.local.yml) for lightweight developer profiles.
 5. Use `--update` when you want the script to fetch the latest commits before launching services.
@@ -19,7 +19,7 @@ This guide condenses each supported deployment into ten steps or fewer. Run ever
 ### Windows 11 / WSL2
 
 1. Install Git for Windows, Docker Desktop (WSL integration enabled), and PowerShell 7+.
-2. Clone the repository: `git clone https://github.com/ghasemzadeh-hamed/OMERTAOS.git`.
+2. Clone the repository: `git clone https://github.com/Hamedghz/OMERTAOS.git`.
 3. From an elevated PowerShell prompt in the repository root, run `pwsh ./install.ps1 -Profile user` (or `professional` / `enterprise-vip`).
 4. Append `-Local` for the developer overlay or `-Update` to pull fresh commits before launching containers.
 5. The script orchestrates [`docker-compose.yml`](../docker-compose.yml) via [`scripts/quicksetup.ps1`](../scripts/quicksetup.ps1); watch the output for prerequisite warnings.
