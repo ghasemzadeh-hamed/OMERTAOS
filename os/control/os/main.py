@@ -66,7 +66,7 @@ async def _serve_grpc(shutdown: asyncio.Event) -> None:
     await server.start()
     health_servicer = getattr(server, "_health_servicer", None)
     if health_servicer is not None:
-        health_servicer.set_status("", health_pb2.HealthCheckResponse.SERVING)
+        health_servicer.set("", health_pb2.HealthCheckResponse.SERVING)
     logger.info("gRPC server listening on %s:%s", settings.grpc_host, settings.grpc_port)
 
     async def _wait_for_stop() -> None:
@@ -78,7 +78,7 @@ async def _serve_grpc(shutdown: asyncio.Event) -> None:
         await shutdown.wait()
     finally:
         if health_servicer is not None:
-            health_servicer.set_status("", health_pb2.HealthCheckResponse.NOT_SERVING)
+            health_servicer.set("", health_pb2.HealthCheckResponse.NOT_SERVING)
         await server.stop(grace=5)
         await waiter
 

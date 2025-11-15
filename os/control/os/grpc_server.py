@@ -142,7 +142,7 @@ def create_grpc_server(host: str | None = None, port: int | None = None) -> aio.
     tasks_pb2_grpc.add_AionTasksServicer_to_server(AionTasksService(), server)
 
     health_servicer = health.HealthServicer()
-    health_servicer.set_status("", health_pb2.HealthCheckResponse.NOT_SERVING)
+    health_servicer.set("", health_pb2.HealthCheckResponse.NOT_SERVING)
     health_pb2_grpc.add_HealthServicer_to_server(health_servicer, server)
     setattr(server, "_health_servicer", health_servicer)
 
@@ -169,7 +169,7 @@ async def serve() -> None:
     await server.start()
     health_servicer = getattr(server, "_health_servicer", None)
     if health_servicer is not None:
-        health_servicer.set_status("", health_pb2.HealthCheckResponse.SERVING)
+        health_servicer.set("", health_pb2.HealthCheckResponse.SERVING)
     logger.info("gRPC server started")
     await server.wait_for_termination()
 
