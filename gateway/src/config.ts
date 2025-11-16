@@ -70,6 +70,7 @@ export interface GatewayConfig {
   environment: GatewayEnvironment;
   tls: {
     requireMtls: boolean;
+    requireTls: boolean;
     secretPath?: string;
     clientCaSecretPath?: string;
     certPem?: string;
@@ -558,6 +559,20 @@ export async function buildGatewayConfig(): Promise<GatewayConfig> {
   const environment = (process.env.AION_ENV || process.env.NODE_ENV || 'development') as GatewayEnvironment;
   const cors = resolveCorsConfiguration(process.env.AION_CORS_ORIGINS, environment);
 
+  const requireMtls =
+    process.env.AION_TLS_REQUIRE_MTLS === '1' ||
+    process.env.AION_TLS_REQUIRE_MTLS === 'true' ||
+    process.env.AION_TLS_REQUIRE_MTLS === 'yes' ||
+    process.env.AION_TLS_REQUIRE_MTLS === 'on' ||
+    profile === 'enterprise-vip';
+
+  const requireTls =
+    requireMtls ||
+    process.env.AION_TLS_REQUIRED === '1' ||
+    process.env.AION_TLS_REQUIRED === 'true' ||
+    process.env.AION_TLS_REQUIRED === 'yes' ||
+    process.env.AION_TLS_REQUIRED === 'on';
+
   return {
     port: Number(process.env.AION_GATEWAY_PORT || 8080),
     host: process.env.AION_GATEWAY_HOST || '0.0.0.0',
@@ -584,12 +599,8 @@ export async function buildGatewayConfig(): Promise<GatewayConfig> {
     idempotencyTtlSeconds: Number(process.env.AION_IDEMPOTENCY_TTL || 900),
     environment,
     tls: {
-      requireMtls:
-        process.env.AION_TLS_REQUIRE_MTLS === '1' ||
-        process.env.AION_TLS_REQUIRE_MTLS === 'true' ||
-        process.env.AION_TLS_REQUIRE_MTLS === 'yes' ||
-        process.env.AION_TLS_REQUIRE_MTLS === 'on' ||
-        profile === 'enterprise-vip',
+      requireMtls,
+      requireTls,
       secretPath: tlsMaterials.secretPath,
       clientCaSecretPath: tlsMaterials.clientCaSecretPath,
       certPem: tlsMaterials.certPem,

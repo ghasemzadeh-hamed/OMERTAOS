@@ -13,7 +13,7 @@ export const loadTlsArtifacts = (): TlsArtifacts => {
   const certPem = gatewayConfig.tls.certPem;
   const caPem = gatewayConfig.tls.caPem;
   const tlsMaterialsAvailable = Boolean(keyPem && certPem);
-  const tlsRequired = gatewayConfig.tls.requireMtls || gatewayConfig.environment === 'production';
+  const tlsRequired = gatewayConfig.tls.requireTls;
 
   if (!tlsMaterialsAvailable) {
     if (tlsRequired) {
@@ -22,7 +22,7 @@ export const loadTlsArtifacts = (): TlsArtifacts => {
       );
     }
     console.warn(
-      '[gateway] TLS key/cert missing; continuing with an insecure gRPC client (set AION_TLS_REQUIRE_MTLS=1 or provide certs to enable TLS)',
+      '[gateway] TLS key/cert missing; continuing with an insecure gRPC client (set AION_TLS_REQUIRED=1 or provide certs to enable TLS)',
     );
     return { enabled: false, requestClientCert: false };
   }

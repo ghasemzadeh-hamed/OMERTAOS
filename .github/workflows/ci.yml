@@ -25,6 +25,7 @@ jobs:
       NEXT_PUBLIC_CONTROL_URL: 'http://control:8000'
       SECRET_PROVIDER_MODE: 'local'
       AION_TLS_REQUIRE_MTLS: 'false'
+      AION_TLS_REQUIRED: 'false'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
