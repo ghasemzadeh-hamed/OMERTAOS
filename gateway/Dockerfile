@@ -7,6 +7,7 @@ FROM node:20-alpine AS build
 WORKDIR /app
 COPY gateway/tsconfig.json ./tsconfig.json
 COPY gateway/src ./src
+COPY protos /protos
 COPY --from=deps /app/node_modules ./node_modules
 COPY gateway/package*.json ./
 # Make the shared secret provider available at the path expected by the gateway config import
@@ -19,6 +20,7 @@ ENV NODE_ENV=production
 COPY gateway/package*.json ./
 RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
+COPY --from=build /protos /protos
 
 EXPOSE 8080
 CMD ["npm", "run", "start"]
