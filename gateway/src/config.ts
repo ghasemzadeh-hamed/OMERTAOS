@@ -2,11 +2,27 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  SecretProvider,
-  SecretProviderError,
-} from '../../shared/secret-provider-node/index.js';
 import { config } from 'dotenv';
+
+type SecretPayload = Record<string, unknown> | string;
+
+interface SecretProvider {
+  getSecret(path: string): Promise<SecretPayload>;
+}
+
+type SecretProviderConstructor = new (options?: Record<string, unknown>) => SecretProvider;
+
+type SecretProviderErrorConstructor = new (message?: string) => Error;
+
+const secretProviderModuleUrl = 'file:///shared/secret-provider-node/index.js';
+
+let SecretProviderError: SecretProviderErrorConstructor = class SecretProviderError
+  extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = 'SecretProviderError';
+  }
+};
 
 const inferredEnvFiles = new Set<string>();
 const explicitEnv = process.env.ENV_FILE;
@@ -54,6 +70,7 @@ export interface GatewayConfig {
   environment: GatewayEnvironment;
   tls: {
     requireMtls: boolean;
+    requireTls: boolean;
     secretPath?: string;
     clientCaSecretPath?: string;
     certPem?: string;
@@ -181,7 +198,12 @@ const resolveCorsConfiguration = (
   return { origins, allowCredentials: true };
 };
 
-let secretProvider: SecretProvider | null = null;
+const normaliseSecretProviderMode = (raw: string | undefined): string => {
+  return (raw || 'local').trim().toLowerCase();
+};
+
+const secretProviderMode = normaliseSecretProviderMode(process.env.SECRET_PROVIDER_MODE);
+
 const vaultEnabledRaw =
   process.env.AION_VAULT_ENABLED ?? process.env.VAULT_ENABLED ?? undefined;
 const vaultEnabled =
@@ -189,24 +211,147 @@ const vaultEnabled =
     ? normalizeBoolean(vaultEnabledRaw)
     : Boolean(process.env.AION_VAULT_ADDR || process.env.VAULT_ADDR);
 
+const isModuleNotFoundError = (error: unknown): boolean => {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    typeof (error as { code?: unknown }).code === 'string' &&
+    (error as { code?: string }).code === 'ERR_MODULE_NOT_FOUND'
+  );
+};
+
+const normaliseEnvSecretKey = (path: string): string => {
+  const trimmed = String(path ?? '').trim();
+  if (trimmed.startsWith('env://')) {
+    return trimmed.slice('env://'.length);
+  }
+  if (trimmed.startsWith('env:')) {
+    return trimmed.slice('env:'.length);
+  }
+  return trimmed;
+};
+
+class EnvSecretProvider implements SecretProvider {
+  async getSecret(path: string): Promise<SecretPayload> {
+    const key = normaliseEnvSecretKey(path);
+    if (!key) {
+      throw new SecretProviderError('Env secret key may not be empty');
+    }
+    const value = process.env[key];
+    if (value === undefined) {
+      throw new SecretProviderError(
+        `Env secret '${key}' is not defined in process.env`,
+      );
+    }
+    return value;
+  }
+}
+
+const loadExternalSecretProvider = async (): Promise<SecretProvider | null> => {
+  let providerModule: Record<string, unknown>;
+  try {
+    providerModule = await import(secretProviderModuleUrl);
+  } catch (error) {
+    if (isModuleNotFoundError(error)) {
+      console.warn(
+        `External secret provider module '${secretProviderModuleUrl}' not found; falling back to environment secrets.`,
+      );
+      return null;
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(
+      `Failed to load external secret provider module '${secretProviderModuleUrl}': ${message}`,
+    );
+    return null;
+  }
+
+  let ProviderCtor: SecretProviderConstructor | undefined;
+  if (typeof providerModule.SecretProvider === 'function') {
+    ProviderCtor = providerModule.SecretProvider as SecretProviderConstructor;
+  } else if (
+    providerModule.default &&
+    typeof (providerModule.default as { SecretProvider?: unknown }).SecretProvider === 'function'
+  ) {
+    ProviderCtor = (providerModule.default as { SecretProvider: SecretProviderConstructor })
+      .SecretProvider;
+  } else if (typeof providerModule.default === 'function') {
+    ProviderCtor = providerModule.default as SecretProviderConstructor;
+  }
+
+  if (typeof providerModule.SecretProviderError === 'function') {
+    SecretProviderError = providerModule.SecretProviderError as SecretProviderErrorConstructor;
+  }
+
+  if (!ProviderCtor) {
+    console.warn(
+      `External secret provider module '${secretProviderModuleUrl}' does not export a SecretProvider constructor; falling back to environment secrets.`,
+    );
+    return null;
+  }
+
+  try {
+    return new ProviderCtor({});
+  } catch (error) {
+    throw error;
+  }
+};
+
+let secretProviderPromise: Promise<SecretProvider | null> | null = null;
+
+const resolveSecretProvider = async (): Promise<SecretProvider | null> => {
+  if (!vaultEnabled) {
+    return null;
+  }
+
+  let provider: SecretProvider | null = null;
+
+  if (secretProviderMode === 'external') {
+    provider = await loadExternalSecretProvider();
+    if (!provider) {
+      console.warn(
+        'Falling back to environment secret provider because the external provider was unavailable.',
+      );
+    }
+  } else {
+    console.info(
+      `SECRET_PROVIDER_MODE=${secretProviderMode}; using environment-based secret provider`,
+    );
+  }
+
+  if (!provider) {
+    provider = new EnvSecretProvider();
+  }
+
+  return provider;
+};
+
+const getSecretProvider = async (): Promise<SecretProvider | null> => {
+  if (!secretProviderPromise) {
+    secretProviderPromise = resolveSecretProvider();
+  }
+  return secretProviderPromise;
+};
+
 if (vaultEnabled) {
   try {
-    secretProvider = new SecretProvider({});
+    await getSecretProvider();
   } catch (error) {
     if (error instanceof SecretProviderError) {
       throw error;
     }
-    throw new Error(`Failed to initialise Vault secret provider: ${String(error)}`);
+    throw new Error(`Failed to initialise secret provider: ${String(error)}`);
   }
 }
 
-const requireSecretProvider = (path: string): SecretProvider => {
-  if (!secretProvider) {
+const requireSecretProvider = async (path: string): Promise<SecretProvider> => {
+  const provider = await getSecretProvider();
+  if (!provider) {
     throw new SecretProviderError(
       `Secret provider is not configured but secret path '${path}' was requested`,
     );
   }
-  return secretProvider;
+  return provider;
 };
 
 const resolveJwtPublicKey = async (): Promise<string | undefined> => {
@@ -214,7 +359,7 @@ const resolveJwtPublicKey = async (): Promise<string | undefined> => {
   if (!secretPath) {
     return process.env.AION_JWT_PUBLIC_KEY;
   }
-  const provider = requireSecretProvider(secretPath);
+  const provider = await requireSecretProvider(secretPath);
   const payload = await provider.getSecret(secretPath);
   if (typeof payload === 'string') {
     return payload;
@@ -228,31 +373,96 @@ const resolveJwtPublicKey = async (): Promise<string | undefined> => {
   return undefined;
 };
 
-const resolveAdminToken = async (): Promise<string> => {
-  const secretPath = process.env.AION_ADMIN_TOKEN_SECRET_PATH;
-  if (!secretPath) {
-    return process.env.AION_ADMIN_TOKEN || process.env.AUTH_TOKEN || '';
+const ADMIN_TOKEN_ENV_KEYS = [
+  'AION_GATEWAY_ADMIN_TOKEN',
+  'AION_ADMIN_TOKEN',
+  'AUTH_TOKEN',
+];
+
+const ADMIN_TOKEN_SECRET_PATH_ENV_KEYS = [
+  'AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH',
+  'AION_ADMIN_TOKEN_SECRET_PATH',
+];
+
+const takeFirstEnvValue = (keys: string[]): string | undefined => {
+  for (const key of keys) {
+    const value = process.env[key];
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
   }
-  const provider = requireSecretProvider(secretPath);
-  const payload = await provider.getSecret(secretPath);
+  return undefined;
+};
+
+const takeAdminTokenFromPayload = (payload: SecretPayload): string | undefined => {
   if (typeof payload === 'string') {
-    return payload;
+    return payload.trim() || undefined;
   }
-  if (typeof payload.token === 'string') {
-    return payload.token;
+  if (typeof payload.token === 'string' && payload.token.trim()) {
+    return payload.token.trim();
   }
-  if (typeof payload.value === 'string') {
-    return payload.value;
+  if (typeof payload.value === 'string' && payload.value.trim()) {
+    return payload.value.trim();
   }
-  return '';
+  if (typeof payload.admin_token === 'string' && payload.admin_token.trim()) {
+    return payload.admin_token.trim();
+  }
+  return undefined;
+};
+
+const resolveAdminToken = async (): Promise<string> => {
+  const envToken = takeFirstEnvValue(ADMIN_TOKEN_ENV_KEYS);
+  if (envToken) {
+    return envToken;
+  }
+
+  const secretPath = takeFirstEnvValue(ADMIN_TOKEN_SECRET_PATH_ENV_KEYS);
+  if (!secretPath) {
+    throw new SecretProviderError(
+      `Admin token is not configured. Set ${ADMIN_TOKEN_ENV_KEYS[0]} or provide a secret path via ${ADMIN_TOKEN_SECRET_PATH_ENV_KEYS[0]}.`,
+    );
+  }
+
+  const provider = await getSecretProvider();
+  if (!provider) {
+    throw new SecretProviderError(
+      `Secret provider is not configured; cannot read admin token from '${secretPath}'. Set ${ADMIN_TOKEN_ENV_KEYS[0]} or configure a secret provider.`,
+    );
+  }
+
+  const payload = await provider.getSecret(secretPath);
+  const token = takeAdminTokenFromPayload(payload);
+  if (token) {
+    return token;
+  }
+
+  throw new SecretProviderError(
+    `Secret at path '${secretPath}' does not contain an admin token. Populate 'token', 'value', or provide ${ADMIN_TOKEN_ENV_KEYS[0]}.`,
+  );
 };
 
 const resolveApiKeys = async (): Promise<Record<string, { roles: string[]; tenant?: string }>> => {
+  const envValue = process.env.AION_GATEWAY_API_KEYS;
+  if (typeof envValue === 'string' && envValue.trim()) {
+    const parsed = parseApiKeysString(envValue);
+    if (Object.keys(parsed).length > 0) {
+      return parsed;
+    }
+  }
+
   const secretPath = process.env.AION_GATEWAY_API_KEYS_SECRET_PATH;
   if (!secretPath) {
-    return parseApiKeysString(process.env.AION_GATEWAY_API_KEYS);
+    return {};
   }
-  const provider = requireSecretProvider(secretPath);
+
+  const provider = await getSecretProvider();
+  if (!provider) {
+    throw new SecretProviderError(
+      `Secret provider is not configured; cannot read gateway API keys from '${secretPath}'. ` +
+        `Set AION_GATEWAY_API_KEYS or configure a secret provider.`,
+    );
+  }
+
   const payload = await provider.getSecret(secretPath);
   return parseApiKeysSecret(payload);
 };
@@ -295,7 +505,7 @@ const resolveTlsMaterials = async (): Promise<{
   let caPem = normalisePemArray(process.env.AION_TLS_CA_PEM || process.env.AION_TLS_CA_CHAIN);
 
   if (secretPath) {
-    const provider = requireSecretProvider(secretPath);
+    const provider = await requireSecretProvider(secretPath);
     const payload = await provider.getSecret(secretPath);
     if (typeof payload === 'string') {
       throw new SecretProviderError(
@@ -316,7 +526,7 @@ const resolveTlsMaterials = async (): Promise<{
   }
 
   if (clientCaSecretPath) {
-    const provider = requireSecretProvider(clientCaSecretPath);
+    const provider = await requireSecretProvider(clientCaSecretPath);
     const payload = await provider.getSecret(clientCaSecretPath);
     if (typeof payload === 'string') {
       caPem = normalisePemArray(payload) || caPem;
@@ -349,6 +559,20 @@ export async function buildGatewayConfig(): Promise<GatewayConfig> {
   const environment = (process.env.AION_ENV || process.env.NODE_ENV || 'development') as GatewayEnvironment;
   const cors = resolveCorsConfiguration(process.env.AION_CORS_ORIGINS, environment);
 
+  const requireMtls =
+    process.env.AION_TLS_REQUIRE_MTLS === '1' ||
+    process.env.AION_TLS_REQUIRE_MTLS === 'true' ||
+    process.env.AION_TLS_REQUIRE_MTLS === 'yes' ||
+    process.env.AION_TLS_REQUIRE_MTLS === 'on' ||
+    profile === 'enterprise-vip';
+
+  const requireTls =
+    requireMtls ||
+    process.env.AION_TLS_REQUIRED === '1' ||
+    process.env.AION_TLS_REQUIRED === 'true' ||
+    process.env.AION_TLS_REQUIRED === 'yes' ||
+    process.env.AION_TLS_REQUIRED === 'on';
+
   return {
     port: Number(process.env.AION_GATEWAY_PORT || 8080),
     host: process.env.AION_GATEWAY_HOST || '0.0.0.0',
@@ -375,12 +599,8 @@ export async function buildGatewayConfig(): Promise<GatewayConfig> {
     idempotencyTtlSeconds: Number(process.env.AION_IDEMPOTENCY_TTL || 900),
     environment,
     tls: {
-      requireMtls:
-        process.env.AION_TLS_REQUIRE_MTLS === '1' ||
-        process.env.AION_TLS_REQUIRE_MTLS === 'true' ||
-        process.env.AION_TLS_REQUIRE_MTLS === 'yes' ||
-        process.env.AION_TLS_REQUIRE_MTLS === 'on' ||
-        profile === 'enterprise-vip',
+      requireMtls,
+      requireTls,
       secretPath: tlsMaterials.secretPath,
       clientCaSecretPath: tlsMaterials.clientCaSecretPath,
       certPem: tlsMaterials.certPem,

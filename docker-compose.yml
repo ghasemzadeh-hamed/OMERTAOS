@@ -150,9 +150,12 @@ services:
       AION_RATE_LIMIT_PER_IP: ${AION_RATE_LIMIT_PER_IP}
       AION_RATE_LIMIT_WINDOW: ${AION_RATE_LIMIT_WINDOW}
       AION_IDEMPOTENCY_TTL: ${AION_IDEMPOTENCY_TTL}
-      AION_TLS_REQUIRE_MTLS: ${AION_TLS_REQUIRE_MTLS:-true}
+      AION_TLS_REQUIRE_MTLS: ${AION_TLS_REQUIRE_MTLS:-false}
+      AION_TLS_REQUIRED: ${AION_TLS_REQUIRED:-false}
       AION_JWT_SECRET_PATH: ${AION_JWT_SECRET_PATH}
       AION_GATEWAY_API_KEYS_SECRET_PATH: ${AION_GATEWAY_API_KEYS_SECRET_PATH}
+      AION_GATEWAY_ADMIN_TOKEN: ${AION_GATEWAY_ADMIN_TOKEN}
+      AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH: ${AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH}
       AION_ADMIN_TOKEN_SECRET_PATH: ${AION_ADMIN_TOKEN_SECRET_PATH}
       AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
       AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
@@ -167,8 +170,16 @@ services:
         condition: service_healthy
     ports:
       - "8080:8080"
+    volumes:
+      - ./protos:/protos:ro
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8080/healthz"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8080/healthz',{cache:'no-store'}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 5s
       timeout: 3s
       retries: 60
@@ -184,7 +195,9 @@ services:
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev-secret-change-me}
       NEXT_PUBLIC_GATEWAY_URL: ${NEXT_PUBLIC_GATEWAY_URL:-http://gateway:8080}
       NEXT_PUBLIC_CONTROL_URL: ${NEXT_PUBLIC_CONTROL_URL:-http://control:8000}
+      AION_GATEWAY_ADMIN_TOKEN: ${AION_GATEWAY_ADMIN_TOKEN}
       AION_ADMIN_TOKEN_SECRET_PATH: ${AION_ADMIN_TOKEN_SECRET_PATH}
+      AION_ADMIN_TOKEN: ${AION_ADMIN_TOKEN}
       AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
       AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
       AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
@@ -195,7 +208,13 @@ services:
     ports:
       - "3000:3000"
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:3000/healthz"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/healthz',{cache:'no-store'}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 5s
       timeout: 3s
       retries: 60

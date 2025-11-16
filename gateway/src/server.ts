@@ -9,6 +9,7 @@ import cors from '@fastify/cors';
 import fastifySsePlugin from 'fastify-sse-v2';
 import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
+import { pathToFileURL } from 'node:url';
 import { Metadata } from '@grpc/grpc-js';
 import { createControlClient } from './server/grpc.js';
 import { idempotencyMiddleware, persistIdempotency } from './middleware/idempotency.js';
@@ -468,6 +469,28 @@ export const start = async () => {
   app.log.info(`Gateway listening on ${gatewayConfig.host}:${gatewayConfig.port}`);
   return app;
 };
+
+const shouldAutostart = (): boolean => {
+  if (process.env.NODE_ENV === 'test') {
+    return false;
+  }
+  const entryFile = process.argv[1];
+  if (!entryFile) {
+    return false;
+  }
+  try {
+    return pathToFileURL(entryFile).href === import.meta.url;
+  } catch {
+    return false;
+  }
+};
+
+if (shouldAutostart()) {
+  start().catch((error) => {
+    app.log.error({ err: error }, 'Gateway failed to start');
+    process.exitCode = 1;
+  });
+}
 
 export type GatewayServer = typeof app;
 
