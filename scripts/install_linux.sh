@@ -23,6 +23,9 @@ APP_DIR="$APP_ROOT/OMERTAOS"
 ENV_FILE="$APP_DIR/.env"
 SYSTEMD_DIR="$APP_DIR/configs/systemd"
 NODE_REQUIRED_MAJOR=18
+PYTHON_DEB_PACKAGES=()
+PYTHON_PREFERRED_BIN=""
+PYTHON_BIN="${PYTHON_BIN:-}"
 
 command_exists() {
   command -v "$1" >/dev/null 2>&1
@@ -41,6 +44,63 @@ ensure_nodesource() {
   echo "Installing Node.js ${NODE_REQUIRED_MAJOR}.x from NodeSource..."
   curl -fsSL https://deb.nodesource.com/setup_${NODE_REQUIRED_MAJOR}.x | sudo -E bash -
   sudo apt install -y nodejs
+}
+
+prepare_python_packages() {
+  if [[ -n "${GITHUB_ACTIONS:-}" ]]; then
+    echo "Detected GitHub Actions runner; skipping Python apt packages"
+    PYTHON_PREFERRED_BIN=${PYTHON_PREFERRED_BIN:-python3}
+    return
+  fi
+
+  if apt-cache show python3.11 >/dev/null 2>&1; then
+    PYTHON_DEB_PACKAGES=(python3.11 python3.11-venv python3.11-dev)
+    PYTHON_PREFERRED_BIN="python3.11"
+  else
+    PYTHON_DEB_PACKAGES=(python3 python3-venv python3-dev)
+    PYTHON_PREFERRED_BIN="python3"
+  fi
+}
+
+select_python_binary() {
+  local candidates=()
+
+  if [[ -n "${PYTHON_BIN}" ]]; then
+    candidates+=("${PYTHON_BIN}")
+  fi
+
+  if [[ -n "${PYTHON_PREFERRED_BIN}" ]]; then
+    candidates+=("${PYTHON_PREFERRED_BIN}")
+  fi
+
+  candidates+=(python3.11 python3.10 python3)
+
+  for candidate in "${candidates[@]}"; do
+    if [[ -n "${candidate}" && "${candidate}" != "null" ]] && command_exists "${candidate}"; then
+      PYTHON_BIN="${candidate}"
+      echo "Using Python interpreter: ${PYTHON_BIN}"
+      return
+    fi
+  done
+
+  echo "Python 3 with venv support is required but was not found" >&2
+  exit 1
+}
+
+install_system_packages() {
+  sudo apt update -y
+
+  prepare_python_packages
+
+  local packages=(git curl ca-certificates build-essential redis-server postgresql postgresql-contrib)
+
+  if ((${#PYTHON_DEB_PACKAGES[@]} > 0)); then
+    packages+=("${PYTHON_DEB_PACKAGES[@]}")
+  else
+    echo "Skipping Python apt packages (already provided by environment)"
+  fi
+
+  sudo apt install -y "${packages[@]}"
 }
 
 run_as_app() {
@@ -76,7 +136,8 @@ clone_or_update_repo() {
 provision_python() {
   if [ ! -d "$APP_DIR/.venv" ]; then
     echo "Creating Python virtual environment"
-    run_as_app "python3.11 -m venv '$APP_DIR/.venv'"
+    local python_bin="${PYTHON_BIN:-python3}"
+    run_as_app "${python_bin} -m venv '$APP_DIR/.venv'"
   fi
 
   echo "Installing Python dependencies"
@@ -282,10 +343,8 @@ MSG
 }
 
 main() {
-  sudo apt update -y
-  sudo apt install -y git curl ca-certificates build-essential python3.11 python3.11-venv python3.11-dev \
-    redis-server postgresql postgresql-contrib
-
+  install_system_packages
+  select_python_binary
   ensure_nodesource
 
   create_service_user
