@@ -254,6 +254,31 @@ PY
 }
 
 configure_database() {
+  echo "Ensuring PostgreSQL service is running"
+
+  if ! sudo -u postgres pg_isready -q >/dev/null 2>&1; then
+    if command_exists systemctl; then
+      sudo systemctl start postgresql || true
+    elif command_exists service; then
+      sudo service postgresql start || true
+    fi
+
+    local waited=0
+    local timeout=30
+    while (( waited < timeout )); do
+      if sudo -u postgres pg_isready -q >/dev/null 2>&1; then
+        break
+      fi
+      sleep 1
+      waited=$((waited + 1))
+    done
+
+    if ! sudo -u postgres pg_isready -q >/dev/null 2>&1; then
+      echo "PostgreSQL is not accepting connections on port 5432 after ${timeout}s" >&2
+      exit 2
+    fi
+  fi
+
   local existing_user existing_pass existing_name
   existing_user=$(parse_env_value DATABASE_URL | python3 - <<'PY'
 import sys
