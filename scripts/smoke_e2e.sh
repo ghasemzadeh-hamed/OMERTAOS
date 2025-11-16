@@ -68,20 +68,67 @@ fi
 
 echo "Task created: $task_id"
 
+normalise_status() {
+  tr '[:upper:]' '[:lower:]'
+}
+
+is_success_status() {
+  local value=$1
+  case "$value" in
+    completed|ok|success)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+is_failure_status() {
+  local value=$1
+  case "$value" in
+    failed|error)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+final_status=""
+final_response=""
+
 for i in {1..60}; do
   status_response=$(curl -fsS "$GATEWAY_URL/v1/tasks/$task_id" -H "x-api-key: $API_KEY")
   status=$(echo "$status_response" | jq -r '.status' 2>/dev/null || echo "unknown")
+  normalised_status=$(echo "$status" | normalise_status)
   echo "status: $status"
-  if [[ "$status" == "completed" || "$status" == "failed" ]]; then
+
+  if is_success_status "$normalised_status"; then
+    final_status="$status"
+    final_response="$status_response"
     echo "$status_response"
     break
   fi
+
+  if is_failure_status "$normalised_status"; then
+    echo "$status_response"
+    echo "Task failed with status $status" >&2
+    exit 1
+  fi
+
   sleep 5
   if [[ $i -eq 60 ]]; then
     echo "Task did not complete in time" >&2
     exit 1
   fi
 done
+
+if [[ -z "$final_status" ]]; then
+  echo "Task status did not reach a terminal state" >&2
+  exit 1
+fi
 
 echo "Streaming events sample"
 stream_output=$(curl -fsS -N "$GATEWAY_URL/v1/stream/$task_id" -H "x-api-key: $API_KEY" --max-time 5 || true)
