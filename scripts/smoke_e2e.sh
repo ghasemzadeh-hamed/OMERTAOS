@@ -40,7 +40,20 @@ wait_for "control" "$CONTROL_URL/healthz"
 wait_for "gateway" "$GATEWAY_URL/healthz"
 wait_for "console" "$CONSOLE_URL/healthz"
 
-payload='{"intent":"diagnostics","input":{"prompt":"ping"}}'
+payload=$(cat <<'JSON'
+{
+  "intent": "diagnostics",
+  "params": {
+    "input": {
+      "prompt": "ping"
+    }
+  },
+  "metadata": {
+    "source": "smoke-test"
+  }
+}
+JSON
+)
 response=$(curl -fsS -X POST "$GATEWAY_URL/v1/tasks" \
   -H "content-type: application/json" \
   -H "x-api-key: $API_KEY" \
