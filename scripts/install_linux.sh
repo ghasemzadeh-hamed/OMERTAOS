@@ -235,7 +235,22 @@ create_env_file() {
 }
 
 random_password() {
-  tr -dc 'A-Za-z0-9' </dev/urandom | head -c 24
+  local length="${1:-24}"
+  local python_bin="${PYTHON_BIN:-python3}"
+
+  "${python_bin}" - "$length" <<'PY'
+import secrets
+import string
+import sys
+
+try:
+    length = int(sys.argv[1])
+except (IndexError, ValueError):
+    length = 24
+
+alphabet = string.ascii_letters + string.digits
+print(''.join(secrets.choice(alphabet) for _ in range(length)))
+PY
 }
 
 configure_database() {
