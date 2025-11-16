@@ -9,19 +9,27 @@ export interface TlsArtifacts {
 }
 
 export const loadTlsArtifacts = (): TlsArtifacts => {
-  const shouldEnable = gatewayConfig.tls.requireMtls || gatewayConfig.environment === 'production';
-  if (!shouldEnable) {
-    return { enabled: false, requestClientCert: false };
-  }
   const keyPem = gatewayConfig.tls.keyPem;
   const certPem = gatewayConfig.tls.certPem;
   const caPem = gatewayConfig.tls.caPem;
-  if (!keyPem || !certPem) {
-    throw new Error('TLS key and certificate must be available from Vault or environment');
+  const tlsMaterialsAvailable = Boolean(keyPem && certPem);
+  const tlsRequired = gatewayConfig.tls.requireMtls || gatewayConfig.environment === 'production';
+
+  if (!tlsMaterialsAvailable) {
+    if (tlsRequired) {
+      throw new Error(
+        'TLS key and certificate must be available from Vault or environment when TLS is required',
+      );
+    }
+    console.warn(
+      '[gateway] TLS key/cert missing; continuing with an insecure gRPC client (set AION_TLS_REQUIRE_MTLS=1 or provide certs to enable TLS)',
+    );
+    return { enabled: false, requestClientCert: false };
   }
+
   return {
-    key: Buffer.from(keyPem, 'utf8'),
-    cert: Buffer.from(certPem, 'utf8'),
+    key: Buffer.from(keyPem!, 'utf8'),
+    cert: Buffer.from(certPem!, 'utf8'),
     ca: caPem?.map((entry) => Buffer.from(entry, 'utf8')),
     enabled: true,
     requestClientCert: gatewayConfig.tls.requireMtls,
