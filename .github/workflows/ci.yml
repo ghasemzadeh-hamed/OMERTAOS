@@ -192,6 +192,17 @@ jobs:
       - name: Run smoke test
         run: ./scripts/smoke_e2e.sh
 
+      - name: Ensure .env exists for compose operations
+        if: always()
+        run: |
+          if [ ! -f .env ]; then
+            if [ -f config/templates/.env.example ]; then
+              cp config/templates/.env.example .env
+            else
+              touch .env
+            fi
+          fi
+
       - name: Dump compose logs
         if: always()
         run: |
@@ -205,17 +216,6 @@ jobs:
         with:
           name: compose-logs
           path: compose.log
-
-      - name: Ensure .env exists for compose teardown
-        if: always()
-        run: |
-          if [ ! -f .env ]; then
-            if [ -f config/templates/.env.example ]; then
-              cp config/templates/.env.example .env
-            else
-              touch .env
-            fi
-          fi
 
       - name: Compose down
         if: always()
