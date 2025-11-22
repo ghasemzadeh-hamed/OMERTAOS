@@ -1,0 +1,85 @@
+agents:
+  - id: crewai-crm
+    name: "CrewAI + CRM"
+    category: "Business / CRM"
+    framework: "CrewAI"
+    description: "Lead management agent that connects to CRM backends and runs team workflows."
+    capabilities:
+      - "Lead enrichment"
+      - "Playbook execution"
+      - "CRM sync"
+    icon: "crewai"
+    tags: ["crm", "sales", "automation"]
+    recipe: "recipes/crewai-crm.yaml"
+    config_schema:
+      type: object
+      properties:
+        crm_type:
+          type: string
+          enum: ["hubspot", "salesforce", "pipedrive", "other"]
+          description: "Target CRM connector"
+        crm_api_key:
+          type: string
+          format: secret
+          description: "API key or access token for the CRM"
+        llm_profile:
+          type: string
+          enum: ["local", "openai", "ollama"]
+          description: "Which model profile to use for the Crew"
+      required: ["crm_type", "crm_api_key", "llm_profile"]
+
+  - id: autogpt-research
+    name: "AutoGPT – Research Agent"
+    category: "Research"
+    framework: "AutoGPT"
+    description: "Multi-step research and report generation agent powered by AutoGPT."
+    capabilities:
+      - "Web research"
+      - "Automated market reports"
+      - "Long-horizon planning"
+    icon: "autogpt"
+    tags: ["research", "reports", "planning"]
+    recipe: "recipes/autogpt-research.yaml"
+    config_schema:
+      type: object
+      properties:
+        search_provider:
+          type: string
+          enum: ["serpapi", "tavily", "google", "bing"]
+        llm_profile:
+          type: string
+          enum: ["local", "openai"]
+        max_budget:
+          type: number
+          minimum: 1
+          maximum: 200
+          description: "Max number of steps or requests"
+      required: ["search_provider", "llm_profile"]
+
+  - id: superagi-github
+    name: "SuperAGI + GitHub Ops"
+    category: "DevOps"
+    framework: "SuperAGI"
+    description: "Repository-aware automation agent for triage, docs, and release chores."
+    capabilities:
+      - "Pull request triage"
+      - "Repository summarization"
+      - "Release note drafting"
+    icon: "github"
+    tags: ["devops", "github", "automation"]
+    recipe: "recipes/superagi-github.yaml"
+    config_schema:
+      type: object
+      properties:
+        repo_url:
+          type: string
+          format: uri
+          description: "GitHub repository to operate on"
+        github_token:
+          type: string
+          format: secret
+          description: "Token with repo access"
+        llm_profile:
+          type: string
+          enum: ["openai", "local"]
+      required: ["repo_url", "github_token", "llm_profile"]

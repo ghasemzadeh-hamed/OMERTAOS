@@ -1,0 +1,19 @@
+kind: AgentRecipe
+version: v1
+agent:
+  id: crewai-crm
+  name: "CrewAI CRM Crew"
+  description: "Orchestrates a CrewAI pipeline with CRM connectors and follow-up actions."
+  runtime:
+    mode: kernel
+    entrypoint: "agents/crewai_crm.py"
+  model:
+    selector: "{{config.llm_profile}}"
+  tools:
+    - crm_sync
+    - lead_enrichment
+    - web_search
+  outputs:
+    - type: report
+      format: markdown
+      location: "object-store://reports/{{tenant_id}}/crm"

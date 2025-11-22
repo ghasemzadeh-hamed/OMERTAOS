@@ -1,0 +1,19 @@
+kind: AgentRecipe
+version: v1
+agent:
+  id: autogpt-research
+  name: "Research Copilot"
+  description: "Long-horizon research agent with AutoGPT planners and summarizers."
+  runtime:
+    mode: kernel
+    entrypoint: "agents/autogpt_research.py"
+  model:
+    selector: "{{config.llm_profile}}"
+  tools:
+    - web_search
+    - browser
+    - file_writer
+  outputs:
+    - type: report
+      format: markdown
+      location: "object-store://reports/{{tenant_id}}/research"
