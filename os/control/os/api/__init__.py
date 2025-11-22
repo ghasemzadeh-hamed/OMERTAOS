@@ -6,6 +6,8 @@ from os.control.os.api.modules import router as modules_router
 from os.control.os.api.health import router as health_router
 from os.control.os.api.webhooks import router as webhook_router
 from os.control.os.api.registry import router as registry_router
+from os.control.os.api.agent_catalog import catalog_router, agents_router
+from os.control.os.api.recommendations import recommendations_router
 
 __all__ = [
     "providers_router",
@@ -15,4 +17,7 @@ __all__ = [
     "health_router",
     "webhook_router",
     "registry_router",
+    "recommendations_router",
+    "catalog_router",
+    "agents_router",
 ]

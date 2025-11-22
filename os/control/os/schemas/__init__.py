@@ -5,6 +5,15 @@ from os.control.os.schemas.datasource import DataSourceCreate, DataSourceOut
 from os.control.os.schemas.module import ModuleManifest, ModuleOut
 from os.control.os.schemas.router_policy import RouterPolicyDocument, RouterPolicyResponse
 from os.control.os.schemas.webhook import WebhookEnvelope
+from os.control.os.schemas.agent import (
+    AgentCatalogResponse,
+    AgentInstanceCreate,
+    AgentInstanceOut,
+    AgentInstanceUpdate,
+    AgentTemplate,
+    AgentTemplateResponse,
+)
+from os.control.os.schemas.recommendations import ToolRecommendationResponse, ToolResource, ToolSyncResponse
 
 __all__ = [
     "ProviderCreate",
@@ -16,4 +25,13 @@ __all__ = [
     "RouterPolicyDocument",
     "RouterPolicyResponse",
     "WebhookEnvelope",
+    "AgentCatalogResponse",
+    "AgentInstanceCreate",
+    "AgentInstanceOut",
+    "AgentInstanceUpdate",
+    "AgentTemplate",
+    "AgentTemplateResponse",
+    "ToolRecommendationResponse",
+    "ToolResource",
+    "ToolSyncResponse",
 ]

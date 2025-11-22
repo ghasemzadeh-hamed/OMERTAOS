@@ -58,7 +58,35 @@ run-user:
 	AION_PROFILE=user docker compose -f docker-compose.yml up -d
 
 run-pro:
-	AION_PROFILE=professional docker compose -f docker-compose.yml up -d
+        AION_PROFILE=professional docker compose -f docker-compose.yml up -d
 
 run-ent:
-	AION_PROFILE=enterprise-vip FEATURE_SEAL=1 docker compose -f docker-compose.yml up -d
+        AION_PROFILE=enterprise-vip FEATURE_SEAL=1 docker compose -f docker-compose.yml up -d
+
+# Developer quality gates
+install-deps:
+	$(PY) -m pip install --upgrade pip
+	$(PY) -m pip install -r requirements.txt
+	npm ci --prefix gateway
+	npm ci --prefix console
+
+lint:
+	pre-commit run --all-files
+	npm run lint --prefix gateway --if-present
+	npm run lint --prefix console --if-present
+
+verify:
+	ci/verify.sh
+
+# Docker Compose helpers for the quickstart stack
+compose-up:
+	docker compose -f docker-compose.quickstart.yml up --build -d
+
+compose-down:
+	docker compose -f docker-compose.quickstart.yml down
+
+compose-clean:
+	docker compose -f docker-compose.quickstart.yml down -v --remove-orphans
+
+build-image:
+	docker compose -f docker-compose.quickstart.yml build

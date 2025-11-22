@@ -45,6 +45,19 @@ pwsh ./install.ps1 -Profile user       # or professional / enterprise-vip
 
 A ten-step playbook for every supported mode (ISO, native Linux, WSL, Docker) lives in [`docs/quickstart.md`](docs/quickstart.md). The ISO wizard and native installer flows continue to gate destructive actions on the `AIONOS_ALLOW_INSTALL` flag.
 
+### Fast path (Docker Compose quickstart)
+
+- Copy [`dev.env`](dev.env) to `.env` (or let `quick-install.sh` / `quick-install.ps1` do it for you).
+- Generate development certs and JWT keys plus start the stack with Docker Compose:
+
+```bash
+./quick-install.sh
+```
+
+```powershell
+./quick-install.ps1
+```
+
 ## Repository structure
 
 | Path | Description |
@@ -59,6 +72,22 @@ A ten-step playbook for every supported mode (ISO, native Linux, WSL, Docker) li
 | [`agents/`](agents) & [`policies/`](policies) | Reference agent definitions, policy bundles, and examples that exercise the runtime. |
 | [`models/`](models) | Model manifests aligned with the AI registry for reproducible deployments. |
 
+
+## Agent Catalog (templates + runtime wiring)
+
+- Catalog definitions live in [`config/agent_catalog/agents.yaml`](config/agent_catalog/agents.yaml) with per-template recipes under
+  [`config/agent_catalog/recipes`](config/agent_catalog/recipes).
+- Control API surface:
+  - `GET /api/agent-catalog` and `GET /api/agent-catalog/{id}` expose templates and recipes.
+  - `GET /api/agents`, `POST /api/agents`, `PATCH /api/agents/{id}`, `POST /api/agents/{id}/deploy`, `POST /api/agents/{id}/disable`
+    manage tenant-scoped agent instances with schema validation.
+- Console pages under `/agents/catalog` and `/agents/my-agents` allow browsing templates, filling dynamic config forms, and
+  deploying agents without leaving the UI (works with `TENANCY_MODE` single or multi-tenant headers).
+- LatentBox discovery (feature-flagged via `FEATURE_LATENTBOX_RECOMMENDATIONS`) hydrates an external tool registry from
+  [`config/latentbox/tools.yaml`](config/latentbox/tools.yaml). Sync with `aionctl sync latentbox` or call
+  `POST /api/v1/recommendations/tools/sync`, and query recommendations via `GET /api/v1/recommendations/tools` with optional
+  `scenario`, `capabilities`, and `constraints` filters. The console exposes a "Discover Tools (Latent Box)" view and shows
+  suggested tools inside the agent setup wizard.
 
 ## Docker Compose overlays
 

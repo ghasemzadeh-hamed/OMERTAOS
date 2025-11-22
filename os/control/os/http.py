@@ -26,6 +26,9 @@ from os.control.os.api import (
     modules_router,
     providers_router,
     registry_router,
+    recommendations_router,
+    catalog_router,
+    agents_router,
     router_policy_router,
     webhook_router,
 )
@@ -65,6 +68,8 @@ app.middleware("http")(tenancy_middleware())
 
 @app.on_event("startup")
 async def start_workers() -> None:
+    if os.getenv("AION_DISABLE_WORKERS") == "1":
+        return
     state = get_state()
     app.state.worker_shutdown = asyncio.Event()
     app.state.worker_task = asyncio.create_task(worker_loop(state, app.state.worker_shutdown))
@@ -133,6 +138,9 @@ if _seal_enabled():
     app.include_router(seal_router)
 app.include_router(webhook_router)
 app.include_router(registry_router)
+app.include_router(catalog_router)
+app.include_router(agents_router)
+app.include_router(recommendations_router)
 app.include_router(files_router)
 app.include_router(data_router)
 app.include_router(config_center_router)

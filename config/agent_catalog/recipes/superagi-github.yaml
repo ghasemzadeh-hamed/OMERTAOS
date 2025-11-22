@@ -1,0 +1,19 @@
+kind: AgentRecipe
+version: v1
+agent:
+  id: superagi-github
+  name: "SuperAGI GitHub Ops"
+  description: "Automation agent wired to a GitHub repository with SuperAGI orchestration."
+  runtime:
+    mode: external
+    endpoint: "https://superagi.example.com/api"
+  model:
+    selector: "{{config.llm_profile}}"
+  tools:
+    - github
+    - git_clone
+    - summarizer
+  outputs:
+    - type: changelog
+      format: markdown
+      location: "object-store://reports/{{tenant_id}}/repos"
