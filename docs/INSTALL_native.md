@@ -102,6 +102,8 @@ services.
 
 1. Ensure prerequisites are installed and available in `PATH`.
 2. From an elevated PowerShell session inside the repository, run `scripts/install_win.ps1`.
+   - Running from within an existing clone will reuse that checkout instead of creating a fresh copy (pending an installer logic fix).
+   - Setting `APP_ROOT` keeps the legacy behavior that clones the repository under that directory, which is useful when staging multiple service installs side by side.
 3. The script will:
    - Clone or update the repository into `C:\Omerta\OMERTAOS` (override with `APP_ROOT`).
    - Create/update a Python virtual environment and install control-plane dependencies.

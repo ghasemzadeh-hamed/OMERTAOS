@@ -58,6 +58,8 @@ This guide condenses each supported deployment into ten steps or fewer. Run ever
 1. Install Git for Windows, Python 3.11, Node.js 18 LTS, PostgreSQL, Redis, and NSSM (`C:\\nssm\\nssm.exe` or export `NSSM_PATH`).
 2. Clone the repository and inspect `config/templates/.env.example` for port/database overrides.
 3. Run `pwsh ./scripts/install_win.ps1` from an elevated PowerShell prompt.
+   - When run inside an existing repository checkout, the script will reuse that clone instead of creating a new one (once the in-flight logic fix lands).
+   - Setting `APP_ROOT` forces the legacy "clone under APP_ROOT" path if you prefer separate service installs.
 4. When prompted, provide database credentials or allow the script to create them (if PostgreSQL tools are present).
 5. Wait for the script to build the console and gateway via `pnpm`, register the `Omerta*` services, and start them.
 6. Confirm health at `http://localhost:3000` and tail service logs if troubleshooting is required.
