@@ -27,12 +27,21 @@ function Assert-Command {
     }
 }
 
-$AppRoot = if ($env:APP_ROOT) { $env:APP_ROOT } else { 'C:\\Omerta' }
-$Repo = if ($env:REPO) { $env:REPO } else { 'https://github.com/Hamedghz/OMERTAOS.git' }
-if (Test-Path (Join-Path $AppRoot '.git')) {
-    $AppDir = $AppRoot
+$scriptDir = Split-Path -Parent $PSCommandPath
+$repoFromScript = Resolve-Path (Join-Path $scriptDir '..') -ErrorAction SilentlyContinue
+$usingLocalRepo = $false
+if ($repoFromScript -and (Test-Path (Join-Path $repoFromScript '.git'))) {
+    $AppDir = $repoFromScript
+    $AppRoot = Split-Path -Parent $AppDir
+    $usingLocalRepo = $true
 } else {
-    $AppDir = Join-Path $AppRoot 'OMERTAOS'
+    $AppRoot = if ($env:APP_ROOT) { $env:APP_ROOT } else { 'C:\\Omerta' }
+    $Repo = if ($env:REPO) { $env:REPO } else { 'https://github.com/Hamedghz/OMERTAOS.git' }
+    if (Test-Path (Join-Path $AppRoot '.git')) {
+        $AppDir = $AppRoot
+    } else {
+        $AppDir = Join-Path $AppRoot 'OMERTAOS'
+    }
 }
 $EnvFile = Join-Path $AppDir '.env'
 $NssmPath = if ($env:NSSM_PATH) { $env:NSSM_PATH } else { 'C:\\nssm\\nssm.exe' }
@@ -45,18 +54,22 @@ if (-not (Test-Path $NssmPath)) {
     throw "NSSM executable not found at '$NssmPath'. Set NSSM_PATH to override."
 }
 
-if (-not (Test-Path $AppRoot)) {
-    New-Item -ItemType Directory -Force -Path $AppRoot | Out-Null
-}
+if (-not $usingLocalRepo) {
+    if (-not (Test-Path $AppRoot)) {
+        New-Item -ItemType Directory -Force -Path $AppRoot | Out-Null
+    }
 
-if (-not (Test-Path (Join-Path $AppDir '.git'))) {
-    Write-Host "Cloning repository into $AppDir"
-    git clone $Repo $AppDir | Out-Null
+    if (-not (Test-Path (Join-Path $AppDir '.git'))) {
+        Write-Host "Cloning repository into $AppDir"
+        git clone $Repo $AppDir | Out-Null
+    } else {
+        Write-Host "Updating existing repository in $AppDir"
+        Push-Location $AppDir
+        git pull --ff-only
+        Pop-Location
+    }
 } else {
-    Write-Host "Updating existing repository in $AppDir"
-    Push-Location $AppDir
-    git pull --ff-only
-    Pop-Location
+    Write-Host "Using repository at $AppDir detected next to script. Skipping clone/update."
 }
 
 if (-not (Test-Path $EnvFile)) {
