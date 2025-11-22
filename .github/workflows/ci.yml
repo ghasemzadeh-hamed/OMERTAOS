@@ -206,6 +206,17 @@ jobs:
           name: compose-logs
           path: compose.log
 
+      - name: Ensure .env exists for compose teardown
+        if: always()
+        run: |
+          if [ ! -f .env ]; then
+            if [ -f config/templates/.env.example ]; then
+              cp config/templates/.env.example .env
+            else
+              touch .env
+            fi
+          fi
+
       - name: Compose down
         if: always()
         run: |
