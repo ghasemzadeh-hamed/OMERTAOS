@@ -1,0 +1,77 @@
+# Curated LatentBox-sourced resources used for tool recommendations.
+tools:
+  - id: "latentbox:ai:llm:chatgpt"
+    name: "ChatGPT"
+    category: "llm-global"
+    source: "latentbox"
+    url: "https://chat.openai.com"
+    tags: ["chat", "general-purpose", "global"]
+    scenarios: ["content_marketing", "research", "agent_builder"]
+    capabilities: ["llm", "chat"]
+  - id: "latentbox:ai:image:midjourney"
+    name: "Midjourney"
+    category: "image"
+    source: "latentbox"
+    url: "https://www.midjourney.com"
+    tags: ["image", "generation", "creative"]
+    scenarios: ["gen_art", "content_marketing"]
+    capabilities: ["image"]
+  - id: "latentbox:ai:image:leonardo"
+    name: "Leonardo.Ai"
+    category: "image"
+    source: "latentbox"
+    url: "https://leonardo.ai"
+    tags: ["image", "design", "production"]
+    scenarios: ["gen_art", "game_assets"]
+    capabilities: ["image"]
+  - id: "latentbox:ai:search:tavily"
+    name: "Tavily Search"
+    category: "search"
+    source: "latentbox"
+    url: "https://www.tavily.com"
+    tags: ["search", "web", "api"]
+    scenarios: ["research", "analysis"]
+    capabilities: ["search", "llm"]
+  - id: "latentbox:ai:voice:elevenlabs"
+    name: "ElevenLabs"
+    category: "voice"
+    source: "latentbox"
+    url: "https://elevenlabs.io"
+    tags: ["voice", "tts"]
+    scenarios: ["assistant", "content_marketing"]
+    capabilities: ["voice"]
+    constraints: ["paid_ok"]
+  - id: "latentbox:ai:video:runway"
+    name: "Runway"
+    category: "video"
+    source: "latentbox"
+    url: "https://runwayml.com"
+    tags: ["video", "generation", "editing"]
+    scenarios: ["gen_art", "content_marketing"]
+    capabilities: ["video"]
+    constraints: ["gpu"]
+  - id: "latentbox:ai:vision:recraft"
+    name: "Recraft AI"
+    category: "design"
+    source: "latentbox"
+    url: "https://www.recraft.ai"
+    tags: ["vector", "design", "image"]
+    scenarios: ["design", "visualization"]
+    capabilities: ["image", "design"]
+  - id: "latentbox:ai:llm:qwen2"
+    name: "Qwen 2.5"
+    category: "llm-global"
+    source: "latentbox"
+    url: "https://huggingface.co/Qwen"
+    tags: ["llm", "model"]
+    scenarios: ["agent_builder", "analysis"]
+    capabilities: ["llm"]
+  - id: "latentbox:ai:search:perplexity"
+    name: "Perplexity"
+    category: "search"
+    source: "latentbox"
+    url: "https://www.perplexity.ai"
+    tags: ["search", "web", "qa"]
+    scenarios: ["research", "agent_builder"]
+    capabilities: ["search", "llm"]
+    constraints: ["paid_ok"]

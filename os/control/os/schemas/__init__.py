@@ -13,6 +13,7 @@ from os.control.os.schemas.agent import (
     AgentTemplate,
     AgentTemplateResponse,
 )
+from os.control.os.schemas.recommendations import ToolRecommendationResponse, ToolResource, ToolSyncResponse
 
 __all__ = [
     "ProviderCreate",
@@ -30,4 +31,7 @@ __all__ = [
     "AgentInstanceUpdate",
     "AgentTemplate",
     "AgentTemplateResponse",
+    "ToolRecommendationResponse",
+    "ToolResource",
+    "ToolSyncResponse",
 ]

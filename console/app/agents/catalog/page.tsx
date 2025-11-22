@@ -66,6 +66,12 @@ export default function AgentCatalogPage() {
           قالب‌های آماده برای CrewAI، AutoGPT، SuperAGI و سایر فریم‌ورک‌ها. یک قالب را انتخاب کنید، تنظیمات را پر کنید، و
           مستقیم از UI استقرار دهید.
         </p>
+        <Link
+          href="/discover/tools"
+          className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-xs text-white/85 hover:bg-white/15"
+        >
+          🔎 پیشنهاد ابزار از Latent Box
+        </Link>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">

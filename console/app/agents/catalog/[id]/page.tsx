@@ -24,6 +24,16 @@ interface AgentTemplateResponse {
   recipe: Record<string, any>;
 }
 
+interface ToolRecommendation {
+  id: string;
+  name: string;
+  category: string;
+  url: string;
+  description?: string;
+  tags?: string[];
+  source?: string;
+}
+
 interface AgentInstance {
   id: string;
   name: string;
@@ -47,6 +57,8 @@ export default function AgentTemplateWizardPage() {
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<AgentInstance | null>(null);
   const [deploying, setDeploying] = useState<boolean>(false);
+  const [recommendedTools, setRecommendedTools] = useState<ToolRecommendation[]>([]);
+  const [recommendationError, setRecommendationError] = useState<string | null>(null);
 
   const requiredFields = useMemo(
     () => new Set(template?.config_schema?.required || []),
@@ -76,6 +88,35 @@ export default function AgentTemplateWizardPage() {
         setError(err.message);
       });
   }, [templateId]);
+
+  useEffect(() => {
+    if (!template) return;
+    const scenario = (template.category || "").toLowerCase().replace(/\s+/g, "_");
+    const params = new URLSearchParams();
+    if (scenario) {
+      params.set("scenario", scenario);
+    }
+    const headers: Record<string, string> = { accept: "application/json" };
+    if (TENANT) {
+      headers["tenant-id"] = TENANT;
+    }
+    fetch(`${CONTROL_BASE}/api/v1/recommendations/tools?${params.toString()}`, {
+      credentials: "include",
+      headers,
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || "Failed to load recommendations");
+        }
+        return res.json();
+      })
+      .then((payload) => {
+        setRecommendedTools(payload?.tools || []);
+        setRecommendationError(null);
+      })
+      .catch((err) => setRecommendationError(err.message));
+  }, [template]);
 
   const handleFieldChange = (key: string, value: any) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
@@ -243,9 +284,53 @@ export default function AgentTemplateWizardPage() {
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3">
           <h3 className="text-sm font-semibold text-white/80">Recipe</h3>
-          <pre className="max-h-96 overflow-auto rounded-xl bg-black/30 p-3 text-xs text-white/80">
+          <pre className="max-h-72 overflow-auto rounded-xl bg-black/30 p-3 text-xs text-white/80">
             {JSON.stringify(recipe, null, 2)}
           </pre>
+
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-white/80">پیشنهاد ابزار (Latent Box)</h4>
+              <Link
+                href="/discover/tools"
+                className="text-xs text-sky-200 hover:text-white"
+              >
+                مشاهده همه
+              </Link>
+            </div>
+            {recommendationError && <p className="text-xs text-red-300">{recommendationError}</p>}
+            <div className="space-y-2 max-h-64 overflow-auto pr-1">
+              {recommendedTools.map((tool) => (
+                <div
+                  key={tool.id}
+                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-[11px] uppercase text-white/50">{tool.category}</p>
+                      <p className="text-sm text-white/85">{tool.name}</p>
+                    </div>
+                    <a
+                      href={tool.url}
+                      className="rounded-lg border border-white/15 px-2 py-1 text-[11px] text-white/80 hover:bg-white/15"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      لینک
+                    </a>
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-1 text-[11px] text-white/60">
+                    {(tool.tags || []).slice(0, 4).map((tag) => (
+                      <span key={tag} className="rounded bg-white/10 px-2 py-0.5">#{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {!recommendedTools.length && !recommendationError && (
+                <p className="text-xs text-white/60">پیشنهاد فعالی موجود نیست.</p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

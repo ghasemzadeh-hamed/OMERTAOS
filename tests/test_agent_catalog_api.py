@@ -1,9 +1,12 @@
+import os
 from pathlib import Path
 
 from fastapi.testclient import TestClient
 
 from os.control.os.agent_catalog import AgentCatalog
 from os.control.os.http import app
+
+os.environ.setdefault("AION_DISABLE_WORKERS", "1")
 
 
 def test_agent_catalog_loader_reads_templates_and_recipes():

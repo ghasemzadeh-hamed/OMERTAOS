@@ -83,6 +83,11 @@ A ten-step playbook for every supported mode (ISO, native Linux, WSL, Docker) li
     manage tenant-scoped agent instances with schema validation.
 - Console pages under `/agents/catalog` and `/agents/my-agents` allow browsing templates, filling dynamic config forms, and
   deploying agents without leaving the UI (works with `TENANCY_MODE` single or multi-tenant headers).
+- LatentBox discovery (feature-flagged via `FEATURE_LATENTBOX_RECOMMENDATIONS`) hydrates an external tool registry from
+  [`config/latentbox/tools.yaml`](config/latentbox/tools.yaml). Sync with `aionctl sync latentbox` or call
+  `POST /api/v1/recommendations/tools/sync`, and query recommendations via `GET /api/v1/recommendations/tools` with optional
+  `scenario`, `capabilities`, and `constraints` filters. The console exposes a "Discover Tools (Latent Box)" view and shows
+  suggested tools inside the agent setup wizard.
 
 ## Docker Compose overlays
 
