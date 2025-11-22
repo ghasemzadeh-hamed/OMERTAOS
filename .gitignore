@@ -42,3 +42,6 @@ config/certs/dev/*.key
 config/certs/dev/*.csr
 config/certs/dev/*.srl
 config/certs/dev/.generated
+config/keys/
+.env.bak.*
+compose.log

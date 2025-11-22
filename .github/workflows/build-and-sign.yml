@@ -2,7 +2,7 @@ name: build-and-sign
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
 
 jobs:

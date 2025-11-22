@@ -45,6 +45,19 @@ pwsh ./install.ps1 -Profile user       # or professional / enterprise-vip
 
 A ten-step playbook for every supported mode (ISO, native Linux, WSL, Docker) lives in [`docs/quickstart.md`](docs/quickstart.md). The ISO wizard and native installer flows continue to gate destructive actions on the `AIONOS_ALLOW_INSTALL` flag.
 
+### Fast path (Docker Compose quickstart)
+
+- Copy [`dev.env`](dev.env) to `.env` (or let `quick-install.sh` / `quick-install.ps1` do it for you).
+- Generate development certs and JWT keys plus start the stack with Docker Compose:
+
+```bash
+./quick-install.sh
+```
+
+```powershell
+./quick-install.ps1
+```
+
 ## Repository structure
 
 | Path | Description |
