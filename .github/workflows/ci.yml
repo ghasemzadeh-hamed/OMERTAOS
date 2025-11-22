@@ -192,12 +192,9 @@ jobs:
       - name: Run smoke test
         run: ./scripts/smoke_e2e.sh
 
-      - name: Dump compose logs
+      - name: Ensure .env exists for compose
         if: always()
         run: |
-          set -euo pipefail
-
-          # ensure .env exists so docker compose env_file does not blow up
           if [ ! -f .env ]; then
             if [ -f config/templates/.env.example ]; then
               cp config/templates/.env.example .env
@@ -205,6 +202,11 @@ jobs:
               touch .env
             fi
           fi
+
+      - name: Dump compose logs
+        if: always()
+        run: |
+          set -euo pipefail
 
           COMPOSE="docker compose -f docker-compose.yml -f deploy/compose/compose.ci.override.yml"
           $COMPOSE logs > compose.log
@@ -220,15 +222,6 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-
-          # ensure .env exists so docker compose env_file does not blow up
-          if [ ! -f .env ]; then
-            if [ -f config/templates/.env.example ]; then
-              cp config/templates/.env.example .env
-            else
-              touch .env
-            fi
-          fi
 
           COMPOSE="docker compose -f docker-compose.yml -f deploy/compose/compose.ci.override.yml"
           $COMPOSE down -v
