@@ -61,21 +61,21 @@ export default function AgentCatalogPage() {
   return (
     <div className="space-y-6 text-right">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold text-white/90">کاتالوگ عامل‌ها</h1>
+        <h1 className="text-2xl font-semibold text-white/90">\u06a9\u0627\u062a\u0627\u0644\u0648\u06af \u0639\u0627\u0645\u0644\u200c\u0647\u0627</h1>
         <p className="text-sm text-white/70">
-          قالب‌های آماده برای CrewAI، AutoGPT، SuperAGI و سایر فریم‌ورک‌ها. یک قالب را انتخاب کنید، تنظیمات را پر کنید، و
-          مستقیم از UI استقرار دهید.
+          \u0642\u0627\u0644\u0628\u200c\u0647\u0627\u06cc \u0622\u0645\u0627\u062f\u0647 \u0628\u0631\u0627\u06cc CrewAI\u060c AutoGPT\u060c SuperAGI \u0648 \u0633\u0627\u06cc\u0631 \u0641\u0631\u06cc\u0645\u200c\u0648\u0631\u06a9\u200c\u0647\u0627. \u06cc\u06a9 \u0642\u0627\u0644\u0628 \u0631\u0627 \u0627\u0646\u062a\u062e\u0627\u0628 \u06a9\u0646\u06cc\u062f\u060c \u062a\u0646\u0638\u06cc\u0645\u0627\u062a \u0631\u0627 \u067e\u0631 \u06a9\u0646\u06cc\u062f\u060c \u0648
+          \u0645\u0633\u062a\u0642\u06cc\u0645 \u0627\u0632 UI \u0627\u0633\u062a\u0642\u0631\u0627\u0631 \u062f\u0647\u06cc\u062f.
         </p>
         <Link
           href="/discover/tools"
           className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-xs text-white/85 hover:bg-white/15"
         >
-          🔎 پیشنهاد ابزار از Latent Box
+          \U0001f50e \u067e\u06cc\u0634\u0646\u0647\u0627\u062f \u0627\u0628\u0632\u0627\u0631 \u0627\u0632 Latent Box
         </Link>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <label className="text-sm text-white/70">فیلتر بر اساس دسته‌بندی:</label>
+        <label className="text-sm text-white/70">\u0641\u06cc\u0644\u062a\u0631 \u0628\u0631 \u0627\u0633\u0627\u0633 \u062f\u0633\u062a\u0647\u200c\u0628\u0646\u062f\u06cc:</label>
         <select
           className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm"
           value={categoryFilter}
@@ -83,14 +83,14 @@ export default function AgentCatalogPage() {
         >
           {categories.map((cat) => (
             <option key={cat} value={cat}>
-              {cat === "all" ? "همه" : cat}
+              {cat === "all" ? "\u0647\u0645\u0647" : cat}
             </option>
           ))}
         </select>
       </div>
 
-      {loading && <p className="text-sm text-white/60">در حال بارگذاری کاتالوگ…</p>}
-      {error && <p className="text-sm text-red-300">خطا: {error}</p>}
+      {loading && <p className="text-sm text-white/60">\u062f\u0631 \u062d\u0627\u0644 \u0628\u0627\u0631\u06af\u0630\u0627\u0631\u06cc \u06a9\u0627\u062a\u0627\u0644\u0648\u06af...</p>}
+      {error && <p className="text-sm text-red-300">\u062e\u0637\u0627: {error}</p>}
 
       <div className="grid gap-4 lg:grid-cols-2">
         {filtered.map((template) => (
@@ -131,14 +131,14 @@ export default function AgentCatalogPage() {
                 href={`/agents/catalog/${template.id}`}
                 className="rounded-xl border border-white/15 bg-white/10 px-4 py-2 text-sm text-white/90 transition hover:bg-white/20"
               >
-                تنظیم و استقرار
+                \u062a\u0646\u0638\u06cc\u0645 \u0648 \u0627\u0633\u062a\u0642\u0631\u0627\u0631
               </Link>
             </div>
           </div>
         ))}
         {!loading && !filtered.length && (
           <div className="rounded-2xl border border-dashed border-white/10 p-4 text-sm text-white/60">
-            قالبی مطابق فیلترها پیدا نشد.
+            \u0642\u0627\u0644\u0628\u06cc \u0645\u0637\u0627\u0628\u0642 \u0641\u06cc\u0644\u062a\u0631\u0647\u0627 \u067e\u06cc\u062f\u0627 \u0646\u0634\u062f.
           </div>
         )}
       </div>

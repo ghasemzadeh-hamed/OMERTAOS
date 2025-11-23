@@ -140,8 +140,8 @@ provision_python() {
     run_as_app "${python_bin} -m venv '$APP_DIR/.venv'"
   fi
 
-  echo "Installing Python dependencies"
-  run_as_app "cd '$APP_DIR/control' && source '$APP_DIR/.venv/bin/activate' && pip install --upgrade pip wheel setuptools && pip install ."
+  echo "Installing Python dependencies (aionos-core[control])"
+  run_as_app "cd '$APP_DIR' && source '$APP_DIR/.venv/bin/activate' && pip install --upgrade pip wheel setuptools && pip install '.[control]'"
 }
 
 ensure_pnpm() {
