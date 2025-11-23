@@ -111,6 +111,11 @@ foreach ($project in @('console', 'gateway')) {
     Pop-Location
 }
 
+Write-Host 'Generating Prisma client for console'
+Push-Location (Join-Path $AppDir 'console')
+pnpm prisma:generate | Out-Null
+Pop-Location
+
 Write-Host 'Building console'
 Push-Location (Join-Path $AppDir 'console')
 pnpm build | Out-Null
