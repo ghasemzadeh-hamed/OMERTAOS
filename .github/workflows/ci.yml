@@ -196,6 +196,16 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
+
+          # Ensure an env file exists so docker compose can parse env_file entries
+          if [ ! -f .env ]; then
+            if [ -f config/templates/.env.example ]; then
+              cp config/templates/.env.example .env
+            else
+              touch .env
+            fi
+          fi
+
           COMPOSE="docker compose -f docker-compose.yml -f deploy/compose/compose.ci.override.yml"
           $COMPOSE logs > compose.log
 
@@ -210,6 +220,16 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
+
+          # Ensure an env file exists so docker compose can parse env_file entries
+          if [ ! -f .env ]; then
+            if [ -f config/templates/.env.example ]; then
+              cp config/templates/.env.example .env
+            else
+              touch .env
+            fi
+          fi
+
           COMPOSE="docker compose -f docker-compose.yml -f deploy/compose/compose.ci.override.yml"
           $COMPOSE down -v
 
