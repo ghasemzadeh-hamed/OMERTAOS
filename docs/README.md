@@ -42,3 +42,6 @@ GPU, NIC, Wi-Fi, and firmware matrices live in [`hcl/`](hcl). Use [`hcl/index.md
 - [`troubleshooting.md`](troubleshooting.md) - quick fixes for the most common install and runtime issues.
 - [`release.md`](release.md) - SBOM, signing, and release validation process.
 - [`privacy.md`](privacy.md) - optional telemetry and data handling.
+- [`user_team_documentation.md`](user_team_documentation.md) - end-to-end user, admin, and installation guidance with FAQs and glossary.
+- [`enterprise_it_infrastructure.md`](enterprise_it_infrastructure.md) - asset inventory, network segmentation, SOPs, DR, IAM, and recovery priorities for enterprise deployments.
+- [`full_system_review.md`](full_system_review.md) - end-to-end vision, architecture, API, install, runbook, security, observability, and DR overview.
