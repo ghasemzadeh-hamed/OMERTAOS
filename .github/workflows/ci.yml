@@ -195,9 +195,6 @@ jobs:
       - name: Ensure .env exists for compose
         if: always()
         run: |
-          set -euo pipefail
-
-          # Ensure an env file exists so docker compose can parse env_file entries
           if [ ! -f .env ]; then
             if [ -f config/templates/.env.example ]; then
               cp config/templates/.env.example .env
