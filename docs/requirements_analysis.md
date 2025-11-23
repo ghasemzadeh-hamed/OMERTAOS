@@ -18,13 +18,13 @@
 | ID | Description | Target/Metric | Data Source | Owner |
 | -- | ----------- | ------------- | ----------- | ----- |
 | NFR-P1 | Dashboard refresh latency for task/metric streams. | P95 < 3s | Console telemetry (SSE/WebSocket metrics) | Frontend Lead |
-| NFR-P2 | Agent deployment throughput. | ≥98% successful deployments weekly | Gateway/control deployment logs | Control Engineering |
-| NFR-P3 | Installer total time to first running stack. | ≤30 minutes (user), ≤60 minutes (enterprise) | Installer logs and onboarding surveys | Platform/DevOps |
+| NFR-P2 | Agent deployment throughput. | &#x2265;98% successful deployments weekly | Gateway/control deployment logs | Control Engineering |
+| NFR-P3 | Installer total time to first running stack. | &#x2264;30 minutes (user), &#x2264;60 minutes (enterprise) | Installer logs and onboarding surveys | Platform/DevOps |
 
 ### Availability & Reliability
 | ID | Description | Target/Metric | Data Source | Owner |
 | -- | ----------- | ------------- | ----------- | ----- |
-| NFR-A1 | Service uptime for core control/gateway stack. | ≥99% during supported hours | Uptime monitors, compose/K8s health checks | SRE/DevOps |
+| NFR-A1 | Service uptime for core control/gateway stack. | &#x2265;99% during supported hours | Uptime monitors, compose/K8s health checks | SRE/DevOps |
 | NFR-A2 | Graceful failure and restart of workers/proxies. | Automatic restart on failure; no data loss for acknowledged tasks | Process supervisors (systemd/NSSM), queue metrics | Control Engineering |
 
 ### Security
@@ -69,5 +69,5 @@
 | FR-3, FR-5, FR-7, FR-8 | Console flows in `console/`, catalog schemas in `config/agent_catalog/`, latentbox tools config | Frontend unit/e2e tests, telemetry dashboards, feature-flag tests | Frontend, Product/UX |
 | NFR-P1, NFR-U1 | Console performance budgets and i18n settings in `console/README.md` and implementation | Performance tests, localization audits | Frontend |
 | NFR-P2, NFR-P3, NFR-M1 | CI pipelines, compose overlays (`docker-compose*.yml`), installer logs | Deployment smoke tests, CI validation | Platform/DevOps |
-| NFR-S1–S4, NFR-A1–A2 | Auth middleware, hardening scripts, monitoring configs | Security scans, uptime monitors, audit log checks | Security/DevOps |
-| NFR-M2–M3 | Registry/model validation workflows, documentation in `docs/` and `console/README.md` | CI validation, doc review checklist | Control Engineering, Product/Docs |
+| NFR-S1-S4, NFR-A1-A2 | Auth middleware, hardening scripts, monitoring configs | Security scans, uptime monitors, audit log checks | Security/DevOps |
+| NFR-M2-M3 | Registry/model validation workflows, documentation in `docs/` and `console/README.md` | CI validation, doc review checklist | Control Engineering, Product/Docs |

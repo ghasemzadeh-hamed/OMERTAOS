@@ -22,10 +22,10 @@
 - Enforce policies and maintain reproducible registries and model manifests.
 
 ## KPIs and Success Measures
-- Agent deployment success rate ≥98% per week.
-- Mean setup time ≤30 minutes for user profile and ≤60 minutes for enterprise profile.
+- Agent deployment success rate &#x2265;98% per week.
+- Mean setup time &#x2264;30 minutes for user profile and &#x2264;60 minutes for enterprise profile.
 - Console dashboard P95 latency under 3 seconds.
-- Policy compliance coverage ≥90% of deployed agents.
+- Policy compliance coverage &#x2265;90% of deployed agents.
 - Registry/manifests validated in 100% of deployments.
 
 ## Risks and Assumptions

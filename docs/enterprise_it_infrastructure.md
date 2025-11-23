@@ -29,12 +29,12 @@ Textual view suitable for diagramming:
   - Data-centre core (`10.10.0.0/16`): Kubernetes cluster nodes, databases, object store; east-west allowed only via security groups.
   - Observability enclave: `obsv` subnet `10.10.50.0/24`; inbound from cluster via scrape targets; egress restricted.
 - **Rules (summary)**
-  - Internet → DMZ: allow 443/TCP to `lb-ext-01`; deny all else.
-  - DMZ → Core: `lb-ext-01` to gateway/control plane on 80/443 (mTLS preferred); health checks to nodes on 10250/metrics via allowlist.
-  - VPN → Bastion: allow SSH/RDP only to jump host; onward access via RBAC and short-lived certificates.
-  - Core → Data: app namespaces to PostgreSQL 5432, Vector DB 5433/HTTPS, Object store 9000/HTTPS; deny lateral pod-to-pod across namespaces unless labeled.
+  - Internet &#x2192; DMZ: allow 443/TCP to `lb-ext-01`; deny all else.
+  - DMZ &#x2192; Core: `lb-ext-01` to gateway/control plane on 80/443 (mTLS preferred); health checks to nodes on 10250/metrics via allowlist.
+  - VPN &#x2192; Bastion: allow SSH/RDP only to jump host; onward access via RBAC and short-lived certificates.
+  - Core &#x2192; Data: app namespaces to PostgreSQL 5432, Vector DB 5433/HTTPS, Object store 9000/HTTPS; deny lateral pod-to-pod across namespaces unless labeled.
   - Observability: scrape 9090/4317/4318 from obsv to workloads; logs/metrics egress only to storage endpoints; no ingress from internet.
-- **Critical paths**: Internet → LB → Gateway/Console; Gateway → Control plane APIs; Control plane → DB/Vector/Object; Cluster → Observability stack; VPN → Bastion → Admin paths.
+- **Critical paths**: Internet &#x2192; LB &#x2192; Gateway/Console; Gateway &#x2192; Control plane APIs; Control plane &#x2192; DB/Vector/Object; Cluster &#x2192; Observability stack; VPN &#x2192; Bastion &#x2192; Admin paths.
 
 ## 3. Standard Operating Procedures (SOP)
 - **User creation/deletion**
@@ -45,14 +45,14 @@ Textual view suitable for diagramming:
 - **Password reset**
   - Request via service desk; verify identity (MFA push + manager confirmation for privileged roles); reset in IdP; force next-login rotation; log in audit trail; SLA: 2h.
 - **Access request**
-  - Workflow: request → manager approval → data owner approval (for PII) → provisioning via roles/policies → confirmation; enforce least-privilege RBAC; review monthly.
+  - Workflow: request &#x2192; manager approval &#x2192; data owner approval (for PII) &#x2192; provisioning via roles/policies &#x2192; confirmation; enforce least-privilege RBAC; review monthly.
 - **VM/resource request**
   - Form includes environment, sizing (vCPU/RAM/GPU), storage class, network zone, cost center, retention window.
   - Approvals: platform lead + cost center owner; enforce tagging (service, env, owner, expiry).
   - Provision via Terraform/Ansible; baseline hardening + agent install; verify monitoring/backup enrollment; decommission via ticket with data wipe and CMDB update.
 
 ## 4. Backup & Disaster Recovery Plan (DR)
-- **Objectives**: Critical control-plane data RPO ≤ 30 minutes (WAL shipping); RTO ≤ 4 hours; object store RPO ≤ 4 hours; observability RPO ≤ 24 hours.
+- **Objectives**: Critical control-plane data RPO &#x2264; 30 minutes (WAL shipping); RTO &#x2264; 4 hours; object store RPO &#x2264; 4 hours; observability RPO &#x2264; 24 hours.
 - **Backups**
   - PostgreSQL: nightly full, 15-minute WAL archiving to off-site object storage; retention 30 days; weekly integrity restore test in staging.
   - Object store: versioning + daily incremental to secondary region; retention 60 days; quarterly restore drill.
@@ -64,7 +64,7 @@ Textual view suitable for diagramming:
 - **Testing**: Monthly backup verification reports; quarterly full restore drills; track success/failure in DR runbook with sign-off by SRE + Security.
 
 ## 5. Patch & Update Policy
-- OS and hypervisor: monthly patch window (e.g., second Tuesday) with staging soak of 7 days; emergency CVE ≥ 8.0 patched within 48 hours.
+- OS and hypervisor: monthly patch window (e.g., second Tuesday) with staging soak of 7 days; emergency CVE &#x2265; 8.0 patched within 48 hours.
 - Kubernetes and cluster addons: minor versions quarterly; apply in staging then prod via blue/green node rotation; rollback by cordon/drain and revert node images.
 - AION services: semantic-versioned images; deploy via canary then rolling; rollback by helm/ArgoCD to previous release and config snapshots.
 - Middleware (PostgreSQL, Vector DB, MinIO): minor updates quarterly; major with approved change record and backup; rollback using snapshot + config restore.
