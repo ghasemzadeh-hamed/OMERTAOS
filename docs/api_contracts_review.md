@@ -102,10 +102,10 @@
 - **POST `/run`**: executes one SEAL iteration; response from `run_seal_iteration()` payload.
 
 ### gRPC Tasks (Control Plane)
-- **Submit(TaskRequest) &#x2192; TaskResult**: enqueue/execute task.
-- **Stream(TaskRequest) &#x2192; stream StreamChunk**: streaming task results with control metadata.
-- **AckStream(StreamAck) &#x2192; AckResponse**: consumer acknowledgements.
-- **StatusById(TaskId) &#x2192; TaskResult**: fetch task state by id.
+- **Submit(TaskRequest) → TaskResult**: enqueue/execute task.
+- **Stream(TaskRequest) → stream StreamChunk**: streaming task results with control metadata.
+- **AckStream(StreamAck) → AckResponse**: consumer acknowledgements.
+- **StatusById(TaskId) → TaskResult**: fetch task state by id.
 
 ## 3. Examples
 - **Submit task (HTTP)**
