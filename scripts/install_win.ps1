@@ -102,7 +102,12 @@ if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) {
 foreach ($project in @('console', 'gateway')) {
     Write-Host "Installing Node dependencies for $project"
     Push-Location (Join-Path $AppDir $project)
-    pnpm install --frozen-lockfile | Out-Null
+    if (Test-Path "pnpm-lock.yaml") {
+        pnpm install --frozen-lockfile | Out-Null
+    }
+    else {
+        pnpm install --no-frozen-lockfile | Out-Null
+    }
     Pop-Location
 }
 

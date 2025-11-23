@@ -156,7 +156,7 @@ provision_node_projects() {
 
   for project in console gateway; do
     echo "Installing Node dependencies for $project"
-    run_as_app "cd '$APP_DIR/$project' && pnpm install --frozen-lockfile"
+    run_as_app "cd '$APP_DIR/$project' && if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install --no-frozen-lockfile; fi"
   done
 
   echo "Building console"
