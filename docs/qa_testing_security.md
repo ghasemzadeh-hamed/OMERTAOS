@@ -72,4 +72,3 @@
   - Rebuild images with updated bases; re-run SAST/DAST and regression suites post-patch.
   - Maintain changelog and SBOM; sign artifacts.
 - **Rollback & Verification:** Canary or blue/green deployments with health checks; rollback on elevated error rates or failed smoke tests. Post-patch scans confirm remediation; audits review exceptions/waivers quarterly.
-
