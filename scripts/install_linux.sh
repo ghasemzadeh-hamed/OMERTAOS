@@ -159,6 +159,9 @@ provision_node_projects() {
     run_as_app "cd '$APP_DIR/$project' && pnpm install --frozen-lockfile"
   done
 
+  echo "Generating Prisma client for console"
+  run_as_app "cd '$APP_DIR/console' && pnpm prisma:generate"
+
   echo "Building console"
   run_as_app "cd '$APP_DIR/console' && pnpm build"
 
