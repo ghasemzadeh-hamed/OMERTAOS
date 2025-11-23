@@ -96,6 +96,8 @@ def should_skip(path: pathlib.Path, root: pathlib.Path, include_hidden: bool) ->
     parts = path.relative_to(root).parts
     if any(part in DEFAULT_EXCLUDED_DIRS for part in parts):
         return True
+    if any(part.endswith(".egg-info") for part in parts):
+        return True
     if not include_hidden and any(
         part.startswith(".") for part in parts if part not in (".", "..")
     ):
