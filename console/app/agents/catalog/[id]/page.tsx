@@ -42,7 +42,7 @@ interface AgentInstance {
 
 function fieldLabel(key: string, schema: any) {
   const label = schema?.title || key;
-  return schema?.description ? `${label} — ${schema.description}` : label;
+  return schema?.description ? `${label} - ${schema.description}` : label;
 }
 
 export default function AgentTemplateWizardPage() {
@@ -136,7 +136,7 @@ export default function AgentTemplateWizardPage() {
             value={config[key] ?? ""}
             onChange={(event) => handleFieldChange(key, event.target.value)}
           >
-            <option value="">انتخاب کنید</option>
+            <option value="">\u0627\u0646\u062a\u062e\u0627\u0628 \u06a9\u0646\u06cc\u062f</option>
             {schema.enum.map((option: string) => (
               <option key={option} value={option}>
                 {option}
@@ -166,7 +166,7 @@ export default function AgentTemplateWizardPage() {
   const submit = async () => {
     if (!template) return;
     setError(null);
-    setStatus("در حال ایجاد Agent…");
+    setStatus("\u062f\u0631 \u062d\u0627\u0644 \u0627\u06cc\u062c\u0627\u062f Agent...");
     const headers: Record<string, string> = { "content-type": "application/json" };
     if (TENANT) {
       headers["tenant-id"] = TENANT;
@@ -185,13 +185,13 @@ export default function AgentTemplateWizardPage() {
     });
     if (!res.ok) {
       const detail = await res.text();
-      setError(detail || "ایجاد Agent ناموفق بود");
+      setError(detail || "\u0627\u06cc\u062c\u0627\u062f Agent \u0646\u0627\u0645\u0648\u0641\u0642 \u0628\u0648\u062f");
       setStatus("");
       return;
     }
     const instance = (await res.json()) as AgentInstance;
     setCreated(instance);
-    setStatus("Agent ایجاد شد؛ می‌توانید Deploy کنید.");
+    setStatus("Agent \u0627\u06cc\u062c\u0627\u062f \u0634\u062f\u061b \u0645\u06cc\u200c\u062a\u0648\u0627\u0646\u06cc\u062f Deploy \u06a9\u0646\u06cc\u062f.");
   };
 
   const deploy = async () => {
@@ -212,7 +212,7 @@ export default function AgentTemplateWizardPage() {
     } else {
       const payload = (await res.json()) as AgentInstance;
       setCreated(payload);
-      setStatus("Agent فعال شد و وضعیت به روز شد.");
+      setStatus("Agent \u0641\u0639\u0627\u0644 \u0634\u062f \u0648 \u0648\u0636\u0639\u06cc\u062a \u0628\u0647 \u0631\u0648\u0632 \u0634\u062f.");
     }
     setDeploying(false);
   };
@@ -223,7 +223,7 @@ export default function AgentTemplateWizardPage() {
     <div className="space-y-6 text-right">
       <div>
         <Link href="/agents/catalog" className="text-sm text-white/70 hover:text-white/90">
-          ← بازگشت به کاتالوگ
+          \u2190 \u0628\u0627\u0632\u06af\u0634\u062a \u0628\u0647 \u06a9\u0627\u062a\u0627\u0644\u0648\u06af
         </Link>
         <h1 className="mt-2 text-2xl font-semibold text-white/90">{template?.name}</h1>
         <p className="text-sm text-white/65">{template?.description}</p>
@@ -233,7 +233,7 @@ export default function AgentTemplateWizardPage() {
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4 lg:col-span-2">
           <div className="grid gap-4 md:grid-cols-2">
             <label className="block space-y-1 md:col-span-2">
-              <span className="text-sm text-white/80">نام Agent</span>
+              <span className="text-sm text-white/80">\u0646\u0627\u0645 Agent</span>
               <input
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm"
                 value={name}
@@ -241,7 +241,7 @@ export default function AgentTemplateWizardPage() {
               />
             </label>
             <label className="block space-y-1">
-              <span className="text-sm text-white/80">حوزه استقرار</span>
+              <span className="text-sm text-white/80">\u062d\u0648\u0632\u0647 \u0627\u0633\u062a\u0642\u0631\u0627\u0631</span>
               <select
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm"
                 value={scope}
@@ -252,11 +252,11 @@ export default function AgentTemplateWizardPage() {
               </select>
             </label>
             <div className="md:col-span-2 space-y-3">
-              <h3 className="text-sm font-semibold text-white/80">اتصالات و تنظیمات</h3>
+              <h3 className="text-sm font-semibold text-white/80">\u0627\u062a\u0635\u0627\u0644\u0627\u062a \u0648 \u062a\u0646\u0638\u06cc\u0645\u0627\u062a</h3>
               <div className="grid gap-3 md:grid-cols-2">
                 {Object.entries(properties).map(([key, schema]) => renderField(key, schema))}
                 {!Object.keys(properties).length && (
-                  <p className="text-sm text-white/60">این قالب تنظیمات اضافی ندارد.</p>
+                  <p className="text-sm text-white/60">\u0627\u06cc\u0646 \u0642\u0627\u0644\u0628 \u062a\u0646\u0638\u06cc\u0645\u0627\u062a \u0627\u0636\u0627\u0641\u06cc \u0646\u062f\u0627\u0631\u062f.</p>
                 )}
               </div>
             </div>
@@ -266,7 +266,7 @@ export default function AgentTemplateWizardPage() {
               onClick={submit}
               className="rounded-xl border border-white/15 bg-white/10 px-4 py-2 text-sm text-white/90 transition hover:bg-white/20"
             >
-              ایجاد Agent
+              \u0627\u06cc\u062c\u0627\u062f Agent
             </button>
             {created && (
               <button
@@ -274,7 +274,7 @@ export default function AgentTemplateWizardPage() {
                 disabled={deploying}
                 className="rounded-xl border border-emerald-400/40 bg-emerald-500/20 px-4 py-2 text-sm text-emerald-100 transition hover:bg-emerald-500/30"
               >
-                {deploying ? "در حال فعال‌سازی…" : "Deploy"}
+                {deploying ? "\u062f\u0631 \u062d\u0627\u0644 \u0641\u0639\u0627\u0644\u200c\u0633\u0627\u0632\u06cc..." : "Deploy"}
               </button>
             )}
             {status && <span className="text-sm text-white/70">{status}</span>}
@@ -290,12 +290,12 @@ export default function AgentTemplateWizardPage() {
 
           <div className="mt-4 space-y-2">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold text-white/80">پیشنهاد ابزار (Latent Box)</h4>
+              <h4 className="text-sm font-semibold text-white/80">\u067e\u06cc\u0634\u0646\u0647\u0627\u062f \u0627\u0628\u0632\u0627\u0631 (Latent Box)</h4>
               <Link
                 href="/discover/tools"
                 className="text-xs text-sky-200 hover:text-white"
               >
-                مشاهده همه
+                \u0645\u0634\u0627\u0647\u062f\u0647 \u0647\u0645\u0647
               </Link>
             </div>
             {recommendationError && <p className="text-xs text-red-300">{recommendationError}</p>}
@@ -316,7 +316,7 @@ export default function AgentTemplateWizardPage() {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      لینک
+                      \u0644\u06cc\u0646\u06a9
                     </a>
                   </div>
                   <div className="mt-1 flex flex-wrap gap-1 text-[11px] text-white/60">
@@ -327,7 +327,7 @@ export default function AgentTemplateWizardPage() {
                 </div>
               ))}
               {!recommendedTools.length && !recommendationError && (
-                <p className="text-xs text-white/60">پیشنهاد فعالی موجود نیست.</p>
+                <p className="text-xs text-white/60">\u067e\u06cc\u0634\u0646\u0647\u0627\u062f \u0641\u0639\u0627\u0644\u06cc \u0645\u0648\u062c\u0648\u062f \u0646\u06cc\u0633\u062a.</p>
               )}
             </div>
           </div>
@@ -336,7 +336,7 @@ export default function AgentTemplateWizardPage() {
 
       {created && (
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <h3 className="text-sm font-semibold text-white/80">Agent ایجاد شده</h3>
+          <h3 className="text-sm font-semibold text-white/80">Agent \u0627\u06cc\u062c\u0627\u062f \u0634\u062f\u0647</h3>
           <p className="text-sm text-white/70">ID: {created.id}</p>
           <p className="text-sm text-white/70">Status: {created.status}</p>
         </div>
