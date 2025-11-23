@@ -6,14 +6,14 @@
 - **Scope (in):** Control plane services (agent memory/routing/policy), gateway proxy and auth, Glass console dashboards, kernels/registries, installer profiles and compose/K8s overlays, agent/model/policy catalogs, hardening and observability hooks.
 - **Out-of-scope:** Building new base ML models, non-AI business apps, long-term managed support beyond provided installers/profiles, formal compliance certifications beyond documented hardening.
 - **Stakeholders (brief):** Sponsor sets vision/budget; Product Owner prioritizes catalog/console/policy; Engineering (control/kernels) maintains APIs and registries; Platform/DevOps manages installers, overlays, CI/CD; Security/compliance defines hardening and reviews policies; Operators/Data Scientists deploy and monitor agents via console/APIs.
-- **Success criteria (examples):** Deployment success rate ≥98%, installer-to-running time ≤60 minutes (enterprise profile), P95 console refresh latency <3s, ≥90% agents with active policy bundles, support tickets ≤1 per 5 deployments.
+- **Success criteria (examples):** Deployment success rate &#x2265;98%, installer-to-running time &#x2264;60 minutes (enterprise profile), P95 console refresh latency <3s, &#x2265;90% agents with active policy bundles, support tickets &#x2264;1 per 5 deployments.
 
 ## 2. High-Level Architecture & ERD
 - **Architecture:**
   - **Kernels/Registry (Rust):** tenant-aware schedulers and registry definitions (`kernel/`, `kernel-multitenant/`).
   - **Control plane (Python `aion/`):** workers for agent memory, task routing, policy execution; DB + queue integrations.
   - **Gateway (TypeScript `gateway/`):** proxies API/auth/model traffic to control services and model backends; enforces auth headers/tenancy.
-  - **Console (Next.js `console/`):** authenticated dashboards (NextAuth), catalog wizards, “My Agents,” policy editors, task telemetry with SSE/WebSockets.
+  - **Console (Next.js `console/`):** authenticated dashboards (NextAuth), catalog wizards, "My Agents," policy editors, task telemetry with SSE/WebSockets.
   - **Installer & profiles (`core/`, `config/`, `configs/`, `docker-compose*.yml`):** renders `.env`, systemd/NSSM units, overlays for local/obs/vLLM.
   - **Registries & catalogs:** `ai_registry/REGISTRY.yaml`, `models/`, `config/agent_catalog/`, `agents/`, `policies/` keep artifacts reproducible.
   - **Security/observability:** hardening levels (`none`, `standard`, `cis-lite`), UFW/Fail2Ban/Auditd, SBOM/signing (`docs/security`, `docs/release.md`), OTel overlay (`docker-compose.obsv.yml`).
@@ -35,8 +35,8 @@ Events (event_id PK, agent_id FK / run_id FK) for audit and telemetry
 
 ## 3. Core API Contract
 - **Services & principal endpoints (via gateway):**
-  - **Agent catalog:** `GET /api/agent-catalog`, `GET /api/agent-catalog/{id}` — discover catalog templates/recipes.
-  - **Agent lifecycle:** `GET /api/agents`, `POST /api/agents`, `PATCH /api/agents/{id}`, `POST /api/agents/{id}/deploy`, `POST /api/agents/{id}/disable` — manage custom agents and deployments.
+  - **Agent catalog:** `GET /api/agent-catalog`, `GET /api/agent-catalog/{id}` - discover catalog templates/recipes.
+  - **Agent lifecycle:** `GET /api/agents`, `POST /api/agents`, `PATCH /api/agents/{id}`, `POST /api/agents/{id}/deploy`, `POST /api/agents/{id}/disable` - manage custom agents and deployments.
   - **LatentBox tools (feature-flagged):** sync/search endpoints sourced from `config/latentbox/tools.yaml`.
 - **Example spec (`POST /api/agents`):**
   - **Method/Path:** `POST /api/agents`
@@ -90,7 +90,7 @@ Events (event_id PK, agent_id FK / run_id FK) for audit and telemetry
 - **Backup strategy:**
   - Scope: relational DB, object store bucket for artifacts, vector store indices, configuration (`.env`, registry/manifests), and logs.
   - Cadence: daily full + hourly incremental for DB; daily snapshot of object store; weekly archive of logs/configs.
-  - Location: primary storage plus off-site/cloud replica; encryption at rest; retention 30–90 days (per policy).
+  - Location: primary storage plus off-site/cloud replica; encryption at rest; retention 30-90 days (per policy).
   - Verification: weekly restore test in staging; checksum validation for artifacts; alert on failed jobs.
 
 ## 6. Security (Deep)
@@ -113,17 +113,17 @@ Events (event_id PK, agent_id FK / run_id FK) for audit and telemetry
 
 ## 7. Observability
 - **Monitoring:** latency (P95), error rate, throughput, queue depth, DB connections, CPU/RAM/GPU, disk, SSE/WebSocket health; use Prometheus/Grafana or Datadog; OTel collector via `docker-compose.obsv.yml`.
-- **Logging:** structured JSON with timestamp, level, service, correlation/trace ID, request ID, tenant, user; centralized aggregation (ELK/Datadog); retention aligned to policy (e.g., 30–90 days); debug logs off in prod.
+- **Logging:** structured JSON with timestamp, level, service, correlation/trace ID, request ID, tenant, user; centralized aggregation (ELK/Datadog); retention aligned to policy (e.g., 30-90 days); debug logs off in prod.
 - **Alerts:** 5xx error rate >0.1% over 5m; latency P95 >3s; queue lag > threshold; DB CPU >80% for 10m; disk <15% free; TLS expiry <14 days. Escalate Sev1 to on-call within 5m.
 - **Tracing:** OpenTelemetry SDK/collector; propagate traceparent headers through gateway/control; console front-end includes trace IDs; use traces for root-cause in latency spikes.
 - **Dashboards:** service uptime, agent deployment success, task/run throughput, policy enforcement counts, resource utilization; owners per team (control, platform, console); weekly review.
 
 ## 8. Disaster Recovery (DR) & Resilience
-- **Objectives:** Critical services RTO ≤4h, RPO ≤1h (DB/object store); console/gateway RTO ≤2h with warm standby; artifacts RPO 24h unless stricter policy required.
+- **Objectives:** Critical services RTO &#x2264;4h, RPO &#x2264;1h (DB/object store); console/gateway RTO &#x2264;2h with warm standby; artifacts RPO 24h unless stricter policy required.
 - **Scenarios & actions:**
   - **Primary DC/region down:** Detect via health checks; fail over DNS/LB to standby region; promote replica DB; point object store to replicated bucket; validate APIs/console; backfill missed queue events.
   - **Ransomware/data corruption:** Isolate hosts; rotate creds; restore DB/object store from last clean snapshot; run integrity checks; re-enable services after verification.
   - **Gateway/service outage:** Roll back to previous image; drain/redirect traffic; verify health and latency before full cutover.
 - **High availability:** Multi-AZ or multi-region gateway nodes; DB with replicas; queues with durability; stateless services scaled horizontally; readiness/liveness probes with rolling deploys/canaries.
-- **Data lifecycle & retention:** Operational data retained per profile (30–90 days for logs, longer for audit if required); archive artifacts to cold storage after 90 days; delete per policy and regulatory needs (e.g., GDPR erasure on request).
+- **Data lifecycle & retention:** Operational data retained per profile (30-90 days for logs, longer for audit if required); archive artifacts to cold storage after 90 days; delete per policy and regulatory needs (e.g., GDPR erasure on request).
 - **DR testing:** Semi-annual failover drills; quarterly backup restore tests; success criteria include RTO/RPO met, data integrity verified, and alerting/reporting captured; DR owner: platform/SRE lead.

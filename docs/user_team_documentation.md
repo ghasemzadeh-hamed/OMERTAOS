@@ -68,7 +68,7 @@ This guide centralizes user-facing and operational documentation for AION-OS, sp
 - **Objective:** Bring a new contributor or operator to a running stack in minutes.
 - **Minimal path (Docker Compose quickstart)**
   1) `git clone ... && cd OMERTAOS`
-  2) `./quick-install.sh` (Linux/macOS) or `./quick-install.ps1` (Windows) — auto-copies `dev.env` to `.env`, generates dev TLS/JWT keys, and starts compose.
+  2) `./quick-install.sh` (Linux/macOS) or `./quick-install.ps1` (Windows) - auto-copies `dev.env` to `.env`, generates dev TLS/JWT keys, and starts compose.
   3) Open `https://localhost:3000` and follow the console setup wizard to confirm gateways and control APIs respond.
 - **Sample command recap**
   ```bash
@@ -95,7 +95,7 @@ This guide centralizes user-facing and operational documentation for AION-OS, sp
     2) Complete form fields (model, tools, tenancy headers auto-filled from profile).
     3) Click **Deploy**; success shows new entry under **My Agents** with healthy status.
   - **Monitor a running agent**
-    1) Navigate to **My Agents** → select agent.
+    1) Navigate to **My Agents** &#x2192; select agent.
     2) Inspect live metrics, recent runs, and logs; download artifacts if exposed.
   - **Edit policy bindings**
     1) Go to **Policies**, open a bundle, adjust rules (auth, rate limits, tool access).
@@ -125,7 +125,7 @@ This guide centralizes user-facing and operational documentation for AION-OS, sp
   - Keep kernels and model manifests aligned with registry versions; run smoke tests post-upgrade using scripts in `scripts/`.
 - **Logs & diagnostics**
   - Standard log format: JSON with timestamp, service/component, level, trace/correlation IDs, request/agent IDs.
-  - Aggregate via ELK/OTel Collector; retain 30–90 days per compliance.
+  - Aggregate via ELK/OTel Collector; retain 30-90 days per compliance.
   - For incidents, capture bundles (logs, configs, health endpoints) following `docs/operations_and_support.md` playbooks.
 
 ## 5. FAQ & Known Issues
@@ -136,9 +136,9 @@ This guide centralizes user-facing and operational documentation for AION-OS, sp
   - *Can I run without internet?* Use ISO/offline cache instructions in `docs/install/iso.md`; ensure registries and compose images are pre-loaded.
   - *Where are hardware compatibility details?* See `docs/hcl/index.md` and related GPU/NIC matrices.
 - **Known issues**
-  - Self-signed certs may block some browsers → workaround: import local CA or terminate TLS behind a trusted reverse proxy. *(Status: open; mitigated in production by real certs.)*
-  - WSL networking quirks can block container DNS → workaround: restart Docker Desktop, ensure `resolv.conf` points to valid DNS. *(Status: open)*
-  - Long initial pulls on limited bandwidth → workaround: mirror images locally or run `docker compose pull` before install. *(Status: open)*
+  - Self-signed certs may block some browsers &#x2192; workaround: import local CA or terminate TLS behind a trusted reverse proxy. *(Status: open; mitigated in production by real certs.)*
+  - WSL networking quirks can block container DNS &#x2192; workaround: restart Docker Desktop, ensure `resolv.conf` points to valid DNS. *(Status: open)*
+  - Long initial pulls on limited bandwidth &#x2192; workaround: mirror images locally or run `docker compose pull` before install. *(Status: open)*
 
 ## 6. Glossary / Key Terms
 | Term | Definition | Context |

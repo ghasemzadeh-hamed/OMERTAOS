@@ -188,18 +188,18 @@ erDiagram
 - **Partitioning:**
   - PostgreSQL: range partitioning on `event_logs.created_at` by month; optional partitioning on `tasks` by `created_at` when daily volume >1M.
   - Kafka: partitions keyed by `tenant_id` to preserve ordering; retention aligned with policy.
-- **Caching:** Redis for hot agent metadata and policy decisions (TTL 5–10 minutes) to reduce database reads.
+- **Caching:** Redis for hot agent metadata and policy decisions (TTL 5-10 minutes) to reduce database reads.
 - **Read replicas:** optional Postgres read replicas for analytics/dashboard queries; control-plane writes always target primary.
 - **Growth management:** BRIN indexes on append-only tables; periodic VACUUM/ANALYZE; archive cold artifacts to cheaper object storage tier.
 
 ## 4. Backup & Restore Policy
 | Data Store | Backup Type | Frequency | Retention | RPO | RTO | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| PostgreSQL | Full + WAL shipping | Full daily, WAL every 15 min | 30 days | ≤15 min | ≤4 hours | Point-in-time recovery via WAL; test restores monthly |
+| PostgreSQL | Full + WAL shipping | Full daily, WAL every 15 min | 30 days | &#x2264;15 min | &#x2264;4 hours | Point-in-time recovery via WAL; test restores monthly |
 | Redis | Not backed up (ephemeral) | N/A | N/A | N/A | N/A | Stateless caches reconstructed |
-| Qdrant | Snapshot + object backup | Daily snapshot | 14 days | ≤24 hours | ≤8 hours | Store snapshots in object storage |
-| MinIO/S3 | Versioned bucket replication | Continuous | 90 days current, 365-day archive | ≤1 hour | ≤8 hours | Cross-region replication for DR |
-| Kafka | Topic retention | 7–30 days configurable | 30 days max | ≤1 hour | ≤2 hours | MirrorMaker/replication for HA |
+| Qdrant | Snapshot + object backup | Daily snapshot | 14 days | &#x2264;24 hours | &#x2264;8 hours | Store snapshots in object storage |
+| MinIO/S3 | Versioned bucket replication | Continuous | 90 days current, 365-day archive | &#x2264;1 hour | &#x2264;8 hours | Cross-region replication for DR |
+| Kafka | Topic retention | 7-30 days configurable | 30 days max | &#x2264;1 hour | &#x2264;2 hours | MirrorMaker/replication for HA |
 
 **Restore procedures:** documented runbook: provision standby, restore latest full backup, apply WALs, validate counts/hashes, re-enable writers; DR uses secondary region replicas with DNS/connection string failover.
 
@@ -210,13 +210,13 @@ erDiagram
 | Event Logs | 30 days hot | 90 days warm | 1 year archive | Delete after 13 months | Privacy-safe; redact PII |
 | Artifacts | 90 days in primary bucket | 180 days infrequent-access | 3 years glacier/archive | Delete after 3 years | Hashes retained for audit even after delete |
 | Policies/Agents/Models | Current + previous version retained | N/A | N/A | Never auto-deleted | Manual cleanup only |
-| Redis caches | ≤24h TTL | N/A | N/A | Expire | No backups |
+| Redis caches | &#x2264;24h TTL | N/A | N/A | Expire | No backups |
 
 Privacy/compliance: encrypt data at rest (Postgres TDE/disk encryption; SSE for object storage); TLS in transit; PII minimization in logs; GDPR deletion workflows remove user-linked tasks/artifacts; audit trails preserved with pseudonymization.
 
 ## 6. Migration Strategy
 - **Tooling:** Prefer Alembic (Python) for PostgreSQL schema migrations with versioned scripts; Terraform/Helm for infra changes; custom Python/SQL scripts for one-off backfills.
-- **Approach:** phased/zero-downtime where possible—additive migrations (new columns nullable, backfill, then enforce); use view compatibility for API versions.
+- **Approach:** phased/zero-downtime where possible-additive migrations (new columns nullable, backfill, then enforce); use view compatibility for API versions.
 - **Rollback:** maintain down revisions; in failure, apply down migration, restore from last backup if data corruption detected, and disable writers during rollback.
 - **Data validation:** row counts before/after, checksums on critical tables, sample-based diffing on tasks/runs, and application smoke tests post-migration.
 - **Change management:** migrations reviewed and approved by Data/Platform owners; executed during maintenance windows with runbooks and alerting; success criteria logged in change tickets.
