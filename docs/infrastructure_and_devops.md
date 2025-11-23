@@ -1,7 +1,7 @@
 # Infrastructure & DevOps Review
 
 ## 1. Infrastructure Diagram
-- **Deployment model:** Hybrid-friendly — supports on-premises (bare metal/VM) and cloud (Kubernetes/managed DB/object storage) with identical compose overlays.
+- **Deployment model:** Hybrid-friendly - supports on-premises (bare metal/VM) and cloud (Kubernetes/managed DB/object storage) with identical compose overlays.
 - **Textual diagram (suitable for drawing):**
   - Box: *Users/Operators* (Browser/CLI) -> arrow to *Edge Load Balancer* (HTTPS, WAF/Rate limit).
   - Edge Load Balancer -> arrow to *Gateway Service* (ingress controllers / API gateway) inside *Public/DMZ subnet*.
@@ -57,14 +57,14 @@
 ## 7. Resource Sizing & Capacity Planning
 | Layer | Baseline Size | Notes/Scaling | Metrics for Planning |
 | --- | --- | --- | --- |
-| Gateway | 2–3 pods (0.5–1 vCPU, 1–2 GiB) per AZ | HPA on CPU/RPS/latency; canary friendly | P95 latency, error rate, RPS |
-| Control | 3–5 pods (1–2 vCPU, 2–4 GiB) | Scales on queue depth/task throughput | Queue depth, task success rate |
-| Kernel/Schedulers | 2–N pods (2–4 vCPU, 4–8 GiB; GPU optional) | Autoscale on job concurrency and GPU utilization | Concurrency, GPU/CPU utilization |
-| Postgres | 2 nodes (primary + read replica, 4–8 vCPU, 16–32 GiB, fast SSD) | Vertical scale for IOPS; follower for reads | TPS, buffer hit ratio, IOPS |
+| Gateway | 2-3 pods (0.5-1 vCPU, 1-2 GiB) per AZ | HPA on CPU/RPS/latency; canary friendly | P95 latency, error rate, RPS |
+| Control | 3-5 pods (1-2 vCPU, 2-4 GiB) | Scales on queue depth/task throughput | Queue depth, task success rate |
+| Kernel/Schedulers | 2-N pods (2-4 vCPU, 4-8 GiB; GPU optional) | Autoscale on job concurrency and GPU utilization | Concurrency, GPU/CPU utilization |
+| Postgres | 2 nodes (primary + read replica, 4-8 vCPU, 16-32 GiB, fast SSD) | Vertical scale for IOPS; follower for reads | TPS, buffer hit ratio, IOPS |
 | Redis | 3-node cluster (cache) | Scale memory; enable clustering if >50GB | Evictions, latency, hit rate |
 | Qdrant | 3 nodes (CPU+RAM heavy) | Scale shards on vector count; pin to NVMe | Recall/latency, shard balance |
 | MinIO/S3 | 4+ nodes or managed bucket | Erasure coding; autoscale frontends | Storage growth, egress, 4xx/5xx |
-| Kafka | 3–5 brokers (2–4 vCPU, 8–16 GiB) | Scale partitions; dedicate disks | Lag, throughput, ISR count |
+| Kafka | 3-5 brokers (2-4 vCPU, 8-16 GiB) | Scale partitions; dedicate disks | Lag, throughput, ISR count |
 - **Growth model:** Start with above baseline for ~1k RPS and tens of concurrent jobs; increase nodes 2x for each additional 1k RPS or 2x vector/object growth. Use autoscaling policies tied to SLOs and cost budgets.
 
 ## 8. Additional Considerations
