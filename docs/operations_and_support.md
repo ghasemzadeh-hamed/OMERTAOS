@@ -88,7 +88,7 @@
 - **Mitigation:** Increase resources, restart DB pod, clear long-running queries, move traffic to healthy replica.
 - **Workaround:** Reduce load via rate limiting or queue draining; switch read-only mode for console.
 - **Long-term fix:** Optimize queries, add read replicas, ensure liveness probes tuned, add connection pool alarms.
-- **Comms:** Status page + Slack updates every 30-60 min until resolved.
+- **Comms:** Status page + Slack updates every 30–60 min until resolved.
 
 ### Disk Space Full
 - **Symptoms:** Node pressure alerts, failed writes/backups, pod evictions.
@@ -137,6 +137,6 @@
 - **Format:** JSON logs with fields: `timestamp` (ISO8601), `level`, `service`, `component`, `message`, `request_id`, `trace_id`, `span_id`, `correlation_id`, `tenant_id`, `user_id` (when present), `status`, `duration_ms`, `path`, `host`, `severity_label`.
 - **Levels:**
   - DEBUG (dev only), INFO (normal ops), WARN (non-blocking anomalies), ERROR (failed requests), FATAL (process abort).
-- **Aggregation:** Ship via Fluent Bit/Vector to ELK or Splunk; index by service and trace_id. Retention: 7-14 days non-prod, 30-90 days prod (per security policy).
+- **Aggregation:** Ship via Fluent Bit/Vector to ELK or Splunk; index by service and trace_id. Retention: 7–14 days non-prod, 30–90 days prod (per security policy).
 - **Usage:** Correlate requests via `trace_id`/`request_id`; derive metrics (error rate, latency) from structured logs; enable audit trails for auth/policy changes.
 - **Access & Governance:** Least-privilege roles for log search; PII masking at source; rotate credentials for log sinks; ensure logs encrypted in transit and at rest.

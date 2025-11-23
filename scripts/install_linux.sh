@@ -140,8 +140,8 @@ provision_python() {
     run_as_app "${python_bin} -m venv '$APP_DIR/.venv'"
   fi
 
-  echo "Installing Python dependencies"
-  run_as_app "cd '$APP_DIR/control' && source '$APP_DIR/.venv/bin/activate' && pip install --upgrade pip wheel setuptools && pip install ."
+  echo "Installing Python dependencies (aionos-core[control])"
+  run_as_app "cd '$APP_DIR' && source '$APP_DIR/.venv/bin/activate' && pip install --upgrade pip wheel setuptools && pip install '.[control]'"
 }
 
 ensure_pnpm() {
@@ -156,7 +156,7 @@ provision_node_projects() {
 
   for project in console gateway; do
     echo "Installing Node dependencies for $project"
-    run_as_app "cd '$APP_DIR/$project' && pnpm install --frozen-lockfile"
+    run_as_app "cd '$APP_DIR/$project' && if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install --no-frozen-lockfile; fi"
   done
 
   echo "Generating Prisma client for console"

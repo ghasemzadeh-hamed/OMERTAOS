@@ -24,8 +24,8 @@
 
 ## 2. Test Coverage & Tools
 - **Targets:**
-  - Backend services: statement coverage &#x2265; 80%, branch coverage &#x2265; 70%.
-  - Frontend console: line coverage &#x2265; 75%, critical flows instrumented with E2E success rate &#x2265; 95%.
+  - Backend services: statement coverage ≥ 80%, branch coverage ≥ 70%.
+  - Frontend console: line coverage ≥ 75%, critical flows instrumented with E2E success rate ≥ 95%.
   - Infrastructure-as-code and installer scripts: critical-path smoke automation present for all profiles.
 - **Measurement & Reporting:**
   - Coverage via `coverage.py`, `nyc`/`jest --coverage`, `go test -cover`; aggregated in CI reports (e.g., Codecov/SonarQube) with historical trend dashboards.
@@ -38,7 +38,7 @@
   - Console login + dashboard load under default profile; catalog list renders and agent deploy form submits successfully.
   - Installer/profile selection produces running stack (compose/k8s) with core services healthy; env/secrets templating resolves.
 - **Regression Suites (nightly/weekly):**
-  - Agent lifecycle: create &#x2192; deploy &#x2192; run &#x2192; pause/disable &#x2192; delete; verify state persistence and events.
+  - Agent lifecycle: create → deploy → run → pause/disable → delete; verify state persistence and events.
   - Policy enforcement: attach/update policy bundles; confirm allow/deny paths, audit logs, and rollback behaviour.
   - Model/registry resolution: manifest validation, download/signature checks, caching and fallback; fail closed on mismatch.
   - Observability: task metrics/streams visible in console; alerting hooks fire on error thresholds.
@@ -72,3 +72,4 @@
   - Rebuild images with updated bases; re-run SAST/DAST and regression suites post-patch.
   - Maintain changelog and SBOM; sign artifacts.
 - **Rollback & Verification:** Canary or blue/green deployments with health checks; rollback on elevated error rates or failed smoke tests. Post-patch scans confirm remediation; audits review exceptions/waivers quarterly.
+
