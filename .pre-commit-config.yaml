@@ -18,9 +18,10 @@ repos:
       - id: gitleaks
   - repo: local
     hooks:
-      - id: sanitize-ascii
-        name: ASCII sanitizer
-        entry: python tools/sanitize_ascii.py
-        language: system
-        pass_filenames: false
-        stages: [pre-commit]
+    - id: sanitize-ascii
+      name: ASCII sanitizer
+      entry: python tools/sanitize_ascii.py
+      language: system
+      pass_filenames: false
+      exclude: "(^|/)aionos_core\\.egg-info/"
+      stages: [pre-commit]
