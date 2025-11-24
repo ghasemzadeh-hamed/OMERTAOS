@@ -10,7 +10,7 @@ WorkingDirectory=/opt/omerta/OMERTAOS/gateway
 EnvironmentFile=/opt/omerta/OMERTAOS/.env
 Environment=PATH=/usr/local/bin:/usr/bin:/bin
 Environment=NODE_ENV=production
-ExecStart=/usr/bin/env node /opt/omerta/OMERTAOS/gateway/dist/index.js
+ExecStart=/usr/bin/env node /opt/omerta/OMERTAOS/gateway/dist/server.js
 Restart=always
 RestartSec=3
 
