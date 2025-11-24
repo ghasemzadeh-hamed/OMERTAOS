@@ -1,6 +1,13 @@
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const base = process.env.NEXT_PUBLIC_CONTROL_URL ?? 'http://localhost:9000';
 
 export async function GET() {
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return new Response('Control stream unavailable', { status: 503 });
+  }
+
   try {
     const response = await fetch(`${base}/v1/logs/stream`);
     if (!response.ok || !response.body) {

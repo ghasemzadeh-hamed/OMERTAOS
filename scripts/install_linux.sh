@@ -203,9 +203,18 @@ if not path.exists():
 updates = {
     "DATABASE_URL": "$database_url",
     "AION_CONTROL_POSTGRES_DSN": "$database_url",
-    "AION_DB_USER": "$db_user",
-    "AION_DB_PASSWORD": "$db_pass",
-    "AION_DB_NAME": "$db_name",
+    "AION_CONTROL_HTTP_HOST": "0.0.0.0",
+    "AION_CONTROL_HTTP_PORT": "8000",
+    "AION_CONTROL_REDIS_URL": "redis://127.0.0.1:6379/0",
+    "AION_REDIS_URL": "redis://127.0.0.1:6379/0",
+    "AION_GATEWAY_HOST": "0.0.0.0",
+    "AION_GATEWAY_PORT": "3000",
+    "AION_CONTROL_GRPC": "localhost:50051",
+    "AION_CONTROL_BASE": "http://localhost:8000",
+    "AION_CORS_ORIGINS": "http://localhost:3001,http://localhost:3000",
+    "NEXT_PUBLIC_GATEWAY_URL": "http://localhost:3000",
+    "NEXT_PUBLIC_CONTROL_URL": "http://localhost:8000",
+    "NEXT_PUBLIC_CONTROL_BASE": "http://localhost:8000",
 }
 
 lines = path.read_text().splitlines()
@@ -230,7 +239,7 @@ PY
 create_env_file() {
   if [ ! -f "$ENV_FILE" ]; then
     echo "Creating environment file"
-    run_as_app "cp '$APP_DIR/config/templates/.env.example' '$ENV_FILE'"
+    run_as_app "cp '$APP_DIR/.env.example' '$ENV_FILE'"
   fi
 
   run_as_app "cd '$APP_DIR' && ln -sf ../.env gateway/.env"
@@ -355,6 +364,7 @@ install_systemd_units() {
 
   sudo systemctl daemon-reload
   sudo systemctl enable --now omerta-control.service omerta-gateway.service omerta-console.service
+  sudo systemctl restart omerta-control.service omerta-gateway.service omerta-console.service
 }
 
 print_summary() {
