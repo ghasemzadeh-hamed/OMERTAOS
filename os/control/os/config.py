@@ -2,8 +2,8 @@ import os
 from functools import lru_cache
 from typing import Any, Dict, List
 
-from pydantic import Field, PrivateAttr
-from pydantic_settings import BaseSettings
+from pydantic import AliasChoices, Field, PrivateAttr
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from os.secret_store import (
     SecretProvider,
@@ -44,6 +44,14 @@ def _build_postgres_dsn(payload: Dict[str, Any]) -> str:
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix="AION_CONTROL_",
+        env_file=".env",
+        extra="ignore",
+    )
+
+    http_host: str = "0.0.0.0"
+    http_port: int = 8000
     api_prefix: str = "/v1"
     cors_origins: List[str] = Field(default_factory=lambda: ["*"])
     redis_url: str = "redis://redis:6379/0"
@@ -76,12 +84,10 @@ class Settings(BaseSettings):
     _grpc_tls_private_key: bytes | None = PrivateAttr(default=None)
     _grpc_tls_client_ca: bytes | None = PrivateAttr(default=None)
 
-    class Config:
-        env_prefix = "AION_CONTROL_"
-        env_file = ".env"
-        fields = {"environment": {"env": "AION_ENV"}}
-
-    environment: str = "dev"
+    environment: str = Field(
+        default="dev",
+        validation_alias=AliasChoices("AION_ENV", "ENVIRONMENT"),
+    )
 
     def initialise_secrets(self, provider: SecretProvider | None = None) -> None:
         disable_env = os.getenv("AION_CONTROL_DISABLE_SECRETS")

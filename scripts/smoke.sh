@@ -15,6 +15,18 @@ check_http() {
   local attempts=$SMOKE_RETRIES
   local delay=$SMOKE_DELAY
 
+  print_control_diagnostics() {
+    if [[ "$label" != "control" ]]; then
+      return
+    fi
+    if command -v systemctl >/dev/null 2>&1; then
+      echo "systemctl is-active omerta-control:"
+      systemctl is-active omerta-control || true
+      echo "Last 50 journalctl lines for omerta-control:"
+      journalctl -u omerta-control --no-pager | tail -n 50 || true
+    fi
+  }
+
   for ((i=1; i<=attempts; i++)); do
     if curl -fsS "$url" >/tmp/smoke_response.$$ 2>/tmp/smoke_error.$$; then
       cat /tmp/smoke_response.$$
@@ -29,6 +41,7 @@ check_http() {
   if [[ -s /tmp/smoke_error.$$ ]]; then
     cat /tmp/smoke_error.$$ >&2
   fi
+  print_control_diagnostics
   rm -f /tmp/smoke_response.$$ /tmp/smoke_error.$$
   return 1
 }

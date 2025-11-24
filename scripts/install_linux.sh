@@ -211,6 +211,7 @@ updates = {
     "AION_GATEWAY_PORT": "3000",
     "AION_CONTROL_GRPC": "localhost:50051",
     "AION_CONTROL_BASE": "http://localhost:8000",
+    "AION_CONTROL_CORS_ORIGINS": "http://localhost:3001,http://localhost:3000",
     "AION_CORS_ORIGINS": "http://localhost:3001,http://localhost:3000",
     "NEXT_PUBLIC_GATEWAY_URL": "http://localhost:3000",
     "NEXT_PUBLIC_CONTROL_URL": "http://localhost:8000",
