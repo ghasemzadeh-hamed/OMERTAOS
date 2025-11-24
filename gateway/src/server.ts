@@ -26,6 +26,7 @@ import { devKernelRequestSchema, taskRequestSchema } from './types.js';
 import { shutdownTelemetry, startTelemetry } from './telemetry.js';
 import { registerConfigRoutes } from './routes/config.js';
 import { registerSealRoutes } from './routes/seal.js';
+import { registerHealthRoutes } from './routes/health.js';
 import {
   buildDevKernelPayload,
   callDevKernel,
@@ -67,10 +68,7 @@ app.addHook('onRequest', async (request, reply) => {
 
 const controlClient = createControlClient();
 const streamEmitter = new EventEmitter();
-const healthHandler = async () => ({ ok: true });
-
-app.get('/healthz', healthHandler);
-app.get('/health', healthHandler);
+registerHealthRoutes(app);
 
 const invokeControlUnary = (method: 'Submit' | 'StatusById', payload: any, metadata: Metadata) => {
   return new Promise<any>((resolve, reject) => {

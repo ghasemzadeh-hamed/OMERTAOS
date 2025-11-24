@@ -52,8 +52,14 @@ jobs:
           pip install --no-compile -r requirements.txt
           pip install pre-commit
 
+      - name: Install control (editable)
+        run: pip install -e .[control,dev]
+
       - name: Run pre-commit
         run: pre-commit run --all-files
+
+      - name: Run control tests
+        run: pytest control/tests -q
 
       - name: Run preflight
         run: tools/preflight.sh --noninteractive
