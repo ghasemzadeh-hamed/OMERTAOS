@@ -33,7 +33,6 @@ Required environment variables:
 | `NEXTAUTH_SECRET`         | Random 32+ byte secret used to sign session cookies. Generate with `openssl rand -base64 32`. |
 | `NEXTAUTH_URL`            | Public URL where the console is served (e.g. `http://localhost:3000`).                        |
 | `NEXT_PUBLIC_GATEWAY_URL` | Base URL for REST/gRPC proxies exposed by the gateway (defaults to `http://localhost:8080`).  |
-| `NEXT_PUBLIC_CONTROL_URL` | Base URL for the control plane API (defaults to `http://localhost:8001`).                     |
 
 ### Credentials flow
 

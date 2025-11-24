@@ -67,12 +67,10 @@ app.addHook('onRequest', async (request, reply) => {
 
 const controlClient = createControlClient();
 const streamEmitter = new EventEmitter();
-const healthHandler = async () => ({
-  status: 'ok',
-  service: 'gateway',
-  profile: gatewayConfig.profile,
-  seal_enabled: gatewayConfig.featureSeal,
-});
+const healthHandler = async () => ({ ok: true });
+
+app.get('/healthz', healthHandler);
+app.get('/health', healthHandler);
 
 const invokeControlUnary = (method: 'Submit' | 'StatusById', payload: any, metadata: Metadata) => {
   return new Promise<any>((resolve, reject) => {

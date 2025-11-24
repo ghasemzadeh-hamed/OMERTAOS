@@ -74,7 +74,9 @@ class Settings(BaseSettings):
     http_host: str = "0.0.0.0"
     http_port: int = 8000
     api_prefix: str = "/v1"
-    cors_origins: List[str] = Field(default_factory=lambda: ["*"])
+    cors_origins: List[str] = Field(
+        default_factory=lambda: [os.getenv("AION_CONSOLE_ORIGIN", "http://localhost:3000")]
+    )
     redis_url: str = "redis://redis:6379/0"
     mongo_dsn: str = "mongodb://mongo:27017"
     kafka_bootstrap: str = "kafka:9092"
@@ -125,17 +127,32 @@ class Settings(BaseSettings):
         """
 
         if value is None or (isinstance(value, str) and not value.strip()):
-            return ["*"]
+            return [os.getenv("AION_CONSOLE_ORIGIN", "http://localhost:3000")]
 
         if isinstance(value, (list, tuple, set)):
             normalised = [str(item).strip() for item in value if str(item).strip()]
             if normalised:
+                if "*" in normalised:
+                    if len(normalised) > 1:
+                        raise ValueError(
+                            "Wildcard CORS origins cannot be combined with explicit origins"
+                        )
+                    env = (os.getenv("AION_ENV") or os.getenv("ENVIRONMENT") or "dev").lower()
+                    if env.startswith("prod"):
+                        raise ValueError(
+                            "Wildcard CORS origins are not permitted in production environments"
+                        )
                 return normalised
-            return ["*"]
+            return [os.getenv("AION_CONSOLE_ORIGIN", "http://localhost:3000")]
 
         if isinstance(value, str):
             stripped = value.strip()
             if stripped == "*":
+                env = (os.getenv("AION_ENV") or os.getenv("ENVIRONMENT") or "dev").lower()
+                if env.startswith("prod"):
+                    raise ValueError(
+                        "Wildcard CORS origins are not permitted in production environments"
+                    )
                 return ["*"]
 
             if stripped.startswith("[") and stripped.endswith("]"):
@@ -144,12 +161,36 @@ class Settings(BaseSettings):
                     if isinstance(parsed, Iterable) and not isinstance(parsed, (str, bytes)):
                         normalised = [str(item).strip() for item in parsed if str(item).strip()]
                         if normalised:
+                            if "*" in normalised:
+                                if len(normalised) > 1:
+                                    raise ValueError(
+                                        "Wildcard CORS origins cannot be combined with explicit origins"
+                                    )
+                                env = (
+                                    os.getenv("AION_ENV")
+                                    or os.getenv("ENVIRONMENT")
+                                    or "dev"
+                                ).lower()
+                                if env.startswith("prod"):
+                                    raise ValueError(
+                                        "Wildcard CORS origins are not permitted in production environments"
+                                    )
                             return normalised
                 except json.JSONDecodeError as exc:
                     raise ValueError("Invalid JSON array for CORS origins") from exc
 
             parts = [entry.strip() for entry in stripped.split(",") if entry.strip()]
             if parts:
+                if "*" in parts:
+                    if len(parts) > 1:
+                        raise ValueError(
+                            "Wildcard CORS origins cannot be combined with explicit origins"
+                        )
+                    env = (os.getenv("AION_ENV") or os.getenv("ENVIRONMENT") or "dev").lower()
+                    if env.startswith("prod"):
+                        raise ValueError(
+                            "Wildcard CORS origins are not permitted in production environments"
+                        )
                 return parts
 
         raise ValueError(

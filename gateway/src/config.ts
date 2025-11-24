@@ -144,11 +144,27 @@ const parseApiKeysSecret = (secret: Record<string, unknown> | string): Record<st
 const profile = (process.env.AION_PROFILE || 'user').toLowerCase() as GatewayConfig['profile'];
 const featureSeal = process.env.FEATURE_SEAL === '1' || profile === 'enterprise-vip';
 
+const defaultConsoleOrigin = process.env.AION_CONSOLE_ORIGIN || 'http://localhost:3000';
+
 const parseCorsOrigins = (raw: string | undefined): string[] => {
   if (!raw) {
     return [];
   }
-  return raw
+  const trimmed = raw.trim();
+  if (trimmed === '*') {
+    return ['*'];
+  }
+  if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed.map((item) => String(item).trim()).filter(Boolean);
+      }
+    } catch (error) {
+      throw new Error(`Invalid JSON list for AION_CORS_ORIGINS: ${(error as Error).message}`);
+    }
+  }
+  return trimmed
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
@@ -171,15 +187,7 @@ const resolveCorsConfiguration = (
   environment: GatewayEnvironment,
 ): { origins: string[]; allowCredentials: boolean } => {
   const parsedOrigins = parseCorsOrigins(rawOrigins);
-  const origins = normaliseCorsOrigins(parsedOrigins);
-  if (origins.length === 0) {
-    if (environment === 'production') {
-      throw new Error(
-        'AION_CORS_ORIGINS must be configured with one or more allowed origins in production environments.',
-      );
-    }
-    return { origins: ['*'], allowCredentials: false };
-  }
+  const origins = parsedOrigins.length > 0 ? normaliseCorsOrigins(parsedOrigins) : [defaultConsoleOrigin];
 
   if (origins.includes('*')) {
     if (origins.length > 1) {
@@ -195,7 +203,7 @@ const resolveCorsConfiguration = (
     return { origins: ['*'], allowCredentials: false };
   }
 
-  return { origins, allowCredentials: true };
+  return { origins, allowCredentials: origins.length > 0 };
 };
 
 const normaliseSecretProviderMode = (raw: string | undefined): string => {
@@ -573,11 +581,17 @@ export async function buildGatewayConfig(): Promise<GatewayConfig> {
     process.env.AION_TLS_REQUIRED === 'yes' ||
     process.env.AION_TLS_REQUIRED === 'on';
 
+  const controlBase = process.env.AION_CONTROL_BASE_URL || process.env.AION_CONTROL_BASE || 'http://localhost:8000';
+  const apiPrefix = (process.env.AION_CONTROL_API_PREFIX || '/v1').startsWith('/')
+    ? process.env.AION_CONTROL_API_PREFIX || '/v1'
+    : `/${process.env.AION_CONTROL_API_PREFIX || 'v1'}`;
+  const trimmedControlBase = controlBase.replace(/\/$/, '');
+
   return {
     port: Number(process.env.AION_GATEWAY_PORT || 8080),
     host: process.env.AION_GATEWAY_HOST || '0.0.0.0',
     controlGrpcEndpoint: process.env.AION_CONTROL_GRPC || 'control:50051',
-    controlBaseUrl: process.env.AION_CONTROL_BASE || 'http://control:8000',
+    controlBaseUrl: `${trimmedControlBase}${apiPrefix}`,
     redisUrl: process.env.AION_REDIS_URL || 'redis://redis:6379',
     selfEvolving: {
       enabled:

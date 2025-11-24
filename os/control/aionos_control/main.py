@@ -11,3 +11,9 @@ app.include_router(plugins.router)
 def healthz() -> dict[str, str]:
     """Health probe endpoint for readiness checks."""
     return {"status": "ok"}
+
+
+@app.get("/health")
+def health() -> dict[str, str]:
+    """Liveness probe alias for healthz."""
+    return {"status": "ok"}
