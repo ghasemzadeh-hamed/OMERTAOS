@@ -117,11 +117,11 @@ class Settings(BaseSettings):
         Accept multiple env formats for CORS origins and normalise them
         into a list of strings. Supported inputs:
 
-        - None or empty → ["*"]
-        - "*" → ["*"]
-        - comma-separated string → split and trimmed
-        - JSON array string → parsed and cleaned
-        - iterable (list/tuple/set) → stringified and trimmed
+        - None or empty \u2192 ["*"]
+        - "*" \u2192 ["*"]
+        - comma-separated string \u2192 split and trimmed
+        - JSON array string \u2192 parsed and cleaned
+        - iterable (list/tuple/set) \u2192 stringified and trimmed
         """
 
         if value is None or (isinstance(value, str) and not value.strip()):
