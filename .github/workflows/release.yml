@@ -10,6 +10,47 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate SBOM
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install cyclonedx-bom
+          python -m cyclonedx_py requirements requirements.txt --of JSON --output-file sbom.json
+
+      - name: Download cosign artifacts
+        id: download-cosign
+        uses: actions/download-artifact@v4
+        with:
+          name: cosign-artifacts
+          path: ./.cosign
+        continue-on-error: true
+
+      - name: Prepare cosign key
+        env:
+          COSIGN_KEY_B64: ${{ secrets.COSIGN_KEY_B64 || '' }}
+        run: |
+          set -euo pipefail
+
+          if [ -f ./.cosign/cosign.key ]; then
+            mv ./.cosign/cosign.key cosign.key
+          elif [ -n "${COSIGN_KEY_B64}" ]; then
+            echo "${COSIGN_KEY_B64}" | base64 -d > cosign.key
+          fi
+
+          if [ ! -f cosign.key ]; then
+            echo "Cosign key not found; provide via build-and-sign artifact or COSIGN_KEY_B64 secret." >&2
+            exit 1
+          fi
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.5.0
+
       - name: Generate changelog
         run: git log -1 --pretty=fuller > CHANGELOG.txt
       - name: Build gateway image
@@ -17,8 +58,10 @@ jobs:
           docker build -t ghcr.io/aionos/gateway:${GITHUB_REF_NAME} gateway
       - name: Build control image
         run: |
-          docker build -t ghcr.io/aionos/control:${GITHUB_REF_NAME} control
+          docker build -t ghcr.io/aionos/control:${GITHUB_REF_NAME} os/control
       - name: Cosign images
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD || '' }}
         run: |
           cosign sign --key cosign.key ghcr.io/aionos/gateway:${GITHUB_REF_NAME}
           cosign sign --key cosign.key ghcr.io/aionos/control:${GITHUB_REF_NAME}
@@ -30,4 +73,4 @@ jobs:
         with:
           files: |
             CHANGELOG.txt
-            sbom.spdx.json
+            sbom.json
