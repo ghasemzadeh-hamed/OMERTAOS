@@ -4,7 +4,7 @@ MODE=${MODE:-native}
 CONTROL_HEALTH_URL=${CONTROL_HEALTH_URL:-http://localhost:8000/health}
 GATEWAY_HEALTH_URL=${GATEWAY_HEALTH_URL:-http://localhost:3000/health}
 CONSOLE_HEALTH_URL=${CONSOLE_HEALTH_URL:-http://localhost:3001}
-SMOKE_RETRIES=${SMOKE_RETRIES:-10}
+SMOKE_RETRIES=${SMOKE_RETRIES:-30}
 SMOKE_DELAY=${SMOKE_DELAY:-3}
 API_URL=${API_URL:-http://localhost:8080}
 API_KEY=${API_KEY:-demo-key}
@@ -33,11 +33,30 @@ check_http() {
   return 1
 }
 
+wait_for_service() {
+  local unit=$1
+  local attempts=$SMOKE_RETRIES
+  if ! command -v systemctl >/dev/null 2>&1; then
+    return 0
+  fi
+
+  for ((i=1; i<=attempts; i++)); do
+    if systemctl is-active --quiet "$unit"; then
+      return 0
+    fi
+    sleep "$SMOKE_DELAY"
+  done
+  return 1
+}
+
 if [[ "$MODE" == "native" ]]; then
   HAVE_JQ=false
   if command -v jq >/dev/null 2>&1; then
     HAVE_JQ=true
   fi
+
+  wait_for_service omerta-control || true
+  wait_for_service omerta-gateway || true
 
   echo "Checking control plane health at $CONTROL_HEALTH_URL"
   response=$(check_http "$CONTROL_HEALTH_URL" "control")

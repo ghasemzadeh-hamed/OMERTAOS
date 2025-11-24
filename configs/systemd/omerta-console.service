@@ -1,10 +1,11 @@
 [Unit]
 Description=OMERTA Console (Next.js)
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 User=omerta
-Group=www-data
+Group=omerta
 WorkingDirectory=/opt/omerta/OMERTAOS/console
 EnvironmentFile=/opt/omerta/OMERTAOS/.env
 Environment=PATH=/usr/local/bin:/usr/bin:/bin
