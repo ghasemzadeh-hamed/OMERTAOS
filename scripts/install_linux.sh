@@ -355,6 +355,7 @@ install_systemd_units() {
 
   sudo systemctl daemon-reload
   sudo systemctl enable --now omerta-control.service omerta-gateway.service omerta-console.service
+  sudo systemctl restart omerta-control.service omerta-gateway.service omerta-console.service
 }
 
 print_summary() {
