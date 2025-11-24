@@ -142,6 +142,9 @@ provision_python() {
 
   echo "Installing Python dependencies (aionos-core[control])"
   run_as_app "cd '$APP_DIR' && source '$APP_DIR/.venv/bin/activate' && pip install --upgrade pip wheel setuptools && pip install '.[control]'"
+
+  echo "Installing control package in editable mode"
+  run_as_app "cd '$APP_DIR' && source '$APP_DIR/.venv/bin/activate' && pip install -e os/control"
 }
 
 ensure_pnpm() {
