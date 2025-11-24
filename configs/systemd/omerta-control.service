@@ -1,13 +1,14 @@
 [Unit]
 Description=OMERTA Control (FastAPI)
-After=network.target
+After=network.target postgresql.service redis-server.service
 
 [Service]
 User=omerta
 Group=www-data
-WorkingDirectory=/opt/omerta/OMERTAOS/control
+WorkingDirectory=/opt/omerta/OMERTAOS
 EnvironmentFile=/opt/omerta/OMERTAOS/.env
 Environment=PATH=/opt/omerta/OMERTAOS/.venv/bin:/usr/local/bin:/usr/bin:/bin
+Environment=PYTHONPATH=/opt/omerta/OMERTAOS
 Environment=CONTROL_PORT=8000
 Environment=CONTROL_WORKERS=1
 ExecStart=/opt/omerta/OMERTAOS/.venv/bin/uvicorn os.control.main:app --host 0.0.0.0 --port $CONTROL_PORT --workers $CONTROL_WORKERS
