@@ -22,8 +22,8 @@ check_http() {
     if command -v systemctl >/dev/null 2>&1; then
       echo "systemctl is-active omerta-control:"
       systemctl is-active omerta-control || true
-      echo "Last 50 journalctl lines for omerta-control:"
-      journalctl -u omerta-control --no-pager | tail -n 50 || true
+      echo "Last 200 journalctl lines for omerta-control:"
+      journalctl -u omerta-control -n 200 --no-pager || true
     fi
   }
 
@@ -41,6 +41,8 @@ check_http() {
   if [[ -s /tmp/smoke_error.$$ ]]; then
     cat /tmp/smoke_error.$$ >&2
   fi
+  echo "[diagnostic] curl -v $url" >&2
+  curl -v "$url" || true
   print_control_diagnostics
   rm -f /tmp/smoke_response.$$ /tmp/smoke_error.$$
   return 1
