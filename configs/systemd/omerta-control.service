@@ -14,10 +14,10 @@ Environment=PATH=/opt/omerta/OMERTAOS/.venv/bin:/usr/local/bin:/usr/bin:/bin
 Environment=CONTROL_PORT=8000
 Environment=CONTROL_WORKERS=2
 
-ExecStart=/bin/sh -lc '/opt/omerta/OMERTAOS/.venv/bin/uvicorn os.control.main:app \
+ExecStart=/opt/omerta/OMERTAOS/.venv/bin/uvicorn os.control.main:app \
   --host 0.0.0.0 \
-  --port "${CONTROL_PORT:-8000}" \
-  --workers "${CONTROL_WORKERS:-2}"'
+  --port ${CONTROL_PORT} \
+  --workers ${CONTROL_WORKERS}
 Restart=always
 RestartSec=3
 
