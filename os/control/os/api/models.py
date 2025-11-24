@@ -14,8 +14,34 @@ from .security import admin_or_devops_required, admin_required
 
 router = APIRouter(prefix="/api/models", tags=["models"])
 
-MODELS_DIR = Path(os.getenv("AION_CONTROL_MODELS_DIRECTORY", "./models")).expanduser()
-MODELS_DIR.mkdir(parents=True, exist_ok=True)
+
+def _default_app_dir() -> Path:
+    if os.getenv("APP_DIR"):
+        return Path(os.getenv("APP_DIR")).expanduser()
+    if os.getenv("APP_ROOT"):
+        return Path(os.getenv("APP_ROOT")).expanduser() / "OMERTAOS"
+    return Path(__file__).resolve().parents[3]
+
+
+def _resolve_models_dir() -> Path:
+    env_value = os.getenv("AION_CONTROL_MODELS_DIRECTORY")
+    default_dir = _default_app_dir() / "models"
+
+    if env_value:
+        candidate = Path(env_value).expanduser()
+        try:
+            candidate.mkdir(parents=True, exist_ok=True)
+            return candidate
+        except PermissionError:
+            # Fall back to a writable location under the application directory
+            default_dir.mkdir(parents=True, exist_ok=True)
+            return default_dir
+
+    default_dir.mkdir(parents=True, exist_ok=True)
+    return default_dir
+
+
+MODELS_DIR = _resolve_models_dir()
 
 REGISTRY_PATH = Path(os.getenv("AION_MODEL_REGISTRY", "config/model-registry.json"))
 

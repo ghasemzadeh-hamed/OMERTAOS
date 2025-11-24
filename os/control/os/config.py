@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 from functools import lru_cache
 from typing import Any, Dict, Iterable, List
 
@@ -82,8 +83,44 @@ class Settings(BaseSettings):
     kafka_bootstrap: str = "kafka:9092"
     qdrant_url: str = "http://qdrant:6333"
     tracing_endpoint: str = "http://otel-collector:4318/v1/traces"
-    models_directory: str = "/data/models"
-    policies_directory: str = "../policies"
+    _app_dir: Path = PrivateAttr(
+        default_factory=lambda: (
+            Path(os.getenv("APP_DIR")).expanduser()
+            if os.getenv("APP_DIR")
+            else (
+                Path(os.getenv("APP_ROOT")).expanduser() / "OMERTAOS"
+                if os.getenv("APP_ROOT")
+                else Path(__file__).resolve().parents[3]
+            )
+        )
+    )
+
+    models_directory: str = Field(default_factory=lambda: str(
+        (
+            Path(os.getenv("APP_DIR"))
+            if os.getenv("APP_DIR")
+            else (
+                Path(os.getenv("APP_ROOT")) / "OMERTAOS"
+                if os.getenv("APP_ROOT")
+                else Path(__file__).resolve().parents[3]
+            )
+        )
+        .expanduser()
+        .joinpath("models")
+    ))
+    policies_directory: str = Field(default_factory=lambda: str(
+        (
+            Path(os.getenv("APP_DIR"))
+            if os.getenv("APP_DIR")
+            else (
+                Path(os.getenv("APP_ROOT")) / "OMERTAOS"
+                if os.getenv("APP_ROOT")
+                else Path(__file__).resolve().parents[3]
+            )
+        )
+        .expanduser()
+        .joinpath("policies")
+    ))
     memory_storage_path: str = "./.memory"
     memory_default_retention_days: int = 90
     default_budget: float = 0.02
