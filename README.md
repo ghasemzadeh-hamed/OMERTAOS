@@ -41,7 +41,8 @@ cd OMERTAOS
 ```powershell
 git clone https://github.com/Hamedghz/OMERTAOS.git
 Set-Location OMERTAOS
-pwsh ./install.ps1 -Profile user       # or pro / enterprise-vip
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+powershwll ./install.ps1
 ```
 
 - Runs from Windows or WSL terminals; Docker Desktop must be enabled with WSL integration.
