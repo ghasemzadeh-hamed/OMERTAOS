@@ -13,10 +13,19 @@ from .router import decide
 
 load_dotenv()
 
-ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
-CONFIGS_DIR = Path(os.getenv("CONFIGS_DIR", "./configs")).resolve()
-PROFILE_NAME = os.getenv("PROFILE", "user")
 BASE_DIR = Path(__file__).resolve().parents[3]
+ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "")
+
+# Prefer explicit CONFIGS_DIR when provided; otherwise write under
+# the shared kernel-multitenant configs/ directory so that
+# configs/pending.json matches the documented layout in README.
+_configs_dir_env = os.getenv("CONFIGS_DIR")
+if _configs_dir_env:
+    CONFIGS_DIR = Path(_configs_dir_env).resolve()
+else:
+    CONFIGS_DIR = (BASE_DIR / "configs").resolve()
+
+PROFILE_NAME = os.getenv("PROFILE", "user")
 STATE: Dict[str, Any] = {"pending": None, "active": None, "history": []}
 
 
