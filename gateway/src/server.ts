@@ -205,9 +205,6 @@ app.addHook('onRequest', async (request, reply) => {
 
 app.addHook('preHandler', authPreHandler(['user', 'manager', 'admin']));
 
-app.get('/healthz', healthHandler);
-app.get('/health', healthHandler);
-
 app.post<{ Body: DevKernelRequest }>('/api/dev/kernel', async (request, reply) => {
   if (!devKernelEnabled()) {
     throw createHttpError(503, 'Dev kernel is disabled', 'DEV_KERNEL_DISABLED');
