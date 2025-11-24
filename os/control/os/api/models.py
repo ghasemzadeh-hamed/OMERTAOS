@@ -1,6 +1,7 @@
 """Model management endpoints."""
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 import shutil
@@ -26,19 +27,28 @@ def _default_app_dir() -> Path:
 def _resolve_models_dir() -> Path:
     env_value = os.getenv("AION_CONTROL_MODELS_DIRECTORY")
     default_dir = _default_app_dir() / "models"
+    fallback_dir = Path.home() / ".aionos" / "models"
+
+    def _ensure(path: Path) -> Path | None:
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+            return path
+        except PermissionError:
+            logging.warning("models directory %s not writable; falling back", path)
+            return None
 
     if env_value:
         candidate = Path(env_value).expanduser()
-        try:
-            candidate.mkdir(parents=True, exist_ok=True)
-            return candidate
-        except PermissionError:
-            # Fall back to a writable location under the application directory
-            default_dir.mkdir(parents=True, exist_ok=True)
-            return default_dir
+        resolved = _ensure(candidate)
+        if resolved:
+            return resolved
 
-    default_dir.mkdir(parents=True, exist_ok=True)
-    return default_dir
+    resolved_default = _ensure(default_dir)
+    if resolved_default:
+        return resolved_default
+
+    fallback_dir.mkdir(parents=True, exist_ok=True)
+    return fallback_dir
 
 
 MODELS_DIR = _resolve_models_dir()
