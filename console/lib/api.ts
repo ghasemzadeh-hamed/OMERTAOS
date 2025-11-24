@@ -1,7 +1,7 @@
 import { Task } from '../types';
 
 const gatewayBase = process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:8080';
-const controlBase = process.env.NEXT_PUBLIC_CONTROL_URL ?? 'http://localhost:9000';
+const controlBase = process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:8080';
 
 async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {

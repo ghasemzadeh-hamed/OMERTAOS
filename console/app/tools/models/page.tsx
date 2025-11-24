@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-const CONTROL_BASE = process.env.NEXT_PUBLIC_CONTROL_BASE || 'http://localhost:8000';
+const CONTROL_BASE = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8080';
 
 type ModelEntry = { name: string; path: string; size: number };
 type RegistryEntry = { name: string; url?: string; installed?: boolean; description?: string };

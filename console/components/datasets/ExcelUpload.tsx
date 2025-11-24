@@ -31,7 +31,7 @@ type TargetField = (typeof TARGET_FIELDS)[number];
 
 type MappingState = Record<string, TargetField | ''>;
 
-const CONTROL_BASE = process.env.NEXT_PUBLIC_CONTROL_URL ?? 'http://localhost:9000';
+const CONTROL_BASE = process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:8080';
 
 export default function ExcelUpload() {
   const [file, setFile] = useState<File | null>(null);

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-const CONTROL_BASE = process.env.NEXT_PUBLIC_CONTROL_BASE || "http://localhost:8000";
+const GATEWAY_BASE = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8080";
 const TENANT = process.env.NEXT_PUBLIC_TENANT_ID;
 
 type AgentInstance = {
@@ -28,7 +28,7 @@ export default function MyAgentsPage() {
 
   const load = () => {
     setLoading(true);
-    fetch(`${CONTROL_BASE}/api/agents`, { credentials: "include", headers })
+    fetch(`${GATEWAY_BASE}/api/agents`, { credentials: "include", headers })
       .then(async (res) => {
         if (!res.ok) {
           const text = await res.text();
@@ -46,7 +46,7 @@ export default function MyAgentsPage() {
   }, []);
 
   const toggle = async (agent: AgentInstance, action: "deploy" | "disable") => {
-    const res = await fetch(`${CONTROL_BASE}/api/agents/${agent.id}/${action}`, {
+    const res = await fetch(`${GATEWAY_BASE}/api/agents/${agent.id}/${action}`, {
       method: "POST",
       credentials: "include",
       headers,
