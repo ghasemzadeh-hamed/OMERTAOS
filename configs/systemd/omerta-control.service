@@ -11,14 +11,8 @@ WorkingDirectory=/opt/omerta/OMERTAOS
 EnvironmentFile=/opt/omerta/OMERTAOS/.env
 Environment=PYTHONPATH=/opt/omerta/OMERTAOS
 Environment=PATH=/opt/omerta/OMERTAOS/.venv/bin:/usr/local/bin:/usr/bin:/bin
-Environment=PYTHONPATH=/opt/omerta/OMERTAOS
-Environment=CONTROL_PORT=8000
-Environment=CONTROL_WORKERS=2
 
-ExecStart=/opt/omerta/OMERTAOS/.venv/bin/uvicorn os.control.main:app \
-  --host 0.0.0.0 \
-  --port ${CONTROL_PORT} \
-  --workers ${CONTROL_WORKERS}
+ExecStart=/opt/omerta/OMERTAOS/.venv/bin/uvicorn os.control.main:app --host 0.0.0.0 --port 8000 --workers 2
 Restart=always
 RestartSec=3
 

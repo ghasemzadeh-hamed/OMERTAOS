@@ -1,9 +1,10 @@
+import json
 import os
 from functools import lru_cache
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterable, List
 
-from pydantic import Field, PrivateAttr
-from pydantic_settings import BaseSettings
+from pydantic import AliasChoices, Field, PrivateAttr, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from os.secret_store import (
     SecretProvider,
@@ -17,6 +18,24 @@ def _normalize_boolean(value: str | None) -> bool:
         return False
     normalised = value.strip().lower()
     return normalised in {"1", "true", "yes", "on"}
+
+
+def _lenient_json_loads(value: str) -> Any:
+    """Handle JSON parsing for environment values without failing on plain strings.
+
+    Pydantic treats list-typed settings as complex and attempts to JSON-decode
+    their environment values. We want to tolerate simple strings so that
+    validators can normalise formats like comma-separated values.
+    """
+
+    stripped = value.strip()
+    if not stripped:
+        return stripped
+
+    try:
+        return json.loads(stripped)
+    except json.JSONDecodeError:
+        return stripped
 
 
 def _build_postgres_dsn(payload: Dict[str, Any]) -> str:
@@ -44,6 +63,16 @@ def _build_postgres_dsn(payload: Dict[str, Any]) -> str:
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix="AION_CONTROL_",
+        env_file=".env",
+        extra="ignore",
+        env_json_loads=_lenient_json_loads,
+        enable_decoding=False,
+    )
+
+    http_host: str = "0.0.0.0"
+    http_port: int = 8000
     api_prefix: str = "/v1"
     cors_origins: List[str] = Field(default_factory=lambda: ["*"])
     redis_url: str = "redis://redis:6379/0"
@@ -76,12 +105,57 @@ class Settings(BaseSettings):
     _grpc_tls_private_key: bytes | None = PrivateAttr(default=None)
     _grpc_tls_client_ca: bytes | None = PrivateAttr(default=None)
 
-    class Config:
-        env_prefix = "AION_CONTROL_"
-        env_file = ".env"
-        fields = {"environment": {"env": "AION_ENV"}}
+    environment: str = Field(
+        default="dev",
+        validation_alias=AliasChoices("AION_ENV", "ENVIRONMENT"),
+    )
 
-    environment: str = "dev"
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def _parse_cors_origins(cls, value: Any) -> List[str]:
+        """
+        Accept multiple env formats for CORS origins and normalise them
+        into a list of strings. Supported inputs:
+
+        - None or empty \u2192 ["*"]
+        - "*" \u2192 ["*"]
+        - comma-separated string \u2192 split and trimmed
+        - JSON array string \u2192 parsed and cleaned
+        - iterable (list/tuple/set) \u2192 stringified and trimmed
+        """
+
+        if value is None or (isinstance(value, str) and not value.strip()):
+            return ["*"]
+
+        if isinstance(value, (list, tuple, set)):
+            normalised = [str(item).strip() for item in value if str(item).strip()]
+            if normalised:
+                return normalised
+            return ["*"]
+
+        if isinstance(value, str):
+            stripped = value.strip()
+            if stripped == "*":
+                return ["*"]
+
+            if stripped.startswith("[") and stripped.endswith("]"):
+                try:
+                    parsed = json.loads(stripped)
+                    if isinstance(parsed, Iterable) and not isinstance(parsed, (str, bytes)):
+                        normalised = [str(item).strip() for item in parsed if str(item).strip()]
+                        if normalised:
+                            return normalised
+                except json.JSONDecodeError as exc:
+                    raise ValueError("Invalid JSON array for CORS origins") from exc
+
+            parts = [entry.strip() for entry in stripped.split(",") if entry.strip()]
+            if parts:
+                return parts
+
+        raise ValueError(
+            'Invalid value for CORS origins. Expected "*", a single URL, '
+            "a comma-separated list, or a JSON array of URLs."
+        )
 
     def initialise_secrets(self, provider: SecretProvider | None = None) -> None:
         disable_env = os.getenv("AION_CONTROL_DISABLE_SECRETS")

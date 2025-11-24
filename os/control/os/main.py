@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 import signal
 from contextlib import suppress
 
@@ -16,26 +15,10 @@ from os.control.os.http import app as http_app
 
 logger = logging.getLogger(__name__)
 
-_HTTP_HOST_ENV = "AION_CONTROL_HTTP_HOST"
-_HTTP_PORT_ENV = "AION_CONTROL_HTTP_PORT"
-
-
-def _http_host() -> str:
-    return os.getenv(_HTTP_HOST_ENV, "0.0.0.0")
-
-
-def _http_port() -> int:
-    value = os.getenv(_HTTP_PORT_ENV, "8000")
-    try:
-        return int(value)
-    except ValueError:  # pragma: no cover - defensive guardrail
-        logger.warning("Invalid %s=%s provided; falling back to port 8000", _HTTP_PORT_ENV, value)
-        return 8000
-
-
 async def _serve_http(shutdown: asyncio.Event) -> None:
-    host = _http_host()
-    port = _http_port()
+    settings = get_settings()
+    host = settings.http_host
+    port = settings.http_port
     config = uvicorn.Config(
         http_app,
         host=host,
