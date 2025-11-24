@@ -58,7 +58,7 @@ jobs:
           docker build -t ghcr.io/aionos/gateway:${GITHUB_REF_NAME} gateway
       - name: Build control image
         run: |
-          docker build -t ghcr.io/aionos/control:${GITHUB_REF_NAME} control
+          docker build -t ghcr.io/aionos/control:${GITHUB_REF_NAME} os/control
       - name: Cosign images
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD || '' }}
