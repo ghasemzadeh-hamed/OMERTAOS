@@ -1,7 +1,7 @@
 [Unit]
 Description=OMERTA Control (FastAPI)
-After=network.target postgresql.service redis-server.service
-Wants=postgresql.service redis-server.service
+After=network-online.target postgresql.service redis-server.service
+Wants=network-online.target postgresql.service redis-server.service
 
 [Service]
 Type=simple
@@ -14,10 +14,10 @@ Environment=PATH=/opt/omerta/OMERTAOS/.venv/bin:/usr/local/bin:/usr/bin:/bin
 Environment=CONTROL_PORT=8000
 Environment=CONTROL_WORKERS=2
 
-ExecStart=/opt/omerta/OMERTAOS/.venv/bin/uvicorn os.control.main:app \
+ExecStart=/bin/sh -lc '/opt/omerta/OMERTAOS/.venv/bin/uvicorn os.control.main:app \
   --host 0.0.0.0 \
-  --port ${CONTROL_PORT} \
-  --workers ${CONTROL_WORKERS}
+  --port "${CONTROL_PORT:-8000}" \
+  --workers "${CONTROL_WORKERS:-2}"'
 Restart=always
 RestartSec=3
 
