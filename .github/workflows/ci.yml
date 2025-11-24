@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [AIONOS]
+    branches: [AIONOS, main]
   pull_request:
 
 jobs:
