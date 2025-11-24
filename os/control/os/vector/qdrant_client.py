@@ -1,9 +1,6 @@
 from __future__ import annotations
 
 from typing import Optional
-from __future__ import annotations
-
-from typing import Optional
 
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as rest_models
