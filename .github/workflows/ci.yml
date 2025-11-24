@@ -53,7 +53,7 @@ jobs:
           pip install pre-commit
 
       - name: Install control (editable)
-        run: pip install -e .[control]
+        run: pip install -e .[control,dev]
 
       - name: Run pre-commit
         run: pre-commit run --all-files
