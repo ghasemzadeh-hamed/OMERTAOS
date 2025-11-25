@@ -17,7 +17,10 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from urllib.request import urlopen
 from urllib.error import URLError
-from jinja2 import Template
+try:  # Optional dependency for templating provisioned assets
+    from jinja2 import Template
+except ImportError:  # pragma: no cover - runtime environment
+    Template = None
 
 
 router = APIRouter(prefix="/provision", tags=["provision"])
@@ -142,6 +145,12 @@ def _load_from_vault(ref: str) -> str:
 
 
 def _render_template(template_path: Path, env: Mapping[str, Any], vault_env: Mapping[str, str]) -> str:
+    if Template is None:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="jinja2 is required to render provisioner templates; please install 'jinja2>=3.1'",
+        )
+
     try:
         template = Template(template_path.read_text())
     except FileNotFoundError as exc:
@@ -165,6 +174,12 @@ def _run_command(cmd: list[str]) -> None:
 def _health_ok(health: Mapping[str, Any], env: Mapping[str, Any]) -> bool:
     if not health:
         return False
+
+    if Template is None:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="jinja2 is required to evaluate health checks; please install 'jinja2>=3.1'",
+        )
 
     if "url" in health:
         target = Template(str(health["url"])).render(**env)
