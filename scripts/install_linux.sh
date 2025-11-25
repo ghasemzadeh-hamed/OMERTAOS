@@ -22,6 +22,9 @@ REPO=${REPO:-https://github.com/Hamedghz/OMERTAOS.git}
 APP_DIR="$APP_ROOT/OMERTAOS"
 ENV_FILE="$APP_DIR/.env"
 SYSTEMD_DIR="$APP_DIR/configs/systemd"
+CONTROL_PORT=${CONTROL_PORT:-8000}
+GATEWAY_PORT=${GATEWAY_PORT:-3000}
+CONSOLE_PORT=${CONSOLE_PORT:-3001}
 NODE_REQUIRED_MAJOR=18
 PYTHON_DEB_PACKAGES=()
 PYTHON_PREFERRED_BIN=""
@@ -172,6 +175,18 @@ provision_node_projects() {
   run_as_app "cd '$APP_DIR/gateway' && pnpm build"
 }
 
+apply_console_migrations() {
+  echo "Applying console database migrations"
+  run_as_app "cd '$APP_DIR/console' && pnpm prisma migrate deploy"
+
+  if [[ "${SKIP_CONSOLE_SEED:-false}" != "true" ]]; then
+    echo "Seeding console admin user (set SKIP_CONSOLE_SEED=true to skip)"
+    run_as_app "cd '$APP_DIR/console' && pnpm seed"
+  else
+    echo "Skipping console seed per SKIP_CONSOLE_SEED=${SKIP_CONSOLE_SEED}"
+  fi
+}
+
 parse_env_value() {
   local key=$1
   python3 - <<PY
@@ -204,21 +219,26 @@ if not path.exists():
     raise SystemExit(0)
 
 updates = {
+    "CONTROL_PORT": "${CONTROL_PORT}",
+    "GATEWAY_PORT": "${GATEWAY_PORT}",
+    "CONSOLE_PORT": "${CONSOLE_PORT}",
     "DATABASE_URL": "$database_url",
     "AION_CONTROL_POSTGRES_DSN": "$database_url",
     "AION_CONTROL_HTTP_HOST": "0.0.0.0",
-    "AION_CONTROL_HTTP_PORT": "8000",
+    "AION_CONTROL_HTTP_PORT": "${CONTROL_PORT}",
     "AION_CONTROL_REDIS_URL": "redis://127.0.0.1:6379/0",
     "AION_REDIS_URL": "redis://127.0.0.1:6379/0",
     "AION_GATEWAY_HOST": "0.0.0.0",
-    "AION_GATEWAY_PORT": "3000",
+    "AION_GATEWAY_PORT": "${GATEWAY_PORT}",
     "AION_CONTROL_GRPC": "localhost:50051",
-    "AION_CONTROL_BASE": "http://localhost:8000",
-    "AION_CONTROL_CORS_ORIGINS": "http://localhost:3001",
-    "AION_CORS_ORIGINS": "http://localhost:3001",
-    "NEXT_PUBLIC_GATEWAY_URL": "http://localhost:3000",
-    "NEXT_PUBLIC_CONTROL_URL": "http://localhost:8000",
-    "NEXT_PUBLIC_CONTROL_BASE": "http://localhost:8000",
+    "AION_CONTROL_BASE": "http://localhost:${CONTROL_PORT}",
+    "AION_CONTROL_CORS_ORIGINS": "http://localhost:${CONSOLE_PORT}",
+    "AION_CORS_ORIGINS": "http://localhost:${CONSOLE_PORT}",
+    "AION_CONSOLE_HEALTH_URL": "http://localhost:${CONSOLE_PORT}/health",
+    "NEXTAUTH_URL": "http://localhost:${CONSOLE_PORT}",
+    "NEXT_PUBLIC_GATEWAY_URL": "http://localhost:${GATEWAY_PORT}",
+    "NEXT_PUBLIC_CONTROL_URL": "http://localhost:${CONTROL_PORT}",
+    "NEXT_PUBLIC_CONTROL_BASE": "http://localhost:${CONTROL_PORT}",
 }
 
 lines = path.read_text().splitlines()
@@ -360,6 +380,10 @@ install_systemd_units() {
     return
   fi
 
+  local console_log="/var/log/omerta-console.log"
+  sudo touch "$console_log"
+  sudo chown "$APP_USER":"$APP_GROUP" "$console_log"
+
   for unit in omerta-control.service omerta-gateway.service omerta-console.service; do
     if [ -f "$SYSTEMD_DIR/$unit" ]; then
       sudo install -m 644 "$SYSTEMD_DIR/$unit" "/etc/systemd/system/$unit"
@@ -410,6 +434,7 @@ main() {
   configure_database
   provision_python
   provision_node_projects
+  apply_console_migrations
   run_migrations
   install_systemd_units
   print_summary

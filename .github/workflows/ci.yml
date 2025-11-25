@@ -250,6 +250,18 @@ jobs:
       - name: Run native smoke test
         run: ./scripts/smoke.sh
 
+      - name: Dump native service logs on failure
+        if: failure()
+        run: |
+          echo "=== omerta-control (journal) ==="
+          sudo journalctl -u omerta-control -n 200 --no-pager || true
+          echo "=== omerta-gateway (journal) ==="
+          sudo journalctl -u omerta-gateway -n 200 --no-pager || true
+          echo "=== omerta-console (journal) ==="
+          sudo journalctl -u omerta-console -n 200 --no-pager || true
+          echo "=== omerta-console (file fallback) ==="
+          sudo cat /var/log/omerta-console.log || true
+
       - name: Show service status
         if: always()
         run: |
@@ -263,6 +275,7 @@ jobs:
           sudo journalctl -u omerta-control -n 200 --no-pager > control.log
           sudo journalctl -u omerta-gateway -n 200 --no-pager > gateway.log
           sudo journalctl -u omerta-console -n 200 --no-pager > console.log
+          sudo cat /var/log/omerta-console.log > console-file.log || true
 
       - name: Upload native logs
         if: always()
@@ -273,3 +286,4 @@ jobs:
             control.log
             gateway.log
             console.log
+            console-file.log

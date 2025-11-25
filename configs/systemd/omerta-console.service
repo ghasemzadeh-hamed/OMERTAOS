@@ -10,10 +10,13 @@ WorkingDirectory=/opt/omerta/OMERTAOS/console
 EnvironmentFile=/opt/omerta/OMERTAOS/.env
 Environment=PATH=/usr/local/bin:/usr/bin:/bin
 Environment=NODE_ENV=production
+Environment=PORT=3001
 Environment=CONSOLE_PORT=3001
 ExecStart=/usr/bin/env node node_modules/next/dist/bin/next start --hostname 0.0.0.0 --port $CONSOLE_PORT
 Restart=always
 RestartSec=5
+StandardOutput=append:/var/log/omerta-console.log
+StandardError=append:/var/log/omerta-console.log
 
 [Install]
 WantedBy=multi-user.target
