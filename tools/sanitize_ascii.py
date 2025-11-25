@@ -190,6 +190,9 @@ def main() -> int:
 
         if rel in BYPASS_FILES:
             continue
+        if path.suffix.lower() in MARKDOWN_EXTS:
+            # Markdown files are intentionally excluded to allow localized content.
+            continue
         if is_binary(path):
             continue
 
