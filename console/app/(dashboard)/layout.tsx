@@ -1,13 +1,12 @@
 import { ReactNode } from 'react';
 import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
 import GlassPanel from '@/components/GlassPanel';
 import NavTabs from '@/components/NavTabs';
 import UserMenu from '@/components/UserMenu';
-import { authOptions } from '@/lib/auth';
+import { safeGetServerSession } from '@/lib/session';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  const session = await getServerSession(authOptions);
+  const session = await safeGetServerSession();
 
   if (!session) {
     redirect('/login');

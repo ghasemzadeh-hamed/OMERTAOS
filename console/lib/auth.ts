@@ -30,13 +30,19 @@ export const authOptions: NextAuthOptions = {
           candidateEmails.add(`${identifierLower}@aion.local`);
         }
 
-        const user = await prisma.user.findFirst({
-          where: {
-            email: {
-              in: Array.from(candidateEmails),
+        let user = null;
+        try {
+          user = await prisma.user.findFirst({
+            where: {
+              email: {
+                in: Array.from(candidateEmails),
+              },
             },
-          },
-        });
+          });
+        } catch (error) {
+          console.error('User lookup failed', error);
+          return null;
+        }
 
         if (!user) {
           return null;

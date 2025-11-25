@@ -1,9 +1,8 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
 import GlassPanel from '@/components/GlassPanel';
-import { authOptions } from '@/lib/auth';
+import { safeGetServerSession } from '@/lib/session';
 
 const rolePriority = {
   USER: 0,
@@ -52,7 +51,7 @@ function filterTools(role: RoleKey) {
 }
 
 export default async function ToolsLayout({ children }: { children: ReactNode }) {
-  const session = await getServerSession(authOptions);
+  const session = await safeGetServerSession();
   if (!session) {
     redirect('/login');
   }
