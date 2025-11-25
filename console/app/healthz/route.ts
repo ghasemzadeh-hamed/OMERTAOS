@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { GET as baseGet } from '../health/route';
 
-export async function GET() {
-  return NextResponse.json({ status: 'ok' });
-}
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
+export const GET = baseGet;
