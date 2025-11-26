@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { ReactNode } from 'react';
 import { redirect } from 'next/navigation';
 import GlassPanel from '@/components/GlassPanel';
