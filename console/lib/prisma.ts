@@ -38,7 +38,7 @@ const createPrismaClient = (): PrismaClient | null => {
 };
 
 const globalForPrisma = globalThis as GlobalWithPrisma;
-const prismaInstance: PrismaClient = globalForPrisma.prisma ?? createPrismaClient();
+const prismaInstance = globalForPrisma.prisma ?? createPrismaClient();
 
 export const prisma: PrismaClient =
   prismaInstance ??

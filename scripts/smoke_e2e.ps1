@@ -40,7 +40,7 @@ function Wait-ForService {
 Wait-ForService -Name 'control' -Url "$ControlUrl/healthz"
 Wait-ForService -Name 'gateway' -Url "$GatewayUrl/healthz"
 Wait-ForService -Name 'console' -Url "$ConsoleUrl/healthz"
-Invoke-WebRequest -Uri "$ConsoleUrl/dashboard/health" -UseBasicParsing -TimeoutSec 10 | Out-Null
+Invoke-WebRequest -Uri "$ConsoleUrl/dashboard/health/api" -UseBasicParsing -TimeoutSec 10 | Out-Null
 
 if ($adminToken) {
   Invoke-WebRequest -Uri "$GatewayUrl/healthz/auth" -Headers @{ 'x-aion-admin-token' = $adminToken } -UseBasicParsing -TimeoutSec 10 | Out-Null

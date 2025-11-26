@@ -39,7 +39,7 @@ wait_for "control" "$CONTROL_URL/healthz"
 wait_for "gateway" "$GATEWAY_URL/healthz"
 wait_for "console" "$CONSOLE_URL/healthz"
 
-curl -fsS "$CONSOLE_URL/dashboard/health" >/dev/null
+curl -fsS "$CONSOLE_URL/dashboard/health/api" >/dev/null
 
 if [[ -n "${ADMIN_TOKEN}" ]]; then
   curl -fsS -H "x-aion-admin-token: ${ADMIN_TOKEN}" "$GATEWAY_URL/healthz/auth" >/dev/null
