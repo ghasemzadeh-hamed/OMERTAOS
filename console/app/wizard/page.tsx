@@ -1,28 +1,20 @@
-'use client';
+import { redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth';
 
-import { registerSteps, WizardRouter } from '@aionos/ui-core';
-import Finish from './steps/09-finish';
-import Install from './steps/08-install';
-import Locale from './steps/02-locale';
-import Mode from './steps/03-mode';
-import Profile from './steps/04-profile';
-import Storage from './steps/05-storage';
-import Summary from './steps/07-summary';
-import User from './steps/06-user';
-import Welcome from './steps/01-welcome';
+import WizardClient from './WizardClient';
+import { authOptions } from '@/lib/auth';
+import { isSetupComplete } from '@/lib/setup';
 
-registerSteps([
-  { id: 'welcome', title: 'Welcome', component: Welcome },
-  { id: 'locale', title: 'Locale', component: Locale },
-  { id: 'mode', title: 'Install Mode', component: Mode },
-  { id: 'profile', title: 'Profile', component: Profile },
-  { id: 'storage', title: 'Storage', component: Storage },
-  { id: 'user', title: 'User', component: User },
-  { id: 'summary', title: 'Summary', component: Summary },
-  { id: 'install', title: 'Install', component: Install },
-  { id: 'finish', title: 'Finish', component: Finish },
-]);
+export default async function WizardPage() {
+  const setupComplete = await isSetupComplete();
+  const session = await getServerSession(authOptions);
 
-export default function Page() {
-  return <WizardRouter />;
+  if (setupComplete) {
+    if (session) {
+      redirect('/console');
+    }
+    redirect('/login');
+  }
+
+  return <WizardClient />;
 }
