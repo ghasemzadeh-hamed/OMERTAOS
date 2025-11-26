@@ -587,12 +587,29 @@ export async function buildGatewayConfig(): Promise<GatewayConfig> {
     : `/${process.env.AION_CONTROL_API_PREFIX || 'v1'}`;
   const trimmedControlBase = controlBase.replace(/\/$/, '');
 
+  const redisUrl = (() => {
+    if (process.env.AION_REDIS_URL && process.env.AION_REDIS_URL.trim().length > 0) {
+      return process.env.AION_REDIS_URL;
+    }
+
+    const isDocker =
+      process.env.CONTAINER === 'docker' ||
+      process.env.DOCKER_CONTAINER === 'true' ||
+      fs.existsSync('/.dockerenv');
+
+    if (isDocker) {
+      return 'redis://redis:6379/0';
+    }
+
+    return 'redis://127.0.0.1:6379/0';
+  })();
+
   return {
     port: Number(process.env.AION_GATEWAY_PORT || 8080),
     host: process.env.AION_GATEWAY_HOST || '0.0.0.0',
     controlGrpcEndpoint: process.env.AION_CONTROL_GRPC || 'control:50051',
     controlBaseUrl: `${trimmedControlBase}${apiPrefix}`,
-    redisUrl: process.env.AION_REDIS_URL || 'redis://redis:6379',
+    redisUrl,
     selfEvolving: {
       enabled:
         process.env.AION_SELF_EVOLVING_ENABLED !== 'false' &&

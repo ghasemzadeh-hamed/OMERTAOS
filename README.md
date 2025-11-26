@@ -65,6 +65,20 @@ This path uses [`docker-compose.quickstart.yml`](docker-compose.quickstart.yml) 
 
 Detailed guides for ISO, native Linux, WSL, and Docker modes live in [`docs/quickstart.md`](docs/quickstart.md). ISO and native installers gate destructive actions behind the `AIONOS_ALLOW_INSTALL` flag.
 
+### QuickStart (Windows + Docker Desktop)
+
+- Prerequisites: Docker Desktop with WSL2 backend enabled, Git, and PowerShell 7+.
+- Steps:
+  1. `git clone https://github.com/Hamedghz/OMERTAOS.git`
+  2. `cd OMERTAOS`
+  3. `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\quicksetup.ps1`
+  4. `docker compose up -d`
+  5. Open the services:
+     - Console UI: http://localhost:3000
+     - Gateway health: http://localhost:8080/healthz
+
+The default profile is `user`, which keeps the stack lightweight while enabling the console, gateway, and control plane.
+
 ## Repository map
 
 | Path | Purpose |
