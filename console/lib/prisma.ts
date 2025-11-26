@@ -1,3 +1,5 @@
+import { PrismaClient } from '@prisma/client';
+
 const DEFAULT_SQLITE_URL = 'file:./dev.db';
 
 if (!process.env.DATABASE_URL) {
@@ -9,62 +11,48 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-type PrismaClientLike = Record<string, any> & {
-  $disconnect?: () => Promise<void>;
-};
-
 type GlobalWithPrisma = typeof globalThis & {
-  prisma?: PrismaClientLike | null;
+  prisma?: PrismaClient | null;
 };
 
-const prismaEnabled = process.env.AION_ENABLE_PRISMA === '1' || process.env.AION_ENABLE_PRISMA === 'true';
+const prismaEnabledEnv = process.env.AION_ENABLE_PRISMA;
+const prismaEnabled =
+  prismaEnabledEnv === undefined ||
+  prismaEnabledEnv === '1' ||
+  prismaEnabledEnv.toLowerCase?.() === 'true';
 
-let PrismaClientConstructor: { new (...args: any[]): PrismaClientLike } | null = null;
+const createPrismaClient = (): PrismaClient | null => {
+  if (!prismaEnabled) {
+    return null;
+  }
 
-if (prismaEnabled) {
   try {
-    const prismaModule = require('@prisma/client');
-    PrismaClientConstructor = prismaModule.PrismaClient ?? null;
-    if (!PrismaClientConstructor) {
-      // eslint-disable-next-line no-console
-      console.warn('[console] @prisma/client is installed without generated client; continuing without Prisma.');
-    }
+    return new PrismaClient({
+      log: ['warn', 'error'],
+    });
   } catch (error) {
     // eslint-disable-next-line no-console
     console.warn('[console] Prisma client unavailable; skipping database client init.', error);
-  }
-}
-
-const createPrismaClient = (): PrismaClientLike | null => {
-  if (!PrismaClientConstructor) {
     return null;
   }
-  return new PrismaClientConstructor({
-    log: ['warn', 'error'],
-  });
-};
-
-const createNoopClient = (): PrismaClientLike => {
-  const handler: ProxyHandler<Record<string, unknown>> = {
-    get: (_target, prop: string) => {
-      if (prop === '$disconnect') {
-        return async () => undefined;
-      }
-      const callable = () => Promise.resolve(null);
-      return new Proxy(callable, {
-        apply: () => Promise.resolve(null),
-      });
-    },
-  };
-
-  return new Proxy({}, handler) as PrismaClientLike;
 };
 
 const globalForPrisma = globalThis as GlobalWithPrisma;
+const prismaInstance: PrismaClient = globalForPrisma.prisma ?? createPrismaClient();
 
-const prismaInstance = globalForPrisma.prisma ?? createPrismaClient() ?? createNoopClient();
-
-export const prisma: PrismaClientLike = prismaInstance;
+export const prisma: PrismaClient =
+  prismaInstance ??
+  (new Proxy(
+    {},
+    {
+      get: (_target, prop: string) => {
+        if (prop === '$disconnect') {
+          return async () => undefined;
+        }
+        return () => Promise.reject(new Error('Prisma client is disabled'));
+      },
+    },
+  ) as PrismaClient);
 
 if (process.env.NODE_ENV !== 'production' && prismaInstance) {
   globalForPrisma.prisma = prismaInstance;

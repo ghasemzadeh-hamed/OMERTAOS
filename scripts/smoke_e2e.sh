@@ -16,10 +16,9 @@ if [[ -z "${GATEWAY_URL}" ]]; then
 elif [[ "${GATEWAY_URL}" =~ ^https?://(gateway|control|console|minio|postgres|redis|qdrant)(:|/|$) ]]; then
   GATEWAY_URL="http://localhost:${GATEWAY_PORT}"
 fi
-CONTROL_URL="${CONTROL_BASE_URL:-${NEXT_PUBLIC_CONTROL_BASE:-http://localhost:8000}}"
+CONTROL_URL="${NEXT_PUBLIC_CONTROL_URL:-http://localhost:8000}"
 CONSOLE_URL="${NEXTAUTH_URL:-http://localhost:3000}"
-API_KEY_PAIR="${AION_GATEWAY_API_KEYS:-demo-key:admin|manager}"
-API_KEY="${API_KEY_PAIR%%:*}"
+ADMIN_TOKEN="${AION_GATEWAY_ADMIN_TOKEN:-demo-admin-token}"
 
 wait_for() {
   local name=$1
@@ -39,5 +38,11 @@ wait_for() {
 wait_for "control" "$CONTROL_URL/healthz"
 wait_for "gateway" "$GATEWAY_URL/healthz"
 wait_for "console" "$CONSOLE_URL/healthz"
+
+curl -fsS "$CONSOLE_URL/dashboard/health" >/dev/null
+
+if [[ -n "${ADMIN_TOKEN}" ]]; then
+  curl -fsS -H "x-aion-admin-token: ${ADMIN_TOKEN}" "$GATEWAY_URL/healthz/auth" >/dev/null
+fi
 
 echo "All services healthy"

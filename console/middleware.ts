@@ -11,6 +11,7 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/assets") ||
     pathname === "/health" ||
     pathname === "/healthz" ||
+    pathname === "/dashboard/health" ||
     pathname === "/favicon.ico";
 
   if (!isBypassed) {
