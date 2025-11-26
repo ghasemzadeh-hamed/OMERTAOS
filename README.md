@@ -143,15 +143,15 @@ Please review [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_C
 
 ---
 
-##  
+##
 
-#    
+#
 
                             .        WSL                      .
 
 ---
 
-##   
+##
 
 - **  **     Rust  [`kernel/`](kernel)  [`kernel-multitenant/`](kernel-multitenant)         .           .
 - ** **     [`aion/`](aion)                    [`aion/config`](aion/config)  .
@@ -160,7 +160,7 @@ Please review [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_C
 - **    **     [`ai_registry/REGISTRY.yaml`](ai_registry/REGISTRY.yaml)     [`models/`](models)          .
 - **  **         [`agents/`](agents) [`policies/`](policies)  [`config/agent_catalog`](config/agent_catalog)             .
 
-##    
+##
 
 - **  **  [`core/`](core)  [`config/`](config)  `.env`  systemd/NSSM      .  (`user` `professional` `enterprise-vip`)  ML  Kubernetes LDAP       . [`configs/`](configs)   compose     .
 - **    **   `aion`           . API           (`/api/agents`)  (`/api/agents/{id}/deploy`)    (`/api/agent-catalog`)   .       [`config/agent_catalog/recipes`](config/agent_catalog/recipes)         .
@@ -168,7 +168,7 @@ Please review [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_C
 - **     **      `model://`         .    [`models/`](models)          .
 - **  **    (`none` `standard` `cis-lite`) UFW Fail2Ban  Auditd   . Secure Boot        [`docs/security`](docs/security)  .            `/var/log/aionos-firstboot.log`  .
 
-##  
+##
 
 ###  (Docker Engine)
 
@@ -208,11 +208,11 @@ pwsh ./install.ps1 -Profile user       #  professional / enterprise-vip
 
    [`docker-compose.quickstart.yml`](docker-compose.quickstart.yml)      JWT  `config/certs/dev`  `config/keys`  .
 
-###  
+###
 
     ISO   WSL  Docker  [`docs/quickstart.md`](docs/quickstart.md)  .  ISO        `AIONOS_ALLOW_INSTALL`  .
 
-##  
+##
 
 |  |  |
 | ---- | ------- |
@@ -227,7 +227,7 @@ pwsh ./install.ps1 -Profile user       #  professional / enterprise-vip
 | [`models/`](models) |           . |
 | [`ai_registry/`](ai_registry) |           . |
 
-## 
+##
 
 |             |               |  ML         |               |  |
 | ------------------ | ------------------------- | ---------------- | ------------------------------ | --------- |
@@ -247,7 +247,7 @@ pwsh ./install.ps1 -Profile user       #  professional / enterprise-vip
 
    `docker compose -f docker-compose.yml -f <overlay> up -d`      .
 
-##      
+##
 
 -    [`config/agent_catalog/agents.yaml`](config/agent_catalog/agents.yaml)        [`config/agent_catalog/recipes`](config/agent_catalog/recipes)  .
 - API                 :
@@ -256,20 +256,20 @@ pwsh ./install.ps1 -Profile user       #  professional / enterprise-vip
 -   `/agents/catalog`  `/agents/my-agents`                    .
 -  LatentBox (   `FEATURE_LATENTBOX_RECOMMENDATIONS`)       [`config/latentbox/tools.yaml`](config/latentbox/tools.yaml)      /       .
 
-##    
+##
 
 -   `apt-get update && apt-get upgrade`  `snap refresh`             `/var/log/aionos-firstboot.log`  .
 - Secure Boot      CIS-lite  [`docs/security`](docs/security)       CVE  .
 -       `AIONOS_ALLOW_INSTALL`     SBOM/    [`docs/release.md`](docs/release.md)   .
 
-##  
+##
 
   (GPU NIC  )     [`docs/hcl`](docs/hcl)  .    `core/installer/bridge/tasks`     .
 
-##  
+##
 
     [`docs/README.md`](docs/README.md)  :               .
 
-##   
+##
 
     [CONTRIBUTING.md](CONTRIBUTING.md) [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)  [SECURITY.md](SECURITY.md)   .   [  ](LICENSE)   .

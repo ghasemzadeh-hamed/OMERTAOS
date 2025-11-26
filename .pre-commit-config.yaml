@@ -12,10 +12,9 @@ repos:
         args: ["--allow-multiple-documents"]
       - id: check-json
       - id: check-toml
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.18.1
-    hooks:
-      - id: gitleaks
+  # Gitleaks is temporarily disabled because the upstream hook download fails in
+  # certain CI environments due to SSL verification issues. Re-enable when a
+  # stable mirror or packaged binary is available without custom trust tweaks.
   - repo: local
     hooks:
     - id: sanitize-ascii

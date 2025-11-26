@@ -12,13 +12,13 @@
 sudo apt-get update
 sudo apt-get install -y curl git unzip tar jq ca-certificates
 sudo apt-get install -y python3 python3-venv python3-pip
-#   : Node.js   
+#   : Node.js
 # sudo apt-get install -y nodejs npm
-# /      
+# /
 sudo apt-get install -y postgresql redis
 ```
 
-## 1)   
+## 1)
 
 ```bash
 sudo useradd -m -s /bin/bash aion || true
@@ -33,14 +33,14 @@ sudo chown -R aion:aion /opt/aionos /var/lib/aionos /var/log/aionos /etc/aionos
 ```bash
 curl -L "https://<artifact-host>/aion/latest/linux-x64/aion" -o /usr/local/bin/aion
 sudo chmod +x /usr/local/bin/aion
-#   CLI  :  virtualenv  /opt/aionos/cli 
+#   CLI  :  virtualenv  /opt/aionos/cli
 ```
 
 ```bash
 aion --version
 ```
 
-## 3)   
+## 3)
 
     `tar.gz`    .  :
 
@@ -70,9 +70,9 @@ my-config/
   CHECKSUMS.txt
 ```
 
-## 4)    
+## 4)
 
-###      
+###
 
 ```bash
 scp my-config.tgz user@server:/tmp/
@@ -81,7 +81,7 @@ sudo -iu aion bash -lc '
   mkdir -p ~/deploy && cp /tmp/my-config.tgz ~/deploy/
   cd ~/deploy && tar xzf my-config.tgz
   cp my-config/env/aion.env.example ~/.aion.env
-  #  ~/.aion.env   secrets   
+  #  ~/.aion.env   secrets
 '
 ```
 
@@ -146,7 +146,7 @@ sudo -iu aion aion provider set-profile --name ollama-local --profile cpu
 sudo -iu aion aion provider set-profile --name vllm-gpu --profile gpu
 ```
 
-## 8)   
+## 8)
 
 ```bash
 scp my-config-v2.tgz user@server:/tmp/
@@ -164,14 +164,14 @@ sudo -iu aion aion router policy-rollback --rev 17
 -    `/var/log/aionos`     `journalctl -u aion-* -f`  .
 -      CI  `aion apply` + `aion doctor`    .
 
-## 10)  
+## 10)
 
 1.  CLI    `aion`
 2.     env
 3.  `aion apply --bundle ... --no-browser`
 4.   systemd
-5.  
-6.       
+5.
+6.
 
 ---
 

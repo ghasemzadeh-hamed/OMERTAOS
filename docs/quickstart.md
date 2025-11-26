@@ -74,13 +74,13 @@ This guide condenses each supported deployment into ten steps or fewer. Run ever
 
 ---
 
-##  
+##
 
-#  
+#
 
             .           root   `sudo`  .
 
-##   
+##
 
 ###  (Docker Engine)
 
@@ -105,7 +105,7 @@ This guide condenses each supported deployment into ten steps or fewer. Run ever
 7.   `http://localhost:3000`        .
 8.      PowerShell  `docker compose down`   .
 
-## ISO / 
+## ISO /
 
 1.           checksum    ( [`docs/release.md`](release.md)  ).
 2. ISO     (`dd if=aionos.iso of=/dev/sdX bs=4M status=progress`).
@@ -118,7 +118,7 @@ This guide condenses each supported deployment into ten steps or fewer. Run ever
 9.         `/var/log/aionos-installer.log`  .
 10.    .
 
-##  
+##
 
 1.   22.04     .
 2.    : `sudo apt-get install -y git curl build-essential python3.11 python3.11-venv python3.11-dev`  Node.js 18 LTS   `pnpm`    (`core/installer/bridge`    ).

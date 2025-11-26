@@ -12,9 +12,9 @@ When adding the React/Next.js code, point API calls to the gateway or control en
 
 ---
 
-##  
+##
 
-#    
+#
 
      Next.js    (Grid ToolView Editor Chat Assistant) .         API            .
 

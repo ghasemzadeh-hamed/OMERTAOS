@@ -21,13 +21,13 @@ The AI Registry stores metadata for models, algorithms, and services that AION-O
 
 ---
 
-##  
+##
 
 #    Agent-OS
 
             AION-OS       .      [`docs/agentos_ai_registry.md`](../docs/agentos_ai_registry.md)             .
 
-## 
+##
 
 - `REGISTRY.yaml`            .
 - `registry.lock.json`       .
@@ -37,7 +37,7 @@ The AI Registry stores metadata for models, algorithms, and services that AION-O
 - `security/`    minisign   .
 - `.github/workflows/`         (`update-registry.yml`).
 
-##  
+##
 
 -     `model://<name>`  `service://<name>`              [`ai_registry/REGISTRY.yaml`](REGISTRY.yaml)  .
 -   `registry.lock.json`       `python ai_registry/scripts/update_catalog.py`   .

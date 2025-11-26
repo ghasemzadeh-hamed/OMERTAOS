@@ -9,7 +9,7 @@ cd deploy/headless-bundle
 
               [ Headless](../../docs/deploy/headless-cli.md)  .
 
-##  
+##
 
 - `config/`:         .
 - `modules/`:          .

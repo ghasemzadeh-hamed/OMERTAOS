@@ -48,17 +48,17 @@ GPU, NIC, WiFi, and firmware matrices live in [`hcl/`](hcl). Use [`hcl/index.md`
 
 ---
 
-##  
+##
 
 #   AION-OS
 
                       .
 
-##  
+##
 
       ISO   WSL  Docker  [`quickstart.md`](quickstart.md)  .
 
-##  
+##
 
      [`install/`](install)  :
 
@@ -67,7 +67,7 @@ GPU, NIC, WiFi, and firmware matrices live in [`hcl/`](hcl). Use [`hcl/index.md`
 - [`install/wsl.md`](install/wsl.md)        WSL   .
 - [`install/docker.md`](install/docker.md)        CI.
 
-##   
+##
 
         [`profiles/`](profiles)    :
 
@@ -77,7 +77,7 @@ GPU, NIC, WiFi, and firmware matrices live in [`hcl/`](hcl). Use [`hcl/index.md`
 
    `core/installer/profile/schemas.ts`      YAML  `core/installer/profile/defaults/` .
 
-##   
+##
 
       Secure Boot  [`security/`](security)  :
 
@@ -85,11 +85,11 @@ GPU, NIC, WiFi, and firmware matrices live in [`hcl/`](hcl). Use [`hcl/index.md`
 - [`security/updates.md`](security/updates.md)
 - [`security/secure-boot-fde.md`](security/secure-boot-fde.md)
 
-##  
+##
 
  GPU NIC     [`hcl/`](hcl)  .  [`hcl/index.md`](hcl/index.md)         GPU (`hcl/gpu.md`)   (`hcl/nic.md`)  .
 
-## 
+##
 
 - [`troubleshooting.md`](troubleshooting.md)        .
 - [`release.md`](release.md)   SBOM    .

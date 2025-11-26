@@ -10,24 +10,24 @@
 
    (TUI)    [Textual](https://textual.textualize.io/)    (Providers/Modules/Data Sources)        .
 
-### 
+###
 
 ```bash
 python3 -m pip install --upgrade textual rich requests
 ```
 
-### 
+###
 
 ```bash
 python3 -m console.tui.explorer --api http://127.0.0.1:8001 --token "$AION_TOKEN"
 ```
 
-### 
+###
 
 -   (`add provider ...`, `set router ...`, `add ds ...`, `list providers`  ...)
 -    Explorer   `Ctrl+R`
-- `Ctrl+D`    
--        
+- `Ctrl+D`
+-
 
 >   SSH              .
 
@@ -37,14 +37,14 @@ python3 -m console.tui.explorer --api http://127.0.0.1:8001 --token "$AION_TOKEN
 
  [`scripts/aion-explorer`](../../scripts/aion-explorer)     (FastAPI +  HTML )         (`w3m` `lynx`  `links`)      .
 
-### 
+###
 
 ```bash
 sudo apt-get install -y w3m #  lynx/links
 python3 -m pip install --upgrade fastapi uvicorn requests
 ```
 
-### 
+###
 
 ```bash
 AION_API=http://127.0.0.1:8001 \
@@ -55,17 +55,17 @@ scripts/aion-explorer
 
              `http://127.0.0.1:3030/`  .               .
 
-###   
+###
 
 - `AION_EXPLORER_PORT`:   ( 3030)
 - `AION_EXPLORER_HOST`:    ( 127.0.0.1)
-- `AION_EXPLORER_LOG`:    
+- `AION_EXPLORER_LOG`:
 
     `q`   w3m/lynx        .
 
 ---
 
-##  C)     
+##  C)
 
        VM                  App Mode /   :
 
@@ -90,7 +90,7 @@ python3 -m console.tui.web_server --api http://127.0.0.1:8001 --token "$AION_TOK
 
 ---
 
-##    
+##
 
   TUI ( A)       ( B/C)      [`console/tui/api.py`](../../console/tui/api.py)  .  :
 
@@ -116,7 +116,7 @@ test ds <name>
 
 ---
 
-###   
+###
 
 |                   |                      |                                                                |
 | ---------------------- | ------------------------- | -------------------------------------------------------------------- |
@@ -126,7 +126,7 @@ test ds <name>
 
 ---
 
-###  
+###
 
 -        Headless  [ Headless](./headless-cli.md)                 .
 -          `ControlAPI`  `CommandProcessor`         TUI  .
