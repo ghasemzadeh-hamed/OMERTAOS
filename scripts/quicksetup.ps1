@@ -207,6 +207,18 @@ $envUpdates['AION_TELEMETRY_OPT_IN'] = if ($telemetryEnabled) { 'true' } else { 
 $envUpdates['AION_TELEMETRY_ENDPOINT'] = $telemetryEndpoint
 $envUpdates['AION_POLICY_DIR'] = $PolicyDir
 $envUpdates['AION_VOLUME_ROOT'] = $VolumeRoot
+$envUpdates['AION_GATEWAY_PORT'] = if ($env:AION_GATEWAY_PORT) { $env:AION_GATEWAY_PORT } else { '8080' }
+$envUpdates['AION_GATEWAY_HOST'] = if ($env:AION_GATEWAY_HOST) { $env:AION_GATEWAY_HOST } else { '0.0.0.0' }
+$envUpdates['AION_REDIS_URL'] = if ($env:AION_REDIS_URL) { $env:AION_REDIS_URL } else { 'redis://redis:6379/0' }
+$envUpdates['AION_CONTROL_BASE_URL'] = if ($env:AION_CONTROL_BASE_URL) { $env:AION_CONTROL_BASE_URL } else { 'http://control:8000' }
+$envUpdates['AION_CONTROL_API_PREFIX'] = if ($env:AION_CONTROL_API_PREFIX) { $env:AION_CONTROL_API_PREFIX } else { '/api' }
+$envUpdates['AION_CONTROL_GRPC'] = if ($env:AION_CONTROL_GRPC) { $env:AION_CONTROL_GRPC } else { 'http://control:50051' }
+$envUpdates['NEXT_PUBLIC_GATEWAY_URL'] = if ($env:NEXT_PUBLIC_GATEWAY_URL) { $env:NEXT_PUBLIC_GATEWAY_URL } else { 'http://gateway:8080' }
+$envUpdates['NEXT_PUBLIC_CONTROL_URL'] = if ($env:NEXT_PUBLIC_CONTROL_URL) { $env:NEXT_PUBLIC_CONTROL_URL } else { 'http://control:8000' }
+$envUpdates['NEXTAUTH_URL'] = if ($env:NEXTAUTH_URL) { $env:NEXTAUTH_URL } else { 'http://localhost:3000' }
+$envUpdates['AION_GATEWAY_API_KEYS'] = if ($env:AION_GATEWAY_API_KEYS) { $env:AION_GATEWAY_API_KEYS } else { 'demo-key:admin|manager' }
+$envUpdates['AION_GATEWAY_ADMIN_TOKEN'] = if ($env:AION_GATEWAY_ADMIN_TOKEN) { $env:AION_GATEWAY_ADMIN_TOKEN } else { 'dev-admin-token' }
+$envUpdates['AION_ADMIN_TOKEN'] = if ($env:AION_ADMIN_TOKEN) { $env:AION_ADMIN_TOKEN } else { 'dev-admin-token' }
 Set-EnvValues -Path $envPath -Values $envUpdates
 
 $profileFile = Join-Path $profileDir 'profile.json'
