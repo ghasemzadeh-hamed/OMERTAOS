@@ -99,6 +99,7 @@ services:
       dockerfile: os/control/Dockerfile
     env_file: dev.env
     environment:
+      AION_CONTROL_DISABLE_SECRETS: ${AION_CONTROL_DISABLE_SECRETS:-1}
       AION_CONTROL_API_PREFIX: ${AION_CONTROL_API_PREFIX:-/api}
       AION_CONTROL_REDIS_URL: ${AION_CONTROL_REDIS_URL:-redis://redis:6379/0}
       AION_CONTROL_MONGO_DSN: ${AION_CONTROL_MONGO_DSN:-mongodb://mongo:27017/aionos?retryWrites=true&w=majority}
