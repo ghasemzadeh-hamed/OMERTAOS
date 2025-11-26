@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import Keyboard from "react-simple-keyboard";
-import "simple-keyboard/build/css/index.css";
+import { useEffect, useRef, useState } from 'react';
+import Keyboard from 'react-simple-keyboard';
+import 'simple-keyboard/build/css/index.css';
 
-type KeyboardLayout = "default" | "shift" | "numbers";
+type KeyboardLayout = 'default' | 'shift' | 'numbers';
 
 type Props = {
   bindTo?: string;
@@ -13,56 +13,20 @@ type Props = {
   onClose?: () => void;
 };
 
-const faLayout = {
-  default: [
-    "ض ص ث ق ف غ ع ه خ ح ج چ",
-    "ش س ی ب ل ا ت ن م ک گ",
-    "ظ ط ز ر ذ د پ و .",
-    "{numbers} {space} {bksp} {enter} {shift} {close}",
-  ],
-  shift: [
-    "ْ صِ ثُ قِ فُ غَ عٌ هٍ خٌ حً جٌ چٌ",
-    "شٔ سً یٍ بـ لآ تً نً مً کً گً",
-    "‍ ظِ طُ زِ رُ ذِ دِ پِ ،",
-    "{numbers} {space} {bksp} {enter} {shift} {close}",
-  ],
-  numbers: [
-    "1 2 3 4 5 6 7 8 9 0 - /",
-    "@ # $ _ & - + ( ) *",
-    "\" ' : ; ! ?",
-    "{default} {space} {bksp} {enter} {close}",
-  ],
-};
-
-const enLayout = {
-  default: [
-    "q w e r t y u i o p",
-    "a s d f g h j k l",
-    "z x c v b n m .",
-    "{numbers} {space} {bksp} {enter} {shift} {close}",
-  ],
-  shift: [
-    "Q W E R T Y U I O P",
-    "A S D F G H J K L",
-    "Z X C V B N M .",
-    "{numbers} {space} {bksp} {enter} {shift} {close}",
-  ],
-  numbers: [
-    "1 2 3 4 5 6 7 8 9 0 - /",
-    "@ # $ _ & - + ( ) *",
-    "\" ' : ; ! ?",
-    "{default} {space} {bksp} {enter} {close}",
-  ],
+const baseLayout = {
+  default: ['q w e r t y u i o p', 'a s d f g h j k l', 'z x c v b n m .', '{numbers} {space} {bksp} {enter} {shift} {close}'],
+  shift: ['Q W E R T Y U I O P', 'A S D F G H J K L', 'Z X C V B N M .', '{numbers} {space} {bksp} {enter} {shift} {close}'],
+  numbers: ['1 2 3 4 5 6 7 8 9 0 - /', '@ # $ _ & - + ( ) *', '" \" : ; ! ?', '{default} {space} {bksp} {enter} {close}'],
 };
 
 const display = {
-  "{bksp}": "⌫",
-  "{enter}": "⏎",
-  "{shift}": "⇧",
-  "{space}": "␣",
-  "{numbers}": "123",
-  "{default}": "ABC",
-  "{close}": "✕",
+  '{bksp}': 'Backspace',
+  '{enter}': 'Enter',
+  '{shift}': 'Shift',
+  '{space}': 'Space',
+  '{numbers}': '123',
+  '{default}': 'ABC',
+  '{close}': 'Close',
 };
 
 const insertBackspace = (element: HTMLInputElement | HTMLTextAreaElement | HTMLElement) => {
@@ -78,12 +42,12 @@ const insertBackspace = (element: HTMLInputElement | HTMLTextAreaElement | HTMLE
       input.value = `${input.value.slice(0, start)}${input.value.slice(end)}`;
       input.setSelectionRange?.(start, start);
     }
-    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event('input', { bubbles: true }));
     return;
   }
 
   if ((element as HTMLElement).isContentEditable) {
-    document.execCommand("delete", false);
+    document.execCommand('delete', false);
   }
 };
 
@@ -98,24 +62,26 @@ const insertText = (
     input.value = `${input.value.slice(0, start)}${text}${input.value.slice(end)}`;
     const caret = start + text.length;
     input.setSelectionRange?.(caret, caret);
-    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event('input', { bubbles: true }));
     return;
   }
 
   if ((element as HTMLElement).isContentEditable) {
-    document.execCommand("insertText", false, text);
+    document.execCommand('insertText', false, text);
   }
 };
 
 export default function VirtualKeyboard({
-  bindTo = "#chat-input",
+  bindTo = '#chat-input',
   rtl = false,
-  layoutName = "default",
+  layoutName = 'default',
   onClose,
 }: Props) {
   const [currentLayout, setCurrentLayout] = useState<KeyboardLayout>(layoutName);
-  const [isFa, setIsFa] = useState(rtl);
-  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | (HTMLElement & { isContentEditable?: boolean }) | null>(null);
+  const [isRtl, setIsRtl] = useState(rtl);
+  const inputRef = useRef<
+    HTMLInputElement | HTMLTextAreaElement | (HTMLElement & { isContentEditable?: boolean }) | null
+  >(null);
 
   useEffect(() => {
     inputRef.current = document.querySelector(bindTo) as typeof inputRef.current;
@@ -126,45 +92,45 @@ export default function VirtualKeyboard({
   }, [layoutName]);
 
   useEffect(() => {
-    setIsFa(rtl);
+    setIsRtl(rtl);
   }, [rtl]);
 
   const handleKeyPress = (button: string) => {
     const target = inputRef.current;
     if (!target) return;
 
-    if (button === "{bksp}") {
+    if (button === '{bksp}') {
       insertBackspace(target);
       return;
     }
 
-    if (button === "{space}") {
-      insertText(target, " ");
+    if (button === '{space}') {
+      insertText(target, ' ');
       return;
     }
 
-    if (button === "{enter}") {
-      insertText(target, "\n");
-      target.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    if (button === '{enter}') {
+      insertText(target, '\n');
+      target.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
       return;
     }
 
-    if (button === "{shift}") {
-      setCurrentLayout((prev) => (prev === "default" ? "shift" : "default"));
+    if (button === '{shift}') {
+      setCurrentLayout((prev) => (prev === 'default' ? 'shift' : 'default'));
       return;
     }
 
-    if (button === "{numbers}") {
-      setCurrentLayout("numbers");
+    if (button === '{numbers}') {
+      setCurrentLayout('numbers');
       return;
     }
 
-    if (button === "{default}") {
-      setCurrentLayout("default");
+    if (button === '{default}') {
+      setCurrentLayout('default');
       return;
     }
 
-    if (button === "{close}") {
+    if (button === '{close}') {
       onClose?.();
       return;
     }
@@ -174,16 +140,16 @@ export default function VirtualKeyboard({
 
   return (
     <div
-      dir={isFa ? "rtl" : "ltr"}
+      dir={isRtl ? 'rtl' : 'ltr'}
       className="fixed bottom-0 left-0 right-0 z-[60] border-t border-white/10 bg-black/20 backdrop-blur-md"
     >
       <div className="flex items-center justify-between px-3 py-2">
         <button
           type="button"
           className="min-h-[44px] min-w-[44px] rounded-md px-2 py-1"
-          onClick={() => setIsFa((prev) => !prev)}
+          onClick={() => setIsRtl((prev) => !prev)}
         >
-          {isFa ? "EN" : "FA"}
+          {isRtl ? 'RTL' : 'LTR'}
         </button>
         <span className="text-xs opacity-70">Virtual Keyboard</span>
         <button
@@ -191,25 +157,16 @@ export default function VirtualKeyboard({
           className="min-h-[44px] min-w-[44px] rounded-md px-2 py-1"
           onClick={() => onClose?.()}
         >
-          ✕
+          Close
         </button>
       </div>
       <Keyboard
-        layout={isFa ? faLayout : enLayout}
+        layout={baseLayout}
         layoutName={currentLayout}
         display={display}
-        theme={`hg-theme-default ${isFa ? "keyboard-rtl" : ""}`}
         onKeyPress={handleKeyPress}
+        rtl={isRtl}
       />
-      <style jsx global>{`
-        .keyboard-rtl .hg-row {
-          direction: rtl;
-        }
-        .hg-button {
-          min-height: 44px;
-          min-width: 44px;
-        }
-      `}</style>
     </div>
   );
 }

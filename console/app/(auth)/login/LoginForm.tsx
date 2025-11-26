@@ -40,7 +40,7 @@ export default function LoginForm({ defaultHint }: { defaultHint?: string }) {
 
   return (
     <Suspense fallback={null}>
-      <main className="min-h-dvh grid place-items-center p-6 text-white" dir="rtl">
+      <main className="min-h-dvh grid place-items-center p-6 text-white" dir="ltr">
         <GlassPanel className="w-full max-w-sm space-y-6 p-6">
           <div className="text-center space-y-1">
             <h1 className="text-2xl font-semibold text-white/90">Sign in to AION-OS</h1>
@@ -50,9 +50,9 @@ export default function LoginForm({ defaultHint }: { defaultHint?: string }) {
             </p>
           </div>
           <form onSubmit={onSubmit} className="space-y-4" noValidate>
-            <div className="space-y-2 text-right">
+            <div className="space-y-2 text-left">
               <label htmlFor="identifier" className="text-sm text-white/80">
-                ایمیل یا نام کاربری / Email
+                Email
               </label>
               <input
                 id="identifier"
@@ -65,9 +65,9 @@ export default function LoginForm({ defaultHint }: { defaultHint?: string }) {
                 className="glass-input placeholder:text-white/40"
               />
             </div>
-            <div className="space-y-2 text-right">
+            <div className="space-y-2 text-left">
               <label htmlFor="password" className="text-sm text-white/80">
-                رمز عبور / Password
+                Password
               </label>
               <input
                 id="password"
@@ -80,19 +80,18 @@ export default function LoginForm({ defaultHint }: { defaultHint?: string }) {
                 className="glass-input placeholder:text-white/40"
               />
             </div>
-            {error ? <p className="text-sm text-rose-300 text-right">{error}</p> : null}
+            {error ? <p className="text-sm text-rose-300 text-left">{error}</p> : null}
             <button
               type="submit"
               disabled={loading}
               className="w-full rounded-xl bg-white/20 py-2.5 font-medium text-white transition hover:bg-white/30 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? 'در حال ورود…' : 'ورود / Sign in'}
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
           <div className="text-center text-sm text-white/70">
-            <span>حساب ندارید؟ </span>
             <Link href="/wizard" className="font-medium text-white hover:text-white/90">
-              بازگشت به نصب / Back to setup
+              Back to setup
             </Link>
           </div>
         </GlassPanel>

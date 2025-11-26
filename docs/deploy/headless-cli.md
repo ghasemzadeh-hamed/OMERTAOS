@@ -1,24 +1,24 @@
-# سناریوی استقرار Headless برای محیط تیم/CI
+#   Headless   /CI
 
-این راهنما یک فرآیند کاملاً خط فرمانی برای استقرار بسته‌های OMERTAOS در محیط‌های یونیکسی (بدون واسط کاربری گرافیکی) را توضیح می‌دهد. سناریوی زیر برای تیم‌ها و خطوط CI طراحی شده و تمام مراحل از آماده‌سازی سرور تا سلامت‌سنجی و رول‌بک را پوشش می‌دهد.
+          OMERTAOS    (   )   .       CI               .
 
-> **نکته**: مقادیر ارائه‌شده نمونه هستند. آن‌ها را با تنظیمات، مسیرها و آدرس‌های متناسب با زیرساخت خود جایگزین کنید.
+> ****:    .             .
 
 ---
 
-## 0) پیش‌نیازها (Ubuntu/Debian یا معادل)
+## 0)  (Ubuntu/Debian  )
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y curl git unzip tar jq ca-certificates
 sudo apt-get install -y python3 python3-venv python3-pip
-# در صورت نیاز: Node.js برای ابزارهای جانبی
+#   : Node.js   
 # sudo apt-get install -y nodejs npm
-# دیتابیس/کش محلی در صورت نبود سرویس خارجی
+# /      
 sudo apt-get install -y postgresql redis
 ```
 
-## 1) کاربر و مسیرها
+## 1)   
 
 ```bash
 sudo useradd -m -s /bin/bash aion || true
@@ -26,23 +26,23 @@ sudo mkdir -p /opt/aionos /var/lib/aionos /var/log/aionos /etc/aionos/{config,ke
 sudo chown -R aion:aion /opt/aionos /var/lib/aionos /var/log/aionos /etc/aionos
 ```
 
-## 2) نصب CLI (بدون UI)
+## 2)  CLI ( UI)
 
-فرض می‌کنیم یک باینری یا بستهٔ قابل نصب برای `aion` دارید.
+         `aion` .
 
 ```bash
 curl -L "https://<artifact-host>/aion/latest/linux-x64/aion" -o /usr/local/bin/aion
 sudo chmod +x /usr/local/bin/aion
-# یا اگر CLI پایتونی است: یک virtualenv در /opt/aionos/cli بسازید
+#   CLI  :  virtualenv  /opt/aionos/cli 
 ```
 
 ```bash
 aion --version
 ```
 
-## 3) ساختار باندل پیکربندی
+## 3)   
 
-باندل باید یک فایل `tar.gz` با ساختار مشخص باشد. نمونهٔ پیشنهادی:
+    `tar.gz`    .  :
 
 ```
 my-config/
@@ -70,9 +70,9 @@ my-config/
   CHECKSUMS.txt
 ```
 
-## 4) اعمال باندل روی سرور
+## 4)    
 
-### انتقال باندل و آماده‌سازی متغیرهای محیطی
+###      
 
 ```bash
 scp my-config.tgz user@server:/tmp/
@@ -81,11 +81,11 @@ sudo -iu aion bash -lc '
   mkdir -p ~/deploy && cp /tmp/my-config.tgz ~/deploy/
   cd ~/deploy && tar xzf my-config.tgz
   cp my-config/env/aion.env.example ~/.aion.env
-  # فایل ~/.aion.env را با secrets واقعی به‌روزرسانی کنید
+  #  ~/.aion.env   secrets   
 '
 ```
 
-### اجرای `aion apply` به صورت Headless
+###  `aion apply`   Headless
 
 ```bash
 sudo -iu aion bash -lc '
@@ -94,11 +94,11 @@ sudo -iu aion bash -lc '
 '
 ```
 
-گزینهٔ `--no-browser` تضمین می‌کند فرمان کاملاً غیرتعاملی است و برای CI مناسب خواهد بود.
+ `--no-browser`         CI   .
 
-## 5) نصب سرویس‌ها با systemd
+## 5)    systemd
 
-اگر یونیت‌های systemd داخل باندل هستند، `aion apply` می‌تواند آن‌ها را کپی و فعال کند. در غیر این صورت:
+  systemd    `aion apply`       .    :
 
 ```bash
 sudo cp /home/aion/deploy/my-config/services/*.service /etc/systemd/system/
@@ -107,7 +107,7 @@ sudo systemctl enable aion-control aion-gateway aion-console
 sudo systemctl start  aion-control aion-gateway aion-console
 ```
 
-نمونهٔ یونیت `aion-control.service`:
+  `aion-control.service`:
 
 ```ini
 [Unit]
@@ -128,7 +128,7 @@ StandardError=append:/var/log/aionos/control.err
 WantedBy=multi-user.target
 ```
 
-## 6) سلامت‌سنجی و خودکارسازی CI
+## 6)    CI
 
 ```bash
 sudo -iu aion aion doctor --verbose
@@ -136,9 +136,9 @@ curl -s http://127.0.0.1:8001/api/health | jq .
 curl -s http://127.0.0.1:8001/api/providers | jq '.items[].name'
 ```
 
-هر خطایی در فرمان‌ها با کد خروج غیر صفر اعلام می‌شود و برای شکست خوردن CI کافی است.
+               CI  .
 
-## 7) مدیریت پروفایل‌های اجرا (CPU/GPU)
+## 7)    (CPU/GPU)
 
 ```bash
 nvidia-smi || true
@@ -146,7 +146,7 @@ sudo -iu aion aion provider set-profile --name ollama-local --profile cpu
 sudo -iu aion aion provider set-profile --name vllm-gpu --profile gpu
 ```
 
-## 8) به‌روزرسانی و رول‌بک
+## 8)   
 
 ```bash
 scp my-config-v2.tgz user@server:/tmp/
@@ -157,24 +157,24 @@ sudo -iu aion aion module rollback summarize-rs --to 0.3.1
 sudo -iu aion aion router policy-rollback --rev 17
 ```
 
-## 9) نکات امنیتی و CI/CD
+## 9)    CI/CD
 
-- Secrets را صرفاً از طریق فایل‌های ENV یا Secrets Manager تزریق کنید.
-- `aion apply` باید idempotent بماند؛ اجرای تکراری نتیجهٔ مشابه بدهد.
-- لاگ‌ها را در `/var/log/aionos` نگه دارید و با `journalctl -u aion-* -f` پایش کنید.
-- پس از هر استقرار در CI، ترکیب `aion apply` + `aion doctor` بهترین گیت سلامت است.
+- Secrets      ENV  Secrets Manager  .
+- `aion apply`  idempotent      .
+-    `/var/log/aionos`     `journalctl -u aion-* -f`  .
+-      CI  `aion apply` + `aion doctor`    .
 
-## 10) چک‌لیست خلاصه
+## 10)  
 
-1. نصب CLI و ساخت کاربر `aion`
-2. انتقال باندل و مقداردهی env
-3. اجرای `aion apply --bundle … --no-browser`
-4. فعال‌سازی سرویس‌های systemd
-5. اجرای سلامت‌سنجی‌ها
-6. پایش لاگ‌ها و آماده بودن برای رول‌بک
+1.  CLI    `aion`
+2.     env
+3.  `aion apply --bundle ... --no-browser`
+4.   systemd
+5.  
+6.       
 
 ---
 
-برای نمونهٔ عملی یک باندل حداقلی می‌توانید به مسیر [`deploy/headless-bundle`](../../deploy/headless-bundle) مراجعه کنید که تمام فایل‌های لازم را در قالب ساختار استاندارد فراهم کرده است.
+         [`deploy/headless-bundle`](../../deploy/headless-bundle)              .
 
-اگر نیاز دارید پس از اعمال باندل، پیکربندی را به شکل تعاملی (اکسپلورر + چت‌بات) ادامه دهید، راهنمای [اکسپلورر متنی](./terminal-explorer.md) سه گزینهٔ مبتنی بر ترمینال (Textual، مرورگر متنی و حالت کیوسک) را پوشش می‌دهد.
+            ( + )    [ ](./terminal-explorer.md)      (Textual     )   .

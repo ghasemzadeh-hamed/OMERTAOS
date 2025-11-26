@@ -54,7 +54,7 @@ export default async function DashboardHealthPage() {
             )}
       </div>
       <div className="text-sm text-white/70">
-        Setup complete: {health?.setupComplete ? 'yes' : 'no'} — Overall status: {health?.status ?? 'unknown'}
+        Setup complete: {health?.setupComplete ? 'yes' : 'no'}  Overall status: {health?.status ?? 'unknown'}
       </div>
     </div>
   );

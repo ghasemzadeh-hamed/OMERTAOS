@@ -70,16 +70,16 @@ The builder emits a signed WASM or gRPC micro-service image, publishes an SBOM, 
 ars as a first-class capability. Generated artifacts, SBOMs, and Cosign signatures live under `builder/adapter_generator/` for a
 uditing.
 
-Console operators can trigger the workflow through the **Add Vendor Spec → Build Adapter** button on the Agents page.
+Console operators can trigger the workflow through the **Add Vendor Spec  Build Adapter** button on the Agents page.
 
 ## Module status in the Console
 
 The Agents page surfaces installation state for every module using status chips:
 
-- **Installed** – manifest and SBOM verified, module routable.
-- **Not Installed** – module visible in the registry but not present locally.
-- **Needs Update** – newer signed artifact detected in the registry.
-- **Unverified** – artifact pulled without a valid Cosign signature.
+- **Installed**  manifest and SBOM verified, module routable.
+- **Not Installed**  module visible in the registry but not present locally.
+- **Needs Update**  newer signed artifact detected in the registry.
+- **Unverified**  artifact pulled without a valid Cosign signature.
 
 Operators can also inspect SBOM details, re-run Cosign verification, or install modules directly from the registry via dedicated
 buttons.

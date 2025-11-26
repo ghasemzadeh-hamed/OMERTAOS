@@ -1,22 +1,22 @@
-# باندل نمونهٔ استقرار Headless
+#    Headless
 
-این پوشه نمونه‌ای از ساختار باندل `tar.gz` برای استقرار headless در محیط‌های تیمی یا CI را نشان می‌دهد. برای ساخت باندل نهایی:
+      `tar.gz`   headless     CI   .    :
 
 ```bash
 cd deploy/headless-bundle
  tar czf my-config.tgz .
 ```
 
-سپس می‌توانید فایل تولیدشده را به سرور مقصد منتقل و با فرمان‌های درج‌شده در [راهنمای Headless](../../docs/deploy/headless-cli.md) اعمال کنید.
+              [ Headless](../../docs/deploy/headless-cli.md)  .
 
-## محتوای باندل
+##  
 
-- `config/`: شامل فایل‌های پیکربندی ارائه‌دهندگان، سیاست مسیریاب و منابع داده.
-- `modules/`: تعریف ماژول‌های نمونه به همراه کلید عمومی برای تأیید امضا.
-- `services/`: یونیت‌های systemd برای سرویس‌های اصلی OMERTAOS.
-- `env/aion.env.example`: قالب متغیرهای محیطی؛ مقادیر واقعی را اضافه کنید.
-- `scripts/`: اسکریپت‌های pre/post/verify برای خودکارسازی بیشتر.
-- `VERSION`: نسخهٔ باندل.
-- `CHECKSUMS.txt`: جمع چک‌های SHA256 برای تأیید یکپارچگی.
+- `config/`:         .
+- `modules/`:          .
+- `services/`:  systemd    OMERTAOS.
+- `env/aion.env.example`:        .
+- `scripts/`:  pre/post/verify   .
+- `VERSION`:  .
+- `CHECKSUMS.txt`:   SHA256   .
 
-> **هشدار:** فایل‌های حاوی secrets واقعی را به این مخزن اضافه نکنید. آن‌ها باید تنها در محیط اجرای واقعی وجود داشته باشند.
+> **:**   secrets       .          .

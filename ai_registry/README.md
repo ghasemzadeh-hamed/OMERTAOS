@@ -4,13 +4,13 @@ The AI Registry stores metadata for models, algorithms, and services that AION-O
 
 ## Layout
 
-- `REGISTRY.yaml` – top-level catalog index read by automation and installers.
-- `registry.lock.json` – integrity hashes for reproducible deployments.
-- `models/`, `algorithms/`, `services/` – categorized manifests with fields such as `requiresApiKey`, `integrity`, and `auto_update`.
-- `scripts/` – utilities for catalog maintenance and installation (`update_catalog.py`, `install_model.py`, `install_service.py`).
-- `config/` – policy configuration for updates and installer defaults.
-- `security/` – minisign public keys and integrity material.
-- `.github/workflows/` – scheduled workflow that refreshes the registry (`update-registry.yml`).
+- `REGISTRY.yaml`  top-level catalog index read by automation and installers.
+- `registry.lock.json`  integrity hashes for reproducible deployments.
+- `models/`, `algorithms/`, `services/`  categorized manifests with fields such as `requiresApiKey`, `integrity`, and `auto_update`.
+- `scripts/`  utilities for catalog maintenance and installation (`update_catalog.py`, `install_model.py`, `install_service.py`).
+- `config/`  policy configuration for updates and installer defaults.
+- `security/`  minisign public keys and integrity material.
+- `.github/workflows/`  scheduled workflow that refreshes the registry (`update-registry.yml`).
 
 ## Usage
 
@@ -21,25 +21,25 @@ The AI Registry stores metadata for models, algorithms, and services that AION-O
 
 ---
 
-## نسخه فارسی
+##  
 
-# رجیستری هوش مصنوعی Agent-OS
+#    Agent-OS
 
-رجیستری هوش مصنوعی فراداده مدل‌ها، الگوریتم‌ها و سرویس‌هایی را ذخیره می‌کند که AION-OS در زمان اجرا به آن‌ها رجوع می‌کند. این رجیستری قرارداد توضیح‌داده‌شده در [`docs/agentos_ai_registry.md`](../docs/agentos_ai_registry.md) را بازتاب می‌دهد و توسط دروازه، کنسول، صفحه کنترل و نصاب‌ها مصرف می‌شود.
+            AION-OS       .      [`docs/agentos_ai_registry.md`](../docs/agentos_ai_registry.md)             .
 
-## ساختار
+## 
 
-- `REGISTRY.yaml` – شاخص کاتالوگ سطح بالا که توسط خودکارسازی و نصاب‌ها خوانده می‌شود.
-- `registry.lock.json` – هش‌های یکپارچگی برای استقرارهای قابل تکرار.
-- `models/`، `algorithms/`، `services/` – مانیفست‌های دسته‌بندی‌شده با فیلدهایی مانند `requiresApiKey`، `integrity` و `auto_update`.
-- `scripts/` – ابزارهای نگهداری و نصب کاتالوگ (`update_catalog.py`، `install_model.py`، `install_service.py`).
-- `config/` – پیکربندی سیاست برای به‌روزرسانی‌ها و پیش‌فرض‌های نصاب.
-- `security/` – کلیدهای عمومی minisign و مواد یکپارچگی.
-- `.github/workflows/` – گردش‌کار زمان‌بندی‌شده که رجیستری را تازه‌سازی می‌کند (`update-registry.yml`).
+- `REGISTRY.yaml`            .
+- `registry.lock.json`       .
+- `models/` `algorithms/` `services/`       `requiresApiKey` `integrity`  `auto_update`.
+- `scripts/`       (`update_catalog.py` `install_model.py` `install_service.py`).
+- `config/`        .
+- `security/`    minisign   .
+- `.github/workflows/`         (`update-registry.yml`).
 
-## نحوه استفاده
+##  
 
-- ورودی‌های رجیستری را به‌صورت `model://<name>` یا `service://<name>` در پیکربندی و دستورالعمل‌های عامل ارجاع دهید؛ دروازه آن‌ها را با استفاده از [`ai_registry/REGISTRY.yaml`](REGISTRY.yaml) حل می‌کند.
-- برای بازتولید `registry.lock.json` و همگام‌سازی مانیفست‌ها هنگام تغییر فراداده، `python ai_registry/scripts/update_catalog.py` را اجرا کنید.
-- برای نصب دستی، از `python ai_registry/scripts/install_model.py --name <id>` یا `install_service.py` برای دریافت آرتیفکت‌های تعریف‌شده در مانیفست استفاده کنید.
-- نوسازی CI توسط `.github/workflows/update-registry.yml` انجام می‌شود که `update_catalog.py` را اجرا کرده و تغییرات قفل را کامیت می‌کند.
+-     `model://<name>`  `service://<name>`              [`ai_registry/REGISTRY.yaml`](REGISTRY.yaml)  .
+-   `registry.lock.json`       `python ai_registry/scripts/update_catalog.py`   .
+-     `python ai_registry/scripts/install_model.py --name <id>`  `install_service.py`        .
+-  CI  `.github/workflows/update-registry.yml`    `update_catalog.py`         .

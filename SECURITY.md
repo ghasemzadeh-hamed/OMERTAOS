@@ -8,14 +8,14 @@ We actively maintain the `AIONOS` branch and the latest tagged releases.
 
 | Version / Branch | Supported | Notes                    |
 | ---------------- | --------: | ------------------------ |
-| `AIONOS` (HEAD)  |        ✅ | Active development       |
-| Latest release   |        ✅ | Receives fixes as needed |
-| Older releases   |        ❌ | Please upgrade           |
+| `AIONOS` (HEAD)  |         | Active development       |
+| Latest release   |         | Receives fixes as needed |
+| Older releases   |         | Please upgrade           |
 
 ## Reporting a Vulnerability
 
 - Use **GitHub Private Vulnerability Reporting / Security Advisories** for confidential reports.
-- If that’s not available, contact the maintainers privately (avoid public issues/PRs for security topics).
+- If thats not available, contact the maintainers privately (avoid public issues/PRs for security topics).
 - Include:
   - Affected component(s) and version/commit
   - Reproduction steps and PoC (if any)
