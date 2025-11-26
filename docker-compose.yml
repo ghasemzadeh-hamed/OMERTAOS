@@ -100,9 +100,9 @@ services:
     env_file: .env
     environment:
       AION_CONTROL_API_PREFIX: ${AION_CONTROL_API_PREFIX}
-      AION_CONTROL_REDIS_URL: ${AION_CONTROL_REDIS_URL}
+      AION_CONTROL_REDIS_URL: ${AION_CONTROL_REDIS_URL:-redis://redis:6379/0}
       AION_CONTROL_MONGO_DSN: ${AION_CONTROL_MONGO_DSN}
-      AION_CONTROL_QDRANT_URL: ${AION_CONTROL_QDRANT_URL}
+      AION_CONTROL_QDRANT_URL: ${AION_CONTROL_QDRANT_URL:-http://qdrant:6333}
       AION_CONTROL_MODELS_DIRECTORY: ${AION_CONTROL_MODELS_DIRECTORY}
       AION_CONTROL_POLICIES_DIRECTORY: ${AION_CONTROL_POLICIES_DIRECTORY}
       TENANCY_MODE: ${TENANCY_MODE}
@@ -145,7 +145,7 @@ services:
       AION_GATEWAY_HOST: ${AION_GATEWAY_HOST}
       AION_CONTROL_GRPC: ${AION_CONTROL_GRPC}
       AION_CONTROL_BASE: ${CONTROL_BASE_URL:-http://control:8000}
-      AION_REDIS_URL: ${AION_REDIS_URL}
+      AION_REDIS_URL: ${AION_REDIS_URL:-redis://redis:6379/0}
       AION_RATE_LIMIT_MAX: ${AION_RATE_LIMIT_MAX}
       AION_RATE_LIMIT_PER_IP: ${AION_RATE_LIMIT_PER_IP}
       AION_RATE_LIMIT_WINDOW: ${AION_RATE_LIMIT_WINDOW}
@@ -169,7 +169,7 @@ services:
       control:
         condition: service_healthy
     ports:
-      - "8080:8080"
+      - "8080:3000"
     volumes:
       - ./protos:/protos:ro
     healthcheck:
@@ -178,7 +178,7 @@ services:
           "CMD",
           "node",
           "-e",
-          "fetch('http://127.0.0.1:8080/healthz',{cache:'no-store'}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+          "fetch('http://127.0.0.1:3000/healthz',{cache:'no-store'}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
         ]
       interval: 5s
       timeout: 3s
