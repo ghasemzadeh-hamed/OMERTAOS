@@ -1,6 +1,3 @@
-#!/usr/bin/env pwsh
-Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
 
 param(
     [string]$Profile,
@@ -14,6 +11,9 @@ param(
     [string]$PolicyDir = $env:AION_POLICY_DIR,
     [string]$VolumeRoot = $env:AION_VOLUME_ROOT
 )
+#!/usr/bin/env pwsh
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
 
 if (-not $Model) { $Model = 'llama3.2:3b' }
 if (-not $Repo) { $Repo = 'https://github.com/Hamedghz/OMERTAOS.git' }
