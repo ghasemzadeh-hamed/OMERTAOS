@@ -199,6 +199,7 @@ jobs:
         env:
           CONTROL_BASE_URL: http://localhost:8000
           GATEWAY_BASE_URL: http://localhost:8080
+          CONSOLE_BASE_URL: http://localhost:3000
         run: ./scripts/smoke_e2e.sh
 
       - name: Ensure .env exists for compose

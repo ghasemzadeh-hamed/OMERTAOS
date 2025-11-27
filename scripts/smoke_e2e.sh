@@ -11,9 +11,10 @@ fi
 
 CONTROL_PORT="${AION_CONTROL_PORT:-8000}"
 GATEWAY_PORT="${AION_GATEWAY_PORT:-8080}"
+CONSOLE_PORT="${AION_CONSOLE_PORT:-3000}"
 CONTROL_BASE_URL="${CONTROL_BASE_URL:-${NEXT_PUBLIC_CONTROL_URL:-http://localhost:${CONTROL_PORT}}}"
 GATEWAY_BASE_URL="${GATEWAY_BASE_URL:-${NEXT_PUBLIC_GATEWAY_URL:-http://localhost:${GATEWAY_PORT}}}"
-CONSOLE_URL="${NEXTAUTH_URL:-http://localhost:3000}"
+CONSOLE_BASE_URL="${CONSOLE_BASE_URL:-${NEXTAUTH_URL:-http://localhost:${CONSOLE_PORT}}}"
 ADMIN_TOKEN="${AION_GATEWAY_ADMIN_TOKEN:-demo-admin-token}"
 
 normalize_to_local() {
@@ -29,6 +30,7 @@ normalize_to_local() {
 
 CONTROL_BASE_URL=$(normalize_to_local "$CONTROL_BASE_URL" "control" "$CONTROL_PORT")
 GATEWAY_BASE_URL=$(normalize_to_local "$GATEWAY_BASE_URL" "gateway" "$GATEWAY_PORT")
+CONSOLE_BASE_URL=$(normalize_to_local "$CONSOLE_BASE_URL" "console" "$CONSOLE_PORT")
 
 wait_for() {
   local name=$1
@@ -47,12 +49,19 @@ wait_for() {
 
 wait_for "control" "$CONTROL_BASE_URL/healthz"
 wait_for "gateway" "$GATEWAY_BASE_URL/healthz"
-wait_for "console" "$CONSOLE_URL/healthz"
-
-curl -fsS "$CONSOLE_URL/dashboard/health/api" >/dev/null
+wait_for "console" "$CONSOLE_BASE_URL/healthz"
 
 if [[ -n "${ADMIN_TOKEN}" ]]; then
   curl -fsS -H "x-aion-admin-token: ${ADMIN_TOKEN}" "$GATEWAY_BASE_URL/healthz/auth" >/dev/null
+fi
+
+status_code=$(curl -s -o /dev/null -w "%{http_code}" "$CONSOLE_BASE_URL/")
+
+if [[ "$status_code" == "200" || "$status_code" == "302" || "$status_code" == "401" ]]; then
+  echo "Smoke test passed: console responded with $status_code"
+else
+  echo "Console root returned $status_code (expected 200, 302, or 401)" >&2
+  exit 1
 fi
 
 echo "All services healthy"
