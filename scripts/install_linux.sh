@@ -298,25 +298,6 @@ create_env_file() {
   run_as_app "cd '$APP_DIR' && ln -sf ../.env console/.env"
 }
 
-random_password() {
-  local length="${1:-24}"
-  local python_bin="${PYTHON_BIN:-python3}"
-
-  "${python_bin}" - "$length" <<'PY'
-import secrets
-import string
-import sys
-
-try:
-    length = int(sys.argv[1])
-except (IndexError, ValueError):
-    length = 24
-
-alphabet = string.ascii_letters + string.digits
-print(''.join(secrets.choice(alphabet) for _ in range(length)))
-PY
-}
-
 configure_database() {
   echo "[install] configuring database"
   ensure_postgres_running
@@ -344,12 +325,19 @@ DO \$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${db_user}') THEN
     CREATE ROLE ${db_user} LOGIN PASSWORD '${db_pass}';
+  ELSE
+    ALTER ROLE ${db_user} WITH LOGIN PASSWORD '${db_pass}';
   END IF;
+
   IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '${db_name}') THEN
     CREATE DATABASE ${db_name} OWNER ${db_user};
+  ELSE
+    ALTER DATABASE ${db_name} OWNER TO ${db_user};
   END IF;
 END
 \$;
+\c ${db_name}
+GRANT ALL PRIVILEGES ON DATABASE ${db_name} TO ${db_user};
 SQL
 
   update_env_file "$db_user" "$db_pass" "$db_name"
