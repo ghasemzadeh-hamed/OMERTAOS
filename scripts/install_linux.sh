@@ -315,28 +315,32 @@ configure_database() {
     existing_name=""
   fi
 
-  local db_user=${DB_USER:-${existing_user:-omerta_app}}
-  local db_pass=${DB_PASS:-${existing_pass:-changeme-dev-password}}
+  local db_user=${DB_USER:-${existing_user:-aionos}}
+  local db_pass=${DB_PASS:-${existing_pass:-aionos}}
   local db_name=${DB_NAME:-${existing_name:-omerta_db}}
 
   echo "Ensuring PostgreSQL role and database"
   sudo -u postgres psql <<SQL
-DO \$
+DO \$\$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${db_user}') THEN
     CREATE ROLE ${db_user} LOGIN PASSWORD '${db_pass}';
   ELSE
     ALTER ROLE ${db_user} WITH LOGIN PASSWORD '${db_pass}';
   END IF;
+END;
+\$\$ LANGUAGE plpgsql;
 
+DO \$\$
+BEGIN
   IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '${db_name}') THEN
     CREATE DATABASE ${db_name} OWNER ${db_user};
   ELSE
     ALTER DATABASE ${db_name} OWNER TO ${db_user};
   END IF;
-END
-\$;
-\c ${db_name}
+END;
+\$\$ LANGUAGE plpgsql;
+
 GRANT ALL PRIVILEGES ON DATABASE ${db_name} TO ${db_user};
 SQL
 
