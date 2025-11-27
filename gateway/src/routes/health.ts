@@ -49,4 +49,14 @@ const healthHandler = async () => {
 export const registerHealthRoutes = (app: FastifyInstance) => {
   app.get('/healthz', healthHandler);
   app.get('/health', healthHandler);
+  app.get('/healthz/auth', async (request, reply) => {
+    const tokenHeader = (request.headers['x-aion-admin-token'] || request.headers['x-admin-token']) as
+      | string
+      | undefined;
+    if (!tokenHeader || tokenHeader !== gatewayConfig.adminToken) {
+      return reply.status(401).send({ status: 'unauthorized' });
+    }
+
+    return healthHandler();
+  });
 };

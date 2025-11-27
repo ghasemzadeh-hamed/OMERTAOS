@@ -196,6 +196,10 @@ jobs:
           $COMPOSE logs --tail=80 control gateway console || true
 
       - name: Run smoke test
+        env:
+          CONTROL_BASE_URL: http://localhost:8000
+          GATEWAY_BASE_URL: http://localhost:8080
+          CONSOLE_BASE_URL: http://localhost:3000
         run: ./scripts/smoke_e2e.sh
 
       - name: Ensure .env exists for compose

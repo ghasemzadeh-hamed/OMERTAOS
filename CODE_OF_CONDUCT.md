@@ -14,7 +14,7 @@ We are committed to a **welcoming, safe, and productive** community for everyone
 **Examples of unacceptable behavior**
 
 - Harassment, trolling, insults, or derogatory comments.
-- Public or private harassment; doxxing or publishing others’ private information.
+- Public or private harassment; doxxing or publishing others private information.
 - Sexualized language or imagery; unwelcome sexual attention.
 - Sustained disruption of discussions or reviews.
 
@@ -26,7 +26,7 @@ This Code applies within all project spaces (GitHub issues/PRs/discussions, chat
 
 Project maintainers are responsible for clarifying and enforcing this Code. They may remove, edit, or reject comments, commits, code, wiki edits, issues, and other contributions that are not aligned, and may ban temporarily or permanently any contributor for behaviors they deem inappropriate, threatening, offensive, or harmful.
 
-**Reporting**: Use GitHub’s **Report** tools where applicable or contact the maintainers privately via **GitHub Security Advisories / Private vulnerability reporting** (security issues) or by opening a **moderation** issue (non-security).
+**Reporting**: Use GitHubs **Report** tools where applicable or contact the maintainers privately via **GitHub Security Advisories / Private vulnerability reporting** (security issues) or by opening a **moderation** issue (non-security).
 
 **Consequences**: Maintainers may take actions including warnings, temporary bans, permanent bans, or other measures as appropriate.
 

@@ -63,6 +63,32 @@ def _build_postgres_dsn(payload: Dict[str, Any]) -> str:
     return dsn
 
 
+def _default_cors_origins() -> list[str]:
+    """Return a lenient default set of CORS origins for local development.
+
+    Missing or malformed environment values should never block application
+    startup, so we fall back to localhost origins when nothing valid is
+    provided. AION_CONSOLE_ORIGIN is preferred when present to keep the
+    console and control plane aligned out of the box.
+    """
+
+    console_origin = os.getenv("AION_CONSOLE_ORIGIN", "http://localhost:3000").strip()
+    defaults = ["http://localhost:3000", "http://127.0.0.1:3000"]
+
+    origins: list[str] = []
+    if console_origin:
+        origins.append(console_origin)
+    origins.extend(defaults)
+
+    seen: set[str] = set()
+    unique: list[str] = []
+    for origin in origins:
+        if origin not in seen:
+            unique.append(origin)
+            seen.add(origin)
+    return unique
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="AION_CONTROL_",
@@ -76,7 +102,12 @@ class Settings(BaseSettings):
     http_port: int = 8000
     api_prefix: str = "/v1"
     cors_origins: List[str] = Field(
-        default_factory=lambda: [os.getenv("AION_CONSOLE_ORIGIN", "http://localhost:3000")]
+        default_factory=_default_cors_origins,
+        validation_alias=AliasChoices(
+            "CORS_ORIGINS",
+            "AION_CONTROL_CORS_ORIGINS",
+            "AION_CORS_ORIGINS",
+        ),
     )
     redis_url: str = "redis://redis:6379/0"
     mongo_dsn: str = "mongodb://mongo:27017"
@@ -153,43 +184,32 @@ class Settings(BaseSettings):
     @classmethod
     def _parse_cors_origins(cls, value: Any) -> List[str]:
         """
-        Accept multiple env formats for CORS origins and normalise them
-        into a list of strings. Supported inputs:
+        Accept multiple env formats for CORS origins and normalise them into a list
+        without failing application startup when the value is missing or malformed.
 
-        - None or empty \u2192 ["*"]
-        - "*" \u2192 ["*"]
-        - comma-separated string \u2192 split and trimmed
-        - JSON array string \u2192 parsed and cleaned
-        - iterable (list/tuple/set) \u2192 stringified and trimmed
+        Supported inputs:
+        - None or empty -> default localhost origins
+        - "*" -> ["*"]
+        - comma-separated string -> split and trimmed
+        - JSON array string or decoded list -> parsed and cleaned
+        - iterable (list/tuple/set) -> stringified and trimmed
         """
 
-        if value is None or (isinstance(value, str) and not value.strip()):
-            return [os.getenv("AION_CONSOLE_ORIGIN", "http://localhost:3000")]
+        default_origins = _default_cors_origins()
+
+        if value is None:
+            return default_origins
 
         if isinstance(value, (list, tuple, set)):
             normalised = [str(item).strip() for item in value if str(item).strip()]
-            if normalised:
-                if "*" in normalised:
-                    if len(normalised) > 1:
-                        raise ValueError(
-                            "Wildcard CORS origins cannot be combined with explicit origins"
-                        )
-                    env = (os.getenv("AION_ENV") or os.getenv("ENVIRONMENT") or "dev").lower()
-                    if env.startswith("prod"):
-                        raise ValueError(
-                            "Wildcard CORS origins are not permitted in production environments"
-                        )
-                return normalised
-            return [os.getenv("AION_CONSOLE_ORIGIN", "http://localhost:3000")]
+            return normalised or default_origins
 
         if isinstance(value, str):
             stripped = value.strip()
+            if not stripped:
+                return default_origins
+
             if stripped == "*":
-                env = (os.getenv("AION_ENV") or os.getenv("ENVIRONMENT") or "dev").lower()
-                if env.startswith("prod"):
-                    raise ValueError(
-                        "Wildcard CORS origins are not permitted in production environments"
-                    )
                 return ["*"]
 
             if stripped.startswith("[") and stripped.endswith("]"):
@@ -197,43 +217,22 @@ class Settings(BaseSettings):
                     parsed = json.loads(stripped)
                     if isinstance(parsed, Iterable) and not isinstance(parsed, (str, bytes)):
                         normalised = [str(item).strip() for item in parsed if str(item).strip()]
-                        if normalised:
-                            if "*" in normalised:
-                                if len(normalised) > 1:
-                                    raise ValueError(
-                                        "Wildcard CORS origins cannot be combined with explicit origins"
-                                    )
-                                env = (
-                                    os.getenv("AION_ENV")
-                                    or os.getenv("ENVIRONMENT")
-                                    or "dev"
-                                ).lower()
-                                if env.startswith("prod"):
-                                    raise ValueError(
-                                        "Wildcard CORS origins are not permitted in production environments"
-                                    )
-                            return normalised
-                except json.JSONDecodeError as exc:
-                    raise ValueError("Invalid JSON array for CORS origins") from exc
+                        return normalised or default_origins
+                except json.JSONDecodeError:
+                    return default_origins
 
-            parts = [entry.strip() for entry in stripped.split(",") if entry.strip()]
-            if parts:
-                if "*" in parts:
-                    if len(parts) > 1:
-                        raise ValueError(
-                            "Wildcard CORS origins cannot be combined with explicit origins"
-                        )
-                    env = (os.getenv("AION_ENV") or os.getenv("ENVIRONMENT") or "dev").lower()
-                    if env.startswith("prod"):
-                        raise ValueError(
-                            "Wildcard CORS origins are not permitted in production environments"
-                        )
-                return parts
+            if ',' in stripped:
+                parts = [entry.strip() for entry in stripped.split(',') if entry.strip()]
+                return parts or default_origins
 
-        raise ValueError(
-            'Invalid value for CORS origins. Expected "*", a single URL, '
-            "a comma-separated list, or a JSON array of URLs."
-        )
+            return [stripped]
+
+        if isinstance(value, Iterable):
+            normalised = [str(item).strip() for item in value if str(item).strip()]
+            return normalised or default_origins
+
+        return default_origins
+
 
     def initialise_secrets(self, provider: SecretProvider | None = None) -> None:
         disable_env = os.getenv("AION_CONTROL_DISABLE_SECRETS")

@@ -35,10 +35,10 @@ Use `bigdata/scripts/bootstrap_kafka.sh` to create topics with retention policie
 
 Outbound webhooks configured in `policies/webhooks.yaml` mirror the Kafka catalog. Each webhook entry includes:
 
-- `url` – HTTPS endpoint that receives the event payload.
-- `secret` – shared HMAC-SHA256 secret used to populate the `X-Aion-Signature` header.
-- `topics` – list of topic patterns (for example, `kernel.proposal.*`) that trigger deliveries.
-- `retry` – backoff configuration (`initial_interval`, `max_interval`, `max_attempts`).
+- `url`  HTTPS endpoint that receives the event payload.
+- `secret`  shared HMAC-SHA256 secret used to populate the `X-Aion-Signature` header.
+- `topics`  list of topic patterns (for example, `kernel.proposal.*`) that trigger deliveries.
+- `retry`  backoff configuration (`initial_interval`, `max_interval`, `max_attempts`).
 
 Deliveries include an `Idempotency-Key` header and are retried automatically until success or the retry policy expires.
 

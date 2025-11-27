@@ -45,6 +45,18 @@ BRANCH_NAME="${AIONOS_REPO_BRANCH:-main}"
 UPDATE_REPO=false
 POLICY_DIR="${AION_POLICY_DIR:-./policies}"
 VOLUME_ROOT="${AION_VOLUME_ROOT:-./volumes}"
+DEFAULT_DB_USER="aionos"
+DEFAULT_DB_PASSWORD="password"
+DEFAULT_DB_NAME="omerta_db"
+DEFAULT_DATABASE_URL="postgresql://${DEFAULT_DB_USER}:${DEFAULT_DB_PASSWORD}@postgres:5432/${DEFAULT_DB_NAME}?schema=public"
+DEFAULT_GATEWAY_API_KEYS="local-key:admin|manager"
+GATEWAY_ADMIN_TOKEN="${AION_GATEWAY_ADMIN_TOKEN:-}"
+ADMIN_TOKEN="${AION_ADMIN_TOKEN:-}"
+GATEWAY_API_KEYS="${AION_GATEWAY_API_KEYS:-${DEFAULT_GATEWAY_API_KEYS}}"
+NEXTAUTH_SECRET_VALUE="${NEXTAUTH_SECRET:-}"
+CONSOLE_ADMIN_EMAIL="${CONSOLE_ADMIN_EMAIL:-admin@local}"
+CONSOLE_ADMIN_PASSWORD="${CONSOLE_ADMIN_PASSWORD:-admin123}"
+DATABASE_URL_VALUE="${DATABASE_URL:-${DEFAULT_DATABASE_URL}}"
 
 usage() {
   cat <<USAGE
@@ -61,6 +73,46 @@ Options:
   --branch <name>                           Branch to use when cloning or updating (default: ${BRANCH_NAME}).
   -h, --help                                Show this help message.
 USAGE
+}
+
+generate_secret() {
+  local bytes=${1:-32}
+  python3 - <<PY
+import secrets
+print(secrets.token_urlsafe(${bytes}))
+PY
+}
+
+prompt_value() {
+  local prompt_label="$1"
+  local default_value="$2"
+  if ${NONINTERACTIVE}; then
+    echo "${default_value}"
+    return
+  fi
+  local input
+  read -r -p "${prompt_label}" input || input="${default_value}"
+  if [[ -z "${input}" ]]; then
+    echo "${default_value}"
+  else
+    echo "${input}"
+  fi
+}
+
+prompt_boolean() {
+  local prompt_label="$1"
+  local default_value="$2"
+  if ${NONINTERACTIVE}; then
+    echo "${default_value}"
+    return
+  fi
+  local input
+  read -r -p "${prompt_label}" input || input="${default_value}"
+  input="${input:-${default_value}}"
+  case "${input,,}" in
+    y|yes|1|true|on) echo "true" ;;
+    *) echo "false" ;;
+  esac
 }
 
 normalize_profile() {
@@ -133,6 +185,128 @@ parse_args() {
         ;;
     esac
   done
+}
+
+collect_env_overrides() {
+  if ${NONINTERACTIVE}; then
+    [[ -z "${GATEWAY_ADMIN_TOKEN}" ]] && GATEWAY_ADMIN_TOKEN="$(generate_secret 32)"
+    [[ -z "${ADMIN_TOKEN}" ]] && ADMIN_TOKEN="${GATEWAY_ADMIN_TOKEN}"
+    [[ -z "${NEXTAUTH_SECRET_VALUE}" ]] && NEXTAUTH_SECRET_VALUE="$(generate_secret 48)"
+    [[ -z "${GATEWAY_API_KEYS}" ]] && GATEWAY_API_KEYS="${DEFAULT_GATEWAY_API_KEYS}"
+    TELEMETRY_OPT_IN=false
+  else
+    GATEWAY_ADMIN_TOKEN="$(prompt_value "Enter AION_GATEWAY_ADMIN_TOKEN (leave empty to auto-generate): " "${GATEWAY_ADMIN_TOKEN}")"
+    if [[ -z "${GATEWAY_ADMIN_TOKEN}" ]]; then
+      GATEWAY_ADMIN_TOKEN="$(generate_secret 32)"
+    fi
+    ADMIN_TOKEN="${GATEWAY_ADMIN_TOKEN}"
+
+    GATEWAY_API_KEYS="$(prompt_value "Enter AION_GATEWAY_API_KEYS (format: key:role1|role2, default: ${DEFAULT_GATEWAY_API_KEYS}): " "${GATEWAY_API_KEYS}")"
+    [[ -z "${GATEWAY_API_KEYS}" ]] && GATEWAY_API_KEYS="${DEFAULT_GATEWAY_API_KEYS}"
+
+    NEXTAUTH_SECRET_VALUE="$(prompt_value "Enter NEXTAUTH_SECRET (leave empty to auto-generate): " "${NEXTAUTH_SECRET_VALUE}")"
+    if [[ -z "${NEXTAUTH_SECRET_VALUE}" ]]; then
+      NEXTAUTH_SECRET_VALUE="$(generate_secret 48)"
+    fi
+
+    TELEMETRY_OPT_IN="$(prompt_boolean "Allow anonymous telemetry? (y/N): " "false")"
+
+    CONSOLE_ADMIN_EMAIL="$(prompt_value "Console admin email (default: ${CONSOLE_ADMIN_EMAIL}): " "${CONSOLE_ADMIN_EMAIL}")"
+    CONSOLE_ADMIN_PASSWORD="$(prompt_value "Console admin password (default: ${CONSOLE_ADMIN_PASSWORD}): " "${CONSOLE_ADMIN_PASSWORD}")"
+  fi
+
+  [[ -z "${ADMIN_TOKEN}" ]] && ADMIN_TOKEN="${GATEWAY_ADMIN_TOKEN}"
+  [[ -z "${CONSOLE_ADMIN_EMAIL}" ]] && CONSOLE_ADMIN_EMAIL="admin@local"
+  [[ -z "${CONSOLE_ADMIN_PASSWORD}" ]] && CONSOLE_ADMIN_PASSWORD="admin123"
+  [[ -z "${DATABASE_URL_VALUE}" ]] && DATABASE_URL_VALUE="${DEFAULT_DATABASE_URL}"
+}
+
+apply_env_overrides() {
+  local env_file="${ROOT_DIR}/.env"
+  env ENV_FILE="${env_file}" \
+    PROFILE_VALUE="${PROFILE}" \
+    FEATURE_SEAL_VALUE="$([[ "${PROFILE}" == "enterprise-vip" ]] && echo 1 || echo 0)" \
+    TELEMETRY_VALUE="${TELEMETRY_OPT_IN}" \
+    TELEMETRY_ENDPOINT_VALUE="${TELEMETRY_ENDPOINT}" \
+    POLICY_DIR_VALUE="${POLICY_DIR}" \
+    VOLUME_ROOT_VALUE="${VOLUME_ROOT}" \
+    GATEWAY_PORT_VALUE="${AION_GATEWAY_PORT:-8080}" \
+    GATEWAY_HOST_VALUE="${AION_GATEWAY_HOST:-0.0.0.0}" \
+    PRISMA_VALUE="${AION_ENABLE_PRISMA:-1}" \
+    DB_USER_VALUE="${DEFAULT_DB_USER}" \
+    DB_PASSWORD_VALUE="${DEFAULT_DB_PASSWORD}" \
+    DB_NAME_VALUE="${DEFAULT_DB_NAME}" \
+    DATABASE_URL_VALUE_ENV="${DATABASE_URL_VALUE}" \
+    REDIS_URL_VALUE="${AION_REDIS_URL:-redis://redis:6379/0}" \
+    CONTROL_BASE_VALUE="${AION_CONTROL_BASE_URL:-http://control:8000}" \
+    CONTROL_PREFIX_VALUE="${AION_CONTROL_API_PREFIX:-/api}" \
+    CONTROL_GRPC_VALUE="${AION_CONTROL_GRPC:-http://control:50051}" \
+    NEXTAUTH_SECRET_VALUE_ENV="${NEXTAUTH_SECRET_VALUE}" \
+    GATEWAY_API_KEYS_VALUE="${GATEWAY_API_KEYS}" \
+    GATEWAY_API_KEYS_SECRET_VALUE="${AION_GATEWAY_API_KEYS_SECRET_PATH:-}" \
+    GATEWAY_ADMIN_TOKEN_VALUE="${GATEWAY_ADMIN_TOKEN}" \
+    GATEWAY_ADMIN_TOKEN_SECRET_VALUE="${AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH:-}" \
+    ADMIN_TOKEN_VALUE="${ADMIN_TOKEN}" \
+    ADMIN_TOKEN_SECRET_VALUE="${AION_ADMIN_TOKEN_SECRET_PATH:-}" \
+    JWT_SECRET_PATH_VALUE="${AION_JWT_SECRET_PATH:-}" \
+    SECRET_PROVIDER_MODE_VALUE="${SECRET_PROVIDER_MODE:-local}" \
+    CONSOLE_ADMIN_EMAIL_VALUE="${CONSOLE_ADMIN_EMAIL}" \
+    CONSOLE_ADMIN_PASSWORD_VALUE="${CONSOLE_ADMIN_PASSWORD}" \
+    python3 - <<'PY'
+from pathlib import Path
+import os
+
+env_path = Path(os.environ['ENV_FILE'])
+lines = env_path.read_text().splitlines() if env_path.exists() else []
+
+updates = {
+    "AION_PROFILE": os.environ['PROFILE_VALUE'],
+    "FEATURE_SEAL": os.environ['FEATURE_SEAL_VALUE'],
+    "AION_TELEMETRY_OPT_IN": str(os.environ['TELEMETRY_VALUE']).lower() if str(os.environ['TELEMETRY_VALUE']).lower() in {'true', '1'} else 'false',
+    "AION_TELEMETRY_ENDPOINT": os.environ['TELEMETRY_ENDPOINT_VALUE'],
+    "AION_POLICY_DIR": os.environ['POLICY_DIR_VALUE'],
+    "AION_VOLUME_ROOT": os.environ['VOLUME_ROOT_VALUE'],
+    "AION_GATEWAY_PORT": os.environ['GATEWAY_PORT_VALUE'],
+    "AION_GATEWAY_HOST": os.environ['GATEWAY_HOST_VALUE'],
+    "AION_ENABLE_PRISMA": os.environ['PRISMA_VALUE'],
+    "AION_DB_USER": os.environ['DB_USER_VALUE'],
+    "AION_DB_PASSWORD": os.environ['DB_PASSWORD_VALUE'],
+    "AION_DB_NAME": os.environ['DB_NAME_VALUE'],
+    "DATABASE_URL": os.environ['DATABASE_URL_VALUE_ENV'],
+    "AION_CONTROL_POSTGRES_DSN": os.environ['DATABASE_URL_VALUE_ENV'],
+    "AION_REDIS_URL": os.environ['REDIS_URL_VALUE'],
+    "AION_CONTROL_BASE_URL": os.environ['CONTROL_BASE_VALUE'],
+    "AION_CONTROL_API_PREFIX": os.environ['CONTROL_PREFIX_VALUE'],
+    "AION_CONTROL_GRPC": os.environ['CONTROL_GRPC_VALUE'],
+    "NEXT_PUBLIC_GATEWAY_URL": "http://gateway:8080",
+    "NEXT_PUBLIC_CONTROL_URL": "http://control:8000",
+    "NEXTAUTH_URL": "http://localhost:3000",
+    "NEXTAUTH_SECRET": os.environ['NEXTAUTH_SECRET_VALUE_ENV'],
+    "AION_GATEWAY_API_KEYS": os.environ['GATEWAY_API_KEYS_VALUE'],
+    "AION_GATEWAY_API_KEYS_SECRET_PATH": os.environ['GATEWAY_API_KEYS_SECRET_VALUE'],
+    "AION_GATEWAY_ADMIN_TOKEN": os.environ['GATEWAY_ADMIN_TOKEN_VALUE'],
+    "AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH": os.environ['GATEWAY_ADMIN_TOKEN_SECRET_VALUE'],
+    "AION_ADMIN_TOKEN": os.environ['ADMIN_TOKEN_VALUE'],
+    "AION_ADMIN_TOKEN_SECRET_PATH": os.environ['ADMIN_TOKEN_SECRET_VALUE'],
+    "AION_JWT_SECRET_PATH": os.environ['JWT_SECRET_PATH_VALUE'],
+    "SECRET_PROVIDER_MODE": os.environ['SECRET_PROVIDER_MODE_VALUE'],
+    "CONSOLE_ADMIN_EMAIL": os.environ['CONSOLE_ADMIN_EMAIL_VALUE'],
+    "CONSOLE_ADMIN_PASSWORD": os.environ['CONSOLE_ADMIN_PASSWORD_VALUE'],
+    "SKIP_CONSOLE_SEED": "false",
+}
+
+keys = set(updates)
+
+def keep_line(line: str) -> bool:
+    if not line or line.lstrip().startswith('#') or '=' not in line:
+        return True
+    key = line.split('=', 1)[0]
+    return key not in keys
+
+filtered = [line for line in lines if keep_line(line)]
+filtered.extend(f"{key}={value}" for key, value in updates.items())
+env_path.write_text("\n".join(filtered) + "\n")
+PY
 }
 
 select_profile() {
@@ -279,7 +453,9 @@ main() {
   log_info "Volume root: ${volume_path}"
   select_profile
   log_info "Selected profile: ${PROFILE}"
+  collect_env_overrides
   update_env_profile "${ROOT_DIR}" "${PROFILE}" "${TELEMETRY_OPT_IN}" "${TELEMETRY_ENDPOINT}" "${POLICY_DIR}" "${VOLUME_ROOT}"
+  apply_env_overrides
   write_profile_metadata "${ROOT_DIR}" "${PROFILE}"
   ensure_config_file "${ROOT_DIR}" "${TELEMETRY_OPT_IN}" "${TELEMETRY_ENDPOINT}" "${POLICY_DIR}" "${VOLUME_ROOT}"
   ensure_ephemeral_certs "${ROOT_DIR}"
@@ -290,6 +466,11 @@ main() {
   fi
   bring_up_stack "${ROOT_DIR}" "${COMPOSE_FILE}"
   install_ollama_model
+  log_info "AION_GATEWAY_ADMIN_TOKEN=${GATEWAY_ADMIN_TOKEN}"
+  log_info "AION_GATEWAY_API_KEYS=${GATEWAY_API_KEYS}"
+  log_info "NEXTAUTH_URL=http://localhost:3000"
+  log_info "NEXTAUTH_SECRET=${NEXTAUTH_SECRET_VALUE}"
+  log_info "Console admin user: ${CONSOLE_ADMIN_EMAIL} / ${CONSOLE_ADMIN_PASSWORD}"
   print_summary
 }
 

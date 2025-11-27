@@ -1,27 +1,45 @@
 import bcrypt from 'bcrypt';
-import { prisma } from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient({ log: ['warn', 'error'] });
 
 async function main() {
-  const email = 'admin@localhost';
-  const password = await bcrypt.hash('admin', 10);
+  const skipSeed = (process.env.SKIP_CONSOLE_SEED || '').toLowerCase();
+  if (skipSeed === '1' || skipSeed === 'true' || skipSeed === 'yes') {
+    console.log('[console] SKIP_CONSOLE_SEED enabled; skipping seed.');
+    return;
+  }
+
+  const email = process.env.CONSOLE_ADMIN_EMAIL || 'admin@local';
+  const password = process.env.CONSOLE_ADMIN_PASSWORD || 'admin123';
+  const name = process.env.CONSOLE_ADMIN_NAME || 'Console Admin';
+
+  const passwordHash = await bcrypt.hash(password, 12);
 
   await prisma.user.upsert({
     where: { email },
-    update: {},
+    update: {
+      password: passwordHash,
+      role: 'ADMIN',
+      name,
+    },
     create: {
       email,
-      password,
+      password: passwordHash,
       role: 'ADMIN',
-      name: 'Admin',
+      name,
     },
   });
 
-  console.log('Seeded admin account - username/email: admin@localhost (alias: admin), password: admin');
+  console.log(`[console] Seeded admin user ${email}`);
 }
 
 main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (error) => {
+    console.error('[console] Seed failed', error);
+    await prisma.$disconnect();
     process.exit(1);
   });

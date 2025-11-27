@@ -104,13 +104,13 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ intent = 'chat', title = 'Chat', 
           closeStream();
         }
       } catch (err) {
-        updateAssistantMessage(messageId, 'پاسخ نامعتبر از استریم دریافت شد.', false);
+        updateAssistantMessage(messageId, 'Streaming error.', false);
         closeStream();
       }
     };
 
     source.onerror = () => {
-      updateAssistantMessage(messageId, 'ارتباط استریم قطع شد.', false);
+      updateAssistantMessage(messageId, 'Connection lost.', false);
       closeStream();
     };
   };
@@ -156,7 +156,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ intent = 'chat', title = 'Chat', 
 
       const data = await response.json();
       if (!response.ok) {
-        const message = typeof data?.message === 'string' ? data.message : 'درخواست ناموفق بود.';
+        const message = typeof data?.message === 'string' ? data.message : 'Request failed.';
         throw new Error(message);
       }
 
@@ -169,10 +169,10 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ intent = 'chat', title = 'Chat', 
         updateAssistantMessage(assistantMessage.id, content, !content);
         subscribeToTask(taskId, assistantMessage.id);
       } else {
-        updateAssistantMessage(assistantMessage.id, content || 'پاسخی دریافت نشد.', false);
+        updateAssistantMessage(assistantMessage.id, content || 'No response.', false);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'خطای ناشناخته رخ داد.';
+      const message = err instanceof Error ? err.message : 'Unknown error.';
       setError(message);
       updateAssistantMessage(assistantMessage.id, message, false);
     } finally {
@@ -184,14 +184,14 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ intent = 'chat', title = 'Chat', 
     <div className="flex h-80 flex-col rounded border border-slate-200 bg-white">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <h2 className="text-sm font-semibold text-slate-800">{title}</h2>
-        {sending && <span className="text-xs text-slate-500">در حال ارسال…</span>}
+        {sending && <span className="text-xs text-slate-500">Sending...</span>}
       </div>
       <div className="flex-1 space-y-2 overflow-y-auto p-4 text-sm">
         {messages.map((message) => (
           <div key={message.id} className="leading-relaxed">
-            <span className="font-semibold text-slate-700">{message.role === 'user' ? 'کاربر' : 'دستیار'}:</span>{' '}
+            <span className="font-semibold text-slate-700">{message.role === 'user' ? 'You' : 'Assistant'}:</span>{' '}
             <span className={message.pending ? 'text-slate-400' : 'text-slate-800'}>
-              {message.content || '…'}
+              {message.content || '...'}
             </span>
           </div>
         ))}
@@ -199,18 +199,18 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ intent = 'chat', title = 'Chat', 
       </div>
       <form className="flex gap-2 border-t border-slate-200 p-3" onSubmit={handleSend}>
         <input
-          className="flex-1 rounded border border-slate-300 px-3 py-2 text-sm"
+          id="chat-input"
+          className="flex-1 rounded border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+          placeholder="Type a message"
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder="سوالی بپرس یا وظیفه‌ای تعریف کن"
-          disabled={sending}
         />
         <button
           type="submit"
-          className="rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          disabled={!input.trim() || sending}
+          className="rounded bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          disabled={sending}
         >
-          ارسال
+          Send
         </button>
       </form>
     </div>

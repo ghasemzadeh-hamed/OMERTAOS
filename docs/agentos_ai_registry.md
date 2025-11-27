@@ -1,4 +1,4 @@
-# 🧠 Agent-OS AI Registry (Dynamic Self-Updating Repository)
+#  Agent-OS AI Registry (Dynamic Self-Updating Repository)
 
 **Version:** v1.0.0
 **License:** MIT
@@ -17,14 +17,14 @@ Agent-OS AI Registry is a modular, self-updating repository containing all model
 
 | Feature                   | Description                                                                                        |
 | ------------------------- | -------------------------------------------------------------------------------------------------- |
-| 🧩 Universal Catalog      | Unified metadata for models, algorithms, and services.                                             |
-| 🔁 Self-Updating Registry | Can automatically update from remote sources (GitHub, HuggingFace, etc.) if approved by the admin. |
-| 🔐 Admin Crew Control     | Updates and installations require explicit admin approval.                                         |
-| ⚙️ Installer Scripts      | Each item includes install commands and integrity checks.                                          |
-| 🔒 Security & Integrity   | SHA-256 verification, minisign signatures, and SBOM tracking.                                      |
-| 🚫 No Docker Required     | Works with Python/Rust subprocess runners or WASM sandboxes.                                       |
-| 🌍 Offline-First Mode     | Updates only when network access is granted.                                                       |
-| 🧠 Agent-OS Compatible    | Plugs into AION-OS / Agent-OS Control Plane for runtime orchestration.                             |
+|  Universal Catalog      | Unified metadata for models, algorithms, and services.                                             |
+|  Self-Updating Registry | Can automatically update from remote sources (GitHub, HuggingFace, etc.) if approved by the admin. |
+|  Admin Crew Control     | Updates and installations require explicit admin approval.                                         |
+|  Installer Scripts      | Each item includes install commands and integrity checks.                                          |
+|  Security & Integrity   | SHA-256 verification, minisign signatures, and SBOM tracking.                                      |
+|  No Docker Required     | Works with Python/Rust subprocess runners or WASM sandboxes.                                       |
+|  Offline-First Mode     | Updates only when network access is granted.                                                       |
+|  Agent-OS Compatible    | Plugs into AION-OS / Agent-OS Control Plane for runtime orchestration.                             |
 
 ---
 
@@ -32,32 +32,32 @@ Agent-OS AI Registry is a modular, self-updating repository containing all model
 
 ```
 ai-registry/
-├─ REGISTRY.yaml
-├─ models/
-│  ├─ openai/gpt-4.5.yaml
-│  ├─ google/gemini-2.5-pro.yaml
-│  ├─ meta/llama-4-maverick.yaml
-│  ├─ deepseek/deepseek-v3.yaml
-│  └─ alibaba/qwen-2.5-max.yaml
-├─ algorithms/
-│  ├─ planning/react.yaml
-│  ├─ rag/rag-lite.yaml
-│  ├─ tot/tree-of-thought.yaml
-│  └─ memory/vector-cache.yaml
-├─ services/
-│  ├─ vector/qdrant.yaml
-│  ├─ workflow/n8n.yaml
-│  ├─ database/mongodb.yaml
-│  └─ storage/minio.yaml
-├─ scripts/
-│  ├─ update_catalog.py
-│  ├─ install_model.py
-│  └─ install_service.py
-├─ config/
-│  ├─ registry.conf
-│  └─ policies.yaml
-└─ .github/workflows/
-   └─ update-registry.yml
+ REGISTRY.yaml
+ models/
+   openai/gpt-4.5.yaml
+   google/gemini-2.5-pro.yaml
+   meta/llama-4-maverick.yaml
+   deepseek/deepseek-v3.yaml
+   alibaba/qwen-2.5-max.yaml
+ algorithms/
+   planning/react.yaml
+   rag/rag-lite.yaml
+   tot/tree-of-thought.yaml
+   memory/vector-cache.yaml
+ services/
+   vector/qdrant.yaml
+   workflow/n8n.yaml
+   database/mongodb.yaml
+   storage/minio.yaml
+ scripts/
+   update_catalog.py
+   install_model.py
+   install_service.py
+ config/
+   registry.conf
+   policies.yaml
+ .github/workflows/
+    update-registry.yml
 ```
 
 ---
@@ -207,17 +207,17 @@ def install_model(model_name):
     sha = manifest["integrity"]["sha256"]
     fname = f"/tmp/{model_name}.pkg"
 
-    print(f"📦 Downloading {model_name} from {url} ...")
+    print(f" Downloading {model_name} from {url} ...")
     r = requests.get(url)
     open(fname, "wb").write(r.content)
 
     if not verify_hash(fname, sha):
-        print("❌ Integrity check failed!")
+        print(" Integrity check failed!")
         sys.exit(1)
 
-    print("✅ Verified. Installing...")
+    print(" Verified. Installing...")
     subprocess.run(["bash", "-c", f"tar -xf {fname} -C /opt/ai-models/{model_name}"], check=True)
-    print(f"✅ {model_name} installed successfully!")
+    print(f" {model_name} installed successfully!")
 
 if __name__ == "__main__":
     install_model(sys.argv[1])
@@ -302,11 +302,11 @@ agentos registry update --approve
 
 | Feature                     | Description                                          |
 | --------------------------- | ---------------------------------------------------- |
-| 🌐 Crew AI Updater          | Internal agent managing version checks & changelogs. |
-| 🧱 Plugin Builder           | Auto-compiles wrappers for new APIs or WASM tools.   |
-| 🧠 Memory Layer Integration | Syncs model metadata with Agent-OS memory graph.     |
-| 🔄 Version Diff Tool        | Compares manifests and highlights differences.       |
-| 🧩 Local Cache Proxy        | Mirrors remote models for air-gapped deployments.    |
+|  Crew AI Updater          | Internal agent managing version checks & changelogs. |
+|  Plugin Builder           | Auto-compiles wrappers for new APIs or WASM tools.   |
+|  Memory Layer Integration | Syncs model metadata with Agent-OS memory graph.     |
+|  Version Diff Tool        | Compares manifests and highlights differences.       |
+|  Local Cache Proxy        | Mirrors remote models for air-gapped deployments.    |
 
 ---
 
@@ -342,7 +342,7 @@ This structure merges ideas from:
 
 ---
 
-✅ **Ready for GitHub**
+ **Ready for GitHub**
 
 You can directly:
 

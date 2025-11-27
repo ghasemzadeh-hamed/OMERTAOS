@@ -57,7 +57,17 @@ $resolveUnderRoot = {
 }
 $policyPath = & $resolveUnderRoot $rootDir $PolicyDir
 $volumePath = & $resolveUnderRoot $rootDir $VolumeRoot
-$telemetryRaw = if ($env:AION_TELEMETRY_OPT_IN) { $env:AION_TELEMETRY_OPT_IN } else { 'false' }
+function New-RandomSecret {
+    param([int]$Bytes = 32)
+    $buffer = New-Object byte[] $Bytes
+    [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($buffer)
+    return [System.Convert]::ToBase64String($buffer)
+}
+
+$defaultDbUser = 'aionos'
+$defaultDbPassword = 'password'
+$defaultDbName = 'omerta_db'
+$defaultDbUrl = "postgresql://${defaultDbUser}:${defaultDbPassword}@postgres:5432/${defaultDbName}?schema=public"
 $telemetryEndpoint = if ($env:AION_TELEMETRY_ENDPOINT) { $env:AION_TELEMETRY_ENDPOINT } else { 'http://localhost:4317' }
 
 if ((Test-Path (Join-Path $rootDir '.git')) -and $Update.IsPresent) {
@@ -175,6 +185,41 @@ if (-not $ComposeFile) {
     }
 }
 
+$gatewayApiKeys = if ($env:AION_GATEWAY_API_KEYS) { $env:AION_GATEWAY_API_KEYS } else { 'local-key:admin|manager' }
+$gatewayAdminToken = if ($env:AION_GATEWAY_ADMIN_TOKEN) { $env:AION_GATEWAY_ADMIN_TOKEN } else { '' }
+$adminToken = if ($env:AION_ADMIN_TOKEN) { $env:AION_ADMIN_TOKEN } else { '' }
+$nextAuthSecret = if ($env:NEXTAUTH_SECRET) { $env:NEXTAUTH_SECRET } else { '' }
+$consoleAdminEmail = if ($env:CONSOLE_ADMIN_EMAIL) { $env:CONSOLE_ADMIN_EMAIL } else { 'admin@local' }
+$consoleAdminPassword = if ($env:CONSOLE_ADMIN_PASSWORD) { $env:CONSOLE_ADMIN_PASSWORD } else { 'admin123' }
+$telemetryChoice = if ($env:AION_TELEMETRY_OPT_IN) { $env:AION_TELEMETRY_OPT_IN } else { 'false' }
+$databaseUrl = if ($env:DATABASE_URL) { $env:DATABASE_URL } else { $defaultDbUrl }
+
+if (-not $NonInteractive) {
+    $inputAdminToken = Read-Host 'Enter AION_GATEWAY_ADMIN_TOKEN (leave empty to auto-generate)'
+    if ([string]::IsNullOrWhiteSpace($inputAdminToken)) { $gatewayAdminToken = New-RandomSecret 32 } else { $gatewayAdminToken = $inputAdminToken }
+    $adminToken = $gatewayAdminToken
+
+    $inputApiKeys = Read-Host 'Enter AION_GATEWAY_API_KEYS (format: key:role1|role2, default: local-key:admin|manager)'
+    if (-not [string]::IsNullOrWhiteSpace($inputApiKeys)) { $gatewayApiKeys = $inputApiKeys }
+
+    $inputNextAuthSecret = Read-Host 'Enter NEXTAUTH_SECRET (leave empty to auto-generate)'
+    if ([string]::IsNullOrWhiteSpace($inputNextAuthSecret)) { $nextAuthSecret = New-RandomSecret 48 } else { $nextAuthSecret = $inputNextAuthSecret }
+
+    $telemetryAnswer = Read-Host 'Allow anonymous telemetry? (y/N)'
+    $telemetryChoice = $telemetryAnswer
+
+    $inputAdminEmail = Read-Host 'Console admin email (default: admin@local)'
+    if (-not [string]::IsNullOrWhiteSpace($inputAdminEmail)) { $consoleAdminEmail = $inputAdminEmail }
+    $inputAdminPassword = Read-Host 'Console admin password (default: admin123)'
+    if (-not [string]::IsNullOrWhiteSpace($inputAdminPassword)) { $consoleAdminPassword = $inputAdminPassword }
+} else {
+    if (-not $gatewayAdminToken) { $gatewayAdminToken = New-RandomSecret 32 }
+    $adminToken = if ($adminToken) { $adminToken } else { $gatewayAdminToken }
+    if (-not $nextAuthSecret) { $nextAuthSecret = New-RandomSecret 48 }
+    if (-not $gatewayApiKeys) { $gatewayApiKeys = 'local-key:admin|manager' }
+    $telemetryChoice = 'false'
+}
+
 function Set-EnvValues {
     param([string]$Path, [hashtable]$Values)
     $existing = @()
@@ -199,7 +244,7 @@ function Set-EnvValues {
     Set-Content -Path $Path -Value $output -Encoding UTF8
 }
 
-$telemetryEnabled = @('1','true','y','yes').Contains($telemetryRaw.ToLowerInvariant())
+$telemetryEnabled = @('1','true','y','yes').Contains($telemetryChoice.ToLowerInvariant())
 $envUpdates = @{}
 $envUpdates['AION_PROFILE'] = $Profile
 $envUpdates['FEATURE_SEAL'] = if ($Profile -eq 'enterprise-vip') { '1' } else { '0' }
@@ -209,16 +254,31 @@ $envUpdates['AION_POLICY_DIR'] = $PolicyDir
 $envUpdates['AION_VOLUME_ROOT'] = $VolumeRoot
 $envUpdates['AION_GATEWAY_PORT'] = if ($env:AION_GATEWAY_PORT) { $env:AION_GATEWAY_PORT } else { '8080' }
 $envUpdates['AION_GATEWAY_HOST'] = if ($env:AION_GATEWAY_HOST) { $env:AION_GATEWAY_HOST } else { '0.0.0.0' }
+$envUpdates['AION_ENABLE_PRISMA'] = if ($env:AION_ENABLE_PRISMA) { $env:AION_ENABLE_PRISMA } else { '1' }
+$envUpdates['AION_DB_USER'] = $defaultDbUser
+$envUpdates['AION_DB_PASSWORD'] = $defaultDbPassword
+$envUpdates['AION_DB_NAME'] = $defaultDbName
+$envUpdates['DATABASE_URL'] = $databaseUrl
+$envUpdates['AION_CONTROL_POSTGRES_DSN'] = $databaseUrl
 $envUpdates['AION_REDIS_URL'] = if ($env:AION_REDIS_URL) { $env:AION_REDIS_URL } else { 'redis://redis:6379/0' }
 $envUpdates['AION_CONTROL_BASE_URL'] = if ($env:AION_CONTROL_BASE_URL) { $env:AION_CONTROL_BASE_URL } else { 'http://control:8000' }
 $envUpdates['AION_CONTROL_API_PREFIX'] = if ($env:AION_CONTROL_API_PREFIX) { $env:AION_CONTROL_API_PREFIX } else { '/api' }
 $envUpdates['AION_CONTROL_GRPC'] = if ($env:AION_CONTROL_GRPC) { $env:AION_CONTROL_GRPC } else { 'http://control:50051' }
-$envUpdates['NEXT_PUBLIC_GATEWAY_URL'] = if ($env:NEXT_PUBLIC_GATEWAY_URL) { $env:NEXT_PUBLIC_GATEWAY_URL } else { 'http://gateway:8080' }
-$envUpdates['NEXT_PUBLIC_CONTROL_URL'] = if ($env:NEXT_PUBLIC_CONTROL_URL) { $env:NEXT_PUBLIC_CONTROL_URL } else { 'http://control:8000' }
-$envUpdates['NEXTAUTH_URL'] = if ($env:NEXTAUTH_URL) { $env:NEXTAUTH_URL } else { 'http://localhost:3000' }
-$envUpdates['AION_GATEWAY_API_KEYS'] = if ($env:AION_GATEWAY_API_KEYS) { $env:AION_GATEWAY_API_KEYS } else { 'demo-key:admin|manager' }
-$envUpdates['AION_GATEWAY_ADMIN_TOKEN'] = if ($env:AION_GATEWAY_ADMIN_TOKEN) { $env:AION_GATEWAY_ADMIN_TOKEN } else { 'dev-admin-token' }
-$envUpdates['AION_ADMIN_TOKEN'] = if ($env:AION_ADMIN_TOKEN) { $env:AION_ADMIN_TOKEN } else { 'dev-admin-token' }
+$envUpdates['NEXT_PUBLIC_GATEWAY_URL'] = 'http://gateway:8080'
+$envUpdates['NEXT_PUBLIC_CONTROL_URL'] = 'http://control:8000'
+$envUpdates['NEXTAUTH_URL'] = 'http://localhost:3000'
+$envUpdates['NEXTAUTH_SECRET'] = $nextAuthSecret
+$envUpdates['AION_GATEWAY_API_KEYS'] = $gatewayApiKeys
+$envUpdates['AION_GATEWAY_API_KEYS_SECRET_PATH'] = if ($env:AION_GATEWAY_API_KEYS_SECRET_PATH) { $env:AION_GATEWAY_API_KEYS_SECRET_PATH } else { '' }
+$envUpdates['AION_GATEWAY_ADMIN_TOKEN'] = $gatewayAdminToken
+$envUpdates['AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH'] = if ($env:AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH) { $env:AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH } else { '' }
+$envUpdates['AION_ADMIN_TOKEN'] = $adminToken
+$envUpdates['AION_ADMIN_TOKEN_SECRET_PATH'] = if ($env:AION_ADMIN_TOKEN_SECRET_PATH) { $env:AION_ADMIN_TOKEN_SECRET_PATH } else { '' }
+$envUpdates['AION_JWT_SECRET_PATH'] = if ($env:AION_JWT_SECRET_PATH) { $env:AION_JWT_SECRET_PATH } else { '' }
+$envUpdates['SECRET_PROVIDER_MODE'] = if ($env:SECRET_PROVIDER_MODE) { $env:SECRET_PROVIDER_MODE } else { 'local' }
+$envUpdates['CONSOLE_ADMIN_EMAIL'] = $consoleAdminEmail
+$envUpdates['CONSOLE_ADMIN_PASSWORD'] = $consoleAdminPassword
+if (-not $env:SKIP_CONSOLE_SEED) { $envUpdates['SKIP_CONSOLE_SEED'] = 'false' }
 Set-EnvValues -Path $envPath -Values $envUpdates
 
 $profileFile = Join-Path $profileDir 'profile.json'
@@ -327,6 +387,12 @@ if ($Model) {
         Write-Warn "Ollama CLI not found; skipping local model pull"
     }
 }
+
+Write-Info "AION_GATEWAY_ADMIN_TOKEN=$gatewayAdminToken"
+Write-Info "AION_GATEWAY_API_KEYS=$gatewayApiKeys"
+Write-Info "NEXTAUTH_URL=http://localhost:3000"
+Write-Info "NEXTAUTH_SECRET=$nextAuthSecret"
+Write-Info "Console admin user: $consoleAdminEmail / $consoleAdminPassword"
 
 Write-Host ''
 Write-Host '[AION-OS] QuickSetup completed.'

@@ -74,78 +74,78 @@ This guide condenses each supported deployment into ten steps or fewer. Run ever
 
 ---
 
-## نسخه فارسی
+##
 
-# شروع سریع
+#
 
-این راهنما هر استقرار پشتیبانی‌شده را در ده گام یا کمتر خلاصه می‌کند. مگر خلاف آن ذکر شده باشد، همه فرمان‌ها را به‌صورت root یا با `sudo` اجرا کنید.
+            .           root   `sudo`  .
 
-## شروع سریع کانتینری
+##
 
-### لینوکس (Docker Engine)
+###  (Docker Engine)
 
-1. Git، Docker Engine 24+ همراه با افزونه Compose و Python 3.11 یا جدیدتر را نصب کنید.
-2. مخزن را کلون کنید: `git clone https://github.com/Hamedghz/OMERTAOS.git && cd OMERTAOS`.
-3. بسته را اجرا کنید: `./install.sh --profile user` (در صورت نیاز `professional` یا `enterprise-vip`).
-4. برای استفاده از [`docker-compose.local.yml`](../docker-compose.local.yml) در پروفایل سبک توسعه‌دهنده، `--local` را اضافه کنید.
-5. زمانی که می‌خواهید اسکریپت پیش از راه‌اندازی سرویس‌ها تازه‌ترین کامیت‌ها را بگیرد، `--update` را استفاده کنید.
-6. خروجی بررسی پیش‌نیاز و راه‌اندازی compose در [`scripts/quicksetup.sh`](../scripts/quicksetup.sh) را مشاهده کنید؛ اگر `.env` موجود نباشد به‌طور خودکار از [`config/templates/.env.example`](../config/templates/.env.example) ساخته می‌شود.
-7. کنسول را در `http://localhost:3000` باز کنید و ویزارد راه‌اندازی را کامل کنید.
-8. سلامت سرویس را از داشبورد بررسی کنید (کارت‌های `Control`، `Gateway`، `Console` باید سبز باشند).
-9. در پایان، برای توقف استک `docker compose down` را اجرا کنید.
+1. Git Docker Engine 24+    Compose  Python 3.11     .
+2.    : `git clone https://github.com/Hamedghz/OMERTAOS.git && cd OMERTAOS`.
+3.    : `./install.sh --profile user` (   `professional`  `enterprise-vip`).
+4.    [`docker-compose.local.yml`](../docker-compose.local.yml)     `--local`   .
+5.             `--update`   .
+6.      compose  [`scripts/quicksetup.sh`](../scripts/quicksetup.sh)     `.env`      [`config/templates/.env.example`](../config/templates/.env.example)  .
+7.    `http://localhost:3000`        .
+8.        ( `Control` `Gateway` `Console`   ).
+9.      `docker compose down`   .
 
-### ویندوز 11 / WSL2
+###  11 / WSL2
 
-1. Git برای ویندوز، Docker Desktop (با یکپارچه‌سازی WSL فعال) و PowerShell 7+ را نصب کنید.
-2. مخزن را کلون کنید: `git clone https://github.com/Hamedghz/OMERTAOS.git`.
-3. از یک PowerShell ارتقایافته در ریشه مخزن، `pwsh ./install.ps1 -Profile user` را اجرا کنید (یا `professional` / `enterprise-vip`).
-4. برای لایه توسعه‌دهنده `-Local` یا برای گرفتن کامیت‌های تازه پیش از راه‌اندازی کانتینرها `-Update` را اضافه کنید.
-5. این اسکریپت [`docker-compose.yml`](../docker-compose.yml) را از طریق [`scripts/quicksetup.ps1`](../scripts/quicksetup.ps1) اجرا می‌کند؛ خروجی را برای هشدار پیش‌نیازها بررسی کنید.
-6. هنگام درخواست، در Docker Desktop وارد شوید تا پروژه compose بتواند شروع شود.
-7. از ویندوز `http://localhost:3000` را باز کنید تا ویزارد را کامل کنید.
-8. پس از پایان آزمایش با PowerShell دستور `docker compose down` را اجرا کنید.
+1. Git   Docker Desktop (  WSL )  PowerShell 7+   .
+2.    : `git clone https://github.com/Hamedghz/OMERTAOS.git`.
+3.   PowerShell     `pwsh ./install.ps1 -Profile user`    ( `professional` / `enterprise-vip`).
+4.    `-Local`          `-Update`   .
+5.   [`docker-compose.yml`](../docker-compose.yml)    [`scripts/quicksetup.ps1`](../scripts/quicksetup.ps1)         .
+6.    Docker Desktop     compose   .
+7.   `http://localhost:3000`        .
+8.      PowerShell  `docker compose down`   .
 
-## ISO / کیوسک
+## ISO /
 
-1. تازه‌ترین آرتیفکت انتشار را از مخزن انتشار دریافت کرده و checksum را بررسی کنید (به [`docs/release.md`](release.md) مراجعه کنید).
-2. ISO را روی فلش بنویسید (`dd if=aionos.iso of=/dev/sdX bs=4M status=progress`).
-3. سیستم هدف را در صورت پشتیبانی با Secure Boot بوت کنید.
-4. پس از بالا آمدن کیوسک، اتصال شبکه را تأیید و **Start Installer** را بزنید.
-5. زبان، صفحه‌کلید و حالت نصب را انتخاب کنید (پیش‌فرض ISO برابر `native` است).
-6. چیدمان ذخیره‌سازی را مرور کنید؛ در صورت نیاز رمزگذاری کامل دیسک را فعال کنید.
-7. متغیر `AIONOS_ALLOW_INSTALL=1` را در دروازه کنسول تنظیم و عملیات دیسک را تأیید کنید.
-8. پروفایل (user، professional، enterprise-vip) را انتخاب و خلاصه را مرور کنید.
-9. نصب را آغاز کنید و پیشرفت را در `/var/log/aionos-installer.log` دنبال کنید.
-10. سیستم را ریبوت کنید.
+1.           checksum    ( [`docs/release.md`](release.md)  ).
+2. ISO     (`dd if=aionos.iso of=/dev/sdX bs=4M status=progress`).
+3.        Secure Boot  .
+4.           **Start Installer**  .
+5.         ( ISO  `native` ).
+6.              .
+7.  `AIONOS_ALLOW_INSTALL=1`           .
+8.  (user professional enterprise-vip)       .
+9.         `/var/log/aionos-installer.log`  .
+10.    .
 
-## لینوکس بومی
+##
 
-1. از اوبونتو 22.04 با دسترسی شبکه شروع کنید.
-2. پیش‌نیازها را نصب کنید: `sudo apt-get install -y git curl build-essential python3.11 python3.11-venv python3.11-dev` و Node.js 18 LTS همراه با `pnpm` را نصب کنید (`core/installer/bridge` به آن‌ها متکی است).
-3. مخزن را کلون کرده و `.env` را از `config/templates/.env.example` کپی کنید.
-4. در `core/installer/bridge` دستور `pnpm install` را اجرا کنید تا سرور وظیفه دارای امتیاز آماده شود.
-5. پل را با `AIONOS_ALLOW_INSTALL=1 pnpm start` راه‌اندازی کنید.
-6. در ترمینال دوم، داخل `console` دستور `pnpm install && pnpm dev` را اجرا کنید تا رابط ویزارد آغاز شود.
-7. به `https://localhost:3000/wizard` متصل شوید و **Native Install** را انتخاب کنید.
-8. پروفایل و گزینه‌های شبکه را برگزینید.
-9. فقط پس از بررسی طرح، عملیات دیسک را تأیید کنید.
-10. در صورت درخواست، ریبوت کنید.
+1.   22.04     .
+2.    : `sudo apt-get install -y git curl build-essential python3.11 python3.11-venv python3.11-dev`  Node.js 18 LTS   `pnpm`    (`core/installer/bridge`    ).
+3.      `.env`   `config/templates/.env.example`  .
+4.  `core/installer/bridge`  `pnpm install`          .
+5.    `AIONOS_ALLOW_INSTALL=1 pnpm start`  .
+6.     `console`  `pnpm install && pnpm dev`        .
+7.  `https://localhost:3000/wizard`    **Native Install**   .
+8.      .
+9.          .
+10.     .
 
-## سرویس‌های ویندوز بدون Docker
+##    Docker
 
-1. Git برای ویندوز، Python 3.11، Node.js 18 LTS، PostgreSQL، Redis و NSSM (`C:\\nssm\\nssm.exe` یا متغیر `NSSM_PATH`) را نصب کنید.
-2. مخزن را کلون کرده و برای تغییر پورت/دیتابیس `config/templates/.env.example` را بررسی کنید.
-3. از PowerShell ارتقایافته `pwsh ./scripts/install_win.ps1` را اجرا کنید.
-4. در صورت درخواست، اعتبارهای پایگاه‌داده را ارائه کنید یا اجازه دهید اسکریپت آن‌ها را بسازد (اگر ابزار PostgreSQL موجود باشد).
-5. منتظر بمانید تا اسکریپت کنسول و دروازه را با `pnpm` بسازد، سرویس‌های `Omerta*` را ثبت و راه‌اندازی کند.
-6. سلامت را در `http://localhost:3000` تأیید و در صورت نیاز لاگ سرویس‌ها را مشاهده کنید.
+1. Git   Python 3.11 Node.js 18 LTS PostgreSQL Redis  NSSM (`C:\\nssm\\nssm.exe`   `NSSM_PATH`)   .
+2.        / `config/templates/.env.example`   .
+3.  PowerShell  `pwsh ./scripts/install_win.ps1`   .
+4.                (  PostgreSQL  ).
+5.          `pnpm`   `Omerta*`     .
+6.    `http://localhost:3000`          .
 
-## Docker (دستی)
+## Docker ()
 
-1. از نصب بودن Docker Engine 24+ و Docker Compose V2 مطمئن شوید.
-2. مخزن را کلون کرده و `.env` را از `config/templates/.env.example` کپی کنید.
-3. در `.env` مقدار `AION_PROFILE` را به `user`، `professional` یا `enterprise-vip` تنظیم کنید.
-4. دستور `docker compose -f docker-compose.quickstart.yml up -d` را اجرا کنید (یا در صورت نیاز به خط پایه تولید، فایل دیگری مانند `docker-compose.yml` را جایگزین کنید).
-5. برای بررسی وضعیت به `http://localhost:3000/wizard` دسترسی پیدا کنید.
-6. سلامت سرویس‌ها را از داشبورد کنسول تأیید کنید.
-7. در پایان با `docker compose down` استک را متوقف کنید.
+1.    Docker Engine 24+  Docker Compose V2  .
+2.      `.env`   `config/templates/.env.example`  .
+3.  `.env`  `AION_PROFILE`   `user` `professional`  `enterprise-vip`  .
+4.  `docker compose -f docker-compose.quickstart.yml up -d`    (           `docker-compose.yml`   ).
+5.     `http://localhost:3000/wizard`   .
+6.        .
+7.    `docker compose down`    .
