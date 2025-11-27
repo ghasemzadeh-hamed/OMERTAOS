@@ -175,6 +175,35 @@ provision_node_projects() {
   run_as_app "cd '$APP_DIR/gateway' && pnpm build"
 }
 
+ensure_postgres_running() {
+  echo "[install] ensuring PostgreSQL is running..."
+  if command_exists systemctl; then
+    if ! sudo systemctl enable --now postgresql >/dev/null 2>&1; then
+      echo "[install] failed to enable/start postgresql" >&2
+      exit 1
+    fi
+  elif command_exists service; then
+    if ! sudo service postgresql start >/dev/null 2>&1; then
+      echo "[install] failed to start postgresql" >&2
+      exit 1
+    fi
+  fi
+
+  local retries=30
+  local delay=2
+  for i in $(seq 1 "$retries"); do
+    if sudo -u postgres pg_isready -q; then
+      echo "[install] PostgreSQL is ready"
+      return 0
+    fi
+    echo "[install] waiting for postgres... (${i}/${retries})"
+    sleep "$delay"
+  done
+
+  echo "[install] postgres did not become ready in time" >&2
+  exit 1
+}
+
 apply_console_migrations() {
   echo "Applying console database migrations"
   run_as_app "cd '$APP_DIR/console' && pnpm prisma migrate deploy"
@@ -290,30 +319,7 @@ PY
 }
 
 configure_database() {
-  echo "Ensuring PostgreSQL service is running"
-
-  if ! sudo -u postgres pg_isready -q >/dev/null 2>&1; then
-    if command_exists systemctl; then
-      sudo systemctl start postgresql || true
-    elif command_exists service; then
-      sudo service postgresql start || true
-    fi
-
-    local waited=0
-    local timeout=30
-    while (( waited < timeout )); do
-      if sudo -u postgres pg_isready -q >/dev/null 2>&1; then
-        break
-      fi
-      sleep 1
-      waited=$((waited + 1))
-    done
-
-    if ! sudo -u postgres pg_isready -q >/dev/null 2>&1; then
-      echo "PostgreSQL is not accepting connections on port 5432 after ${timeout}s" >&2
-      exit 2
-    fi
-  fi
+  ensure_postgres_running
 
   local existing_user existing_pass existing_name
   existing_user=$(parse_env_value DATABASE_URL | python3 - <<'PY'
@@ -333,21 +339,23 @@ PY
 
   IFS=$'\n' read -r existing_user existing_pass existing_name <<<"$existing_user"
 
-  local db_user=${DB_USER:-${existing_user:-omerta}}
-  local db_pass=${DB_PASS:-${existing_pass:-}};
+  local db_user=${DB_USER:-${existing_user:-omerta_app}}
+  local db_pass=${DB_PASS:-${existing_pass:-changeme-dev-password}}
   local db_name=${DB_NAME:-${existing_name:-omerta_db}}
 
-  if [ -z "$db_pass" ]; then
-    db_pass=$(random_password)
-  fi
-
-  echo "Ensuring PostgreSQL role $db_user"
-  sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${db_user}'" | grep -q 1 || \
-    sudo -u postgres psql -c "CREATE USER ${db_user} WITH PASSWORD '${db_pass}';"
-
-  echo "Ensuring database $db_name"
-  sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='${db_name}'" | grep -q 1 || \
-    sudo -u postgres psql -c "CREATE DATABASE ${db_name} OWNER ${db_user};"
+  echo "Ensuring PostgreSQL role and database"
+  sudo -u postgres psql <<SQL
+DO \$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${db_user}') THEN
+    CREATE ROLE ${db_user} LOGIN PASSWORD '${db_pass}';
+  END IF;
+  IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '${db_name}') THEN
+    CREATE DATABASE ${db_name} OWNER ${db_user};
+  END IF;
+END
+\$;
+SQL
 
   update_env_file "$db_user" "$db_pass" "$db_name"
 }
@@ -395,6 +403,21 @@ install_systemd_units() {
   sudo systemctl restart omerta-control.service omerta-gateway.service omerta-console.service
 }
 
+self_check() {
+  if [[ "${CI:-}" != "1" ]]; then
+    return
+  fi
+
+  echo "[install] running CI health checks"
+  local control_url="http://localhost:${CONTROL_PORT:-8000}/healthz"
+  local gateway_url="http://localhost:${GATEWAY_PORT:-3000}/healthz"
+  local console_url="http://localhost:${CONSOLE_PORT:-3001}/healthz"
+
+  curl -fsS --max-time 10 "$control_url" >/dev/null
+  curl -fsS --max-time 10 "$gateway_url" >/dev/null
+  curl -fsS --max-time 10 "$console_url" >/dev/null
+}
+
 print_summary() {
   local control_port gateway_port console_port
   control_port=$(parse_env_value CONTROL_PORT)
@@ -437,6 +460,7 @@ main() {
   apply_console_migrations
   run_migrations
   install_systemd_units
+  self_check
   print_summary
 }
 
