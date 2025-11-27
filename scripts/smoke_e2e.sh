@@ -9,16 +9,26 @@ if [[ -f .env ]]; then
   source .env >/dev/null 2>&1 || true
 fi
 
+CONTROL_PORT="${AION_CONTROL_PORT:-8000}"
 GATEWAY_PORT="${AION_GATEWAY_PORT:-8080}"
-GATEWAY_URL="${NEXT_PUBLIC_GATEWAY_URL:-}"
-if [[ -z "${GATEWAY_URL}" ]]; then
-  GATEWAY_URL="http://localhost:${GATEWAY_PORT}"
-elif [[ "${GATEWAY_URL}" =~ ^https?://(gateway|control|console|minio|postgres|redis|qdrant)(:|/|$) ]]; then
-  GATEWAY_URL="http://localhost:${GATEWAY_PORT}"
-fi
-CONTROL_URL="${NEXT_PUBLIC_CONTROL_URL:-http://localhost:8000}"
+CONTROL_BASE_URL="${CONTROL_BASE_URL:-${NEXT_PUBLIC_CONTROL_URL:-http://localhost:${CONTROL_PORT}}}"
+GATEWAY_BASE_URL="${GATEWAY_BASE_URL:-${NEXT_PUBLIC_GATEWAY_URL:-http://localhost:${GATEWAY_PORT}}}"
 CONSOLE_URL="${NEXTAUTH_URL:-http://localhost:3000}"
 ADMIN_TOKEN="${AION_GATEWAY_ADMIN_TOKEN:-demo-admin-token}"
+
+normalize_to_local() {
+  local url=$1
+  local host=$2
+  local port=$3
+  if [[ "$url" =~ ^https?://${host}(:|/|$) ]]; then
+    echo "http://localhost:${port}"
+  else
+    echo "$url"
+  fi
+}
+
+CONTROL_BASE_URL=$(normalize_to_local "$CONTROL_BASE_URL" "control" "$CONTROL_PORT")
+GATEWAY_BASE_URL=$(normalize_to_local "$GATEWAY_BASE_URL" "gateway" "$GATEWAY_PORT")
 
 wait_for() {
   local name=$1
@@ -35,14 +45,14 @@ wait_for() {
   return 1
 }
 
-wait_for "control" "$CONTROL_URL/healthz"
-wait_for "gateway" "$GATEWAY_URL/healthz"
+wait_for "control" "$CONTROL_BASE_URL/healthz"
+wait_for "gateway" "$GATEWAY_BASE_URL/healthz"
 wait_for "console" "$CONSOLE_URL/healthz"
 
 curl -fsS "$CONSOLE_URL/dashboard/health/api" >/dev/null
 
 if [[ -n "${ADMIN_TOKEN}" ]]; then
-  curl -fsS -H "x-aion-admin-token: ${ADMIN_TOKEN}" "$GATEWAY_URL/healthz/auth" >/dev/null
+  curl -fsS -H "x-aion-admin-token: ${ADMIN_TOKEN}" "$GATEWAY_BASE_URL/healthz/auth" >/dev/null
 fi
 
 echo "All services healthy"
