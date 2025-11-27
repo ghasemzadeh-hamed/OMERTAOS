@@ -91,6 +91,7 @@ select_python_binary() {
 }
 
 install_system_packages() {
+  echo "[install] installing system dependencies"
   sudo apt update -y
 
   prepare_python_packages
@@ -122,6 +123,7 @@ create_service_user() {
 }
 
 clone_or_update_repo() {
+  echo "[install] installing OMERTAOS application"
   sudo mkdir -p "$APP_ROOT"
   sudo chown "$APP_USER":"$APP_GROUP" "$APP_ROOT"
 
@@ -129,8 +131,8 @@ clone_or_update_repo() {
     echo "Cloning repository into $APP_DIR"
     run_as_app "git clone '$REPO' '$APP_DIR'"
   else
-    echo "Updating existing repository in $APP_DIR"
-    run_as_app "cd '$APP_DIR' && git pull --ff-only"
+    echo "Repository already present; fetching latest changes"
+    run_as_app "cd '$APP_DIR' && git fetch --all --prune && git reset --hard origin/AIONOS"
   fi
 
   sudo chown -R "$APP_USER":"$APP_GROUP" "$APP_DIR"
@@ -178,30 +180,28 @@ provision_node_projects() {
 ensure_postgres_running() {
   echo "[install] ensuring PostgreSQL is running..."
   if command_exists systemctl; then
-    if ! sudo systemctl enable --now postgresql >/dev/null 2>&1; then
-      echo "[install] failed to enable/start postgresql" >&2
-      exit 1
+    if ! sudo systemctl enable --now postgresql.service >/dev/null 2>&1; then
+      echo "[install] ERROR: failed to start PostgreSQL service" >&2
+      exit 20
     fi
   elif command_exists service; then
     if ! sudo service postgresql start >/dev/null 2>&1; then
-      echo "[install] failed to start postgresql" >&2
-      exit 1
+      echo "[install] ERROR: failed to start PostgreSQL service" >&2
+      exit 20
     fi
   fi
 
-  local retries=30
-  local delay=2
-  for i in $(seq 1 "$retries"); do
-    if sudo -u postgres pg_isready -q; then
+  for i in $(seq 1 30); do
+    if sudo -u postgres pg_isready -h 127.0.0.1 -p 5432 >/dev/null 2>&1; then
       echo "[install] PostgreSQL is ready"
       return 0
     fi
-    echo "[install] waiting for postgres... (${i}/${retries})"
-    sleep "$delay"
+    echo "[install] waiting for PostgreSQL (${i}/30)..."
+    sleep 1
   done
 
-  echo "[install] postgres did not become ready in time" >&2
-  exit 1
+  echo "[install] ERROR: PostgreSQL did not become ready in time" >&2
+  exit 21
 }
 
 apply_console_migrations() {
@@ -319,6 +319,7 @@ PY
 }
 
 configure_database() {
+  echo "[install] configuring database"
   ensure_postgres_running
 
   local existing_user existing_pass existing_name
@@ -373,6 +374,7 @@ run_migrations() {
 }
 
 install_systemd_units() {
+  echo "[install] enabling and starting systemd services"
   if ! command_exists systemctl; then
     echo "systemctl not available; skipping service installation"
     return
