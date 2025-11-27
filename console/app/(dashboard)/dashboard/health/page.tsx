@@ -9,11 +9,16 @@ type HealthResponse = {
 };
 
 async function fetchHealth(): Promise<HealthResponse | null> {
-  const res = await fetch('/dashboard/health/api', { cache: 'no-store' });
-  if (!res.ok) {
+  try {
+    const res = await fetch('/api/dashboard/health', { cache: 'no-store' });
+    if (!res.ok) {
+      return null;
+    }
+    return res.json();
+  } catch (error) {
+    console.error('[console] dashboard health fetch failed', error);
     return null;
   }
-  return res.json();
 }
 
 export default async function DashboardHealthPage() {

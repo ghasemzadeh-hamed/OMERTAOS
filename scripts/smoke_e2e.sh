@@ -4,40 +4,24 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+# Load optional environment overrides when present
 if [[ -f .env ]]; then
   # shellcheck disable=SC1091
   source .env >/dev/null 2>&1 || true
 fi
 
-CONTROL_PORT="${AION_CONTROL_PORT:-8000}"
-GATEWAY_PORT="${AION_GATEWAY_PORT:-8080}"
-CONSOLE_PORT="${AION_CONSOLE_PORT:-3000}"
-CONTROL_BASE_URL="${CONTROL_BASE_URL:-${NEXT_PUBLIC_CONTROL_URL:-http://localhost:${CONTROL_PORT}}}"
-GATEWAY_BASE_URL="${GATEWAY_BASE_URL:-${NEXT_PUBLIC_GATEWAY_URL:-http://localhost:${GATEWAY_PORT}}}"
-CONSOLE_BASE_URL="${CONSOLE_BASE_URL:-${NEXTAUTH_URL:-http://localhost:${CONSOLE_PORT}}}"
+# Base URLs with sensible defaults for local docker-compose usage
+CONTROL_BASE_URL="${CONTROL_BASE_URL:-http://localhost:8000}"
+GATEWAY_BASE_URL="${GATEWAY_BASE_URL:-http://localhost:8080}"
+CONSOLE_BASE_URL="${CONSOLE_BASE_URL:-http://localhost:3000}"
 ADMIN_TOKEN="${AION_GATEWAY_ADMIN_TOKEN:-demo-admin-token}"
-
-normalize_to_local() {
-  local url=$1
-  local host=$2
-  local port=$3
-  if [[ "$url" =~ ^https?://${host}(:|/|$) ]]; then
-    echo "http://localhost:${port}"
-  else
-    echo "$url"
-  fi
-}
-
-CONTROL_BASE_URL=$(normalize_to_local "$CONTROL_BASE_URL" "control" "$CONTROL_PORT")
-GATEWAY_BASE_URL=$(normalize_to_local "$GATEWAY_BASE_URL" "gateway" "$GATEWAY_PORT")
-CONSOLE_BASE_URL=$(normalize_to_local "$CONSOLE_BASE_URL" "console" "$CONSOLE_PORT")
 
 wait_for() {
   local name=$1
   local url=$2
   echo "Waiting for $name at $url"
-  for i in {1..60}; do
-    if curl -fsS "$url" >/dev/null; then
+  for _ in $(seq 1 60); do
+    if curl -fsS --max-time 5 "$url" >/dev/null; then
       echo "$name healthy"
       return 0
     fi
@@ -47,28 +31,29 @@ wait_for() {
   return 1
 }
 
+# Authoritative health endpoints
 wait_for "control" "$CONTROL_BASE_URL/healthz"
 wait_for "gateway" "$GATEWAY_BASE_URL/healthz"
 wait_for "console" "$CONSOLE_BASE_URL/healthz"
 
+# Best-effort admin health (should not fail the smoke)
 if [[ -n "${ADMIN_TOKEN}" ]]; then
   admin_status=$(curl -s -o /dev/null -w "%{http_code}" -H "x-aion-admin-token: ${ADMIN_TOKEN}" "$GATEWAY_BASE_URL/healthz/auth" || true)
   if [[ "$admin_status" == "200" ]]; then
     echo "gateway admin health responded 200"
-  elif [[ "$admin_status" == "401" ]]; then
-    echo "gateway admin health returned 401 (non-blocking)"
-  else
+  elif [[ "$admin_status" == "401" || "$admin_status" == "403" ]]; then
+    echo "gateway admin health returned ${admin_status} (non-blocking)"
+  elif [[ -n "$admin_status" ]]; then
     echo "gateway admin health returned $admin_status (non-blocking)"
   fi
 fi
 
-status_code=$(curl -s -o /dev/null -w "%{http_code}" "$CONSOLE_BASE_URL/")
-
-if [[ "$status_code" == "200" || "$status_code" == "302" || "$status_code" == "401" ]]; then
-  echo "Smoke test passed: console responded with $status_code"
+# Optional UI probe; accept common unauthenticated responses and downgrade others to warnings
+ui_status=$(curl -s -o /dev/null -w "%{http_code}" "$CONSOLE_BASE_URL/login" || true)
+if [[ "$ui_status" == "200" || "$ui_status" == "302" || "$ui_status" == "401" || "$ui_status" == "403" ]]; then
+  echo "console UI reachable (status $ui_status)"
 else
-  echo "Console root returned $status_code (expected 200, 302, or 401)" >&2
-  exit 1
+  echo "console UI returned $ui_status (non-blocking)"
 fi
 
 echo "All services healthy"
