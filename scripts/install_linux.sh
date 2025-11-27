@@ -217,21 +217,18 @@ apply_console_migrations() {
 }
 
 parse_env_value() {
-  local key=$1
-  python3 - <<PY
-from pathlib import Path
-import sys
-path = Path("$ENV_FILE")
-if not path.exists():
-    sys.exit(0)
-for raw in path.read_text().splitlines():
-    if not raw or raw.startswith('#') or '=' not in raw:
-        continue
-    name, value = raw.split('=', 1)
-    if name.strip() == "$key":
-        print(value.strip())
-        break
-PY
+  local key="$1"
+  [[ -f "$ENV_FILE" ]] || return 0
+
+  while IFS= read -r line; do
+    [[ -z "$line" || "${line#\#}" != "$line" || "$line" != *=* ]] && continue
+    local name=${line%%=*}
+    local value=${line#*=}
+    if [[ "${name}" == "$key" ]]; then
+      printf '%s\n' "$value"
+      break
+    fi
+  done <"$ENV_FILE"
 }
 
 update_env_file() {
@@ -240,53 +237,55 @@ update_env_file() {
   local db_name=$3
   local database_url="postgresql://${db_user}:${db_pass}@127.0.0.1:5432/${db_name}"
 
-  python3 - <<PY
-from pathlib import Path
+  declare -A updates=(
+    [CONTROL_PORT]="${CONTROL_PORT}"
+    [GATEWAY_PORT]="${GATEWAY_PORT}"
+    [CONSOLE_PORT]="${CONSOLE_PORT}"
+    [DATABASE_URL]="$database_url"
+    [AION_CONTROL_POSTGRES_DSN]="$database_url"
+    [AION_CONTROL_HTTP_HOST]="0.0.0.0"
+    [AION_CONTROL_HTTP_PORT]="${CONTROL_PORT}"
+    [AION_CONTROL_REDIS_URL]="redis://127.0.0.1:6379/0"
+    [AION_REDIS_URL]="redis://127.0.0.1:6379/0"
+    [AION_GATEWAY_HOST]="0.0.0.0"
+    [AION_GATEWAY_PORT]="${GATEWAY_PORT}"
+    [AION_CONTROL_GRPC]="localhost:50051"
+    [AION_CONTROL_BASE]="http://localhost:${CONTROL_PORT}"
+    [AION_CONTROL_CORS_ORIGINS]="http://localhost:${CONSOLE_PORT}"
+    [AION_CORS_ORIGINS]="http://localhost:${CONSOLE_PORT}"
+    [AION_CONSOLE_HEALTH_URL]="http://localhost:${CONSOLE_PORT}/health"
+    [NEXTAUTH_URL]="http://localhost:${CONSOLE_PORT}"
+    [NEXT_PUBLIC_GATEWAY_URL]="http://localhost:${GATEWAY_PORT}"
+    [NEXT_PUBLIC_CONTROL_URL]="http://localhost:${CONTROL_PORT}"
+    [NEXT_PUBLIC_CONTROL_BASE]="http://localhost:${CONTROL_PORT}"
+  )
 
-path = Path("$ENV_FILE")
-if not path.exists():
-    raise SystemExit(0)
+  [[ -f "$ENV_FILE" ]] || return 0
 
-updates = {
-    "CONTROL_PORT": "${CONTROL_PORT}",
-    "GATEWAY_PORT": "${GATEWAY_PORT}",
-    "CONSOLE_PORT": "${CONSOLE_PORT}",
-    "DATABASE_URL": "$database_url",
-    "AION_CONTROL_POSTGRES_DSN": "$database_url",
-    "AION_CONTROL_HTTP_HOST": "0.0.0.0",
-    "AION_CONTROL_HTTP_PORT": "${CONTROL_PORT}",
-    "AION_CONTROL_REDIS_URL": "redis://127.0.0.1:6379/0",
-    "AION_REDIS_URL": "redis://127.0.0.1:6379/0",
-    "AION_GATEWAY_HOST": "0.0.0.0",
-    "AION_GATEWAY_PORT": "${GATEWAY_PORT}",
-    "AION_CONTROL_GRPC": "localhost:50051",
-    "AION_CONTROL_BASE": "http://localhost:${CONTROL_PORT}",
-    "AION_CONTROL_CORS_ORIGINS": "http://localhost:${CONSOLE_PORT}",
-    "AION_CORS_ORIGINS": "http://localhost:${CONSOLE_PORT}",
-    "AION_CONSOLE_HEALTH_URL": "http://localhost:${CONSOLE_PORT}/health",
-    "NEXTAUTH_URL": "http://localhost:${CONSOLE_PORT}",
-    "NEXT_PUBLIC_GATEWAY_URL": "http://localhost:${GATEWAY_PORT}",
-    "NEXT_PUBLIC_CONTROL_URL": "http://localhost:${CONTROL_PORT}",
-    "NEXT_PUBLIC_CONTROL_BASE": "http://localhost:${CONTROL_PORT}",
-}
+  local tmp
+  tmp=$(mktemp)
 
-lines = path.read_text().splitlines()
-keys = set(updates)
+  while IFS= read -r line; do
+    if [[ -z "$line" || "${line#\#}" != "$line" || "$line" != *=* ]]; then
+      printf '%s\n' "$line" >>"$tmp"
+      continue
+    fi
 
-for idx, line in enumerate(lines):
-    if not line or line.lstrip().startswith('#') or '=' not in line:
-        continue
-    key, _ = line.split('=', 1)
-    key = key.strip()
-    if key in updates:
-        lines[idx] = f"{key}={updates[key]}"
-        keys.discard(key)
+    local key=${line%%=*}
+    if [[ -n "${updates[$key]:-}" ]]; then
+      printf '%s=%s\n' "$key" "${updates[$key]}" >>"$tmp"
+      unset 'updates[$key]'
+    else
+      printf '%s\n' "$line" >>"$tmp"
+    fi
+  done <"$ENV_FILE"
 
-for key in sorted(keys):
-    lines.append(f"{key}={updates[key]}")
+  for key in "${!updates[@]}"; do
+    printf '%s=%s\n' "$key" "${updates[$key]}" >>"$tmp"
+  done
 
-path.write_text("\n".join(lines) + "\n")
-PY
+  mv "$tmp" "$ENV_FILE"
+  sudo chown "$APP_USER":"$APP_GROUP" "$ENV_FILE"
 }
 
 create_env_file() {
@@ -322,23 +321,18 @@ configure_database() {
   echo "[install] configuring database"
   ensure_postgres_running
 
-  local existing_user existing_pass existing_name
-  existing_user=$(parse_env_value DATABASE_URL | python3 - <<'PY'
-import sys
-from urllib.parse import urlparse
-value = sys.stdin.read().strip()
-if not value:
-    print("", "", "", sep="\n")
-else:
-    parsed = urlparse(value)
-    name = parsed.path[1:] if parsed.path.startswith('/') else parsed.path
-    print(parsed.username or "")
-    print(parsed.password or "")
-    print(name or "")
-PY
-)
+  local existing_url existing_user existing_pass existing_name
+  existing_url=$(parse_env_value DATABASE_URL)
 
-  IFS=$'\n' read -r existing_user existing_pass existing_name <<<"$existing_user"
+  if [[ $existing_url =~ ^postgresql://([^:/]+):([^@]+)@[^/]+/([^/?#]+) ]]; then
+    existing_user=${BASH_REMATCH[1]}
+    existing_pass=${BASH_REMATCH[2]}
+    existing_name=${BASH_REMATCH[3]}
+  else
+    existing_user=""
+    existing_pass=""
+    existing_name=""
+  fi
 
   local db_user=${DB_USER:-${existing_user:-omerta_app}}
   local db_pass=${DB_PASS:-${existing_pass:-changeme-dev-password}}
