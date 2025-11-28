@@ -320,28 +320,30 @@ configure_database() {
   local db_name=${DB_NAME:-${existing_name:-omerta_db}}
 
   echo "Ensuring PostgreSQL role and database"
-  sudo -u postgres psql <<SQL
-DO \$\$
+  sudo -u postgres psql \
+    -v "db_user=${db_user}" \
+    -v "db_pass=${db_pass}" \
+    -v "db_name=${db_name}" <<'SQL'
+DO $$
 BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${db_user}') THEN
-    CREATE ROLE ${db_user} LOGIN PASSWORD '${db_pass}';
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :'db_user') THEN
+    EXECUTE format('CREATE ROLE %I LOGIN PASSWORD %L', :'db_user', :'db_pass');
   ELSE
-    ALTER ROLE ${db_user} WITH LOGIN PASSWORD '${db_pass}';
+    EXECUTE format('ALTER ROLE %I WITH LOGIN PASSWORD %L', :'db_user', :'db_pass');
   END IF;
 END;
-\$\$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
-DO \$\$
+DO $$
 BEGIN
-  IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '${db_name}') THEN
-    CREATE DATABASE ${db_name} OWNER ${db_user};
+  IF NOT EXISTS (SELECT FROM pg_database WHERE datname = :'db_name') THEN
+    EXECUTE format('CREATE DATABASE %I OWNER %I', :'db_name', :'db_user');
   ELSE
-    ALTER DATABASE ${db_name} OWNER TO ${db_user};
+    EXECUTE format('ALTER DATABASE %I OWNER TO %I', :'db_name', :'db_user');
   END IF;
+  EXECUTE format('GRANT ALL PRIVILEGES ON DATABASE %I TO %I', :'db_name', :'db_user');
 END;
-\$\$ LANGUAGE plpgsql;
-
-GRANT ALL PRIVILEGES ON DATABASE ${db_name} TO ${db_user};
+$$ LANGUAGE plpgsql;
 SQL
 
   update_env_file "$db_user" "$db_pass" "$db_name"
