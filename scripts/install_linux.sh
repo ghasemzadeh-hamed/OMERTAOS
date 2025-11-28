@@ -235,9 +235,12 @@ update_env_file() {
   local db_user=$1
   local db_pass=$2
   local db_name=$3
-  local database_url="postgresql://${db_user}:${db_pass}@127.0.0.1:5432/${db_name}"
+  local database_url="postgresql://${db_user}:${db_pass}@127.0.0.1:5432/${db_name}?schema=public"
 
   declare -A updates=(
+    [AION_DB_USER]="$db_user"
+    [AION_DB_PASSWORD]="$db_pass"
+    [AION_DB_NAME]="$db_name"
     [CONTROL_PORT]="${CONTROL_PORT}"
     [GATEWAY_PORT]="${GATEWAY_PORT}"
     [CONSOLE_PORT]="${CONSOLE_PORT}"
@@ -316,7 +319,7 @@ configure_database() {
   fi
 
   local db_user=${DB_USER:-${existing_user:-aionos}}
-  local db_pass=${DB_PASS:-${existing_pass:-aionos}}
+  local db_pass=${DB_PASS:-${existing_pass:-password}}
   local db_name=${DB_NAME:-${existing_name:-omerta_db}}
 
   echo "Ensuring PostgreSQL role and database"
