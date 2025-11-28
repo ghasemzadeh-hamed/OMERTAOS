@@ -248,7 +248,7 @@ class Settings(BaseSettings):
         if disable_secrets:
             self._postgres_dsn = os.getenv(
                 "AION_CONTROL_POSTGRES_DSN",
-                "postgresql://aion:aion@postgres:5432/aion",
+                "postgresql://aionos:password@postgres:5432/omerta_db?schema=public",
             )
             self._minio_config = {
                 "endpoint": os.getenv("AION_CONTROL_MINIO_ENDPOINT", "minio:9000"),
@@ -285,7 +285,7 @@ class Settings(BaseSettings):
             # Fall back to environment configuration when Vault integration is unavailable.
             self._postgres_dsn = os.getenv(
                 "AION_CONTROL_POSTGRES_DSN",
-                "postgresql://aion:aion@postgres:5432/aion",
+                "postgresql://aionos:password@postgres:5432/omerta_db?schema=public",
             )
             self._minio_config = {
                 "endpoint": os.getenv("AION_CONTROL_MINIO_ENDPOINT", "minio:9000"),

@@ -2,15 +2,19 @@ services:
   postgres:
     image: postgres:16
     environment:
-      POSTGRES_USER: ${AION_DB_USER:-aion}
-      POSTGRES_PASSWORD: ${AION_DB_PASSWORD:-aion}
-      POSTGRES_DB: ${AION_DB_NAME:-aion}
+      POSTGRES_USER: ${AION_DB_USER:-aionos}
+      POSTGRES_PASSWORD: ${AION_DB_PASSWORD:-password}
+      POSTGRES_DB: ${AION_DB_NAME:-omerta_db}
     ports:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${AION_DB_USER:-aion} -d ${AION_DB_NAME:-aion} || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${AION_DB_USER:-aionos} -d ${AION_DB_NAME:-omerta_db} || exit 1",
+        ]
       interval: 5s
       timeout: 3s
       retries: 30

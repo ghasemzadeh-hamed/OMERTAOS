@@ -178,7 +178,15 @@ provision_node_projects() {
 }
 
 ensure_postgres_running() {
-  echo "[install] ensuring PostgreSQL is running..."
+  local host=${1:-127.0.0.1}
+  local port=${2:-5432}
+
+  if [[ "$host" != "127.0.0.1" && "$host" != "localhost" ]]; then
+    echo "[install] skipping local PostgreSQL startup for remote host ${host}"
+    return 0
+  fi
+
+  echo "[install] ensuring PostgreSQL is running on ${host}:${port}..."
   if command_exists systemctl; then
     if ! sudo systemctl enable --now postgresql.service >/dev/null 2>&1; then
       echo "[install] ERROR: failed to start PostgreSQL service" >&2
@@ -192,7 +200,7 @@ ensure_postgres_running() {
   fi
 
   for i in $(seq 1 30); do
-    if sudo -u postgres pg_isready -h 127.0.0.1 -p 5432 >/dev/null 2>&1; then
+    if sudo -u postgres pg_isready -h "$host" -p "$port" >/dev/null 2>&1; then
       echo "[install] PostgreSQL is ready"
       return 0
     fi
@@ -235,9 +243,20 @@ update_env_file() {
   local db_user=$1
   local db_pass=$2
   local db_name=$3
-  local database_url="postgresql://${db_user}:${db_pass}@127.0.0.1:5432/${db_name}"
+  local db_host=$4
+  local db_port=$5
+  local host_port="$db_host"
+
+  if [[ -n "$db_port" ]]; then
+    host_port+=":${db_port}"
+  fi
+
+  local database_url="postgresql://${db_user}:${db_pass}@${host_port}/${db_name}?schema=public"
 
   declare -A updates=(
+    [AION_DB_USER]="$db_user"
+    [AION_DB_PASSWORD]="$db_pass"
+    [AION_DB_NAME]="$db_name"
     [CONTROL_PORT]="${CONTROL_PORT}"
     [GATEWAY_PORT]="${GATEWAY_PORT}"
     [CONSOLE_PORT]="${CONSOLE_PORT}"
@@ -300,55 +319,78 @@ create_env_file() {
 
 configure_database() {
   echo "[install] configuring database"
-  ensure_postgres_running
 
-  local existing_url existing_user existing_pass existing_name
-  existing_url=$(parse_env_value DATABASE_URL)
+  local existing_url existing_user existing_pass existing_name existing_host existing_port
+  existing_url=${DATABASE_URL:-$(parse_env_value DATABASE_URL)}
 
-  if [[ $existing_url =~ ^postgresql://([^:/]+):([^@]+)@[^/]+/([^/?#]+) ]]; then
+  if [[ $existing_url =~ ^postgresql://([^:/]+):([^@]+)@([^/:?#]+)(:([0-9]+))?/([^/?#]+) ]]; then
     existing_user=${BASH_REMATCH[1]}
     existing_pass=${BASH_REMATCH[2]}
-    existing_name=${BASH_REMATCH[3]}
+    existing_host=${BASH_REMATCH[3]}
+    existing_port=${BASH_REMATCH[5]}
+    existing_name=${BASH_REMATCH[6]}
   else
     existing_user=""
     existing_pass=""
+    existing_host=""
+    existing_port=""
     existing_name=""
   fi
 
-  local db_user=${DB_USER:-${existing_user:-aionos}}
-  local db_pass=${DB_PASS:-${existing_pass:-aionos}}
-  local db_name=${DB_NAME:-${existing_name:-omerta_db}}
+  local db_user=${DB_USER:-${AION_DB_USER:-${existing_user:-aionos}}}
+  local db_pass=${DB_PASS:-${AION_DB_PASSWORD:-${existing_pass:-password}}}
+  local db_name=${DB_NAME:-${AION_DB_NAME:-${existing_name:-omerta_db}}}
+  local db_host=${DB_HOST:-${AION_DB_HOST:-${existing_host:-127.0.0.1}}}
+  local db_port=${DB_PORT:-${AION_DB_PORT:-${existing_port:-5432}}}
 
-  echo "Ensuring PostgreSQL role and database"
-  sudo -u postgres psql \
-    -v "db_user=${db_user}" \
-    -v "db_pass=${db_pass}" \
-    -v "db_name=${db_name}" <<'SQL'
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :'db_user') THEN
-    EXECUTE format('CREATE ROLE %I LOGIN PASSWORD %L', :'db_user', :'db_pass');
-  ELSE
-    EXECUTE format('ALTER ROLE %I WITH LOGIN PASSWORD %L', :'db_user', :'db_pass');
-  END IF;
-END;
-$$ LANGUAGE plpgsql;
+  local is_local=true
+  if [[ "$db_host" != "127.0.0.1" && "$db_host" != "localhost" ]]; then
+    is_local=false
+  fi
 
-DO $$
+  if $is_local; then
+    ensure_postgres_running "$db_host" "$db_port"
+
+    echo "Ensuring PostgreSQL role and database"
+    sudo -u postgres psql \
+      -h "$db_host" \
+      -p "$db_port" \
+      -v "db_user=${db_user}" \
+      -v "db_pass=${db_pass}" \
+      -v "db_name=${db_name}" <<'SQL'
+    SELECT
+    set_config('aion.install.db_user', :'db_user', false),
+    set_config('aion.install.db_pass', :'db_pass', false),
+    set_config('aion.install.db_name', :'db_name', false);
+
+DO $aion$
+DECLARE
+  v_db_user text := current_setting('aion.install.db_user');
+  v_db_pass text := current_setting('aion.install.db_pass');
+  v_db_name text := current_setting('aion.install.db_name');
 BEGIN
-  IF NOT EXISTS (SELECT FROM pg_database WHERE datname = :'db_name') THEN
-    EXECUTE format('CREATE DATABASE %I OWNER %I', :'db_name', :'db_user');
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = v_db_user) THEN
+    EXECUTE format('CREATE ROLE %I LOGIN PASSWORD %L', v_db_user, v_db_pass);
   ELSE
-    EXECUTE format('ALTER DATABASE %I OWNER TO %I', :'db_name', :'db_user');
+    EXECUTE format('ALTER ROLE %I WITH LOGIN PASSWORD %L', v_db_user, v_db_pass);
   END IF;
-  EXECUTE format('GRANT ALL PRIVILEGES ON DATABASE %I TO %I', :'db_name', :'db_user');
+
+  IF NOT EXISTS (SELECT FROM pg_database WHERE datname = v_db_name) THEN
+    EXECUTE format('CREATE DATABASE %I OWNER %I', v_db_name, v_db_user);
+  ELSE
+    EXECUTE format('ALTER DATABASE %I OWNER TO %I', v_db_name, v_db_user);
+  END IF;
+
+  EXECUTE format('GRANT ALL PRIVILEGES ON DATABASE %I TO %I', v_db_name, v_db_user);
 END;
-$$ LANGUAGE plpgsql;
+$aion$ LANGUAGE plpgsql;
 SQL
+  else
+    echo "[install] skipping local database provisioning for remote host ${db_host}"
+  fi
 
-  update_env_file "$db_user" "$db_pass" "$db_name"
+  update_env_file "$db_user" "$db_pass" "$db_name" "$db_host" "$db_port"
 }
-
 run_migrations() {
   if [ -f "$APP_DIR/control/alembic.ini" ]; then
     echo "Running Alembic migrations"
