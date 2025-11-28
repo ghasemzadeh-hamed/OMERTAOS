@@ -268,10 +268,15 @@ jobs:
 
       - name: Show service status
         if: always()
+        continue-on-error: true
         run: |
-          sudo systemctl status omerta-control
-          sudo systemctl status omerta-gateway
-          sudo systemctl status omerta-console
+          if command -v systemctl >/dev/null 2>&1; then
+            sudo systemctl status omerta-control || true
+            sudo systemctl status omerta-gateway || true
+            sudo systemctl status omerta-console || true
+          else
+            echo "systemctl not available on this runner; skipping status checks"
+          fi
 
       - name: Collect journal logs
         if: always()

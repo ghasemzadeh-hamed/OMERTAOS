@@ -16,6 +16,12 @@ async function main() {
 
   const passwordHash = await bcrypt.hash(password, 12);
 
+  await prisma.$connect();
+
+  if (typeof prisma.user?.upsert !== 'function') {
+    throw new Error('Prisma client is missing the User model. Run prisma generate.');
+  }
+
   await prisma.user.upsert({
     where: { email },
     update: {

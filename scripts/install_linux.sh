@@ -91,6 +91,7 @@ select_python_binary() {
 }
 
 install_system_packages() {
+  echo "[install] installing system dependencies"
   sudo apt update -y
 
   prepare_python_packages
@@ -122,6 +123,7 @@ create_service_user() {
 }
 
 clone_or_update_repo() {
+  echo "[install] installing OMERTAOS application"
   sudo mkdir -p "$APP_ROOT"
   sudo chown "$APP_USER":"$APP_GROUP" "$APP_ROOT"
 
@@ -129,8 +131,8 @@ clone_or_update_repo() {
     echo "Cloning repository into $APP_DIR"
     run_as_app "git clone '$REPO' '$APP_DIR'"
   else
-    echo "Updating existing repository in $APP_DIR"
-    run_as_app "cd '$APP_DIR' && git pull --ff-only"
+    echo "Repository already present; fetching latest changes"
+    run_as_app "cd '$APP_DIR' && git fetch --all --prune && git reset --hard origin/AIONOS"
   fi
 
   sudo chown -R "$APP_USER":"$APP_GROUP" "$APP_DIR"
@@ -175,6 +177,33 @@ provision_node_projects() {
   run_as_app "cd '$APP_DIR/gateway' && pnpm build"
 }
 
+ensure_postgres_running() {
+  echo "[install] ensuring PostgreSQL is running..."
+  if command_exists systemctl; then
+    if ! sudo systemctl enable --now postgresql.service >/dev/null 2>&1; then
+      echo "[install] ERROR: failed to start PostgreSQL service" >&2
+      exit 20
+    fi
+  elif command_exists service; then
+    if ! sudo service postgresql start >/dev/null 2>&1; then
+      echo "[install] ERROR: failed to start PostgreSQL service" >&2
+      exit 20
+    fi
+  fi
+
+  for i in $(seq 1 30); do
+    if sudo -u postgres pg_isready -h 127.0.0.1 -p 5432 >/dev/null 2>&1; then
+      echo "[install] PostgreSQL is ready"
+      return 0
+    fi
+    echo "[install] waiting for PostgreSQL (${i}/30)..."
+    sleep 1
+  done
+
+  echo "[install] ERROR: PostgreSQL did not become ready in time" >&2
+  exit 21
+}
+
 apply_console_migrations() {
   echo "Applying console database migrations"
   run_as_app "cd '$APP_DIR/console' && pnpm prisma migrate deploy"
@@ -188,21 +217,18 @@ apply_console_migrations() {
 }
 
 parse_env_value() {
-  local key=$1
-  python3 - <<PY
-from pathlib import Path
-import sys
-path = Path("$ENV_FILE")
-if not path.exists():
-    sys.exit(0)
-for raw in path.read_text().splitlines():
-    if not raw or raw.startswith('#') or '=' not in raw:
-        continue
-    name, value = raw.split('=', 1)
-    if name.strip() == "$key":
-        print(value.strip())
-        break
-PY
+  local key="$1"
+  [[ -f "$ENV_FILE" ]] || return 0
+
+  while IFS= read -r line; do
+    [[ -z "$line" || "${line#\#}" != "$line" || "$line" != *=* ]] && continue
+    local name=${line%%=*}
+    local value=${line#*=}
+    if [[ "${name}" == "$key" ]]; then
+      printf '%s\n' "$value"
+      break
+    fi
+  done <"$ENV_FILE"
 }
 
 update_env_file() {
@@ -211,53 +237,55 @@ update_env_file() {
   local db_name=$3
   local database_url="postgresql://${db_user}:${db_pass}@127.0.0.1:5432/${db_name}"
 
-  python3 - <<PY
-from pathlib import Path
+  declare -A updates=(
+    [CONTROL_PORT]="${CONTROL_PORT}"
+    [GATEWAY_PORT]="${GATEWAY_PORT}"
+    [CONSOLE_PORT]="${CONSOLE_PORT}"
+    [DATABASE_URL]="$database_url"
+    [AION_CONTROL_POSTGRES_DSN]="$database_url"
+    [AION_CONTROL_HTTP_HOST]="0.0.0.0"
+    [AION_CONTROL_HTTP_PORT]="${CONTROL_PORT}"
+    [AION_CONTROL_REDIS_URL]="redis://127.0.0.1:6379/0"
+    [AION_REDIS_URL]="redis://127.0.0.1:6379/0"
+    [AION_GATEWAY_HOST]="0.0.0.0"
+    [AION_GATEWAY_PORT]="${GATEWAY_PORT}"
+    [AION_CONTROL_GRPC]="localhost:50051"
+    [AION_CONTROL_BASE]="http://localhost:${CONTROL_PORT}"
+    [AION_CONTROL_CORS_ORIGINS]="http://localhost:${CONSOLE_PORT}"
+    [AION_CORS_ORIGINS]="http://localhost:${CONSOLE_PORT}"
+    [AION_CONSOLE_HEALTH_URL]="http://localhost:${CONSOLE_PORT}/health"
+    [NEXTAUTH_URL]="http://localhost:${CONSOLE_PORT}"
+    [NEXT_PUBLIC_GATEWAY_URL]="http://localhost:${GATEWAY_PORT}"
+    [NEXT_PUBLIC_CONTROL_URL]="http://localhost:${CONTROL_PORT}"
+    [NEXT_PUBLIC_CONTROL_BASE]="http://localhost:${CONTROL_PORT}"
+  )
 
-path = Path("$ENV_FILE")
-if not path.exists():
-    raise SystemExit(0)
+  [[ -f "$ENV_FILE" ]] || return 0
 
-updates = {
-    "CONTROL_PORT": "${CONTROL_PORT}",
-    "GATEWAY_PORT": "${GATEWAY_PORT}",
-    "CONSOLE_PORT": "${CONSOLE_PORT}",
-    "DATABASE_URL": "$database_url",
-    "AION_CONTROL_POSTGRES_DSN": "$database_url",
-    "AION_CONTROL_HTTP_HOST": "0.0.0.0",
-    "AION_CONTROL_HTTP_PORT": "${CONTROL_PORT}",
-    "AION_CONTROL_REDIS_URL": "redis://127.0.0.1:6379/0",
-    "AION_REDIS_URL": "redis://127.0.0.1:6379/0",
-    "AION_GATEWAY_HOST": "0.0.0.0",
-    "AION_GATEWAY_PORT": "${GATEWAY_PORT}",
-    "AION_CONTROL_GRPC": "localhost:50051",
-    "AION_CONTROL_BASE": "http://localhost:${CONTROL_PORT}",
-    "AION_CONTROL_CORS_ORIGINS": "http://localhost:${CONSOLE_PORT}",
-    "AION_CORS_ORIGINS": "http://localhost:${CONSOLE_PORT}",
-    "AION_CONSOLE_HEALTH_URL": "http://localhost:${CONSOLE_PORT}/health",
-    "NEXTAUTH_URL": "http://localhost:${CONSOLE_PORT}",
-    "NEXT_PUBLIC_GATEWAY_URL": "http://localhost:${GATEWAY_PORT}",
-    "NEXT_PUBLIC_CONTROL_URL": "http://localhost:${CONTROL_PORT}",
-    "NEXT_PUBLIC_CONTROL_BASE": "http://localhost:${CONTROL_PORT}",
-}
+  local tmp
+  tmp=$(mktemp)
 
-lines = path.read_text().splitlines()
-keys = set(updates)
+  while IFS= read -r line; do
+    if [[ -z "$line" || "${line#\#}" != "$line" || "$line" != *=* ]]; then
+      printf '%s\n' "$line" >>"$tmp"
+      continue
+    fi
 
-for idx, line in enumerate(lines):
-    if not line or line.lstrip().startswith('#') or '=' not in line:
-        continue
-    key, _ = line.split('=', 1)
-    key = key.strip()
-    if key in updates:
-        lines[idx] = f"{key}={updates[key]}"
-        keys.discard(key)
+    local key=${line%%=*}
+    if [[ -n "${updates[$key]:-}" ]]; then
+      printf '%s=%s\n' "$key" "${updates[$key]}" >>"$tmp"
+      unset 'updates[$key]'
+    else
+      printf '%s\n' "$line" >>"$tmp"
+    fi
+  done <"$ENV_FILE"
 
-for key in sorted(keys):
-    lines.append(f"{key}={updates[key]}")
+  for key in "${!updates[@]}"; do
+    printf '%s=%s\n' "$key" "${updates[$key]}" >>"$tmp"
+  done
 
-path.write_text("\n".join(lines) + "\n")
-PY
+  mv "$tmp" "$ENV_FILE"
+  sudo chown "$APP_USER":"$APP_GROUP" "$ENV_FILE"
 }
 
 create_env_file() {
@@ -270,84 +298,53 @@ create_env_file() {
   run_as_app "cd '$APP_DIR' && ln -sf ../.env console/.env"
 }
 
-random_password() {
-  local length="${1:-24}"
-  local python_bin="${PYTHON_BIN:-python3}"
-
-  "${python_bin}" - "$length" <<'PY'
-import secrets
-import string
-import sys
-
-try:
-    length = int(sys.argv[1])
-except (IndexError, ValueError):
-    length = 24
-
-alphabet = string.ascii_letters + string.digits
-print(''.join(secrets.choice(alphabet) for _ in range(length)))
-PY
-}
-
 configure_database() {
-  echo "Ensuring PostgreSQL service is running"
+  echo "[install] configuring database"
+  ensure_postgres_running
 
-  if ! sudo -u postgres pg_isready -q >/dev/null 2>&1; then
-    if command_exists systemctl; then
-      sudo systemctl start postgresql || true
-    elif command_exists service; then
-      sudo service postgresql start || true
-    fi
+  local existing_url existing_user existing_pass existing_name
+  existing_url=$(parse_env_value DATABASE_URL)
 
-    local waited=0
-    local timeout=30
-    while (( waited < timeout )); do
-      if sudo -u postgres pg_isready -q >/dev/null 2>&1; then
-        break
-      fi
-      sleep 1
-      waited=$((waited + 1))
-    done
-
-    if ! sudo -u postgres pg_isready -q >/dev/null 2>&1; then
-      echo "PostgreSQL is not accepting connections on port 5432 after ${timeout}s" >&2
-      exit 2
-    fi
+  if [[ $existing_url =~ ^postgresql://([^:/]+):([^@]+)@[^/]+/([^/?#]+) ]]; then
+    existing_user=${BASH_REMATCH[1]}
+    existing_pass=${BASH_REMATCH[2]}
+    existing_name=${BASH_REMATCH[3]}
+  else
+    existing_user=""
+    existing_pass=""
+    existing_name=""
   fi
 
-  local existing_user existing_pass existing_name
-  existing_user=$(parse_env_value DATABASE_URL | python3 - <<'PY'
-import sys
-from urllib.parse import urlparse
-value = sys.stdin.read().strip()
-if not value:
-    print("", "", "", sep="\n")
-else:
-    parsed = urlparse(value)
-    name = parsed.path[1:] if parsed.path.startswith('/') else parsed.path
-    print(parsed.username or "")
-    print(parsed.password or "")
-    print(name or "")
-PY
-)
-
-  IFS=$'\n' read -r existing_user existing_pass existing_name <<<"$existing_user"
-
-  local db_user=${DB_USER:-${existing_user:-omerta}}
-  local db_pass=${DB_PASS:-${existing_pass:-}};
+  local db_user=${DB_USER:-${existing_user:-aionos}}
+  local db_pass=${DB_PASS:-${existing_pass:-aionos}}
   local db_name=${DB_NAME:-${existing_name:-omerta_db}}
 
-  if [ -z "$db_pass" ]; then
-    db_pass=$(random_password)
-  fi
+  echo "Ensuring PostgreSQL role and database"
+  sudo -u postgres psql \
+    -v "db_user=${db_user}" \
+    -v "db_pass=${db_pass}" \
+    -v "db_name=${db_name}" <<'SQL'
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :'db_user') THEN
+    EXECUTE format('CREATE ROLE %I LOGIN PASSWORD %L', :'db_user', :'db_pass');
+  ELSE
+    EXECUTE format('ALTER ROLE %I WITH LOGIN PASSWORD %L', :'db_user', :'db_pass');
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
 
-  echo "Ensuring PostgreSQL role $db_user"
-  sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${db_user}'" | grep -q 1 || \
-    sudo -u postgres psql -c "CREATE USER ${db_user} WITH PASSWORD '${db_pass}';"
-
-  echo "Ensuring database $db_name"
-  sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='${db_name}'" | grep -q 1 || \
-    sudo -u postgres psql -c "CREATE DATABASE ${db_name} OWNER ${db_user};"
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_database WHERE datname = :'db_name') THEN
+    EXECUTE format('CREATE DATABASE %I OWNER %I', :'db_name', :'db_user');
+  ELSE
+    EXECUTE format('ALTER DATABASE %I OWNER TO %I', :'db_name', :'db_user');
+  END IF;
+  EXECUTE format('GRANT ALL PRIVILEGES ON DATABASE %I TO %I', :'db_name', :'db_user');
+END;
+$$ LANGUAGE plpgsql;
+SQL
 
   update_env_file "$db_user" "$db_pass" "$db_name"
 }
@@ -365,6 +362,7 @@ run_migrations() {
 }
 
 install_systemd_units() {
+  echo "[install] enabling and starting systemd services"
   if ! command_exists systemctl; then
     echo "systemctl not available; skipping service installation"
     return
@@ -393,6 +391,21 @@ install_systemd_units() {
   sudo systemctl daemon-reload
   sudo systemctl enable --now omerta-control.service omerta-gateway.service omerta-console.service
   sudo systemctl restart omerta-control.service omerta-gateway.service omerta-console.service
+}
+
+self_check() {
+  if [[ "${CI:-}" != "1" ]]; then
+    return
+  fi
+
+  echo "[install] running CI health checks"
+  local control_url="http://localhost:${CONTROL_PORT:-8000}/healthz"
+  local gateway_url="http://localhost:${GATEWAY_PORT:-3000}/healthz"
+  local console_url="http://localhost:${CONSOLE_PORT:-3001}/healthz"
+
+  curl -fsS --max-time 10 "$control_url" >/dev/null
+  curl -fsS --max-time 10 "$gateway_url" >/dev/null
+  curl -fsS --max-time 10 "$console_url" >/dev/null
 }
 
 print_summary() {
@@ -437,6 +450,7 @@ main() {
   apply_console_migrations
   run_migrations
   install_systemd_units
+  self_check
   print_summary
 }
 
