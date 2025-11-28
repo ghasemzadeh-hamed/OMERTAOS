@@ -243,15 +243,7 @@ update_env_file() {
   local db_user=$1
   local db_pass=$2
   local db_name=$3
-  local db_host=$4
-  local db_port=$5
-  local host_port="$db_host"
-
-  if [[ -n "$db_port" ]]; then
-    host_port+=":${db_port}"
-  fi
-
-  local database_url="postgresql://${db_user}:${db_pass}@${host_port}/${db_name}?schema=public"
+  local database_url="postgresql://${db_user}:${db_pass}@127.0.0.1:5432/${db_name}?schema=public"
 
   declare -A updates=(
     [AION_DB_USER]="$db_user"
@@ -337,31 +329,19 @@ configure_database() {
     existing_name=""
   fi
 
-  local db_user=${DB_USER:-${AION_DB_USER:-${existing_user:-aionos}}}
-  local db_pass=${DB_PASS:-${AION_DB_PASSWORD:-${existing_pass:-password}}}
-  local db_name=${DB_NAME:-${AION_DB_NAME:-${existing_name:-omerta_db}}}
-  local db_host=${DB_HOST:-${AION_DB_HOST:-${existing_host:-127.0.0.1}}}
-  local db_port=${DB_PORT:-${AION_DB_PORT:-${existing_port:-5432}}}
+  local db_user=${DB_USER:-${existing_user:-aionos}}
+  local db_pass=${DB_PASS:-${existing_pass:-password}}
+  local db_name=${DB_NAME:-${existing_name:-omerta_db}}
 
-  local is_local=true
-  if [[ "$db_host" != "127.0.0.1" && "$db_host" != "localhost" ]]; then
-    is_local=false
-  fi
-
-  if $is_local; then
-    ensure_postgres_running "$db_host" "$db_port"
-
-    echo "Ensuring PostgreSQL role and database"
-    sudo -u postgres psql \
-      -h "$db_host" \
-      -p "$db_port" \
-      -v "db_user=${db_user}" \
-      -v "db_pass=${db_pass}" \
-      -v "db_name=${db_name}" <<'SQL'
-    SELECT
-    set_config('aion.install.db_user', :'db_user', false),
-    set_config('aion.install.db_pass', :'db_pass', false),
-    set_config('aion.install.db_name', :'db_name', false);
+  echo "Ensuring PostgreSQL role and database"
+  sudo -u postgres psql \
+    -v "db_user=${db_user}" \
+    -v "db_pass=${db_pass}" \
+    -v "db_name=${db_name}" <<'SQL'
+SELECT
+  set_config('aion.install.db_user', :'db_user', false),
+  set_config('aion.install.db_pass', :'db_pass', false),
+  set_config('aion.install.db_name', :'db_name', false);
 
 DO $aion$
 DECLARE

@@ -48,7 +48,7 @@ id -u aionos >/dev/null 2>&1 || useradd -m -s /bin/bash aionos
 if ! getent group sudo | grep -q '\baionos\b'; then
   adduser aionos sudo
 fi
-if ! printf '%s\n' "aionos:aionos" | chpasswd 2>/dev/null; then
+if ! printf '%s\n' "aionos:password" | chpasswd 2>/dev/null; then
   echo "warning: unable to update default password" >&2
 fi
 EOF_CHROOT
