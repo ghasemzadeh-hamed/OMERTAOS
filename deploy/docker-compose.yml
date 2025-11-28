@@ -53,9 +53,9 @@ services:
   postgres:
     image: postgres:15
     environment:
-      POSTGRES_DB: aionos
+      POSTGRES_DB: omerta_db
       POSTGRES_USER: aionos
-      POSTGRES_PASSWORD: aionos
+      POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
   redis:

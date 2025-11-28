@@ -27,7 +27,7 @@ services:
     environment:
       AION_CONTROL_API_PREFIX: /v1
       AION_CONTROL_REDIS_URL: redis://redis:6379/0
-      AION_CONTROL_DATABASE_URL: postgresql://aionos:aionos@postgres:5432/aionos
+      AION_CONTROL_DATABASE_URL: postgresql://aionos:password@postgres:5432/omerta_db?schema=public
     ports:
       - "${AION_CONTROL_PORT:-8000}:8000"
     depends_on:
@@ -68,9 +68,9 @@ services:
     <<: *default_restart
     image: postgres:15
     environment:
-      POSTGRES_DB: aionos
+      POSTGRES_DB: omerta_db
       POSTGRES_USER: aionos
-      POSTGRES_PASSWORD: aionos
+      POSTGRES_PASSWORD: password
     volumes:
       - postgres-data:/var/lib/postgresql/data
     profiles: ["user", "professional", "enterprise"]
@@ -124,7 +124,7 @@ services:
     environment:
       REGISTRY_STORAGE_ENDPOINT: http://minio:9000
       REGISTRY_VECTOR_ENDPOINT: http://qdrant:6333
-      REGISTRY_DATABASE_URL: postgresql://aionos:aionos@postgres:5432/aionos
+      REGISTRY_DATABASE_URL: postgresql://aionos:password@postgres:5432/omerta_db?schema=public
     depends_on:
       - minio
       - qdrant

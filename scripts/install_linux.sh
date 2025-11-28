@@ -235,9 +235,12 @@ update_env_file() {
   local db_user=$1
   local db_pass=$2
   local db_name=$3
-  local database_url="postgresql://${db_user}:${db_pass}@127.0.0.1:5432/${db_name}"
+  local database_url="postgresql://${db_user}:${db_pass}@127.0.0.1:5432/${db_name}?schema=public"
 
   declare -A updates=(
+    [AION_DB_USER]="$db_user"
+    [AION_DB_PASSWORD]="$db_pass"
+    [AION_DB_NAME]="$db_name"
     [CONTROL_PORT]="${CONTROL_PORT}"
     [GATEWAY_PORT]="${GATEWAY_PORT}"
     [CONSOLE_PORT]="${CONSOLE_PORT}"
@@ -316,7 +319,7 @@ configure_database() {
   fi
 
   local db_user=${DB_USER:-${existing_user:-aionos}}
-  local db_pass=${DB_PASS:-${existing_pass:-aionos}}
+  local db_pass=${DB_PASS:-${existing_pass:-password}}
   local db_name=${DB_NAME:-${existing_name:-omerta_db}}
 
   echo "Ensuring PostgreSQL role and database"
@@ -324,26 +327,32 @@ configure_database() {
     -v "db_user=${db_user}" \
     -v "db_pass=${db_pass}" \
     -v "db_name=${db_name}" <<'SQL'
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :'db_user') THEN
-    EXECUTE format('CREATE ROLE %I LOGIN PASSWORD %L', :'db_user', :'db_pass');
-  ELSE
-    EXECUTE format('ALTER ROLE %I WITH LOGIN PASSWORD %L', :'db_user', :'db_pass');
-  END IF;
-END;
-$$ LANGUAGE plpgsql;
+SELECT
+  set_config('aion.install.db_user', :'db_user', false),
+  set_config('aion.install.db_pass', :'db_pass', false),
+  set_config('aion.install.db_name', :'db_name', false);
 
-DO $$
+DO $aion$
+DECLARE
+  v_db_user text := current_setting('aion.install.db_user');
+  v_db_pass text := current_setting('aion.install.db_pass');
+  v_db_name text := current_setting('aion.install.db_name');
 BEGIN
-  IF NOT EXISTS (SELECT FROM pg_database WHERE datname = :'db_name') THEN
-    EXECUTE format('CREATE DATABASE %I OWNER %I', :'db_name', :'db_user');
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = v_db_user) THEN
+    EXECUTE format('CREATE ROLE %I LOGIN PASSWORD %L', v_db_user, v_db_pass);
   ELSE
-    EXECUTE format('ALTER DATABASE %I OWNER TO %I', :'db_name', :'db_user');
+    EXECUTE format('ALTER ROLE %I WITH LOGIN PASSWORD %L', v_db_user, v_db_pass);
   END IF;
-  EXECUTE format('GRANT ALL PRIVILEGES ON DATABASE %I TO %I', :'db_name', :'db_user');
+
+  IF NOT EXISTS (SELECT FROM pg_database WHERE datname = v_db_name) THEN
+    EXECUTE format('CREATE DATABASE %I OWNER %I', v_db_name, v_db_user);
+  ELSE
+    EXECUTE format('ALTER DATABASE %I OWNER TO %I', v_db_name, v_db_user);
+  END IF;
+
+  EXECUTE format('GRANT ALL PRIVILEGES ON DATABASE %I TO %I', v_db_name, v_db_user);
 END;
-$$ LANGUAGE plpgsql;
+$aion$ LANGUAGE plpgsql;
 SQL
 
   update_env_file "$db_user" "$db_pass" "$db_name"

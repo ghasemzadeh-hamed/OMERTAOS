@@ -24,7 +24,7 @@ spec:
             - name: AION_CONTROL_REDIS_URL
               value: redis://aion-redis:6379/0
             - name: AION_CONTROL_POSTGRES_DSN
-              value: postgresql://aionos:aionos@aion-postgres:5432/aionos
+              value: postgresql://aionos:password@aion-postgres:5432/omerta_db?schema=public
           readinessProbe:
             httpGet:
               path: /healthz
