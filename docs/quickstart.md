@@ -67,10 +67,11 @@ This guide condenses each supported deployment into ten steps or fewer. Run ever
 1. Ensure Docker Engine 24+ and Docker Compose V2 are installed.
 2. Clone the repository and copy `.env` from `config/templates/.env.example`.
 3. Set `AION_PROFILE` to `user`, `professional`, or `enterprise-vip` in `.env`.
-4. Run `docker compose -f docker-compose.quickstart.yml up -d` (or substitute another compose file such as `docker-compose.yml` if you need the production baseline).
-5. Access the wizard at `http://localhost:3000/wizard` to review status.
-6. Confirm service health via the console dashboard.
-7. Tear down with `docker compose down` when finished.
+4. Keep database credentials aligned: the quickstart Postgres service defaults to `aionos` / `password` / `omerta_db`; if you override `AION_DB_*`, also update `DATABASE_URL` (e.g., `postgresql://aionos:password@127.0.0.1:5432/omerta_db`).
+5. Run `docker compose -f docker-compose.quickstart.yml up -d` (or substitute another compose file such as `docker-compose.yml` if you need the production baseline).
+6. Access the wizard at `http://localhost:3000/wizard` to review status.
+7. Confirm service health via the console dashboard.
+8. Tear down with `docker compose down` when finished.
 
 ---
 
