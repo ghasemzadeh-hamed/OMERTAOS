@@ -362,12 +362,16 @@ run_migrations() {
   if [ -f "$APP_DIR/control/alembic.ini" ]; then
     echo "Running Alembic migrations"
     run_as_app "cd '$APP_DIR/control' && source '$APP_DIR/.venv/bin/activate' && alembic upgrade head"
-  elif [ -f "$APP_DIR/control/manage.py" ]; then
+    return
+  fi
+
+  if [ -f "$APP_DIR/control/manage.py" ]; then
     echo "Running Django migrations"
     run_as_app "cd '$APP_DIR/control' && source '$APP_DIR/.venv/bin/activate' && python manage.py migrate"
-  else
-    echo "No migrations configured - skipping"
+    return
   fi
+
+  echo "No migrations configured - skipping"
 }
 
 install_systemd_units() {
