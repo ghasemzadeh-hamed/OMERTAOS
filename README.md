@@ -60,7 +60,7 @@ pwsh ./install.ps1 -Profile user       # or professional / enterprise-vip
 ```
 
 This path uses [`docker-compose.quickstart.yml`](docker-compose.quickstart.yml) with dev certificates and JWT keys under `config/certs/dev` and `config/keys`.
-Postgres defaults to `aionos` / `password` / `omerta_db` to match the values in `dev.env`; adjust `AION_DB_*` and `DATABASE_URL` together if you override them (for example, `DATABASE_URL=postgresql://aionos:password@127.0.0.1:5432/omerta_db`).
+Postgres defaults to `aionos` / `password` / `omerta_db` to match the values in `dev.env`; adjust `AION_DB_*` and `DATABASE_URL` together if you override them (for example, `DATABASE_URL=postgresql://aionos:password@postgres:5432/omerta_db?schema=public`).
 
 ### Other flows
 
