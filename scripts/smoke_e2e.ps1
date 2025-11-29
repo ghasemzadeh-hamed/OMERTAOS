@@ -5,7 +5,7 @@ param(
   [string]$ConsoleUrl = $env:NEXTAUTH_URL
 )
 
-$gatewayPort = if ($env:AION_GATEWAY_PORT) { $env:AION_GATEWAY_PORT } else { '8080' }
+$gatewayPort = if ($env:AION_GATEWAY_PORT) { $env:AION_GATEWAY_PORT } else { '3000' }
 
 if (-not $GatewayUrl) {
   $GatewayUrl = "http://localhost:$gatewayPort"
@@ -36,6 +36,7 @@ function Wait-ForService {
   }
   throw "$Name did not become ready"
 }
+
 
 Wait-ForService -Name 'control' -Url "$ControlUrl/healthz"
 Wait-ForService -Name 'gateway' -Url "$GatewayUrl/healthz"
