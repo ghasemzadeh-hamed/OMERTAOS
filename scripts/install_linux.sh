@@ -243,7 +243,8 @@ update_env_file() {
   local db_user=$1
   local db_pass=$2
   local db_name=$3
-  local database_url="postgresql://${db_user}:${db_pass}@127.0.0.1:5432/${db_name}?schema=public"
+  local db_host=${4:-127.0.0.1}
+  local database_url="postgresql://${db_user}:${db_pass}@${db_host}:5432/${db_name}?schema=public"
 
   declare -A updates=(
     [AION_DB_USER]="$db_user"
@@ -333,11 +334,14 @@ configure_database() {
   local db_pass=${DB_PASS:-${existing_pass:-password}}
   local db_name=${DB_NAME:-${existing_name:-omerta_db}}
 
-  echo "Ensuring PostgreSQL role and database"
-  sudo -u postgres psql \
-    -v "db_user=${db_user}" \
-    -v "db_pass=${db_pass}" \
-    -v "db_name=${db_name}" <<'SQL'
+  local db_host=${existing_host:-127.0.0.1}
+
+  if [[ -z "$existing_host" || "$existing_host" == "127.0.0.1" || "$existing_host" == "localhost" ]]; then
+    echo "Ensuring PostgreSQL role and database"
+    sudo -u postgres psql \
+      -v "db_user=${db_user}" \
+      -v "db_pass=${db_pass}" \
+      -v "db_name=${db_name}" <<'SQL'
 SELECT
   set_config('aion.install.db_user', :'db_user', false),
   set_config('aion.install.db_pass', :'db_pass', false),
@@ -369,9 +373,9 @@ SQL
     echo "[install] skipping local database provisioning for remote host ${db_host}"
   fi
 
-  local database_url="postgresql://${db_user}:${db_pass}@127.0.0.1:5432/${db_name}?schema=public"
+  local database_url="postgresql://${db_user}:${db_pass}@${db_host}:5432/${db_name}?schema=public"
 
-  update_env_file "$db_user" "$db_pass" "$db_name"
+  update_env_file "$db_user" "$db_pass" "$db_name" "$db_host"
 
   export AION_DB_USER="$db_user"
   export AION_DB_PASSWORD="$db_pass"
