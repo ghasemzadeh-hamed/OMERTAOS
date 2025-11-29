@@ -230,7 +230,7 @@ apply_env_overrides() {
     TELEMETRY_ENDPOINT_VALUE="${TELEMETRY_ENDPOINT}" \
     POLICY_DIR_VALUE="${POLICY_DIR}" \
     VOLUME_ROOT_VALUE="${VOLUME_ROOT}" \
-    GATEWAY_PORT_VALUE="${AION_GATEWAY_PORT:-8080}" \
+    GATEWAY_PORT_VALUE="${AION_GATEWAY_PORT:-3000}" \
     GATEWAY_HOST_VALUE="${AION_GATEWAY_HOST:-0.0.0.0}" \
     PRISMA_VALUE="${AION_ENABLE_PRISMA:-1}" \
     DB_USER_VALUE="${DEFAULT_DB_USER}" \
@@ -275,12 +275,14 @@ updates = {
     "DATABASE_URL": os.environ['DATABASE_URL_VALUE_ENV'],
     "AION_CONTROL_POSTGRES_DSN": os.environ['DATABASE_URL_VALUE_ENV'],
     "AION_REDIS_URL": os.environ['REDIS_URL_VALUE'],
+    "CONTROL_BASE_URL": "http://localhost:8000",
+    "GATEWAY_BASE_URL": "http://localhost:3000",
+    "CONSOLE_BASE_URL": "http://localhost:3001",
     "AION_CONTROL_BASE_URL": os.environ['CONTROL_BASE_VALUE'],
     "AION_CONTROL_API_PREFIX": os.environ['CONTROL_PREFIX_VALUE'],
     "AION_CONTROL_GRPC": os.environ['CONTROL_GRPC_VALUE'],
-    "NEXT_PUBLIC_GATEWAY_URL": "http://gateway:8080",
-    "NEXT_PUBLIC_CONTROL_URL": "http://control:8000",
-    "NEXTAUTH_URL": "http://localhost:3000",
+    "NEXT_PUBLIC_GATEWAY_URL": "http://gateway:3000",
+    "NEXTAUTH_URL": "http://localhost:3001",
     "NEXTAUTH_SECRET": os.environ['NEXTAUTH_SECRET_VALUE_ENV'],
     "AION_GATEWAY_API_KEYS": os.environ['GATEWAY_API_KEYS_VALUE'],
     "AION_GATEWAY_API_KEYS_SECRET_PATH": os.environ['GATEWAY_API_KEYS_SECRET_VALUE'],
@@ -426,8 +428,8 @@ print_summary() {
   if ${LOCAL_MODE}; then
     printf 'Services:\n'
     printf '  Kernel API:       http://localhost:8010\n'
-    printf '  Gateway (REST):   http://localhost:8080\n'
-    printf '  Console UI:       http://localhost:3000\n'
+    printf '  Gateway (REST):   http://localhost:3000\n'
+    printf '  Console UI:       http://localhost:3001\n'
   else
     printf 'Next steps:\n'
     local compose_display

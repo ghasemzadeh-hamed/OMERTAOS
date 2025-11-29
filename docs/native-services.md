@@ -29,4 +29,4 @@ During installation the script now also:
 2. Polls control and gateway health endpoints, then polls the console at `http://localhost:3001/health`.
 3. If any check fails, the script now prints systemd status and the last 50 log lines for the affected unit (plus a longer dump for control).
 
-For Docker Compose based CI runs, `scripts/smoke_e2e.sh` keeps using the container ports (control `8000`, gateway `8080`, console `3000`) and their `/healthz` endpoints.
+For Docker Compose based CI runs, `scripts/smoke_e2e.sh` keeps using the container ports (control `8000`, gateway `3000`, console `3001`) and their `/healthz` endpoints.

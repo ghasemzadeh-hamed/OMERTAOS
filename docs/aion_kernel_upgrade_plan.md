@@ -371,8 +371,8 @@ depends_on: [redis, qdrant, minio]
 14. &#x62c;&#x62f;&#x648;&#x644; Services x Ports x Env (&#x62e;&#x644;&#x627;&#x635;&#x647;)
 
 ServicePortKey ENV
-Console3000NEXT*PUBLIC_CONTROL_URL, NEXT_PUBLIC_KERNEL_URL
-Gateway8080AION_GATEWAY*_
+Console3001NEXT_PUBLIC_GATEWAY_URL, NEXT_PUBLIC_KERNEL_URL
+Gateway3000AION_GATEWAY*_
 Control8001AION*CONTROL*_, DB/Redis/Kafka/Qdrant/MinIO
 Kernel8010REDIS*URL, QDRANT_URL, MINIO_URL, POLICY_DIR
 vLLM (opt)8008MODEL*\*

@@ -12,8 +12,8 @@ fi
 
 # Base URLs with sensible defaults for local docker-compose usage
 CONTROL_BASE_URL="${CONTROL_BASE_URL:-http://localhost:8000}"
-GATEWAY_BASE_URL="${GATEWAY_BASE_URL:-http://localhost:8080}"
-CONSOLE_BASE_URL="${CONSOLE_BASE_URL:-http://localhost:3000}"
+GATEWAY_BASE_URL="${GATEWAY_BASE_URL:-http://localhost:3000}"
+CONSOLE_BASE_URL="${CONSOLE_BASE_URL:-http://localhost:3001}"
 ADMIN_TOKEN="${AION_GATEWAY_ADMIN_TOKEN:-demo-admin-token}"
 
 wait_for() {

@@ -75,8 +75,8 @@ Detailed guides for ISO, native Linux, WSL, and Docker modes live in [`docs/quic
   3. `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\quicksetup.ps1`
   4. `docker compose up -d`
   5. Open the services:
-     - Console UI: http://localhost:3000
-     - Gateway health: http://localhost:8080/healthz
+     - Console UI: http://localhost:3001
+     - Gateway health: http://localhost:3000/healthz
 
 The default profile is `user`, which keeps the stack lightweight while enabling the console, gateway, and control plane.
 

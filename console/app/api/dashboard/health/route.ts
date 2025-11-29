@@ -3,8 +3,10 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSetupStatus } from '@/lib/setup';
 
-const gatewayUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://gateway:8080';
-const controlUrl = process.env.NEXT_PUBLIC_CONTROL_URL || 'http://control:8000';
+const gatewayUrl =
+  process.env.NEXT_PUBLIC_GATEWAY_URL ||
+  process.env.GATEWAY_BASE_URL ||
+  'http://localhost:3000';
 
 type ServiceStatus = 'ok' | 'degraded' | 'error' | 'unknown';
 
@@ -43,24 +45,20 @@ async function checkHttpService(url: string) {
 }
 
 export async function GET() {
-  const [db, gateway, control, setup] = await Promise.all([
+  const [db, gateway, setup] = await Promise.all([
     checkDatabase(),
     checkHttpService(`${gatewayUrl}/healthz`),
-    checkHttpService(`${controlUrl}/healthz`),
     getSetupStatus(),
   ]);
 
   const services = {
     postgres: db,
     gateway,
-    control,
   } as Record<string, { status: ServiceStatus; details: string }>;
 
-  const overallStatus: ServiceStatus = [db.status, gateway.status, control.status].some(
-    (s) => s === 'error',
-  )
+  const overallStatus: ServiceStatus = [db.status, gateway.status].some((s) => s === 'error')
     ? 'error'
-    : [db.status, gateway.status, control.status].some((s) => s === 'degraded')
+    : [db.status, gateway.status].some((s) => s === 'degraded')
       ? 'degraded'
       : 'ok';
 

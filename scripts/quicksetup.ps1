@@ -252,7 +252,7 @@ $envUpdates['AION_TELEMETRY_OPT_IN'] = if ($telemetryEnabled) { 'true' } else { 
 $envUpdates['AION_TELEMETRY_ENDPOINT'] = $telemetryEndpoint
 $envUpdates['AION_POLICY_DIR'] = $PolicyDir
 $envUpdates['AION_VOLUME_ROOT'] = $VolumeRoot
-$envUpdates['AION_GATEWAY_PORT'] = if ($env:AION_GATEWAY_PORT) { $env:AION_GATEWAY_PORT } else { '8080' }
+$envUpdates['AION_GATEWAY_PORT'] = if ($env:AION_GATEWAY_PORT) { $env:AION_GATEWAY_PORT } else { '3000' }
 $envUpdates['AION_GATEWAY_HOST'] = if ($env:AION_GATEWAY_HOST) { $env:AION_GATEWAY_HOST } else { '0.0.0.0' }
 $envUpdates['AION_ENABLE_PRISMA'] = if ($env:AION_ENABLE_PRISMA) { $env:AION_ENABLE_PRISMA } else { '1' }
 $envUpdates['AION_DB_USER'] = $defaultDbUser
@@ -264,9 +264,11 @@ $envUpdates['AION_REDIS_URL'] = if ($env:AION_REDIS_URL) { $env:AION_REDIS_URL }
 $envUpdates['AION_CONTROL_BASE_URL'] = if ($env:AION_CONTROL_BASE_URL) { $env:AION_CONTROL_BASE_URL } else { 'http://control:8000' }
 $envUpdates['AION_CONTROL_API_PREFIX'] = if ($env:AION_CONTROL_API_PREFIX) { $env:AION_CONTROL_API_PREFIX } else { '/api' }
 $envUpdates['AION_CONTROL_GRPC'] = if ($env:AION_CONTROL_GRPC) { $env:AION_CONTROL_GRPC } else { 'http://control:50051' }
-$envUpdates['NEXT_PUBLIC_GATEWAY_URL'] = 'http://gateway:8080'
-$envUpdates['NEXT_PUBLIC_CONTROL_URL'] = 'http://control:8000'
-$envUpdates['NEXTAUTH_URL'] = 'http://localhost:3000'
+$envUpdates['NEXT_PUBLIC_GATEWAY_URL'] = 'http://gateway:3000'
+$envUpdates['CONTROL_BASE_URL'] = 'http://localhost:8000'
+$envUpdates['GATEWAY_BASE_URL'] = 'http://localhost:3000'
+$envUpdates['CONSOLE_BASE_URL'] = 'http://localhost:3001'
+$envUpdates['NEXTAUTH_URL'] = 'http://localhost:3001'
 $envUpdates['NEXTAUTH_SECRET'] = $nextAuthSecret
 $envUpdates['AION_GATEWAY_API_KEYS'] = $gatewayApiKeys
 $envUpdates['AION_GATEWAY_API_KEYS_SECRET_PATH'] = if ($env:AION_GATEWAY_API_KEYS_SECRET_PATH) { $env:AION_GATEWAY_API_KEYS_SECRET_PATH } else { '' }
@@ -298,7 +300,7 @@ console:
   port: 3000
   baseUrl: http://localhost:3000
 gateway:
-  port: 8080
+  port: 3000
   apiKeys:
     - demo-key:admin|manager
 control:
@@ -401,8 +403,8 @@ Write-Host "Compose file: $ComposeFile"
 if ($Local) {
     Write-Host 'Services:'
     Write-Host '  Kernel API:       http://localhost:8010'
-    Write-Host '  Gateway (REST):   http://localhost:8080'
-    Write-Host '  Console UI:       http://localhost:3000'
+    Write-Host '  Gateway (REST):   http://localhost:3000'
+    Write-Host '  Console UI:       http://localhost:3001'
 } else {
     Write-Host 'Next steps:'
     Write-Host "  - Monitor stack: docker compose -f $ComposeFile ps"

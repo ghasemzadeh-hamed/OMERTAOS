@@ -22,7 +22,7 @@ export default function () {
     intent: 'summarize',
     params: { text: 'load test payload' }
   });
-  const res = http.post(`${__ENV.API_URL || 'http://localhost:8080'}/v1/tasks`, payload, {
+  const res = http.post(`${__ENV.API_URL || 'http://localhost:3000'}/v1/tasks`, payload, {
     headers: {
       'Content-Type': 'application/json',
       'X-API-Key': __ENV.API_KEY || 'demo-key'

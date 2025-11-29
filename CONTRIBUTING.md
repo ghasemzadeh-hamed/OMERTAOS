@@ -57,11 +57,11 @@ Optional services: Redis/Postgres/Mongo/Qdrant/MinIO  enable only what your chan
 7. E2E Smoke (manual)
 
 ```
-curl -X POST "http://localhost:8080/v1/tasks" \
+curl -X POST "http://localhost:3000/v1/tasks" \
   -H "Content-Type: application/json" -H "X-API-Key: dev-key" \
   -d '{"schemaVersion":"1.0","intent":"summarize","params":{"text":"Hello"}}'
 
-curl -N "http://localhost:8080/v1/stream/<TASK_ID>" -H "X-API-Key: dev-key"
+curl -N "http://localhost:3000/v1/stream/<TASK_ID>" -H "X-API-Key: dev-key"
 ```
 
 8. Security & Responsible Disclosure

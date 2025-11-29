@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const base = process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:8080';
+const base = process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:3000';
 
 export async function GET() {
   if (process.env.NEXT_PHASE === 'phase-production-build') {

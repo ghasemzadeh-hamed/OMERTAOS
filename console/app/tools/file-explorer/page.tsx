@@ -10,7 +10,7 @@ type FileEntry = {
   modified_at?: string;
 };
 
-const CONTROL_BASE = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8080';
+const CONTROL_BASE = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3000';
 
 export default function FileExplorerPage() {
   const [currentPath, setCurrentPath] = useState<string | null>(null);

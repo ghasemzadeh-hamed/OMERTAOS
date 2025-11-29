@@ -72,8 +72,13 @@ def _default_cors_origins() -> list[str]:
     console and control plane aligned out of the box.
     """
 
-    console_origin = os.getenv("AION_CONSOLE_ORIGIN", "http://localhost:3000").strip()
-    defaults = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    console_origin = os.getenv("AION_CONSOLE_ORIGIN", "http://localhost:3001").strip()
+    defaults = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+    ]
 
     origins: list[str] = []
     if console_origin:

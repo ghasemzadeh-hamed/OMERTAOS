@@ -63,12 +63,12 @@ admin:
   password: "admin"
 
 console:
-  port: 3000
-  baseUrl: "http://localhost:3000"
+  port: 3001
+  baseUrl: "http://localhost:3001"
   locale: "fa"
 
 gateway:
-  port: 8080
+  port: 3000
   apiKey: ""
 
 control:
@@ -180,7 +180,7 @@ docker compose logs -f gateway
 ## 7. Verify the Deployment
 
 - Console UI: `http://localhost:3000`
-- Gateway API: `http://localhost:8080`
+- Gateway API: `http://localhost:3000`
 - Control API docs: `http://localhost:8000/docs`
 - Health checks: append `/healthz` to each service URL.
 
@@ -193,7 +193,7 @@ Run the smoke script for a quick validation:
 Manual API check:
 
 ```bash
-curl -X POST http://localhost:8080/v1/tasks \
+curl -X POST http://localhost:3000/v1/tasks \
   -H "X-API-Key: demo-key" \
   -H "Content-Type: application/json" \
   -d '{"schemaVersion":"1.0","intent":"summarize","params":{"text":"Hello AION-OS!"}}'
@@ -202,7 +202,7 @@ curl -X POST http://localhost:8080/v1/tasks \
 Stream events for the task:
 
 ```bash
-curl -H "X-API-Key: demo-key" http://localhost:8080/v1/stream/<task_id>
+curl -H "X-API-Key: demo-key" http://localhost:3000/v1/stream/<task_id>
 ```
 
 ---

@@ -31,8 +31,8 @@ Required environment variables:
 | Variable                  | Purpose                                                                                       |
 | ------------------------- | --------------------------------------------------------------------------------------------- |
 | `NEXTAUTH_SECRET`         | Random 32+ byte secret used to sign session cookies. Generate with `openssl rand -base64 32`. |
-| `NEXTAUTH_URL`            | Public URL where the console is served (e.g. `http://localhost:3000`).                        |
-| `NEXT_PUBLIC_GATEWAY_URL` | Base URL for REST/gRPC proxies exposed by the gateway (defaults to `http://localhost:8080`).  |
+| `NEXTAUTH_URL`            | Public URL where the console is served (e.g. `http://localhost:3001`).                        |
+| `NEXT_PUBLIC_GATEWAY_URL` | Base URL for REST/gRPC proxies exposed by the gateway (defaults to `http://localhost:3000`).  |
 
 ### Credentials flow
 
@@ -56,4 +56,4 @@ Vitest covers critical UI primitives such as the glass cards, task board, and po
 
 ## Deployment
 
-The console compiles to static assets with server components for authenticated routes. Include it in Docker Compose or Kubernetes by exposing port 3000 and mounting the same environment variables documented in `.env.local.example`.
+The console compiles to static assets with server components for authenticated routes. Include it in Docker Compose or Kubernetes by exposing port 3001 and mounting the same environment variables documented in `.env.local.example`.

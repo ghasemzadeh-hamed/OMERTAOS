@@ -165,7 +165,7 @@ services:
   gateway:
     build: ./gateway
     environment:
-      AION_GATEWAY_PORT: 8080
+      AION_GATEWAY_PORT: 3000
       AION_GATEWAY_HOST: 0.0.0.0
       AION_CONTROL_GRPC: http://control:50051
       AION_CONTROL_BASE: http://control:8000
@@ -194,7 +194,7 @@ services:
       vault:
         condition: service_healthy
     ports:
-      - "8080:8080"
+      - "3000:3000"
     volumes:
       - ./protos:/protos:ro
     networks:
@@ -203,11 +203,11 @@ services:
   console:
     build: ./console
     environment:
-      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_URL: http://localhost:3001
       NEXTAUTH_SECRET: development-secret
-      NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080
-      NEXT_PUBLIC_CONTROL_URL: http://localhost:8000
+      NEXT_PUBLIC_GATEWAY_URL: http://localhost:3000
       NEXT_PUBLIC_KERNEL_URL: http://localhost:8010
+      PORT: ${CONSOLE_PORT:-3001}
       AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH: secret/aionos/dev/admin-token
       AION_ADMIN_TOKEN_SECRET_PATH: secret/aionos/dev/admin-token
       AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
@@ -220,7 +220,7 @@ services:
       vault:
         condition: service_healthy
     ports:
-      - "3000:3000"
+      - "3001:${CONSOLE_PORT:-3001}"
     networks:
       - aionos-local
 
