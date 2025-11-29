@@ -217,39 +217,24 @@ provision_local_database() {
   local db_pass=$2
   local db_name=$3
   local db_port=${4:-5432}
+  local db_host=${5:-127.0.0.1}
 
-  echo "Ensuring PostgreSQL role and database"
+  echo "[install] ensuring PostgreSQL role '${db_user}' and database '${db_name}'"
 
-  local -a psql_base=(sudo -u postgres psql -p "$db_port" -v ON_ERROR_STOP=1)
+  local -a psql_base=(sudo -u postgres psql -h "$db_host" -p "$db_port" -v ON_ERROR_STOP=1)
 
-  "${psql_base[@]}" \
-    -v "db_user=${db_user}" \
-    -v "db_pass=${db_pass}" <<'SQL'
-DO $aion$
-BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :'db_user') THEN
-    EXECUTE format('CREATE ROLE %I LOGIN PASSWORD %L', :'db_user', :'db_pass');
-  ELSE
-    EXECUTE format('ALTER ROLE %I WITH LOGIN PASSWORD %L', :'db_user', :'db_pass');
-  END IF;
-END;
-$aion$;
-SQL
+  if ! "${psql_base[@]}" -tAc "SELECT 1 FROM pg_roles WHERE rolname = '${db_user}'" | grep -q 1; then
+    "${psql_base[@]}" -c "CREATE ROLE ${db_user} LOGIN PASSWORD '${db_pass}'"
+  else
+    "${psql_base[@]}" -c "ALTER ROLE ${db_user} WITH LOGIN PASSWORD '${db_pass}'"
+  fi
 
-  "${psql_base[@]}" \
-    -v "db_user=${db_user}" \
-    -v "db_name=${db_name}" <<'SQL'
-SELECT format('CREATE DATABASE %I OWNER %I', :'db_name', :'db_user')
-WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = :'db_name')
-\gexec
-SQL
+  if ! "${psql_base[@]}" -tAc "SELECT 1 FROM pg_database WHERE datname = '${db_name}'" | grep -q 1; then
+    "${psql_base[@]}" -c "CREATE DATABASE ${db_name} OWNER ${db_user}"
+  fi
 
-  "${psql_base[@]}" \
-    -v "db_user=${db_user}" \
-    -v "db_name=${db_name}" <<'SQL'
-SELECT format('ALTER DATABASE %I OWNER TO %I; GRANT ALL PRIVILEGES ON DATABASE %I TO %I;', :'db_name', :'db_user', :'db_name', :'db_user')
-\gexec
-SQL
+  "${psql_base[@]}" -c "ALTER DATABASE ${db_name} OWNER TO ${db_user}; GRANT ALL PRIVILEGES ON DATABASE ${db_name} TO ${db_user};"
+  echo "[install] PostgreSQL role and database ready"
 }
 
 apply_console_migrations() {
@@ -386,7 +371,7 @@ configure_database() {
   ensure_postgres_running "$db_host" "$db_port"
 
   if [[ -z "$db_host" || "$db_host" == "127.0.0.1" || "$db_host" == "localhost" ]]; then
-    provision_local_database "$db_user" "$db_pass" "$db_name" "$db_port"
+    provision_local_database "$db_user" "$db_pass" "$db_name" "$db_port" "$db_host"
   else
     echo "[install] skipping local database provisioning for remote host ${db_host}"
   fi
@@ -394,18 +379,8 @@ configure_database() {
   local database_url="postgresql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}?schema=public"
 
   if ! PGPASSWORD="$db_pass" psql -h "$db_host" -p "$db_port" -U "$db_user" -d "$db_name" -c 'SELECT 1' >/dev/null 2>&1; then
-    echo "[install] database authentication failed for ${db_user}@${db_host}:${db_port}; reapplying credentials"
-
-    if [[ -z "$db_host" || "$db_host" == "127.0.0.1" || "$db_host" == "localhost" ]]; then
-      provision_local_database "$db_user" "$db_pass" "$db_name" "$db_port"
-      if ! PGPASSWORD="$db_pass" psql -h "$db_host" -p "$db_port" -U "$db_user" -d "$db_name" -c 'SELECT 1' >/dev/null 2>&1; then
-        echo "[install] ERROR: unable to authenticate to PostgreSQL with provided credentials" >&2
-        exit 22
-      fi
-    else
-      echo "[install] ERROR: unable to authenticate to remote PostgreSQL with provided credentials" >&2
-      exit 22
-    fi
+    echo "[install] ERROR: unable to authenticate to PostgreSQL as ${db_user} on ${db_host}:${db_port}/${db_name}" >&2
+    exit 22
   fi
 
   update_env_file "$db_user" "$db_pass" "$db_name" "$db_host" "$db_port"
