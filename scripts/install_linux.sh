@@ -347,7 +347,6 @@ create_env_file() {
     run_as_app "cp '$APP_DIR/.env.example' '$ENV_FILE'"
   fi
 
-  # ایمن‌کردن permissionهای فایل
   sudo chown "$APP_USER":"$APP_GROUP" "$ENV_FILE"
   sudo chmod 640 "$ENV_FILE"
 
