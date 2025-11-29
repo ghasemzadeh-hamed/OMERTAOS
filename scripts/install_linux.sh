@@ -216,38 +216,39 @@ provision_local_database() {
   local db_user=$1
   local db_pass=$2
   local db_name=$3
+  local db_port=${4:-5432}
 
   echo "Ensuring PostgreSQL role and database"
-  sudo -u postgres psql \
+
+  local -a psql_base=(sudo -u postgres psql -p "$db_port" -v ON_ERROR_STOP=1)
+
+  "${psql_base[@]}" \
     -v "db_user=${db_user}" \
-    -v "db_pass=${db_pass}" \
-    -v "db_name=${db_name}" <<'SQL'
-SELECT
-  set_config('aion.install.db_user', :'db_user', false),
-  set_config('aion.install.db_pass', :'db_pass', false),
-  set_config('aion.install.db_name', :'db_name', false);
-
+    -v "db_pass=${db_pass}" <<'SQL'
 DO $aion$
-DECLARE
-  v_db_user text := current_setting('aion.install.db_user');
-  v_db_pass text := current_setting('aion.install.db_pass');
-  v_db_name text := current_setting('aion.install.db_name');
 BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = v_db_user) THEN
-    EXECUTE format('CREATE ROLE %I LOGIN PASSWORD %L', v_db_user, v_db_pass);
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :'db_user') THEN
+    EXECUTE format('CREATE ROLE %I LOGIN PASSWORD %L', :'db_user', :'db_pass');
   ELSE
-    EXECUTE format('ALTER ROLE %I WITH LOGIN PASSWORD %L', v_db_user, v_db_pass);
+    EXECUTE format('ALTER ROLE %I WITH LOGIN PASSWORD %L', :'db_user', :'db_pass');
   END IF;
-
-  IF NOT EXISTS (SELECT FROM pg_database WHERE datname = v_db_name) THEN
-    EXECUTE format('CREATE DATABASE %I OWNER %I', v_db_name, v_db_user);
-  ELSE
-    EXECUTE format('ALTER DATABASE %I OWNER TO %I', v_db_name, v_db_user);
-  END IF;
-
-  EXECUTE format('GRANT ALL PRIVILEGES ON DATABASE %I TO %I', v_db_name, v_db_user);
 END;
-$aion$ LANGUAGE plpgsql;
+$aion$;
+SQL
+
+  "${psql_base[@]}" \
+    -v "db_user=${db_user}" \
+    -v "db_name=${db_name}" <<'SQL'
+SELECT format('CREATE DATABASE %I OWNER %I', :'db_name', :'db_user')
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = :'db_name')
+\gexec
+SQL
+
+  "${psql_base[@]}" \
+    -v "db_user=${db_user}" \
+    -v "db_name=${db_name}" <<'SQL'
+SELECT format('ALTER DATABASE %I OWNER TO %I; GRANT ALL PRIVILEGES ON DATABASE %I TO %I;', :'db_name', :'db_user', :'db_name', :'db_user')
+\gexec
 SQL
 }
 
@@ -385,7 +386,7 @@ configure_database() {
   ensure_postgres_running "$db_host" "$db_port"
 
   if [[ -z "$db_host" || "$db_host" == "127.0.0.1" || "$db_host" == "localhost" ]]; then
-    provision_local_database "$db_user" "$db_pass" "$db_name"
+    provision_local_database "$db_user" "$db_pass" "$db_name" "$db_port"
   else
     echo "[install] skipping local database provisioning for remote host ${db_host}"
   fi
@@ -396,7 +397,7 @@ configure_database() {
     echo "[install] database authentication failed for ${db_user}@${db_host}:${db_port}; reapplying credentials"
 
     if [[ -z "$db_host" || "$db_host" == "127.0.0.1" || "$db_host" == "localhost" ]]; then
-      provision_local_database "$db_user" "$db_pass" "$db_name"
+      provision_local_database "$db_user" "$db_pass" "$db_name" "$db_port"
       if ! PGPASSWORD="$db_pass" psql -h "$db_host" -p "$db_port" -U "$db_user" -d "$db_name" -c 'SELECT 1' >/dev/null 2>&1; then
         echo "[install] ERROR: unable to authenticate to PostgreSQL with provided credentials" >&2
         exit 22
