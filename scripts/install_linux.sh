@@ -178,7 +178,15 @@ provision_node_projects() {
 }
 
 ensure_postgres_running() {
-  echo "[install] ensuring PostgreSQL is running..."
+  local host=${1:-127.0.0.1}
+  local port=${2:-5432}
+
+  if [[ "$host" != "127.0.0.1" && "$host" != "localhost" ]]; then
+    echo "[install] skipping local PostgreSQL startup for remote host ${host}"
+    return 0
+  fi
+
+  echo "[install] ensuring PostgreSQL is running on ${host}:${port}..."
   if command_exists systemctl; then
     if ! sudo systemctl enable --now postgresql.service >/dev/null 2>&1; then
       echo "[install] ERROR: failed to start PostgreSQL service" >&2
@@ -192,7 +200,7 @@ ensure_postgres_running() {
   fi
 
   for i in $(seq 1 30); do
-    if sudo -u postgres pg_isready -h 127.0.0.1 -p 5432 >/dev/null 2>&1; then
+    if sudo -u postgres pg_isready -h "$host" -p "$port" >/dev/null 2>&1; then
       echo "[install] PostgreSQL is ready"
       return 0
     fi
@@ -303,18 +311,21 @@ create_env_file() {
 
 configure_database() {
   echo "[install] configuring database"
-  ensure_postgres_running
 
-  local existing_url existing_user existing_pass existing_name
-  existing_url=$(parse_env_value DATABASE_URL)
+  local existing_url existing_user existing_pass existing_name existing_host existing_port
+  existing_url=${DATABASE_URL:-$(parse_env_value DATABASE_URL)}
 
-  if [[ $existing_url =~ ^postgresql://([^:/]+):([^@]+)@[^/]+/([^/?#]+) ]]; then
+  if [[ $existing_url =~ ^postgresql://([^:/]+):([^@]+)@([^/:?#]+)(:([0-9]+))?/([^/?#]+) ]]; then
     existing_user=${BASH_REMATCH[1]}
     existing_pass=${BASH_REMATCH[2]}
-    existing_name=${BASH_REMATCH[3]}
+    existing_host=${BASH_REMATCH[3]}
+    existing_port=${BASH_REMATCH[5]}
+    existing_name=${BASH_REMATCH[6]}
   else
     existing_user=""
     existing_pass=""
+    existing_host=""
+    existing_port=""
     existing_name=""
   fi
 
@@ -354,10 +365,12 @@ BEGIN
 END;
 $aion$ LANGUAGE plpgsql;
 SQL
+  else
+    echo "[install] skipping local database provisioning for remote host ${db_host}"
+  fi
 
-  update_env_file "$db_user" "$db_pass" "$db_name"
+  update_env_file "$db_user" "$db_pass" "$db_name" "$db_host" "$db_port"
 }
-
 run_migrations() {
   if [ -f "$APP_DIR/control/alembic.ini" ]; then
     echo "Running Alembic migrations"
