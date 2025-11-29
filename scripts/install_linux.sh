@@ -212,6 +212,30 @@ ensure_postgres_running() {
   exit 21
 }
 
+provision_local_database() {
+  local db_user=$1
+  local db_pass=$2
+  local db_name=$3
+  local db_port=${4:-5432}
+
+  echo "[install] ensuring PostgreSQL role '${db_user}' and database '${db_name}'"
+
+  local -a psql_base=(sudo -u postgres psql -p "$db_port" -v ON_ERROR_STOP=1)
+
+  if ! "${psql_base[@]}" -tAc "SELECT 1 FROM pg_roles WHERE rolname = '${db_user}'" | grep -q 1; then
+    "${psql_base[@]}" -c "CREATE ROLE ${db_user} LOGIN PASSWORD '${db_pass}'"
+  else
+    "${psql_base[@]}" -c "ALTER ROLE ${db_user} WITH LOGIN PASSWORD '${db_pass}'"
+  fi
+
+  if ! "${psql_base[@]}" -tAc "SELECT 1 FROM pg_database WHERE datname = '${db_name}'" | grep -q 1; then
+    "${psql_base[@]}" -c "CREATE DATABASE ${db_name} OWNER ${db_user}"
+  fi
+
+  "${psql_base[@]}" -c "ALTER DATABASE ${db_name} OWNER TO ${db_user}; GRANT ALL PRIVILEGES ON DATABASE ${db_name} TO ${db_user};"
+  echo "[install] PostgreSQL role and database ready"
+}
+
 apply_console_migrations() {
   echo "Applying console database migrations"
   run_as_app "cd '$APP_DIR/console' && pnpm prisma migrate deploy"
@@ -243,7 +267,9 @@ update_env_file() {
   local db_user=$1
   local db_pass=$2
   local db_name=$3
-  local database_url="postgresql://${db_user}:${db_pass}@127.0.0.1:5432/${db_name}?schema=public"
+  local db_host=${4:-127.0.0.1}
+  local db_port=${5:-5432}
+  local database_url="postgresql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}?schema=public"
 
   declare -A updates=(
     [AION_DB_USER]="$db_user"
@@ -332,46 +358,31 @@ configure_database() {
   local db_user=${DB_USER:-${existing_user:-aionos}}
   local db_pass=${DB_PASS:-${existing_pass:-password}}
   local db_name=${DB_NAME:-${existing_name:-omerta_db}}
+  local db_port=${existing_port:-5432}
 
-  echo "Ensuring PostgreSQL role and database"
-  sudo -u postgres psql \
-    -v "db_user=${db_user}" \
-    -v "db_pass=${db_pass}" \
-    -v "db_name=${db_name}" <<'SQL'
-SELECT
-  set_config('aion.install.db_user', :'db_user', false),
-  set_config('aion.install.db_pass', :'db_pass', false),
-  set_config('aion.install.db_name', :'db_name', false);
+  local db_host=${existing_host:-127.0.0.1}
 
-DO $aion$
-DECLARE
-  v_db_user text := current_setting('aion.install.db_user');
-  v_db_pass text := current_setting('aion.install.db_pass');
-  v_db_name text := current_setting('aion.install.db_name');
-BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = v_db_user) THEN
-    EXECUTE format('CREATE ROLE %I LOGIN PASSWORD %L', v_db_user, v_db_pass);
-  ELSE
-    EXECUTE format('ALTER ROLE %I WITH LOGIN PASSWORD %L', v_db_user, v_db_pass);
-  END IF;
+  if [[ "$db_host" == "postgres" ]]; then
+    echo "[install] remapping database host 'postgres' to localhost for native install"
+    db_host="127.0.0.1"
+  fi
 
-  IF NOT EXISTS (SELECT FROM pg_database WHERE datname = v_db_name) THEN
-    EXECUTE format('CREATE DATABASE %I OWNER %I', v_db_name, v_db_user);
-  ELSE
-    EXECUTE format('ALTER DATABASE %I OWNER TO %I', v_db_name, v_db_user);
-  END IF;
+  ensure_postgres_running "$db_host" "$db_port"
 
-  EXECUTE format('GRANT ALL PRIVILEGES ON DATABASE %I TO %I', v_db_name, v_db_user);
-END;
-$aion$ LANGUAGE plpgsql;
-SQL
+  if [[ -z "$db_host" || "$db_host" == "127.0.0.1" || "$db_host" == "localhost" ]]; then
+    provision_local_database "$db_user" "$db_pass" "$db_name" "$db_port"
   else
     echo "[install] skipping local database provisioning for remote host ${db_host}"
   fi
 
-  local database_url="postgresql://${db_user}:${db_pass}@127.0.0.1:5432/${db_name}?schema=public"
+  local database_url="postgresql://${db_user}:${db_pass}@${db_host}:${db_port}/${db_name}?schema=public"
 
-  update_env_file "$db_user" "$db_pass" "$db_name"
+  if ! PGPASSWORD="$db_pass" psql -h "$db_host" -p "$db_port" -U "$db_user" -d "$db_name" -c 'SELECT 1' >/dev/null 2>&1; then
+    echo "[install] ERROR: unable to authenticate to PostgreSQL as ${db_user} on ${db_host}:${db_port}/${db_name}" >&2
+    exit 22
+  fi
+
+  update_env_file "$db_user" "$db_pass" "$db_name" "$db_host" "$db_port"
 
   export AION_DB_USER="$db_user"
   export AION_DB_PASSWORD="$db_pass"
