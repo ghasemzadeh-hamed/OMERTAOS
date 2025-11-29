@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-const CONTROL_BASE = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8080";
+const CONTROL_BASE = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:3000";
 const TENANT = process.env.NEXT_PUBLIC_TENANT_ID;
 
 interface ToolResource {

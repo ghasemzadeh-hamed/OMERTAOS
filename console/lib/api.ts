@@ -1,7 +1,7 @@
 import { Task } from '../types';
 
-const gatewayBase = process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:8080';
-const controlBase = process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:8080';
+const gatewayBase =
+  process.env.NEXT_PUBLIC_GATEWAY_URL ?? process.env.GATEWAY_BASE_URL ?? 'http://localhost:3000';
 
 async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
@@ -33,16 +33,16 @@ export async function createTask(payload: Partial<Task>): Promise<Task> {
 }
 
 export async function fetchPolicy(): Promise<Record<string, unknown>> {
-  return jsonFetch(`${controlBase}/v1/policies`);
+  return jsonFetch(`${gatewayBase}/v1/policies`);
 }
 
 export async function updatePolicy(policy: Record<string, unknown>) {
-  return jsonFetch(`${controlBase}/v1/policies`, {
+  return jsonFetch(`${gatewayBase}/v1/policies`, {
     method: 'PUT',
     body: JSON.stringify(policy),
   });
 }
 
 export async function reloadRouterPolicy() {
-  return jsonFetch(`${controlBase}/v1/router/policy/reload`, { method: 'POST' });
+  return jsonFetch(`${gatewayBase}/v1/router/policy/reload`, { method: 'POST' });
 }

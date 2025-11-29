@@ -7,7 +7,7 @@ export const createWebSocket = () => {
   if (socket && socket.readyState === WebSocket.OPEN) {
     return socket;
   }
-  socket = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8080/ws");
+  socket = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3000/ws");
   socket.onopen = () => {
     console.info("websocket connected");
   };

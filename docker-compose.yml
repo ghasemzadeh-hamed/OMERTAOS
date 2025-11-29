@@ -142,7 +142,7 @@ services:
       dockerfile: gateway/Dockerfile
     env_file: dev.env
     environment:
-      AION_GATEWAY_PORT: ${AION_GATEWAY_PORT:-8080}
+      AION_GATEWAY_PORT: ${AION_GATEWAY_PORT:-3000}
       AION_GATEWAY_HOST: ${AION_GATEWAY_HOST:-0.0.0.0}
       AION_CONTROL_GRPC: ${AION_CONTROL_GRPC:-http://control:50051}
       AION_CONTROL_BASE_URL: ${AION_CONTROL_BASE_URL:-http://control:8000}
@@ -170,7 +170,7 @@ services:
       control:
         condition: service_healthy
     ports:
-      - "8080:${AION_GATEWAY_PORT:-8080}"
+      - "3000:${AION_GATEWAY_PORT:-3000}"
     volumes:
       - ./protos:/protos:ro
     healthcheck:
@@ -179,7 +179,7 @@ services:
           "CMD",
           "node",
           "-e",
-          "const port = process.env.AION_GATEWAY_PORT || '8080'; fetch('http://127.0.0.1:' + port + '/healthz',{cache:'no-store'}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+          "const port = process.env.AION_GATEWAY_PORT || '3000'; fetch('http://127.0.0.1:' + port + '/healthz',{cache:'no-store'}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
         ]
       interval: 5s
       timeout: 3s
@@ -192,10 +192,10 @@ services:
       dockerfile: console/Dockerfile
     env_file: dev.env
     environment:
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3001}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev-secret-change-me}
-      NEXT_PUBLIC_GATEWAY_URL: ${NEXT_PUBLIC_GATEWAY_URL:-http://gateway:8080}
-      NEXT_PUBLIC_CONTROL_URL: ${NEXT_PUBLIC_CONTROL_URL:-http://control:8000}
+      NEXT_PUBLIC_GATEWAY_URL: ${NEXT_PUBLIC_GATEWAY_URL:-http://gateway:3000}
+      PORT: ${CONSOLE_PORT:-3001}
       AION_GATEWAY_ADMIN_TOKEN: ${AION_GATEWAY_ADMIN_TOKEN:-dev-admin-token}
       AION_ADMIN_TOKEN_SECRET_PATH: ${AION_ADMIN_TOKEN_SECRET_PATH:-}
       AION_ADMIN_TOKEN: ${AION_ADMIN_TOKEN:-dev-admin-token}
@@ -207,14 +207,14 @@ services:
       gateway:
         condition: service_healthy
     ports:
-      - "3000:3000"
+      - "3001:${CONSOLE_PORT:-3001}"
     healthcheck:
       test:
         [
           "CMD",
           "node",
           "-e",
-          "fetch('http://127.0.0.1:3000/healthz',{cache:'no-store'}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+          "const port = process.env.PORT || '3001'; fetch('http://127.0.0.1:' + port + '/healthz',{cache:'no-store'}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
         ]
       interval: 5s
       timeout: 3s

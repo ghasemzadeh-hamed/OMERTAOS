@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const CONTROL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8080";
+const CONTROL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:3000";
 const TOKEN = process.env.NEXT_PUBLIC_AGENT_API_TOKEN || "";
 
 export default function AgentPage() {

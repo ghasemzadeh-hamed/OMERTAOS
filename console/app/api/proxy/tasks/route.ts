@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const base = process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:8080';
+const base = process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:3000';
 
 export async function GET() {
   const response = await fetch(`${base}/v1/tasks`, { credentials: 'include' });

@@ -5,7 +5,7 @@ export const revalidate = 0;
 
 import { useEffect, useState } from 'react';
 
-const CONTROL_BASE = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8080';
+const CONTROL_BASE = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3000';
 
 type User = { id: string; email: string; name: string; role: string };
 

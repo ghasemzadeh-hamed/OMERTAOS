@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getConsoleSecrets } from '@/lib/serverConfig';
 
-const gatewayBase = process.env.NEXT_PUBLIC_GATEWAY_BASE ?? 'http://localhost:8080';
+const gatewayBase =
+  process.env.NEXT_PUBLIC_GATEWAY_URL || process.env.GATEWAY_BASE_URL || 'http://localhost:3000';
 const secretsPromise = getConsoleSecrets();
 
 export async function GET() {
