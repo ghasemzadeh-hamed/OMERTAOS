@@ -343,7 +343,7 @@ configure_database() {
 
   ensure_postgres_running "$db_host" "${existing_port:-5432}"
 
-  if [[ -z "$existing_host" || "$existing_host" == "127.0.0.1" || "$existing_host" == "localhost" ]]; then
+  if [[ -z "$db_host" || "$db_host" == "127.0.0.1" || "$db_host" == "localhost" ]]; then
     echo "Ensuring PostgreSQL role and database"
     sudo -u postgres psql \
       -v "db_user=${db_user}" \
