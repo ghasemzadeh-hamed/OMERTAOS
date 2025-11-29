@@ -217,11 +217,10 @@ provision_local_database() {
   local db_pass=$2
   local db_name=$3
   local db_port=${4:-5432}
-  local db_host=${5:-127.0.0.1}
 
   echo "[install] ensuring PostgreSQL role '${db_user}' and database '${db_name}'"
 
-  local -a psql_base=(sudo -u postgres psql -h "$db_host" -p "$db_port" -v ON_ERROR_STOP=1)
+  local -a psql_base=(sudo -u postgres psql -p "$db_port" -v ON_ERROR_STOP=1)
 
   if ! "${psql_base[@]}" -tAc "SELECT 1 FROM pg_roles WHERE rolname = '${db_user}'" | grep -q 1; then
     "${psql_base[@]}" -c "CREATE ROLE ${db_user} LOGIN PASSWORD '${db_pass}'"
@@ -371,7 +370,7 @@ configure_database() {
   ensure_postgres_running "$db_host" "$db_port"
 
   if [[ -z "$db_host" || "$db_host" == "127.0.0.1" || "$db_host" == "localhost" ]]; then
-    provision_local_database "$db_user" "$db_pass" "$db_name" "$db_port" "$db_host"
+    provision_local_database "$db_user" "$db_pass" "$db_name" "$db_port"
   else
     echo "[install] skipping local database provisioning for remote host ${db_host}"
   fi
