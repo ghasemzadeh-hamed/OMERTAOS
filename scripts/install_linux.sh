@@ -369,18 +369,30 @@ SQL
     echo "[install] skipping local database provisioning for remote host ${db_host}"
   fi
 
-  update_env_file "$db_user" "$db_pass" "$db_name" "$db_host" "$db_port"
+  local database_url="postgresql://${db_user}:${db_pass}@127.0.0.1:5432/${db_name}?schema=public"
+
+  update_env_file "$db_user" "$db_pass" "$db_name"
+
+  export AION_DB_USER="$db_user"
+  export AION_DB_PASSWORD="$db_pass"
+  export AION_DB_NAME="$db_name"
+  export AION_CONTROL_POSTGRES_DSN="$database_url"
+  export DATABASE_URL="$database_url"
 }
 run_migrations() {
   if [ -f "$APP_DIR/control/alembic.ini" ]; then
     echo "Running Alembic migrations"
     run_as_app "cd '$APP_DIR/control' && source '$APP_DIR/.venv/bin/activate' && alembic upgrade head"
-  elif [ -f "$APP_DIR/control/manage.py" ]; then
+    return
+  fi
+
+  if [ -f "$APP_DIR/control/manage.py" ]; then
     echo "Running Django migrations"
     run_as_app "cd '$APP_DIR/control' && source '$APP_DIR/.venv/bin/activate' && python manage.py migrate"
-  else
-    echo "No migrations configured - skipping"
+    return
   fi
+
+  echo "No migrations configured - skipping"
 }
 
 install_systemd_units() {
