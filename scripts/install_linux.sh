@@ -3,6 +3,17 @@
 # legacy native installs and will be removed in a future release.
 set -euo pipefail
 
+# Ensure we are running as root; re-exec via sudo if needed
+if [[ "$EUID" -ne 0 ]]; then
+  if command -v sudo >/dev/null 2>&1; then
+    echo "[install] Re-executing as root via sudo..."
+    exec sudo -E "$0" "$@"
+  else
+    echo "[install] This installer must be run as root (no sudo found)."
+    exit 1
+  fi
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB_DIR="${SCRIPT_DIR}/lib"
 COMMON_LIB="${LIB_DIR}/common.sh"
@@ -321,19 +332,29 @@ update_env_file() {
     printf '%s=%s\n' "$key" "${updates[$key]}" >>"$tmp"
   done
 
-  mv "$tmp" "$ENV_FILE"
+  sudo mv "$tmp" "$ENV_FILE"
   sudo chown "$APP_USER":"$APP_GROUP" "$ENV_FILE"
+  sudo chmod 640 "$ENV_FILE"
 }
 
 create_env_file() {
+  sudo mkdir -p "$APP_DIR"
+  sudo chown "$APP_USER":"$APP_GROUP" "$APP_DIR"
+  sudo chmod 755 "$APP_DIR"
+
   if [ ! -f "$ENV_FILE" ]; then
     echo "Creating environment file"
     run_as_app "cp '$APP_DIR/.env.example' '$ENV_FILE'"
   fi
 
+  # ایمن‌کردن permissionهای فایل
+  sudo chown "$APP_USER":"$APP_GROUP" "$ENV_FILE"
+  sudo chmod 640 "$ENV_FILE"
+
   run_as_app "cd '$APP_DIR' && ln -sf ../.env gateway/.env"
   run_as_app "cd '$APP_DIR' && ln -sf ../.env console/.env"
 }
+
 
 configure_database() {
   echo "[install] configuring database"
