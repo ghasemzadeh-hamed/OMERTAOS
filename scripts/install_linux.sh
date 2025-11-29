@@ -336,6 +336,13 @@ configure_database() {
 
   local db_host=${existing_host:-127.0.0.1}
 
+  if [[ "$db_host" == "postgres" ]]; then
+    echo "[install] remapping database host 'postgres' to localhost for native install"
+    db_host="127.0.0.1"
+  fi
+
+  ensure_postgres_running "$db_host" "${existing_port:-5432}"
+
   if [[ -z "$existing_host" || "$existing_host" == "127.0.0.1" || "$existing_host" == "localhost" ]]; then
     echo "Ensuring PostgreSQL role and database"
     sudo -u postgres psql \
