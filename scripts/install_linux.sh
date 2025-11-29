@@ -355,7 +355,15 @@ END;
 $aion$ LANGUAGE plpgsql;
 SQL
 
+  local database_url="postgresql://${db_user}:${db_pass}@127.0.0.1:5432/${db_name}?schema=public"
+
   update_env_file "$db_user" "$db_pass" "$db_name"
+
+  export AION_DB_USER="$db_user"
+  export AION_DB_PASSWORD="$db_pass"
+  export AION_DB_NAME="$db_name"
+  export AION_CONTROL_POSTGRES_DSN="$database_url"
+  export DATABASE_URL="$database_url"
 }
 
 run_migrations() {
