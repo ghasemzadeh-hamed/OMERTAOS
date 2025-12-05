@@ -31,10 +31,12 @@ const ensureRole = (roles: string[], required: string[]): boolean => {
   return required.some((role) => roles.includes(role));
 };
 
-const isDevAuthMode =
-  gatewayConfig.environment === 'development' ||
+const isDevMode =
   process.env.AION_ENV === 'dev' ||
-  process.env.AION_AUTH_MODE === 'disabled';
+  process.env.AION_AUTH_MODE === 'disabled' ||
+  process.env.NODE_ENV === 'development';
+
+const isDevAuthMode = gatewayConfig.environment === 'development' || isDevMode;
 
 const PUBLIC_SETUP_ROUTES = ['/v1/config/profile'];
 
@@ -46,7 +48,7 @@ const isPublicSetupRoute = (request: FastifyRequest): boolean => {
 let jwtMissingWarningLogged = false;
 
 const warnMissingJwtOnce = (request?: FastifyRequest) => {
-  if (jwtMissingWarningLogged || !isDevAuthMode || gatewayConfig.jwtPublicKey) {
+  if (jwtMissingWarningLogged || !isDevMode || gatewayConfig.jwtPublicKey) {
     return;
   }
   const message =
@@ -78,7 +80,7 @@ export const authPreHandler = (requiredRoles: string[] = []) => {
       return;
     }
 
-    if (isDevAuthMode && isPublicSetupRoute(request)) {
+    if (isDevMode && isPublicSetupRoute(request)) {
       warnMissingJwtOnce(request);
       request.aionContext = context;
       return;
@@ -137,8 +139,8 @@ export const authPreHandler = (requiredRoles: string[] = []) => {
   };
 };
 
-if (isDevAuthMode && !gatewayConfig.jwtPublicKey) {
+if (isDevMode && !gatewayConfig.jwtPublicKey) {
   warnMissingJwtOnce();
 }
 
-export { isDevAuthMode, isPublicSetupRoute, PUBLIC_SETUP_ROUTES };
+export { isDevAuthMode, isPublicSetupRoute, PUBLIC_SETUP_ROUTES, isDevMode };

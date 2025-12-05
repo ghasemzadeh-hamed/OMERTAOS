@@ -2,7 +2,7 @@ import createError from 'http-errors';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 
 import { gatewayConfig } from '../config.js';
-import { isDevAuthMode, isPublicSetupRoute } from '../auth/index.js';
+import { isDevMode, isPublicSetupRoute } from '../auth/index.js';
 
 const controlHeaders = () => {
   const headers: Record<string, string> = { 'content-type': 'application/json' };
@@ -13,7 +13,7 @@ const controlHeaders = () => {
 };
 
 const requireAdmin = (request: FastifyRequest) => {
-  if (isDevAuthMode && isPublicSetupRoute(request)) {
+  if (isDevMode && isPublicSetupRoute(request)) {
     // During initial bootstrap in dev/quickstart we allow unauthenticated
     // access so the console setup wizard can persist the chosen profile.
     return;
@@ -68,8 +68,7 @@ export const registerConfigRoutes = (app: FastifyInstance) => {
   });
 
   // Profile selection is stored canonically inside control (backed by .aionos/profile.json).
-  // Auth is handled by the global middleware; in dev/quickstart we intentionally allow
-  // unauthenticated bootstrap so the setup wizard can run before login exists.
+  // Public in dev/quickstart for setup bootstrap. Protected by JWT in production.
   app.get('/v1/config/profile', async (request) => {
     try {
       return await proxyControl('GET', '/v1/config/profile');
@@ -79,6 +78,7 @@ export const registerConfigRoutes = (app: FastifyInstance) => {
     }
   });
 
+  // Public in dev/quickstart for setup bootstrap. Protected by JWT in production.
   app.post('/v1/config/profile', async (request, _reply) => {
     requireAdmin(request);
     const payload = (request.body ?? {}) as Record<string, unknown>;
