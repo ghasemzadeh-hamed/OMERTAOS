@@ -13,13 +13,16 @@ export async function middleware(req: NextRequest) {
     pathname === "/healthz" ||
     pathname === "/dashboard/health" ||
     pathname === "/favicon.ico" ||
-    pathname.startsWith("/login") ||
     pathname.startsWith("/wizard") ||
     pathname.startsWith("/api/auth");
 
   if (!isBypassed) {
     try {
-      const profileRes = await fetch(`${url.origin}/api/setup/profile`, { cache: "no-store" });
+      const cookieHeader = req.headers.get("cookie") ?? "";
+      const profileRes = await fetch(`${url.origin}/api/setup/profile`, {
+        cache: "no-store",
+        headers: cookieHeader ? { cookie: cookieHeader } : {},
+      });
       if (profileRes.ok) {
         const profile = await profileRes.json();
         const setupDone = Boolean(profile?.setupDone);
@@ -27,9 +30,28 @@ export async function middleware(req: NextRequest) {
           url.pathname = "/setup";
           return NextResponse.redirect(url);
         }
-        if (setupDone && pathname === "/setup") {
-          url.pathname = "/";
-          return NextResponse.redirect(url);
+        if (setupDone) {
+          if (pathname === "/setup") {
+            url.pathname = "/login";
+            return NextResponse.redirect(url);
+          }
+
+          const sessionRes = await fetch(`${url.origin}/api/auth/session`, {
+            cache: "no-store",
+            headers: cookieHeader ? { cookie: cookieHeader } : {},
+          });
+          const sessionOk = sessionRes.ok ? await sessionRes.json() : null;
+          const isAuthenticated = Boolean(sessionOk?.user);
+
+          if (!isAuthenticated && (pathname === "/" || pathname.startsWith("/console"))) {
+            url.pathname = "/login";
+            return NextResponse.redirect(url);
+          }
+
+          if (isAuthenticated && pathname === "/login") {
+            url.pathname = "/";
+            return NextResponse.redirect(url);
+          }
         }
       }
     } catch (error) {

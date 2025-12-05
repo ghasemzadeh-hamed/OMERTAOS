@@ -2,6 +2,7 @@ import createError from 'http-errors';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 
 import { gatewayConfig } from '../config.js';
+import { isDevAuthMode, isPublicSetupRoute } from '../auth/index.js';
 
 const controlHeaders = () => {
   const headers: Record<string, string> = { 'content-type': 'application/json' };
@@ -12,6 +13,12 @@ const controlHeaders = () => {
 };
 
 const requireAdmin = (request: FastifyRequest) => {
+  if (isDevAuthMode && isPublicSetupRoute(request)) {
+    // During initial bootstrap in dev/quickstart we allow unauthenticated
+    // access so the console setup wizard can persist the chosen profile.
+    return;
+  }
+
   const roles = request.aionContext.user?.roles ?? [];
   if (!roles.includes('admin')) {
     throw createError(403, 'Admin privileges required');
@@ -60,6 +67,9 @@ export const registerConfigRoutes = (app: FastifyInstance) => {
     return proxyControl('GET', '/v1/config/status');
   });
 
+  // Profile selection is stored canonically inside control (backed by .aionos/profile.json).
+  // Auth is handled by the global middleware; in dev/quickstart we intentionally allow
+  // unauthenticated bootstrap so the setup wizard can run before login exists.
   app.get('/v1/config/profile', async (request) => {
     try {
       return await proxyControl('GET', '/v1/config/profile');

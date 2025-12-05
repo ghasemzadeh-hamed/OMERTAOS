@@ -12,9 +12,16 @@ export async function GET() {
   } catch (error) {
     console.error('[console] Failed to fetch profile from gateway', error);
     const status = error instanceof GatewayProfileError && error.status ? error.status : 502;
+    const message =
+      error instanceof GatewayProfileError ? error.message : 'Failed to fetch setup profile from gateway';
+    const hint =
+      process.env.NODE_ENV !== 'production'
+        ? `Gateway returned ${status} for /v1/config/profile. In dev you may need to allow setup routes without JWT.`
+        : undefined;
     return NextResponse.json(
       {
-        error: 'Failed to fetch setup profile from gateway',
+        error: message,
+        hint,
         profile: null,
         setupDone: false,
       },
@@ -40,6 +47,10 @@ export async function POST(request: NextRequest) {
     console.error('[console] Failed to update profile via gateway', error);
     const status = error instanceof GatewayProfileError && error.status ? error.status : 502;
     const message = error instanceof Error ? error.message : 'Failed to update setup profile';
-    return NextResponse.json({ error: message }, { status });
+    const hint =
+      process.env.NODE_ENV !== 'production'
+        ? `Gateway returned ${status} for /v1/config/profile. In dev ensure auth bypass is enabled for setup.`
+        : undefined;
+    return NextResponse.json({ error: message, hint }, { status });
   }
 }
