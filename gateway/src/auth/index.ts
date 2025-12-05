@@ -80,12 +80,6 @@ export const authPreHandler = (requiredRoles: string[] = []) => {
       return;
     }
 
-    if (isDevMode && isPublicSetupRoute(request)) {
-      warnMissingJwtOnce(request);
-      request.aionContext = context;
-      return;
-    }
-
     if (gatewayConfig.environment === 'test') {
       request.aionContext = {
         ...context,
@@ -96,6 +90,12 @@ export const authPreHandler = (requiredRoles: string[] = []) => {
           tenant: resolveTenant(request, undefined).tenantId,
         },
       };
+      return;
+    }
+
+    if (isDevMode && isPublicSetupRoute(request)) {
+      warnMissingJwtOnce(request);
+      request.aionContext = context;
       return;
     }
 

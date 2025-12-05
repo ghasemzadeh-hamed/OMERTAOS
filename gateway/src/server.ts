@@ -201,7 +201,7 @@ app.addHook('onRequest', async (request, reply) => {
   await rateLimitMiddleware(request, reply);
 });
 
-app.addHook('preHandler', authPreHandler(['user', 'manager', 'admin']));
+app.addHook('preValidation', authPreHandler(['user', 'manager', 'admin']));
 
 app.post<{ Body: DevKernelRequest }>('/api/dev/kernel', async (request, reply) => {
   if (!devKernelEnabled()) {
