@@ -82,7 +82,7 @@ services:
     depends_on:
       - control
     ports:
-      - "8080:8080"  
+      - "8080:8080"
 
   console:
     build:
@@ -90,10 +90,10 @@ services:
       dockerfile: console/Dockerfile
     env_file: .env
     environment:
-      NEXTAUTH_URL: http://localhost:3000        
+      NEXTAUTH_URL: http://localhost:3000
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080 
-      PORT: 3000   
+      PORT: 3000
     depends_on:
       - gateway
     ports:
