@@ -31,10 +31,40 @@ const ensureRole = (roles: string[], required: string[]): boolean => {
   return required.some((role) => roles.includes(role));
 };
 
-const decodeJwt = (token: string) => {
+const isDevAuthMode =
+  gatewayConfig.environment === 'development' ||
+  process.env.AION_ENV === 'dev' ||
+  process.env.AION_AUTH_MODE === 'disabled';
+
+const PUBLIC_SETUP_ROUTES = ['/v1/config/profile'];
+
+const isPublicSetupRoute = (request: FastifyRequest): boolean => {
+  const path = request.routerPath ?? request.routeOptions?.url ?? request.url;
+  return PUBLIC_SETUP_ROUTES.includes(path);
+};
+
+let jwtMissingWarningLogged = false;
+
+const warnMissingJwtOnce = (request?: FastifyRequest) => {
+  if (jwtMissingWarningLogged || !isDevAuthMode || gatewayConfig.jwtPublicKey) {
+    return;
+  }
+  const message =
+    'Gateway JWT public key not configured; in dev mode setup routes will bypass authentication.';
+  if (request) {
+    request.log.warn(message);
+  } else {
+    // eslint-disable-next-line no-console
+    console.warn(message);
+  }
+  jwtMissingWarningLogged = true;
+};
+
+const decodeJwt = (token: string, request: FastifyRequest) => {
   const publicKey = gatewayConfig.jwtPublicKey;
   if (!publicKey) {
-    throw createError(401, 'JWT authentication not configured');
+    warnMissingJwtOnce(request);
+    throw createError(401, 'Authentication required');
   }
   return jwt.verify(token, publicKey, { algorithms: ['RS256'] });
 };
@@ -44,6 +74,12 @@ export const authPreHandler = (requiredRoles: string[] = []) => {
     const context = buildDefaultContext(request);
     const publicRoutes = new Set(['/healthz', '/health', '/readyz']);
     if (publicRoutes.has(request.routerPath ?? '')) {
+      request.aionContext = context;
+      return;
+    }
+
+    if (isDevAuthMode && isPublicSetupRoute(request)) {
+      warnMissingJwtOnce(request);
       request.aionContext = context;
       return;
     }
@@ -73,7 +109,7 @@ export const authPreHandler = (requiredRoles: string[] = []) => {
       context.authType = 'api_key';
     } else if (typeof request.headers.authorization === 'string') {
       const token = request.headers.authorization.replace('Bearer ', '');
-      const payload = decodeJwt(token) as jwt.JwtPayload;
+      const payload = decodeJwt(token, request) as jwt.JwtPayload;
       const roles = Array.isArray(payload.roles)
         ? (payload.roles as string[])
         : typeof payload.role === 'string'
@@ -100,3 +136,9 @@ export const authPreHandler = (requiredRoles: string[] = []) => {
     request.aionContext = context;
   };
 };
+
+if (isDevAuthMode && !gatewayConfig.jwtPublicKey) {
+  warnMissingJwtOnce();
+}
+
+export { isDevAuthMode, isPublicSetupRoute, PUBLIC_SETUP_ROUTES };

@@ -1,8 +1,10 @@
 import { GATEWAY_HTTP_URL } from '@/lib/gatewayConfig';
 import { getConsoleSecrets } from '@/lib/serverConfig';
 
+export type ProfileId = 'user' | 'professional' | 'enterprise-vip';
+
 export type ProfileState = {
-  profile: string | null;
+  profile: ProfileId | null;
   setupDone: boolean;
   updatedAt?: string;
 };
@@ -17,22 +19,30 @@ class GatewayProfileError extends Error {
   }
 }
 
+const VALID_PROFILES: ProfileId[] = ['user', 'professional', 'enterprise-vip'];
+
+const normalizeProfileId = (value: unknown): ProfileId | null => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const lowered = value.toLowerCase();
+  return VALID_PROFILES.includes(lowered as ProfileId) ? (lowered as ProfileId) : null;
+};
+
 const normalizeProfileResponse = (data: any): ProfileState => ({
-  profile: typeof data?.profile === 'string' ? data.profile : null,
+  profile: normalizeProfileId(data?.profile),
   setupDone: Boolean(data?.setupDone),
   updatedAt: typeof data?.updatedAt === 'string' ? data.updatedAt : undefined,
 });
 
 export async function fetchProfileState(): Promise<ProfileState> {
   const res = await fetch(`${GATEWAY_HTTP_URL}/v1/config/profile`, { cache: 'no-store' });
+  const text = await res.text();
   if (!res.ok) {
-    const detail = await res.text();
-    throw new GatewayProfileError(
-      detail || `Gateway responded with status ${res.status} while reading profile`,
-      res.status,
-    );
+    const message = text || `Gateway responded with status ${res.status} while reading profile`;
+    throw new GatewayProfileError(message, res.status);
   }
-  const data = await res.json();
+  const data = text ? (() => { try { return JSON.parse(text); } catch { return {}; } })() : {};
   return normalizeProfileResponse(data);
 }
 
