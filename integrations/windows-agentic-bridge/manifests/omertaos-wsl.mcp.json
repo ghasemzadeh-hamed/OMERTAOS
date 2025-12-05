@@ -4,7 +4,7 @@
   "description": "OMERTAOS tools running inside WSL (MCP bridge)",
   "server": {
     "mcp_config": {
-      "command": "C:\\\Windows\\\\System32\\\\wsl.exe",
+      "command": "C:\\Windows\\System32\\wsl.exe",
       "args": [
         "--distribution",
         "${WSL_DISTRO:-Ubuntu}",
