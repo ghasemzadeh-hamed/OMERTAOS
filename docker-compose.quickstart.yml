@@ -79,6 +79,7 @@ services:
     environment:
       NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080
       SECRET_PROVIDER_MODE: local
+      AION_GATEWAY_ADMIN_TOKEN: ${AION_GATEWAY_ADMIN_TOKEN:-dev-admin-token}
     depends_on:
       - control
     ports:
@@ -92,7 +93,12 @@ services:
     environment:
       NEXTAUTH_URL: http://localhost:3000
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080 
+      NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080
+      GATEWAY_URL: http://gateway:8080
+      AION_GATEWAY_URL: http://gateway:8080
+      SECRET_PROVIDER_MODE: local
+      AION_DEV_ADMIN_TOKEN: ${AION_DEV_ADMIN_TOKEN:-dev-admin-token}
+      AION_ADMIN_TOKEN: ${AION_ADMIN_TOKEN:-dev-admin-token}
       PORT: 3000
     depends_on:
       - gateway

@@ -13,6 +13,12 @@ const normalizeBoolean = (value: string | undefined): boolean => {
 };
 
 let secretProvider: SecretProvider | null = null;
+const resolveSecretProviderMode = (raw: string | undefined): string => {
+  return (raw || 'local').trim().toLowerCase();
+};
+
+const secretProviderMode = resolveSecretProviderMode(process.env.SECRET_PROVIDER_MODE);
+
 const vaultEnabledRaw =
   process.env.AION_VAULT_ENABLED ?? process.env.VAULT_ENABLED ?? undefined;
 const vaultEnabled =
@@ -20,7 +26,9 @@ const vaultEnabled =
     ? normalizeBoolean(vaultEnabledRaw)
     : Boolean(process.env.AION_VAULT_ADDR || process.env.VAULT_ADDR);
 
-if (vaultEnabled) {
+if (secretProviderMode === 'local') {
+  secretProvider = new SecretProvider({ mode: 'local' });
+} else if (vaultEnabled) {
   try {
     secretProvider = new SecretProvider({});
   } catch (error) {
