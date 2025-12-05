@@ -71,6 +71,7 @@ services:
       - minio
     ports:
       - "8000:8000"
+
   gateway:
     build:
       context: .
@@ -83,7 +84,7 @@ services:
       - control
     ports:
       - "8080:8080"
-
+ 
   console:
     build:
       context: .
