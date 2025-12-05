@@ -82,7 +82,7 @@ services:
     depends_on:
       - control
     ports:
-      - "8080:8080"   # هاست 8080 -> کانتینر 8080
+      - "8080:8080"  
 
   console:
     build:
