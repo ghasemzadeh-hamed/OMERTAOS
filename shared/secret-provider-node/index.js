@@ -2,10 +2,48 @@
 const DEFAULT_MOUNT =
   process.env.AION_VAULT_KV_MOUNT || process.env.VAULT_KV_MOUNT || 'secret';
 
+const normaliseMode = (mode) => (mode || process.env.SECRET_PROVIDER_MODE || 'vault').trim().toLowerCase();
+
+const takeEnvToken = () => {
+  return (
+    process.env.AION_DEV_ADMIN_TOKEN ||
+    process.env.AION_GATEWAY_ADMIN_TOKEN ||
+    process.env.AION_ADMIN_TOKEN ||
+    process.env.NEXT_PUBLIC_SETUP_TOKEN ||
+    ''
+  ).trim();
+};
+
+const normaliseEnvSecretKey = (path) => {
+  const trimmed = String(path ?? '').trim();
+  if (trimmed.startsWith('env://')) {
+    return trimmed.slice('env://'.length);
+  }
+  if (trimmed.startsWith('env:')) {
+    return trimmed.slice('env:'.length);
+  }
+  return trimmed;
+};
+
 class SecretProviderError extends Error {}
 
 export class SecretProvider {
-  constructor({ vaultAddr, authMethod, namespace, kvMount } = {}) {
+  constructor({ vaultAddr, authMethod, namespace, kvMount, mode } = {}) {
+    this.mode = normaliseMode(mode);
+    this.localSecrets = new Map();
+
+    if (this.mode === 'local') {
+      const devToken = takeEnvToken();
+      if (devToken) {
+        this.localSecrets.set('secret/aionos/dev/admin-token', devToken);
+      }
+      this.namespace = '';
+      this.kvMount = DEFAULT_MOUNT;
+      this.token = null;
+      this._authPromise = null;
+      return;
+    }
+
     this.vaultAddr = (
       vaultAddr || process.env.AION_VAULT_ADDR || process.env.VAULT_ADDR || ''
     ).trim();
@@ -34,6 +72,9 @@ export class SecretProvider {
   }
 
   async ensureAuthenticated() {
+    if (this.mode === 'local') {
+      return '';
+    }
     if (this.token) {
       return this.token;
     }
@@ -106,6 +147,33 @@ export class SecretProvider {
   }
 
   async getSecret(path) {
+    const cleaned = String(path || '').trim();
+    if (this.mode === 'local') {
+      const normalised = cleaned.replace(/^\/+|\/+$/g, '');
+      if (!normalised) {
+        throw new SecretProviderError('Secret path may not be empty');
+      }
+      if (this.localSecrets.has(normalised)) {
+        return this.localSecrets.get(normalised);
+      }
+      if (normalised.startsWith('env:') || normalised.startsWith('env://')) {
+        const envKey = normaliseEnvSecretKey(normalised);
+        const value = envKey ? process.env[envKey] : undefined;
+        if (value === undefined) {
+          throw new SecretProviderError(`Env secret '${envKey}' is not defined in process.env`);
+        }
+        return value;
+      }
+      if (normalised === 'secret/aionos/dev/admin-token') {
+        throw new SecretProviderError(
+          "Dev admin token is not configured. Set AION_DEV_ADMIN_TOKEN or AION_ADMIN_TOKEN to continue setup.",
+        );
+      }
+      throw new SecretProviderError(
+        `Local secret '${normalised}' was not found. Provide it via process.env or switch SECRET_PROVIDER_MODE.`,
+      );
+    }
+
     const token = await this.ensureAuthenticated();
     const { mount, secretPath } = this.splitPath(path);
     const url = new URL(`/v1/${mount}/data/${secretPath}`, this.vaultAddr);

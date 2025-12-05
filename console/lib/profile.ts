@@ -1,7 +1,5 @@
+import { GATEWAY_HTTP_URL } from '@/lib/gatewayConfig';
 import { getConsoleSecrets } from '@/lib/serverConfig';
-
-const gatewayBase =
-  process.env.NEXT_PUBLIC_GATEWAY_URL || process.env.GATEWAY_BASE_URL || 'http://localhost:3000';
 
 export type ProfileState = {
   profile: string | null;
@@ -26,7 +24,7 @@ const normalizeProfileResponse = (data: any): ProfileState => ({
 });
 
 export async function fetchProfileState(): Promise<ProfileState> {
-  const res = await fetch(`${gatewayBase}/v1/config/profile`, { cache: 'no-store' });
+  const res = await fetch(`${GATEWAY_HTTP_URL}/v1/config/profile`, { cache: 'no-store' });
   if (!res.ok) {
     const detail = await res.text();
     throw new GatewayProfileError(
@@ -42,7 +40,7 @@ export async function updateProfileState(
   body: { profile: string; setupDone: boolean },
 ): Promise<ProfileState & { ok: true }> {
   const { adminToken } = await getConsoleSecrets();
-  const res = await fetch(`${gatewayBase}/v1/config/profile`, {
+  const res = await fetch(`${GATEWAY_HTTP_URL}/v1/config/profile`, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',

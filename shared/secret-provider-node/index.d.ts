@@ -3,6 +3,7 @@ export interface SecretProviderOptions {
   authMethod?: string;
   namespace?: string;
   kvMount?: string;
+  mode?: string;
 }
 
 export class SecretProviderError extends Error {}

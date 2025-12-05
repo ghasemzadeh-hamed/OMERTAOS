@@ -1,9 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const BRIDGE_URL = process.env.AIONOS_BRIDGE_URL || 'http://127.0.0.1:3030';
+import { GATEWAY_HTTP_URL } from '@/lib/gatewayConfig';
 
 export async function bridge(task: string, payload: unknown) {
-  const response = await fetch(`${BRIDGE_URL}/task`, {
+  const response = await fetch(`${GATEWAY_HTTP_URL}/task`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ task, payload }),
