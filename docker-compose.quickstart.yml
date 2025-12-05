@@ -71,11 +71,10 @@ services:
       - minio
     ports:
       - "8000:8000"
-
   gateway:
     build:
-      context: gateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: gateway/Dockerfile
     env_file: .env
     environment:
       NEXTAUTH_URL: http://localhost:3001
@@ -89,7 +88,8 @@ services:
 
   console:
     build:
-      context: console
+      context: .
+      dockerfile: console/Dockerfile
     env_file: .env
     environment:
       NEXT_PUBLIC_GATEWAY_URL: http://localhost:3000
