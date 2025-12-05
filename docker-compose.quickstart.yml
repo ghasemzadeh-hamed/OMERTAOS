@@ -77,14 +77,12 @@ services:
       dockerfile: gateway/Dockerfile
     env_file: .env
     environment:
-      NEXTAUTH_URL: http://localhost:3001
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      NEXT_PUBLIC_GATEWAY_URL: http://localhost:3000
+      NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080
       SECRET_PROVIDER_MODE: local
     depends_on:
       - control
     ports:
-      - "3000:3000"
+      - "8080:8080"   # هاست 8080 -> کانتینر 8080
 
   console:
     build:
@@ -92,12 +90,14 @@ services:
       dockerfile: console/Dockerfile
     env_file: .env
     environment:
-      NEXT_PUBLIC_GATEWAY_URL: http://localhost:3000
-      PORT: ${CONSOLE_PORT:-3001}
+      NEXTAUTH_URL: http://localhost:3000        
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080 
+      PORT: 3000   
     depends_on:
       - gateway
     ports:
-      - "3001:${CONSOLE_PORT:-3001}"
+      - "3000:3000"
 
 volumes:
   postgres-data:
