@@ -1,0 +1,18 @@
+{
+  "name": "omertaos-wsl",
+  "version": "0.1.0",
+  "description": "OMERTAOS tools running inside WSL (MCP bridge)",
+  "server": {
+    "mcp_config": {
+      "command": "C:\\Windows\\System32\\wsl.exe",
+      "args": [
+        "--distribution",
+        "${WSL_DISTRO:-Ubuntu}",
+        "--",
+        "bash",
+        "-lc",
+        "cd ${WSL_PATH:-$HOME/omerta}/integrations/windows-agentic-bridge/bridge-server && node dist/index.js"
+      ]
+    }
+  }
+}

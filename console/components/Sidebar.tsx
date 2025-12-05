@@ -15,6 +15,7 @@ const navItems = [
   { href: '/agents', key: 'agents', permission: 'canManageAgents' },
   { href: '/policies', key: 'policies', permission: 'canManagePolicies' },
   { href: '/telemetry', key: 'telemetry', permission: 'canViewTelemetry' },
+  { href: '/integrations/windows-bridge', key: 'windows_bridge' },
   { href: '/settings', key: 'settings' },
 ];
 
