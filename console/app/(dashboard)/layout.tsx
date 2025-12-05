@@ -2,19 +2,13 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 import { ReactNode } from 'react';
-import { redirect } from 'next/navigation';
 import GlassPanel from '@/components/GlassPanel';
 import NavTabs from '@/components/NavTabs';
 import UserMenu from '@/components/UserMenu';
-import { safeGetServerSession } from '@/lib/session';
+import { ensureConsoleAccess } from '@/lib/consoleAccess';
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  const session = await safeGetServerSession();
-
-  if (!session) {
-    redirect('/login');
-  }
-
+  const session = await ensureConsoleAccess();
   const role = (session.user as any)?.role ?? 'USER';
 
   return (

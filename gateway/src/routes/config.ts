@@ -60,14 +60,24 @@ export const registerConfigRoutes = (app: FastifyInstance) => {
     return proxyControl('GET', '/v1/config/status');
   });
 
-  app.get('/v1/config/profile', async () => {
-    return proxyControl('GET', '/v1/config/profile');
+  app.get('/v1/config/profile', async (request) => {
+    try {
+      return await proxyControl('GET', '/v1/config/profile');
+    } catch (error) {
+      request.log.error({ err: error, msg: 'Failed to fetch profile from control' });
+      throw error;
+    }
   });
 
   app.post('/v1/config/profile', async (request, _reply) => {
     requireAdmin(request);
     const payload = (request.body ?? {}) as Record<string, unknown>;
-    return proxyControl('POST', '/v1/config/profile', payload);
+    try {
+      return await proxyControl('POST', '/v1/config/profile', payload);
+    } catch (error) {
+      request.log.error({ err: error, msg: 'Failed to persist profile to control', payload });
+      throw error;
+    }
   });
 
   app.get('/v1/models', async () => {

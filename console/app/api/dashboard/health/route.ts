@@ -66,5 +66,6 @@ export async function GET() {
     status: overallStatus,
     services,
     setupComplete: setup.setupComplete,
+    profile: setup.profile,
   });
 }

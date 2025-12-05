@@ -12,20 +12,25 @@ export async function middleware(req: NextRequest) {
     pathname === "/health" ||
     pathname === "/healthz" ||
     pathname === "/dashboard/health" ||
-    pathname === "/favicon.ico";
+    pathname === "/favicon.ico" ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/wizard") ||
+    pathname.startsWith("/api/auth");
 
   if (!isBypassed) {
     try {
       const profileRes = await fetch(`${url.origin}/api/setup/profile`, { cache: "no-store" });
-      const profile = await profileRes.json();
-      const setupDone = Boolean(profile?.setupDone);
-      if (!setupDone && pathname !== "/setup") {
-        url.pathname = "/setup";
-        return NextResponse.redirect(url);
-      }
-      if (setupDone && pathname === "/setup") {
-        url.pathname = "/";
-        return NextResponse.redirect(url);
+      if (profileRes.ok) {
+        const profile = await profileRes.json();
+        const setupDone = Boolean(profile?.setupDone);
+        if (!setupDone && pathname !== "/setup") {
+          url.pathname = "/setup";
+          return NextResponse.redirect(url);
+        }
+        if (setupDone && pathname === "/setup") {
+          url.pathname = "/";
+          return NextResponse.redirect(url);
+        }
       }
     } catch (error) {
       console.error("Profile middleware error", error);
