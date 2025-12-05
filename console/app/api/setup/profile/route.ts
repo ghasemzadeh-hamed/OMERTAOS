@@ -1,50 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getConsoleSecrets } from '@/lib/serverConfig';
+import { GatewayProfileError, fetchProfileState, updateProfileState } from '@/lib/profile';
 
-const gatewayBase =
-  process.env.NEXT_PUBLIC_GATEWAY_URL || process.env.GATEWAY_BASE_URL || 'http://localhost:3000';
-const secretsPromise = getConsoleSecrets();
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 export async function GET() {
   try {
-    const res = await fetch(`${gatewayBase}/v1/config/profile`, { cache: 'no-store' });
-    if (!res.ok) {
-      return NextResponse.json({ profile: 'user', setupDone: false }, { status: 200 });
-    }
-    const data = await res.json();
-    return NextResponse.json({
-      profile: typeof data.profile === 'string' ? data.profile : 'user',
-      setupDone: Boolean(data.setupDone),
-    });
+    const profile = await fetchProfileState();
+    return NextResponse.json(profile);
   } catch (error) {
-    console.error('Failed to fetch profile', error);
-    return NextResponse.json({ profile: 'user', setupDone: false }, { status: 200 });
+    console.error('[console] Failed to fetch profile from gateway', error);
+    const status = error instanceof GatewayProfileError && error.status ? error.status : 502;
+    return NextResponse.json(
+      {
+        error: 'Failed to fetch setup profile from gateway',
+        profile: null,
+        setupDone: false,
+      },
+      { status },
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json().catch(() => ({}));
-  const { adminToken } = await secretsPromise;
+  const body = await request.json().catch(() => null);
+  const profile = typeof body?.profile === 'string' ? body.profile : '';
+  const setupDone = Boolean(body?.setupDone);
+  if (!profile) {
+    return NextResponse.json(
+      { error: 'profile is required' },
+      { status: 400 },
+    );
+  }
   try {
-    const res = await fetch(`${gatewayBase}/v1/config/profile`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        ...(adminToken ? { authorization: `Bearer ${adminToken}` } : {}),
-      },
-      body: JSON.stringify(body ?? {}),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: data.detail || data.error || 'Failed to update profile' },
-        { status: res.status || 400 },
-      );
-    }
-    return NextResponse.json({ ok: true, profile: data.profile, setupDone: data.setupDone });
+    const response = await updateProfileState({ profile, setupDone });
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Failed to update profile', error);
-    return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
+    console.error('[console] Failed to update profile via gateway', error);
+    const status = error instanceof GatewayProfileError && error.status ? error.status : 502;
+    const message = error instanceof Error ? error.message : 'Failed to update setup profile';
+    return NextResponse.json({ error: message }, { status });
   }
 }

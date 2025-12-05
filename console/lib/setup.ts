@@ -1,25 +1,29 @@
-import { prisma } from '@/lib/prisma';
-
-const SETUP_ENV_FLAG = 'AION_SETUP_COMPLETED';
+import { fetchProfileState } from '@/lib/profile';
 
 export async function isSetupComplete(): Promise<boolean> {
-  const flag = process.env[SETUP_ENV_FLAG];
-  if (typeof flag === 'string' && flag.toLowerCase() === 'true') {
-    return true;
-  }
-
   try {
-    const admins = await prisma.user.count({ where: { role: 'ADMIN' } });
-    return admins > 0;
+    const profile = await fetchProfileState();
+    return Boolean(profile.setupDone);
   } catch (error) {
-    console.error('[console] Failed to determine setup status', error);
+    console.error('[console] Failed to determine setup status from gateway', error);
     return false;
   }
 }
 
 export async function getSetupStatus() {
-  const setupComplete = await isSetupComplete();
-  return {
-    setupComplete,
-  };
+  try {
+    const profile = await fetchProfileState();
+    return {
+      setupComplete: Boolean(profile.setupDone),
+      profile: profile.profile,
+      updatedAt: profile.updatedAt,
+    };
+  } catch (error) {
+    console.error('[console] Failed to read setup status', error);
+    return {
+      setupComplete: false,
+      profile: null as string | null,
+      updatedAt: undefined as string | undefined,
+    };
+  }
 }

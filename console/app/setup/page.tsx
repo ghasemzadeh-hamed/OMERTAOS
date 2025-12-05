@@ -33,8 +33,10 @@ export default function SetupPage() {
     (async () => {
       try {
         const res = await fetch('/api/setup/profile', { cache: 'no-store' });
-        if (!res.ok) return;
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.error || 'Unable to load setup state');
+        }
         if (mounted && data?.profile) {
           setSelected(data.profile as ProfileId);
         }
@@ -43,6 +45,9 @@ export default function SetupPage() {
         }
       } catch (err) {
         console.error('Failed to load profile', err);
+        if (mounted) {
+          setError(err instanceof Error ? err.message : 'Failed to load setup state');
+        }
       } finally {
         if (mounted) {
           setLoading(false);

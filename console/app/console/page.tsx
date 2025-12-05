@@ -1,13 +1,7 @@
-import { redirect } from 'next/navigation';
-import { safeGetServerSession } from '@/lib/session';
+import { ensureConsoleAccess } from '@/lib/consoleAccess';
 import AionLiquidGlassConsole from '@/components/liquid-glass/AionLiquidGlassConsole';
 
 export default async function LiquidConsolePage() {
-  const session = await safeGetServerSession();
-
-  if (!session) {
-    redirect('/login');
-  }
-
+  await ensureConsoleAccess();
   return <AionLiquidGlassConsole />;
 }
