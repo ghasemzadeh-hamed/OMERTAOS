@@ -1,0 +1,75 @@
+{
+  "id": "setup",
+  "route": "/setup",
+  "title": "Setup Wizard",
+  "description": "Choose the operating profile and finish initial setup.",
+  "layout": "wizard",
+  "sections": [
+    {
+      "id": "choose-profile",
+      "title": "Choose Profile",
+      "helpText": "Select the operating profile for this node.",
+      "components": [
+        {
+          "type": "form",
+          "id": "profile-form",
+          "fields": [
+            {
+              "name": "profile",
+              "label": "Profile",
+              "type": "select",
+              "required": true,
+              "options": ["user", "professional", "enterprise-vip"],
+              "placeholder": "Select profile",
+              "helpText": "Select the operating profile."
+            }
+          ],
+          "actions": [
+            {
+              "id": "apply-profile",
+              "label": "Apply Profile",
+              "rbacRoles": ["user", "admin"],
+              "endpointRef": "gateway:POST:/v1/config/profile",
+              "confirm": "Apply the selected profile?",
+              "successToast": "Profile updated",
+              "errorToast": "Failed to update profile",
+              "optimistic": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "confirm",
+      "title": "Confirm & Finish",
+      "helpText": "Mark setup as complete once profile is selected.",
+      "components": [
+        {
+          "type": "alert",
+          "id": "setup-summary",
+          "title": "Setup completion",
+          "variant": "info",
+          "description": "Finish setup to continue to the console."
+        }
+      ],
+      "actions": [
+        {
+          "id": "finish-setup",
+          "label": "Finish Setup",
+          "rbacRoles": ["user", "admin"],
+          "endpointRef": "gateway:POST:/v1/config/profile",
+          "payload": { "setupDone": true },
+          "successToast": "Setup marked complete",
+          "errorToast": "Unable to mark setup complete"
+        }
+      ]
+    }
+  ],
+  "dataSources": [
+    {
+      "id": "profile-state",
+      "endpointRef": "gateway:GET:/v1/config/profile",
+      "cache": "no-store"
+    }
+  ]
+}

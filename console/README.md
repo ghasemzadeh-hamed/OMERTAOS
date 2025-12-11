@@ -57,3 +57,13 @@ Vitest covers critical UI primitives such as the glass cards, task board, and po
 ## Deployment
 
 The console compiles to static assets with server components for authenticated routes. Include it in Docker Compose or Kubernetes by exposing port 3001 and mounting the same environment variables documented in `.env.local.example`.
+
+## Schema-driven console and AI guardrails
+
+The console now renders primary flows (setup, onboarding, agents, admin, and models) from JSON schemas stored in `/config`:
+
+- `/config/capabilities.json`: backend endpoints, RBAC, feature flags, tenancy needs, and UI route metadata.
+- `/config/navigation.json`: navigation groups/items mapped to capability IDs with ordering.
+- `/config/pages/*.page.json`: page schemas describing layout, sections, components, data sources, and actions.
+
+`@/lib/navigationResolver` filters navigation by user role and active feature flags while preserving critical flows such as setup, onboarding, agent catalog, and my agents. `@/lib/pageRenderer` consumes the page schema to render forms, tables, stats, and actions, calling Gateway/Control endpoints through `@/lib/endpointClient` with tenant headers when present. AI-driven suggestions are mediated by `@/lib/ai/uiOrchestrator`, which validates patches against allowlists (no secret exposure, no RBAC escalation, critical routes protected) before applying optional tweaks. To add a new page, drop a schema in `/config/pages`, register a capability in `/config/capabilities.json`, map it in `/config/navigation.json`, and create a thin route that loads the schema and passes session context (role, feature flags, tenancy).

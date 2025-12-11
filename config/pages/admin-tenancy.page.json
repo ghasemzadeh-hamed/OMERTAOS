@@ -1,0 +1,28 @@
+{
+  "id": "admin-tenancy",
+  "route": "/admin/tenancy",
+  "title": "Tenancy & Access",
+  "description": "Review tenancy configuration.",
+  "layout": "form",
+  "sections": [
+    {
+      "id": "tenancy",
+      "title": "Tenancy",
+      "components": [
+        {
+          "type": "form",
+          "id": "tenancy-form",
+          "fields": [
+            { "name": "tenancyMode", "label": "Tenancy Mode", "type": "select", "options": ["single", "multi"], "required": true, "readOnly": true },
+            { "name": "defaultTenantId", "label": "Default Tenant", "type": "text", "required": false, "readOnly": true },
+            { "name": "enforceTenantHeader", "label": "Enforce tenant header", "type": "toggle", "required": false, "readOnly": true }
+          ]
+        }
+      ],
+      "actions": []
+    }
+  ],
+  "dataSources": [
+    { "id": "tenancy", "endpointRef": "gateway:GET:/v1/config/profile", "cache": "no-store" }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "onboarding",
+  "route": "/onboarding",
+  "title": "Onboarding",
+  "description": "Complete required steps after setup.",
+  "layout": "steps",
+  "sections": [
+    {
+      "id": "requirements",
+      "title": "Requirements Checklist",
+      "helpText": "Verify onboarding readiness.",
+      "components": [
+        {
+          "type": "steps",
+          "id": "requirements-steps",
+          "items": [
+            { "id": "setupDone", "label": "Setup complete" },
+            { "id": "authConfigured", "label": "Authentication configured" },
+            { "id": "atLeastOneModel", "label": "At least one model available" },
+            { "id": "firstAgentDeployed", "label": "First agent deployed", "optional": true }
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "recheck-status",
+          "label": "Re-check Status",
+          "rbacRoles": ["user", "admin"],
+          "endpointRef": "gateway:GET:/api/onboarding/status",
+          "successToast": "Status refreshed",
+          "errorToast": "Unable to refresh onboarding"
+        },
+        {
+          "id": "mark-complete",
+          "label": "Mark Complete",
+          "rbacRoles": ["admin"],
+          "endpointRef": "gateway:POST:/api/onboarding/submit",
+          "successToast": "Onboarding marked complete",
+          "errorToast": "Unable to mark onboarding"
+        }
+      ]
+    }
+  ],
+  "dataSources": [
+    { "id": "onboarding-status", "endpointRef": "gateway:GET:/api/onboarding/status", "cache": "no-store" }
+  ]
+}

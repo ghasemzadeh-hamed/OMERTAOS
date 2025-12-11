@@ -3,9 +3,9 @@ import PageRenderer from '@/lib/pageRenderer';
 import { loadPageSchema } from '@/lib/schemaLoader';
 import type { UiContext } from '@/lib/ai/uiOrchestrator';
 
-export default async function MyAgentsPage() {
-  const schema = await loadPageSchema('/agents/my-agents');
-  if (!schema) return <div className="p-6 text-white">My Agents schema missing</div>;
+export default async function AgentDetailsPage({ params }: { params: { id: string } }) {
+  const schema = await loadPageSchema('/agents/[id]');
+  if (!schema) return <div className="p-6 text-white">Agent schema missing</div>;
   const hdrs = headers();
   const context: UiContext = {
     role: 'admin',
@@ -15,7 +15,7 @@ export default async function MyAgentsPage() {
   };
   return (
     <div className="p-6">
-      <PageRenderer schema={schema} context={context} />
+      <PageRenderer schema={schema} context={context} params={params} />
     </div>
   );
 }

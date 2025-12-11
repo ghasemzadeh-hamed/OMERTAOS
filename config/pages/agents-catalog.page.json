@@ -1,0 +1,46 @@
+{
+  "id": "agents-catalog",
+  "route": "/agents/catalog",
+  "title": "Agent Catalog",
+  "description": "Browse agent templates and create instances.",
+  "layout": "table",
+  "sections": [
+    {
+      "id": "filters",
+      "title": "Filters",
+      "components": [
+        {
+          "type": "form",
+          "id": "catalog-filters",
+          "fields": [
+            { "name": "search", "label": "Search", "type": "text", "required": false, "placeholder": "Search templates" },
+            { "name": "category", "label": "Category", "type": "select", "options": [], "placeholder": "All" },
+            { "name": "capabilityTags", "label": "Capabilities", "type": "multiSelect", "options": [] }
+          ],
+          "actions": [
+            { "id": "apply-filters", "label": "Apply Filters", "rbacRoles": ["user", "admin"] }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "catalog",
+      "title": "Catalog",
+      "components": [
+        {
+          "type": "table",
+          "id": "catalog-table",
+          "columns": ["name", "category", "description", "capabilities"],
+          "dataKey": "items",
+          "rowActions": [
+            { "id": "configure", "label": "Configure", "type": "link", "hrefTemplate": "/agents/catalog/{{id}}" },
+            { "id": "create-agent", "label": "Create Agent", "endpointRef": "gateway:POST:/api/agents", "rbacRoles": ["user", "admin"], "successToast": "Agent created" }
+          ]
+        }
+      ]
+    }
+  ],
+  "dataSources": [
+    { "id": "catalog", "endpointRef": "gateway:GET:/api/agent-catalog", "cache": "no-store" }
+  ]
+}

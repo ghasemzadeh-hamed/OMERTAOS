@@ -1,0 +1,186 @@
+{
+  "capabilities": [
+    {
+      "id": "setup-profile",
+      "title": "Setup & Profile",
+      "description": "Select operating profile and persist setup completion state.",
+      "rbac": { "rolesAllowed": ["user", "admin"] },
+      "featureFlags": [],
+      "endpoints": [
+        { "service": "gateway", "method": "GET", "path": "/v1/config/profile" },
+        { "service": "gateway", "method": "POST", "path": "/v1/config/profile" }
+      ],
+      "ui": {
+        "route": "/setup",
+        "pageSchemaRef": "setup.page.json",
+        "navGroup": "System",
+        "navIcon": "sparkles"
+      },
+      "tenancy": { "needsTenantHeader": false }
+    },
+    {
+      "id": "onboarding-gate",
+      "title": "Onboarding",
+      "description": "Track onboarding status and allow completion once requirements are met.",
+      "rbac": { "rolesAllowed": ["user", "admin"] },
+      "featureFlags": [],
+      "endpoints": [
+        { "service": "gateway", "method": "GET", "path": "/api/onboarding/status" },
+        { "service": "gateway", "method": "POST", "path": "/api/onboarding/submit" }
+      ],
+      "ui": {
+        "route": "/onboarding",
+        "pageSchemaRef": "onboarding.page.json",
+        "navGroup": "System",
+        "navIcon": "check"
+      },
+      "tenancy": { "needsTenantHeader": false }
+    },
+    {
+      "id": "system-status",
+      "title": "Health & Status",
+      "description": "Surface health information for Gateway, Control, and dependencies.",
+      "rbac": { "rolesAllowed": ["user", "admin"] },
+      "featureFlags": [],
+      "endpoints": [
+        { "service": "gateway", "method": "GET", "path": "/healthz" },
+        { "service": "control", "method": "GET", "path": "/healthz" }
+      ],
+      "ui": {
+        "route": "/status",
+        "pageSchemaRef": "status.page.json",
+        "navGroup": "System",
+        "navIcon": "activity"
+      },
+      "tenancy": { "needsTenantHeader": false }
+    },
+    {
+      "id": "agent-catalog",
+      "title": "Agent Catalog",
+      "description": "Browse available agent templates and launch create wizard.",
+      "rbac": { "rolesAllowed": ["user", "admin"] },
+      "featureFlags": [],
+      "endpoints": [
+        { "service": "gateway", "method": "GET", "path": "/api/agent-catalog" },
+        { "service": "gateway", "method": "POST", "path": "/api/agents" }
+      ],
+      "ui": {
+        "route": "/agents/catalog",
+        "pageSchemaRef": "agents-catalog.page.json",
+        "navGroup": "Agents",
+        "navIcon": "grid"
+      },
+      "tenancy": { "needsTenantHeader": true }
+    },
+    {
+      "id": "agent-lifecycle",
+      "title": "My Agents",
+      "description": "List existing agent instances and manage deployments.",
+      "rbac": { "rolesAllowed": ["user", "admin"] },
+      "featureFlags": [],
+      "endpoints": [
+        { "service": "gateway", "method": "GET", "path": "/api/agents" },
+        { "service": "gateway", "method": "POST", "path": "/api/agents/{id}/deploy" },
+        { "service": "gateway", "method": "POST", "path": "/api/agents/{id}/disable" }
+      ],
+      "ui": {
+        "route": "/agents/my-agents",
+        "pageSchemaRef": "agents-my-agents.page.json",
+        "navGroup": "Agents",
+        "navIcon": "list"
+      },
+      "tenancy": { "needsTenantHeader": true }
+    },
+    {
+      "id": "agent-details",
+      "title": "Agent Details",
+      "description": "Inspect agent configuration, deployments, and lifecycle actions.",
+      "rbac": { "rolesAllowed": ["user", "admin"] },
+      "featureFlags": [],
+      "endpoints": [
+        { "service": "gateway", "method": "GET", "path": "/api/agents/{id}" },
+        { "service": "gateway", "method": "POST", "path": "/api/agents/{id}/deploy" },
+        { "service": "gateway", "method": "POST", "path": "/api/agents/{id}/disable" }
+      ],
+      "ui": {
+        "route": "/agents/[id]",
+        "pageSchemaRef": "agent-details.page.json",
+        "navGroup": "Agents",
+        "navIcon": "badge"
+      },
+      "tenancy": { "needsTenantHeader": true }
+    },
+    {
+      "id": "models-registry",
+      "title": "Models Registry",
+      "description": "Display models available from Gateway and their profile compatibility.",
+      "rbac": { "rolesAllowed": ["user", "admin"] },
+      "featureFlags": [],
+      "endpoints": [
+        { "service": "gateway", "method": "GET", "path": "/v1/models" }
+      ],
+      "ui": {
+        "route": "/models",
+        "pageSchemaRef": "models.page.json",
+        "navGroup": "Models",
+        "navIcon": "box"
+      },
+      "tenancy": { "needsTenantHeader": false }
+    },
+    {
+      "id": "latentbox-tools",
+      "title": "Tool Discovery",
+      "description": "Discover recommended tools from LatentBox when feature flag is enabled.",
+      "rbac": { "rolesAllowed": ["user", "admin"] },
+      "featureFlags": ["FEATURE_LATENTBOX_RECOMMENDATIONS"],
+      "endpoints": [
+        { "service": "gateway", "method": "GET", "path": "/api/tools/discovery" },
+        { "service": "gateway", "method": "POST", "path": "/api/tools/sync" }
+      ],
+      "ui": {
+        "route": "/tools/discovery",
+        "pageSchemaRef": "tools-discovery.page.json",
+        "navGroup": "Tools",
+        "navIcon": "search"
+      },
+      "tenancy": { "needsTenantHeader": true }
+    },
+    {
+      "id": "config-lifecycle",
+      "title": "Configuration Lifecycle",
+      "description": "Admin-only configuration propose/apply/revert/status.",
+      "rbac": { "rolesAllowed": ["admin"] },
+      "featureFlags": [],
+      "endpoints": [
+        { "service": "gateway", "method": "GET", "path": "/v1/config/status" },
+        { "service": "gateway", "method": "POST", "path": "/v1/config/propose" },
+        { "service": "gateway", "method": "POST", "path": "/v1/config/apply" },
+        { "service": "gateway", "method": "POST", "path": "/v1/config/revert" }
+      ],
+      "ui": {
+        "route": "/admin/config",
+        "pageSchemaRef": "admin-config.page.json",
+        "navGroup": "Admin",
+        "navIcon": "settings"
+      },
+      "tenancy": { "needsTenantHeader": false }
+    },
+    {
+      "id": "tenancy-settings",
+      "title": "Tenancy & Access",
+      "description": "View or update tenancy mode and tenant defaults.",
+      "rbac": { "rolesAllowed": ["admin"] },
+      "featureFlags": [],
+      "endpoints": [
+        { "service": "gateway", "method": "GET", "path": "/v1/config/profile" }
+      ],
+      "ui": {
+        "route": "/admin/tenancy",
+        "pageSchemaRef": "admin-tenancy.page.json",
+        "navGroup": "Admin",
+        "navIcon": "shield"
+      },
+      "tenancy": { "needsTenantHeader": false }
+    }
+  ]
+}

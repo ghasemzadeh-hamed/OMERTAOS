@@ -1,0 +1,245 @@
+# Capability Registry (UI + Docs source of truth)
+# Each capability maps backend APIs, config, UI routes, RBAC, and tenancy requirements.
+
+capabilities:
+  - id: setup_profiles
+    title: Setup & Profiles
+    description: Select user profile and persist setup completion state.
+    backend:
+      services:
+        - gateway
+        - control
+      endpoints:
+        - method: GET
+          path: /v1/config/profile
+          service: gateway
+        - method: POST
+          path: /v1/config/profile
+          service: gateway
+        - method: GET
+          path: /api/setup/profile
+          service: gateway (console proxy)
+      persistence: control stores canonical profile in .aionos/profile.json
+    config:
+      env:
+        - AION_ENV
+        - AION_PROFILE
+        - TENANCY_MODE
+      feature_flags: []
+    ui:
+      routes:
+        - path: /setup
+          components: Setup Wizard (profile selection)
+      state_flags:
+        - setupDone
+    rbac:
+      required_roles: []
+      notes: Gateway allows bootstrap without JWT in dev.
+    tenancy:
+      headers: []
+      modes: [single-tenant, multi-tenant]
+
+  - id: auth_session_rbac
+    title: Auth & Session
+    description: JWT/API key auth with role enforcement and console session handling.
+    backend:
+      services:
+        - gateway
+      endpoints:
+        - method: POST
+          path: /login (console)
+          service: console
+        - method: any
+          path: protected routes (e.g., /v1/config/*)
+          service: gateway
+    config:
+      env:
+        - AION_GATEWAY_ADMIN_TOKEN
+        - AION_GATEWAY_API_KEYS
+        - AION_JWT_PUBLIC_KEY
+        - AION_JWT_SECRET_PATH
+        - NEXTAUTH_SECRET
+        - NEXTAUTH_URL
+        - NEXT_PUBLIC_GATEWAY_URL
+      feature_flags: []
+    ui:
+      routes:
+        - path: /login
+          components: Login + session middleware
+        - path: middleware redirect
+          components: setup and onboarding enforcement
+    rbac:
+      required_roles:
+        - admin (for config routes)
+      notes: Gateway supports public health routes; profile route bypass allowed in dev.
+    tenancy:
+      headers:
+        - tenant-id
+      modes: [single-tenant, multi-tenant]
+
+  - id: onboarding_gate
+    title: Onboarding Gate
+    description: Redirect users to onboarding flow until onboardingComplete=true.
+    backend:
+      services:
+        - gateway
+      endpoints: []
+    config:
+      env: []
+      feature_flags: []
+    ui:
+      routes:
+        - path: /onboarding
+          components: Onboarding workflow/checklist
+    rbac:
+      required_roles: []
+      notes: Console middleware redirects / to /onboarding if incomplete.
+    tenancy:
+      headers:
+        - tenant-id (if applicable)
+      modes: [single-tenant, multi-tenant]
+
+  - id: agent_catalog
+    title: Agent Catalog
+    description: Browse catalog templates with filtering and capability tags.
+    backend:
+      services:
+        - gateway
+      endpoints:
+        - method: GET
+          path: /api/agent-catalog
+          service: gateway
+    config:
+      env:
+        - NEXT_PUBLIC_GATEWAY_URL
+      feature_flags: []
+    ui:
+      routes:
+        - path: /agents/catalog
+          components: Catalog list, filters, template CTA
+      behaviors:
+        - show capabilities/tags/icon
+        - CTA to configure & deploy from recipe/schema
+    rbac:
+      required_roles: []
+    tenancy:
+      headers:
+        - tenant-id (optional)
+      modes: [multi-tenant]
+
+  - id: my_agents
+    title: My Agents
+    description: List, deploy, and disable user-scoped agent instances with optimistic refresh.
+    backend:
+      services:
+        - gateway
+      endpoints:
+        - method: GET
+          path: /api/agents
+          service: gateway
+        - method: POST
+          path: /api/agents/{id}/deploy
+          service: gateway
+        - method: POST
+          path: /api/agents/{id}/disable
+          service: gateway
+    config:
+      env:
+        - NEXT_PUBLIC_GATEWAY_URL
+      feature_flags: []
+    ui:
+      routes:
+        - path: /agents/my-agents
+          components: Table/list with status/enabled/scope/updated_at and deploy/disable actions
+    rbac:
+      required_roles: []
+    tenancy:
+      headers:
+        - tenant-id (optional)
+      modes: [multi-tenant]
+
+  - id: config_lifecycle
+    title: Configuration Lifecycle
+    description: Admin-only propose/apply/revert/status APIs with UI for auditing.
+    backend:
+      services:
+        - gateway
+      endpoints:
+        - method: POST
+          path: /v1/config/propose
+          service: gateway
+        - method: POST
+          path: /v1/config/apply
+          service: gateway
+        - method: POST
+          path: /v1/config/revert
+          service: gateway
+        - method: GET
+          path: /v1/config/status
+          service: gateway
+    config:
+      env:
+        - AION_GATEWAY_ADMIN_TOKEN
+        - NEXT_PUBLIC_GATEWAY_URL
+      feature_flags: []
+    ui:
+      routes:
+        - path: /configuration
+          components: Actions for propose/apply/revert/status + audit trail
+    rbac:
+      required_roles:
+        - admin
+    tenancy:
+      headers:
+        - tenant-id (optional)
+      modes: [multi-tenant]
+
+  - id: models_registry
+    title: Models Registry
+    description: List models returned by Gateway along with provider/profile metadata.
+    backend:
+      services:
+        - gateway
+      endpoints:
+        - method: GET
+          path: /v1/models
+          service: gateway
+    config:
+      env:
+        - NEXT_PUBLIC_GATEWAY_URL
+      feature_flags: []
+    ui:
+      routes:
+        - path: /models
+          components: Models list with status/provider/profile
+    rbac:
+      required_roles: []
+    tenancy:
+      headers:
+        - tenant-id (optional)
+      modes: [multi-tenant]
+
+  - id: latentbox_tool_discovery
+    title: LatentBox Tool Discovery
+    description: Feature-flagged tool recommendations powered by config/latentbox/tools.yaml.
+    backend:
+      services:
+        - gateway
+      endpoints: []
+    config:
+      env:
+        - FEATURE_LATENTBOX_RECOMMENDATIONS
+      feature_flags:
+        - FEATURE_LATENTBOX_RECOMMENDATIONS
+      artifacts:
+        - config/latentbox/tools.yaml
+    ui:
+      routes:
+        - path: /tools (or discovery section)
+          components: Tool discovery/search/sync shown only when feature flag enabled
+    rbac:
+      required_roles: []
+    tenancy:
+      headers:
+        - tenant-id (optional)
+      modes: [multi-tenant]
