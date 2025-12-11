@@ -1,6 +1,6 @@
 # Docker installation
 
-Run AION-OS inside containers for local development, CI pipelines, or lightweight demos. Disk operations are skipped; profile rendering and service orchestration continue to use the same wizard.
+Run AION-OS inside containers for local development, CI pipelines, or lightweight demos. Disk operations are skipped; profile rendering and service orchestration continue to use the same wizard components.
 
 ## Prerequisites
 
@@ -10,26 +10,20 @@ Run AION-OS inside containers for local development, CI pipelines, or lightweigh
 
 ## Steps
 
-1. Clone the repository and copy `.env` from the template:
+1. Copy `dev.env` to `.env` (or run `./quick-install.sh` to do this automatically and generate development certs).
+2. Start the quickstart stack with bundled databases and storage:
    ```bash
-   cp config/templates/.env.example .env
+   docker compose -f docker-compose.quickstart.yml up -d
    ```
-2. Edit `.env` and set `AION_PROFILE=user|pro|enterprise`.
-3. Start the base stack:
-   ```bash
-   docker compose up --profile base -d
-   ```
-4. To enable extra services (MLflow, observability, etc.), add the profile flag:
-   ```bash
-   docker compose --profile enterprise up -d
-   ```
-5. Open `http://localhost:3000/wizard` to walk through the installer.
-6. Storage actions show previews only; driver installs run in dry-run mode with logs in `/var/log/aionos-installer.log` inside the installer container.
-7. Verify the console at `http://localhost:3000/console` and the control plane health endpoints (`docker compose logs control`).
-8. Tear down with `docker compose down`.
+3. Watch health endpoints until they return HTTP 200:
+   - Control: http://localhost:8000/healthz
+   - Gateway: http://localhost:8080/healthz
+   - Console: http://localhost:3000/healthz
+4. Open the console at http://localhost:3000 to walk through the setup wizard.
+5. Stop containers with `docker compose -f docker-compose.quickstart.yml down`.
 
 ## Tips
 
-- Use `docker compose logs -f bridge` to watch hardware probe output while testing.
-- The offline cache is mapped from `core/iso/cache/` if you need to ship pre-approved packages.
-- To build reproducible images, follow [`docs/release.md`](../release.md) for SBOM and signing steps.
+- If you override `AION_DB_*`, also update `DATABASE_URL` so the control plane connects to the correct Postgres instance.
+- Use `docker compose logs -f control` and `docker compose logs -f gateway` for troubleshooting.
+- Replace placeholder secrets (`AION_GATEWAY_ADMIN_TOKEN`, `AION_GATEWAY_API_KEYS`, `NEXTAUTH_SECRET`) before exposing the stack beyond local development.

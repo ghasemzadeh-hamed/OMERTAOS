@@ -10,34 +10,30 @@ Run the installer on an existing Ubuntu host to reuse the wizard and bridge stac
 
 ## Steps
 
-1. Clone the repository and install prerequisites:
+1. Install prerequisites:
    ```bash
    sudo apt-get update
-   sudo apt-get install -y git nodejs npm python3 make
-   ```
-2. Install PNPM and dependencies:
-   ```bash
+   sudo apt-get install -y git curl build-essential python3.11 python3.11-venv python3.11-dev nodejs npm
    sudo npm install -g pnpm
-   cd core/installer/bridge && pnpm install
    ```
-3. Export `AIONOS_ALLOW_INSTALL=1` and start the bridge:
+2. Clone the repository and copy `.env` from `.env.example`.
+3. Prepare the installer bridge:
    ```bash
+   cd core/installer/bridge
+   pnpm install
    sudo AIONOS_ALLOW_INSTALL=1 pnpm start
    ```
-4. In another terminal, start the wizard UI:
+4. Launch the console wizard in a separate terminal:
    ```bash
    cd console
    pnpm install
    pnpm dev
    ```
-5. Browse to `https://localhost:3000/wizard`, accept the certificate warning, and select **Native** mode.
-6. Probe hardware, review the storage plan, and confirm profile selection.
-7. Apply disk changes only after double-checking the plan output.
-8. Watch driver and security task progress under `/var/log/aionos-installer.log`.
-9. When the wizard reports success, stop the services and reboot the host.
+5. Visit https://localhost:3000/wizard, accept the development certificate warning, and select **Native Install**.
+6. Review hardware probes and the storage plan before approving changes. Destructive steps require `AIONOS_ALLOW_INSTALL=1`.
+7. After the wizard reports success, stop services and reboot the host.
 
 ## Notes
 
 - The bridge enforces root privileges for driver and security tasks.
-- Disk apply is rejected unless `AIONOS_ALLOW_INSTALL=1` and mode is `native` or `image`.
-- To reuse the rendered `.env`, copy it to `/etc/aionos/profile.env` for first-boot services.
+- Copy the rendered `.env` to `/etc/aionos/profile.env` if you want systemd units to reuse the same configuration on first boot.

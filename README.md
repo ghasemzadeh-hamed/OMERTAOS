@@ -48,8 +48,8 @@ pwsh ./install.ps1 -Profile user       # or professional / enterprise-vip
 
 ### Fast path (Docker Compose quickstart)
 
-- Copy [`dev.env`](dev.env) to `.env` (or let `quick-install.sh` / `quick-install.ps1` do it automatically).
-- Generate dev certs/JWT keys and start the stack:
+- Copy [`dev.env`](dev.env) to `.env` (or let `quick-install.sh` / `quick-install.ps1` handle it).
+- Generate development certificates and start the stack:
 
 ```bash
 ./quick-install.sh
@@ -59,8 +59,10 @@ pwsh ./install.ps1 -Profile user       # or professional / enterprise-vip
 ./quick-install.ps1
 ```
 
-This path uses [`docker-compose.quickstart.yml`](docker-compose.quickstart.yml) with dev certificates and JWT keys under `config/certs/dev` and `config/keys`.
-Postgres defaults to `aionos` / `password` / `omerta_db` to match the values in `dev.env`; adjust `AION_DB_*` and `DATABASE_URL` together if you override them (for example, `DATABASE_URL=postgresql://aionos:password@postgres:5432/omerta_db?schema=public`).
+This path uses [`docker-compose.quickstart.yml`](docker-compose.quickstart.yml) with bundled Postgres, Redis, MongoDB, Qdrant, and MinIO.
+Control binds to `http://localhost:8000`, the gateway to `http://localhost:8080`, and the console to `http://localhost:3000`.
+Defaults match `dev.env` (`aionos` / `password` / `omerta_db` for Postgres); update `AION_DB_*` and `DATABASE_URL` together if you override them.
+Rotate placeholder tokens such as `AION_GATEWAY_ADMIN_TOKEN` before production use.
 
 ### Other flows
 
@@ -72,11 +74,12 @@ Detailed guides for ISO, native Linux, WSL, and Docker modes live in [`docs/quic
 - Steps:
   1. `git clone https://github.com/Hamedghz/OMERTAOS.git`
   2. `cd OMERTAOS`
-  3. `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\quicksetup.ps1`
-  4. `docker compose up -d`
+  3. `powershell -NoProfile -ExecutionPolicy Bypass -File .\\quick-install.ps1`
+  4. Wait for `.env` to be created from `dev.env`, development certificates to be generated, and containers to start.
   5. Open the services:
-     - Console UI: http://localhost:3001
-     - Gateway health: http://localhost:3000/healthz
+     - Console UI: http://localhost:3000
+     - Gateway: http://localhost:8080 (health at `/healthz`)
+     - Control: http://localhost:8000 (health at `/healthz`)
 
 The default profile is `user`, which keeps the stack lightweight while enabling the console, gateway, and control plane.
 
@@ -103,7 +106,7 @@ The default profile is `user`, which keeps the stack lightweight while enabling 
 | professional (pro)| Gateway, control, console | Jupyter, MLflow | Docker                         | standard  |
 | enterprise-vip   | Gateway, control, console | Jupyter, MLflow | Docker, Kubernetes hooks, LDAP | cis-lite  |
 
-Profile manifests reside in [`config/profiles`](config/profiles) with defaults in [`core/installer/profile/defaults`](core/installer/profile/defaults). The installer pipeline renders `.env` files from [`config/templates/.env.example`](config/templates/.env.example) before first-boot automation enables services.
+Profile manifests reside in [`config/profiles`](config/profiles) with defaults in [`core/installer/profile/defaults`](core/installer/profile/defaults). The installer pipeline renders `.env` files from [`.env.example`](.env.example) before first-boot automation enables services.
 
 ## Docker Compose overlays
 
@@ -143,134 +146,3 @@ Enterprise-facing runbooks start at [`docs/README.md`](docs/README.md): quicksta
 Please review [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and [SECURITY.md](SECURITY.md) before submitting changes. AION-OS is distributed under the [Apache 2.0 license](LICENSE).
 
 ---
-
-##
-
-#
-
-                            .        WSL                      .
-
----
-
-##
-
-- **  **     Rust  [`kernel/`](kernel)  [`kernel-multitenant/`](kernel-multitenant)         .           .
-- ** **     [`aion/`](aion)                    [`aion/config`](aion/config)  .
-- ****   TypeScript  [`gateway/`](gateway)  API              .
-- ** (Glass)**   Next.js  [`console/`](console)           (SSE/WebSockets)     .
-- **    **     [`ai_registry/REGISTRY.yaml`](ai_registry/REGISTRY.yaml)     [`models/`](models)          .
-- **  **         [`agents/`](agents) [`policies/`](policies)  [`config/agent_catalog`](config/agent_catalog)             .
-
-##
-
-- **  **  [`core/`](core)  [`config/`](config)  `.env`  systemd/NSSM      .  (`user` `professional` `enterprise-vip`)  ML  Kubernetes LDAP       . [`configs/`](configs)   compose     .
-- **    **   `aion`           . API           (`/api/agents`)  (`/api/agents/{id}/deploy`)    (`/api/agent-catalog`)   .       [`config/agent_catalog/recipes`](config/agent_catalog/recipes)         .
-- ** **   Glass                 LatentBox  . NextAuth    Google OAuth    TanStack Query      SSE/WebSockets   /   .
-- **     **      `model://`         .    [`models/`](models)          .
-- **  **    (`none` `standard` `cis-lite`) UFW Fail2Ban  Auditd   . Secure Boot        [`docs/security`](docs/security)  .            `/var/log/aionos-firstboot.log`  .
-
-##
-
-###  (Docker Engine)
-
-```bash
-git clone https://github.com/Hamedghz/OMERTAOS.git
-cd OMERTAOS
-./install.sh --profile user            #  professional / enterprise-vip
-```
-
--    [`scripts/quicksetup.sh`](scripts/quicksetup.sh)        `.env`   [`config/templates/.env.example`](config/templates/.env.example)   Docker Compose    ( `docker-compose.yml`  [`docker-compose.local.yml`](docker-compose.local.yml)  `--local`  ).
--         `--update`   .
-
-###  11 / WSL2
-
-```powershell
-git clone https://github.com/Hamedghz/OMERTAOS.git
-Set-Location OMERTAOS
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-pwsh ./install.ps1 -Profile user       #  professional / enterprise-vip
-```
-
--       WSL  Docker Desktop    WSL  .
--  `-Local`      `-Update`        compose  .
-
-###   (Docker Compose quickstart)
-
-- [`dev.env`](dev.env)   `.env`   (   `quick-install.sh` / `quick-install.ps1`     ).
--     JWT       :
-
-```bash
-./quick-install.sh
-```
-
-```powershell
-./quick-install.ps1
-```
-
-   [`docker-compose.quickstart.yml`](docker-compose.quickstart.yml)      JWT  `config/certs/dev`  `config/keys`  .
-
-###
-
-    ISO   WSL  Docker  [`docs/quickstart.md`](docs/quickstart.md)  .  ISO        `AIONOS_ALLOW_INSTALL`  .
-
-##
-
-|  |  |
-| ---- | ------- |
-| [`aion/`](aion) |               . |
-| [`console/`](console) |  React + Next.js         . |
-| [`gateway/`](gateway) |  TypeScript   API/ /          . |
-| [`core/`](core) |           . |
-| [`kernel/`](kernel) / [`kernel-multitenant/`](kernel-multitenant) |  Rust        . |
-| [`scripts/`](scripts) |           CI. |
-| [`config/`](config) / [`configs/`](configs) |    systemd/NSSM      . |
-| [`agents/`](agents) / [`policies/`](policies) |              . |
-| [`models/`](models) |           . |
-| [`ai_registry/`](ai_registry) |           . |
-
-##
-
-|             |               |  ML         |               |  |
-| ------------------ | ------------------------- | ---------------- | ------------------------------ | --------- |
-| user               | Gateway control console |           | Docker ()                   | none      |
-| professional (pro) | Gateway control console | Jupyter MLflow  | Docker                         | standard  |
-| enterprise-vip     | Gateway control console | Jupyter MLflow  | Docker  Kubernetes LDAP | cis-lite |
-
-   [`config/profiles`](config/profiles)      [`core/installer/profile/defaults`](core/installer/profile/defaults)  .            `.env`   [`config/templates/.env.example`](config/templates/.env.example) .
-
-##  Docker Compose
-
-[`docker-compose.yml`](docker-compose.yml)    .        :
-
-- [`docker-compose.local.yml`](docker-compose.local.yml)      .
-- [`docker-compose.obsv.yml`](docker-compose.obsv.yml)    ( OTel )   .
-- [`docker-compose.vllm.yml`](docker-compose.vllm.yml)    vLLM  GPU       .
-
-   `docker compose -f docker-compose.yml -f <overlay> up -d`      .
-
-##
-
--    [`config/agent_catalog/agents.yaml`](config/agent_catalog/agents.yaml)        [`config/agent_catalog/recipes`](config/agent_catalog/recipes)  .
-- API                 :
-  - `GET /api/agent-catalog`, `GET /api/agent-catalog/{id}`
-  - `GET /api/agents`, `POST /api/agents`, `PATCH /api/agents/{id}`, `POST /api/agents/{id}/deploy`, `POST /api/agents/{id}/disable`
--   `/agents/catalog`  `/agents/my-agents`                    .
--  LatentBox (   `FEATURE_LATENTBOX_RECOMMENDATIONS`)       [`config/latentbox/tools.yaml`](config/latentbox/tools.yaml)      /       .
-
-##
-
--   `apt-get update && apt-get upgrade`  `snap refresh`             `/var/log/aionos-firstboot.log`  .
-- Secure Boot      CIS-lite  [`docs/security`](docs/security)       CVE  .
--       `AIONOS_ALLOW_INSTALL`     SBOM/    [`docs/release.md`](docs/release.md)   .
-
-##
-
-  (GPU NIC  )     [`docs/hcl`](docs/hcl)  .    `core/installer/bridge/tasks`     .
-
-##
-
-    [`docs/README.md`](docs/README.md)  :               .
-
-##
-
-    [CONTRIBUTING.md](CONTRIBUTING.md) [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)  [SECURITY.md](SECURITY.md)   .   [  ](LICENSE)   .
