@@ -1,0 +1,21 @@
+{
+  "groups": [
+    { "id": "system", "title": "System", "order": 1 },
+    { "id": "agents", "title": "Agents", "order": 2 },
+    { "id": "models", "title": "Models", "order": 3 },
+    { "id": "tools", "title": "Tools", "order": 4 },
+    { "id": "admin", "title": "Admin", "order": 5 }
+  ],
+  "items": [
+    { "id": "setup", "title": "Setup Wizard", "route": "/setup", "groupId": "system", "capabilityId": "setup-profile", "order": 1, "icon": "sparkles" },
+    { "id": "onboarding", "title": "Onboarding", "route": "/onboarding", "groupId": "system", "capabilityId": "onboarding-gate", "order": 2, "icon": "check" },
+    { "id": "status", "title": "Health & Status", "route": "/status", "groupId": "system", "capabilityId": "system-status", "order": 3, "icon": "activity" },
+    { "id": "agent-catalog", "title": "Agent Catalog", "route": "/agents/catalog", "groupId": "agents", "capabilityId": "agent-catalog", "order": 1, "icon": "grid" },
+    { "id": "my-agents", "title": "My Agents", "route": "/agents/my-agents", "groupId": "agents", "capabilityId": "agent-lifecycle", "order": 2, "icon": "list" },
+    { "id": "agent-details", "title": "Agent Details", "route": "/agents/[id]", "groupId": "agents", "capabilityId": "agent-details", "order": 3, "icon": "badge" },
+    { "id": "models", "title": "Models Registry", "route": "/models", "groupId": "models", "capabilityId": "models-registry", "order": 1, "icon": "box" },
+    { "id": "latentbox", "title": "Tool Discovery", "route": "/tools/discovery", "groupId": "tools", "capabilityId": "latentbox-tools", "order": 1, "icon": "search" },
+    { "id": "config", "title": "Configuration Changes", "route": "/admin/config", "groupId": "admin", "capabilityId": "config-lifecycle", "order": 1, "icon": "settings" },
+    { "id": "tenancy", "title": "Tenancy & Access", "route": "/admin/tenancy", "groupId": "admin", "capabilityId": "tenancy-settings", "order": 2, "icon": "shield" }
+  ]
+}

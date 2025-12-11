@@ -1,0 +1,41 @@
+{
+  "id": "tools-discovery",
+  "route": "/tools/discovery",
+  "title": "Tool Discovery",
+  "description": "Discover and sync tools when LatentBox is enabled.",
+  "layout": "split",
+  "sections": [
+    {
+      "id": "filters",
+      "title": "Filters",
+      "components": [
+        {
+          "type": "form",
+          "id": "tool-filters",
+          "fields": [
+            { "name": "search", "label": "Search", "type": "text", "placeholder": "Search tools" },
+            { "name": "category", "label": "Category", "type": "select", "options": [] }
+          ],
+          "actions": [
+            { "id": "sync-tools", "label": "Sync Tools", "rbacRoles": ["user", "admin"], "endpointRef": "gateway:POST:/api/tools/sync", "successToast": "Sync requested" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tools",
+      "title": "Tools",
+      "components": [
+        {
+          "type": "table",
+          "id": "tools-table",
+          "columns": ["name", "category", "description"],
+          "dataKey": "tools"
+        }
+      ]
+    }
+  ],
+  "dataSources": [
+    { "id": "tools", "endpointRef": "gateway:GET:/api/tools/discovery", "cache": "no-store" }
+  ]
+}

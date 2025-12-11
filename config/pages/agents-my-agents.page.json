@@ -1,0 +1,29 @@
+{
+  "id": "agents-my-agents",
+  "route": "/agents/my-agents",
+  "title": "My Agents",
+  "description": "Manage deployed agents.",
+  "layout": "table",
+  "sections": [
+    {
+      "id": "instances",
+      "title": "Agent Instances",
+      "components": [
+        {
+          "type": "table",
+          "id": "agents-table",
+          "columns": ["name", "status", "scope", "updatedAt"],
+          "dataKey": "items",
+          "rowActions": [
+            { "id": "deploy", "label": "Deploy", "endpointRef": "gateway:POST:/api/agents/{id}/deploy", "rbacRoles": ["user", "admin"], "successToast": "Deployment triggered" },
+            { "id": "disable", "label": "Disable", "endpointRef": "gateway:POST:/api/agents/{id}/disable", "rbacRoles": ["user", "admin"], "successToast": "Agent disabled" },
+            { "id": "view", "label": "View", "type": "link", "hrefTemplate": "/agents/{{id}}" }
+          ]
+        }
+      ]
+    }
+  ],
+  "dataSources": [
+    { "id": "agents", "endpointRef": "gateway:GET:/api/agents", "cache": "no-store" }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "id": "admin-config",
+  "route": "/admin/config",
+  "title": "Configuration Changes",
+  "description": "Propose, apply, and revert platform configuration.",
+  "layout": "form",
+  "sections": [
+    {
+      "id": "actions",
+      "title": "Change Lifecycle",
+      "components": [
+        {
+          "type": "form",
+          "id": "config-proposal",
+          "fields": [
+            { "name": "changeTitle", "label": "Change title", "type": "text", "required": true },
+            { "name": "changeSummary", "label": "Summary", "type": "textarea", "required": true },
+            { "name": "configPatch", "label": "Config patch", "type": "json", "required": true, "placeholder": "{}" }
+          ],
+          "actions": [
+            { "id": "propose", "label": "Propose", "rbacRoles": ["admin"], "endpointRef": "gateway:POST:/v1/config/propose", "successToast": "Proposal submitted" },
+            { "id": "apply", "label": "Apply", "rbacRoles": ["admin"], "endpointRef": "gateway:POST:/v1/config/apply", "successToast": "Configuration applied" },
+            { "id": "revert", "label": "Revert", "rbacRoles": ["admin"], "endpointRef": "gateway:POST:/v1/config/revert", "successToast": "Configuration reverted" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "status",
+      "title": "Status",
+      "components": [
+        { "type": "codeBlock", "id": "config-status", "dataKey": "status" }
+      ],
+      "actions": [
+        { "id": "refresh-status", "label": "Refresh status", "rbacRoles": ["admin"], "endpointRef": "gateway:GET:/v1/config/status", "successToast": "Status refreshed" }
+      ]
+    }
+  ],
+  "dataSources": [
+    { "id": "status", "endpointRef": "gateway:GET:/v1/config/status", "cache": "no-store" }
+  ]
+}

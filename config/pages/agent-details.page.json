@@ -1,0 +1,39 @@
+{
+  "id": "agent-details",
+  "route": "/agents/[id]",
+  "title": "Agent Details",
+  "description": "Inspect agent state and lifecycle actions.",
+  "layout": "details",
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Overview",
+      "components": [
+        { "type": "statCard", "id": "agent-status", "title": "Status", "valueKey": "status" },
+        { "type": "statCard", "id": "agent-scope", "title": "Scope", "valueKey": "scope" },
+        { "type": "statCard", "id": "agent-template", "title": "Template", "valueKey": "template" }
+      ],
+      "actions": [
+        { "id": "deploy", "label": "Deploy", "rbacRoles": ["user", "admin"], "endpointRef": "gateway:POST:/api/agents/{id}/deploy", "successToast": "Deployment triggered" },
+        { "id": "disable", "label": "Disable", "rbacRoles": ["user", "admin"], "endpointRef": "gateway:POST:/api/agents/{id}/disable", "successToast": "Agent disabled" }
+      ]
+    },
+    {
+      "id": "configuration",
+      "title": "Configuration",
+      "components": [
+        { "type": "jsonViewer", "id": "config-view", "dataKey": "config" }
+      ]
+    },
+    {
+      "id": "history",
+      "title": "Deployments",
+      "components": [
+        { "type": "table", "id": "deployments", "columns": ["time", "status", "version"], "dataKey": "deployments" }
+      ]
+    }
+  ],
+  "dataSources": [
+    { "id": "agent", "endpointRef": "gateway:GET:/api/agents/{id}", "cache": "no-store" }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "models",
+  "route": "/models",
+  "title": "Models Registry",
+  "description": "List models available from Gateway.",
+  "layout": "table",
+  "sections": [
+    {
+      "id": "models",
+      "title": "Models",
+      "components": [
+        {
+          "type": "table",
+          "id": "models-table",
+          "columns": ["provider", "name", "status", "profile"],
+          "dataKey": "models",
+          "rowActions": [
+            { "id": "refresh", "label": "Refresh", "endpointRef": "gateway:GET:/v1/models", "rbacRoles": ["user", "admin"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "dataSources": [
+    { "id": "models", "endpointRef": "gateway:GET:/v1/models", "cache": "no-store" }
+  ]
+}

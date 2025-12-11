@@ -1,0 +1,43 @@
+{
+  "id": "status",
+  "route": "/status",
+  "title": "Platform Health",
+  "description": "Monitor the health of Gateway, Control, and dependencies.",
+  "layout": "dashboard",
+  "sections": [
+    {
+      "id": "summary",
+      "title": "Service Status",
+      "components": [
+        { "type": "statCard", "id": "gateway-health", "title": "Gateway", "valueKey": "gateway" },
+        { "type": "statCard", "id": "control-health", "title": "Control", "valueKey": "control" },
+        { "type": "statCard", "id": "console-health", "title": "Console", "valueKey": "console" }
+      ],
+      "actions": [
+        {
+          "id": "refresh-health",
+          "label": "Refresh",
+          "rbacRoles": ["user", "admin"],
+          "endpointRef": "gateway:GET:/healthz",
+          "successToast": "Health refreshed",
+          "errorToast": "Unable to refresh"
+        }
+      ]
+    },
+    {
+      "id": "dependencies",
+      "title": "Dependencies",
+      "components": [
+        {
+          "type": "table",
+          "id": "dependency-table",
+          "columns": ["service", "status", "endpoint"],
+          "dataKey": "dependencies"
+        }
+      ]
+    }
+  ],
+  "dataSources": [
+    { "id": "gateway-health", "endpointRef": "gateway:GET:/healthz", "cache": "no-store" }
+  ]
+}

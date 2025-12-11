@@ -3,14 +3,14 @@ import PageRenderer from '@/lib/pageRenderer';
 import { loadPageSchema } from '@/lib/schemaLoader';
 import type { UiContext } from '@/lib/ai/uiOrchestrator';
 
-export default async function MyAgentsPage() {
-  const schema = await loadPageSchema('/agents/my-agents');
-  if (!schema) return <div className="p-6 text-white">My Agents schema missing</div>;
+export default async function StatusPage() {
+  const schema = await loadPageSchema('/status');
+  if (!schema) return <div className="p-6 text-white">Status schema missing</div>;
   const hdrs = headers();
   const context: UiContext = {
     role: 'admin',
     featureFlags: [],
-    tenancyMode: 'multi',
+    tenancyMode: 'single',
     tenantId: hdrs.get('tenant-id') || undefined
   };
   return (

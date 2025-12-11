@@ -3,13 +3,13 @@ import PageRenderer from '@/lib/pageRenderer';
 import { loadPageSchema } from '@/lib/schemaLoader';
 import type { UiContext } from '@/lib/ai/uiOrchestrator';
 
-export default async function MyAgentsPage() {
-  const schema = await loadPageSchema('/agents/my-agents');
-  if (!schema) return <div className="p-6 text-white">My Agents schema missing</div>;
+export default async function ToolDiscoveryPage() {
+  const schema = await loadPageSchema('/tools/discovery');
+  if (!schema) return <div className="p-6 text-white">Tool discovery schema missing</div>;
   const hdrs = headers();
   const context: UiContext = {
     role: 'admin',
-    featureFlags: [],
+    featureFlags: process.env.FEATURE_LATENTBOX_RECOMMENDATIONS ? ['FEATURE_LATENTBOX_RECOMMENDATIONS'] : [],
     tenancyMode: 'multi',
     tenantId: hdrs.get('tenant-id') || undefined
   };
