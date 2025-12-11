@@ -64,6 +64,9 @@ jobs:
       - name: Run preflight
         run: tools/preflight.sh --noninteractive
 
+      - name: Run docs audit
+        run: ./scripts/docs_audit.sh
+
       - name: Show generated .env (sanitized)
         run: |
           echo "### .env exists?"
