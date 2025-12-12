@@ -1,0 +1,11 @@
+{
+  "endpoints": [
+    {"id": "health", "path": "/api/system/health", "description": "Console dashboard health summary", "rolesAllowed": ["user","admin"]},
+    {"id": "setup_profile", "path": "/api/system/setup/profile", "description": "Proxy to gateway profile setup", "rolesAllowed": ["guest","user","admin"]},
+    {"id": "bootstrap", "path": "/api/system/bootstrap", "description": "Bootstrap state resolver", "rolesAllowed": ["guest","user","admin"]}
+  ],
+  "features": [
+    {"id": "onboarding", "description": "Enable onboarding redirect and UI"},
+    {"id": "admin", "description": "Admin-only configuration"}
+  ]
+}

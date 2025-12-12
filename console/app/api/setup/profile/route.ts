@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import { GatewayProfileError, fetchProfileState, updateProfileState } from '@/lib/profile';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
+
+const bodySchema = z.object({
+  profile: z.enum(['user', 'professional', 'enterprise-vip']),
+  setupDone: z.boolean().optional(),
+});
 
 export async function GET() {
   try {
@@ -31,17 +37,19 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json().catch(() => null);
-  const profile = typeof body?.profile === 'string' ? body.profile : '';
-  const setupDone = Boolean(body?.setupDone);
-  if (!profile) {
-    return NextResponse.json(
-      { error: 'profile is required' },
-      { status: 400 },
-    );
+  const json = await request.json().catch(() => null);
+  const parsed = bodySchema.safeParse(json);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'profile is required' }, { status: 400 });
   }
+
+  const payload = {
+    profile: parsed.data.profile,
+    setupDone: parsed.data.setupDone ?? true,
+  };
+
   try {
-    const response = await updateProfileState({ profile, setupDone });
+    const response = await updateProfileState(payload);
     return NextResponse.json(response);
   } catch (error) {
     console.error('[console] Failed to update profile via gateway', error);

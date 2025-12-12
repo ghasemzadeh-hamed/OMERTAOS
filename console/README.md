@@ -11,6 +11,33 @@ pnpm dev
 
 The app expects the gateway and control plane to run locally using `docker compose up` from the project root. Copy `.env.local.example` to `.env.local` and populate OAuth secrets if you want to test Google login.
 
+### Local run (console + gateway + control)
+
+Required environment variables:
+
+- `NEXT_PUBLIC_GATEWAY_URL` (defaults to `http://localhost:3000`)
+- `NEXTAUTH_URL` (console origin, e.g. `http://localhost:3001`)
+- `NEXTAUTH_SECRET` (32+ bytes)
+
+Startup commands:
+
+```bash
+# from repo root
+docker compose -f docker-compose.quickstart.yml up gateway control console
+# or run just the console (gateway/control already running)
+cd console && pnpm dev
+```
+
+Manual smoke checks:
+
+| Scenario | Command/URL | Expected |
+| --- | --- | --- |
+| Health | `curl http://localhost:3001/healthz` | HTTP 200 |
+| First visit (no setup) | `http://localhost:3001/` | Redirects to `/setup` |
+| After setup, logged out | `http://localhost:3001/` | Redirects to `/login` |
+| After login | `http://localhost:3001/` | Shows dashboard |
+| Exit | `http://localhost:3001/exit` | Signs out to `/login` |
+
 ## Scripts
 
 | Command                | Description                                |

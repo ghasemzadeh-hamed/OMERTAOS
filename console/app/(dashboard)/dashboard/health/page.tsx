@@ -10,7 +10,7 @@ type HealthResponse = {
 
 async function fetchHealth(): Promise<HealthResponse | null> {
   try {
-    const res = await fetch('/api/dashboard/health', { cache: 'no-store' });
+    const res = await fetch('/api/system/health', { cache: 'no-store' });
     if (!res.ok) {
       return null;
     }

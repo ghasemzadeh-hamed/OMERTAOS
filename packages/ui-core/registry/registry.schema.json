@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UI Registry",
+  "type": "object",
+  "properties": {
+    "navigation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "path", "rolesAllowed", "featureFlags"],
+        "properties": {
+          "id": {"type": "string"},
+          "label": {"type": "string"},
+          "path": {"type": "string"},
+          "rolesAllowed": {"type": "array", "items": {"type": "string"}},
+          "featureFlags": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "properties": {
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "path", "description", "rolesAllowed"],
+            "properties": {
+              "id": {"type": "string"},
+              "path": {"type": "string"},
+              "description": {"type": "string"},
+              "rolesAllowed": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "description"],
+            "properties": {
+              "id": {"type": "string"},
+              "description": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "pages": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "widgets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "title", "description", "endpointRef", "field"],
+              "properties": {
+                "id": {"type": "string"},
+                "title": {"type": "string"},
+                "description": {"type": "string"},
+                "endpointRef": {"type": "string"},
+                "field": {"type": "string"}
+              }
+            }
+          },
+          "quickLinks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "navigationRef"],
+              "properties": {
+                "id": {"type": "string"},
+                "navigationRef": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["navigation", "capabilities", "pages"]
+}
