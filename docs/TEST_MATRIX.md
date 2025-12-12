@@ -8,6 +8,7 @@
 | setup=true, unauthenticated | /login |
 | setup=true, authenticated, onboarding=false | /onboarding |
 | setup=true, authenticated, onboarding=true | / |
+| health view | /status |
 
 ## Native TUI
 

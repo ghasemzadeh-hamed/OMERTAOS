@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/setup", "/health", "/healthz", "/dashboard/health", "/onboarding"];
+const PUBLIC_PATHS = ["/login", "/setup", "/health", "/healthz", "/dashboard/health", "/status", "/onboarding"];
 
 const isStaticAsset = (pathname: string) =>
   pathname.startsWith("/_next") || pathname.startsWith("/assets") || pathname === "/favicon.ico";
@@ -26,6 +26,11 @@ export async function middleware(req: NextRequest) {
       if (bootstrapRes.ok) {
         const { setupDone, onboardingComplete, authenticated, setupUnknown } = await bootstrapRes.json();
 
+        if (setupUnknown) {
+          url.pathname = "/unavailable";
+          return NextResponse.rewrite(url);
+        }
+
         if (!setupDone && pathname !== "/setup") {
           url.pathname = "/setup";
           return NextResponse.redirect(url);
@@ -49,11 +54,6 @@ export async function middleware(req: NextRequest) {
         if (setupDone && authenticated && pathname === "/login") {
           url.pathname = "/";
           return NextResponse.redirect(url);
-        }
-
-        if (setupUnknown) {
-          url.pathname = "/unavailable";
-          return NextResponse.rewrite(url);
         }
       } else {
         url.pathname = "/unavailable";
