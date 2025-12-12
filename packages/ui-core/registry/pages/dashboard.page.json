@@ -1,0 +1,15 @@
+{
+  "id": "dashboard",
+  "widgets": [
+    {"id": "profile", "title": "Profile", "description": "Active setup profile", "endpointRef": "health", "field": "profile"},
+    {"id": "gateway", "title": "Gateway", "description": "Gateway health", "endpointRef": "health", "field": "services.gateway"},
+    {"id": "database", "title": "Database", "description": "Database health", "endpointRef": "health", "field": "services.postgres"},
+    {"id": "onboarding", "title": "Onboarding", "description": "Complete onboarding", "endpointRef": "health", "field": "onboarding"}
+  ],
+  "quickLinks": [
+    {"id": "agents_catalog", "navigationRef": "agents_catalog"},
+    {"id": "my_agents", "navigationRef": "my_agents"},
+    {"id": "models", "navigationRef": "models"},
+    {"id": "admin", "navigationRef": "admin"}
+  ]
+}

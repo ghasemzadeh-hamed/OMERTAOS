@@ -1,0 +1,12 @@
+[
+  {"id":"dashboard","label":"Dashboard","path":"/","rolesAllowed":["user","admin"],"featureFlags":[]},
+  {"id":"setup","label":"Setup Wizard","path":"/setup","rolesAllowed":["guest","user","admin"],"featureFlags":[]},
+  {"id":"login","label":"Login","path":"/login","rolesAllowed":["guest","user","admin"],"featureFlags":[]},
+  {"id":"agents_catalog","label":"Agents Catalog","path":"/agents/catalog","rolesAllowed":["user","admin"],"featureFlags":[]},
+  {"id":"my_agents","label":"My Agents","path":"/agents","rolesAllowed":["user","admin"],"featureFlags":[]},
+  {"id":"models","label":"Models","path":"/models","rolesAllowed":["user","admin"],"featureFlags":[]},
+  {"id":"status","label":"System Status","path":"/status","rolesAllowed":["user","admin"],"featureFlags":[]},
+  {"id":"admin","label":"Admin Config","path":"/admin","rolesAllowed":["admin"],"featureFlags":[]},
+  {"id":"onboarding","label":"Onboarding","path":"/onboarding","rolesAllowed":["user","admin"],"featureFlags":[]},
+  {"id":"logout","label":"Exit","path":"/exit","rolesAllowed":["user","admin"],"featureFlags":[]}
+]

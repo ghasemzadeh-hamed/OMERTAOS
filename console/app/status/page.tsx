@@ -1,21 +1,4 @@
-import { headers } from 'next/headers';
-import PageRenderer from '@/lib/pageRenderer';
-import { loadPageSchema } from '@/lib/schemaLoader';
-import type { UiContext } from '@/lib/ai/uiOrchestrator';
+export { default } from '../(dashboard)/dashboard/health/page';
 
-export default async function StatusPage() {
-  const schema = await loadPageSchema('/status');
-  if (!schema) return <div className="p-6 text-white">Status schema missing</div>;
-  const hdrs = headers();
-  const context: UiContext = {
-    role: 'admin',
-    featureFlags: [],
-    tenancyMode: 'single',
-    tenantId: hdrs.get('tenant-id') || undefined
-  };
-  return (
-    <div className="p-6">
-      <PageRenderer schema={schema} context={context} />
-    </div>
-  );
-}
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;

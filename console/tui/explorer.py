@@ -11,6 +11,7 @@ from textual.containers import Horizontal, Vertical
 from textual.widgets import Footer, Header, Input, TextLog, Tree
 
 from .api import CommandProcessor, ControlAPI
+from .registry_loader import load_dashboard_page, load_navigation
 
 
 class Sidebar(Tree[None]):
@@ -61,7 +62,7 @@ class ExplorerApp(App):
             yield self.sidebar
             with Vertical():
                 self.log = TextLog(highlight=True, markup=True, wrap=True)
-                self.log.write("Welcome to the OMERTAOS explorer. Type `help` to view available commands.")
+                self._write_registry_banner()
                 yield self.log
                 self.command_input = Input(placeholder="Type a command and press Enter...")
                 yield self.command_input
@@ -70,6 +71,17 @@ class ExplorerApp(App):
     async def on_mount(self) -> None:
         await self.refresh_sidebar()
         await self.command_input.focus()
+
+    def _write_registry_banner(self) -> None:
+        nav = load_navigation()
+        dashboard = load_dashboard_page()
+        self.log.write("Welcome to the OMERTAOS explorer. Type `help` to view available commands.")
+        self.log.write("Navigation (shared with web console):")
+        for item in nav:
+            self.log.write(f" - {item.get('label')} -> {item.get('path')}")
+        self.log.write("Dashboard widgets:")
+        for widget in dashboard.get("widgets", []):
+            self.log.write(f" • {widget.get('title')} ({widget.get('description')})")
 
     async def refresh_sidebar(self) -> None:
         providers = await self.run_in_thread(self.api.list_providers)

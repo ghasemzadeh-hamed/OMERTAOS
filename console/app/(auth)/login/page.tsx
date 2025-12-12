@@ -8,12 +8,12 @@ import { isSetupComplete } from '@/lib/setup';
 export default async function LoginPage() {
   const setupComplete = await isSetupComplete();
   if (!setupComplete) {
-    redirect('/wizard');
+    redirect('/setup');
   }
 
   const session = await getServerSession(authOptions);
   if (session) {
-    redirect('/console');
+    redirect('/');
   }
 
   const defaultHint =

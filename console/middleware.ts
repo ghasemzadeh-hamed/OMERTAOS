@@ -1,80 +1,74 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const PUBLIC_PATHS = ["/login", "/setup", "/health", "/healthz", "/dashboard/health", "/status", "/onboarding"];
+
+const isStaticAsset = (pathname: string) =>
+  pathname.startsWith("/_next") || pathname.startsWith("/assets") || pathname === "/favicon.ico";
+
 export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const { pathname } = url;
 
   const isBypassed =
     pathname.startsWith("/api") ||
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/assets") ||
-    pathname === "/health" ||
-    pathname === "/healthz" ||
-    pathname === "/dashboard/health" ||
-    pathname === "/favicon.ico" ||
-    pathname.startsWith("/wizard") ||
-    pathname.startsWith("/api/auth");
+    isStaticAsset(pathname) ||
+    PUBLIC_PATHS.includes(pathname);
 
   if (!isBypassed) {
     try {
       const cookieHeader = req.headers.get("cookie") ?? "";
-      const profileRes = await fetch(`${url.origin}/api/setup/profile`, {
+      const bootstrapRes = await fetch(`${url.origin}/api/system/bootstrap`, {
         cache: "no-store",
         headers: cookieHeader ? { cookie: cookieHeader } : {},
       });
-      if (profileRes.ok) {
-        const profile = await profileRes.json();
-        const setupDone = Boolean(profile?.setupDone);
+
+      if (bootstrapRes.ok) {
+        const { setupDone, onboardingComplete, authenticated, setupUnknown } = await bootstrapRes.json();
+
+        if (setupUnknown) {
+          url.pathname = "/unavailable";
+          return NextResponse.rewrite(url);
+        }
+
         if (!setupDone && pathname !== "/setup") {
           url.pathname = "/setup";
           return NextResponse.redirect(url);
         }
-        if (setupDone) {
-          if (pathname === "/setup") {
-            url.pathname = "/login";
-            return NextResponse.redirect(url);
-          }
 
-          const sessionRes = await fetch(`${url.origin}/api/auth/session`, {
-            cache: "no-store",
-            headers: cookieHeader ? { cookie: cookieHeader } : {},
-          });
-          const sessionOk = sessionRes.ok ? await sessionRes.json() : null;
-          const isAuthenticated = Boolean(sessionOk?.user);
-
-          if (!isAuthenticated && (pathname === "/" || pathname.startsWith("/console"))) {
-            url.pathname = "/login";
-            return NextResponse.redirect(url);
-          }
-
-          if (isAuthenticated && pathname === "/login") {
-            url.pathname = "/";
-            return NextResponse.redirect(url);
-          }
+        if (setupDone && pathname === "/setup") {
+          url.pathname = authenticated ? "/" : "/login";
+          return NextResponse.redirect(url);
         }
+
+        if (setupDone && !authenticated && pathname !== "/login") {
+          url.pathname = "/login";
+          return NextResponse.redirect(url);
+        }
+
+        if (setupDone && authenticated && !onboardingComplete && pathname !== "/onboarding") {
+          url.pathname = "/onboarding";
+          return NextResponse.redirect(url);
+        }
+
+        if (setupDone && authenticated && pathname === "/login") {
+          url.pathname = "/";
+          return NextResponse.redirect(url);
+        }
+      } else {
+        url.pathname = "/unavailable";
+        return NextResponse.rewrite(url);
       }
     } catch (error) {
-      console.error("Profile middleware error", error);
+      console.error("[console] middleware bootstrap error", error);
+      url.pathname = "/unavailable";
+      return NextResponse.rewrite(url);
     }
   }
 
-  if (pathname === "/") {
-    try {
-      const res = await fetch(`${url.origin}/api/onboarding/status`, { cache: "no-store" });
-      const data = await res.json();
-      if (!data?.onboardingComplete) {
-        url.pathname = "/onboarding";
-        return NextResponse.redirect(url);
-      }
-    } catch {
-      url.pathname = "/onboarding";
-      return NextResponse.redirect(url);
-    }
-  }
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|assets).*)"],
 };

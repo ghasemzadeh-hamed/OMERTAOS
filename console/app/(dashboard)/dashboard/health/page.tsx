@@ -8,9 +8,21 @@ type HealthResponse = {
   services?: Record<string, { status: ServiceStatus; details: string }>;
 };
 
+function healthUrl() {
+  const nextAuthBase = process.env.NEXTAUTH_URL;
+  const vercelHost = process.env.VERCEL_URL;
+  const vercelBase = vercelHost
+    ? vercelHost.startsWith('http')
+      ? vercelHost
+      : `https://${vercelHost}`
+    : undefined;
+  const origin = nextAuthBase || vercelBase || 'http://localhost:3001';
+  return `${origin}/api/system/health`;
+}
+
 async function fetchHealth(): Promise<HealthResponse | null> {
   try {
-    const res = await fetch('/api/dashboard/health', { cache: 'no-store' });
+    const res = await fetch(healthUrl(), { cache: 'no-store' });
     if (!res.ok) {
       return null;
     }

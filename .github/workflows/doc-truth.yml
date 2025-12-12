@@ -1,0 +1,24 @@
+name: Docs Parity
+
+on:
+  pull_request:
+  push:
+    branches: ["main", "AIONOS"]
+
+jobs:
+  doc-truth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: pip install pyyaml jsonschema
+      - name: Run doc truth check
+        run: python tools/repo_audit/doc_truth_check.py
+      - name: Run inventory (sanity)
+        run: python tools/repo_audit/inventory.py
+      - name: Validate UI registry
+        run: python tools/registry_validate.py
