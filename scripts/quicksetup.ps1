@@ -15,15 +15,42 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+function Write-Info([string]$Message) { Write-Host "[INFO] $Message" }
+function Write-Warn([string]$Message) { Write-Host "[WARN] $Message" -ForegroundColor Yellow }
+function Write-ErrorAndExit([string]$Message) { Write-Host "[ERROR] $Message" -ForegroundColor Red; exit 1 }
+
+function Resolve-PathSafe {
+    param([string]$Path)
+    try { return Resolve-Path $Path -ErrorAction Stop } catch { return $Path }
+}
+
+function Get-RepoRoot {
+    param([string]$ScriptDir)
+
+    $candidate = Resolve-PathSafe (Join-Path $ScriptDir '..')
+    $isProjectRoot = {
+        param([string]$Path)
+        return (Test-Path (Join-Path $Path 'docker-compose.yml')) -and (Test-Path (Join-Path $Path 'control')) -and (Test-Path (Join-Path $Path 'gateway')) -and (Test-Path (Join-Path $Path 'console'))
+    }
+
+    if ((Test-Path (Join-Path $candidate '.git')) -or (& $isProjectRoot $candidate)) {
+        return Resolve-PathSafe $candidate
+    }
+
+    $parent = Split-Path $candidate -Parent
+    $target = Join-Path $parent 'OMERTAOS'
+    if ((Test-Path (Join-Path $target '.git')) -or (& $isProjectRoot $target)) {
+        return Resolve-PathSafe $target
+    }
+
+    return Resolve-PathSafe $candidate
+}
+
 if (-not $Model) { $Model = 'llama3.2:3b' }
 if (-not $Repo) { $Repo = 'https://github.com/Hamedghz/OMERTAOS.git' }
 if (-not $Branch) { $Branch = 'main' }
 if (-not $PolicyDir) { $PolicyDir = './policies' }
 if (-not $VolumeRoot) { $VolumeRoot = './volumes' }
-
-function Write-Info([string]$Message) { Write-Host "[INFO] $Message" }
-function Write-Warn([string]$Message) { Write-Host "[WARN] $Message" -ForegroundColor Yellow }
-function Write-ErrorAndExit([string]$Message) { Write-Host "[ERROR] $Message" -ForegroundColor Red; exit 1 }
 
 function Require-Command {
     param([string]$Name, [string]$Hint)
@@ -38,12 +65,31 @@ function Require-Command {
 
 Require-Command git "Install Git from https://git-scm.com/downloads"
 Require-Command docker "Install Docker Desktop or Engine with Compose support"
+if (-not (Get-Command docker compose -ErrorAction SilentlyContinue)) {
+    if (Get-Command docker-compose -ErrorAction SilentlyContinue) {
+        Write-Warn "Docker Compose v2 not found; docker-compose detected. Windows quicksetup expects Docker Desktop with Compose v2."
+    } else {
+        Write-ErrorAndExit "Docker Compose v2 (docker compose) is required."
+    }
+}
 if (-not (Get-Command curl -ErrorAction SilentlyContinue) -and -not (Get-Command wget -ErrorAction SilentlyContinue)) {
     Write-ErrorAndExit "Either 'curl' or 'wget' must be available."
 }
 
+function Test-DockerRunning {
+    try {
+        $info = & docker info --format '{{.ServerVersion}}' 2>$null
+        if ([string]::IsNullOrWhiteSpace($info)) { return $false }
+        return $true
+    } catch { return $false }
+}
+
+if (-not (Test-DockerRunning)) {
+    Write-ErrorAndExit "Docker engine is not responding. Ensure Docker Desktop is running."
+}
+
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$rootDir = Resolve-Path (Join-Path $scriptDir '..')
+$rootDir = Get-RepoRoot -ScriptDir $scriptDir
 $envPath = Join-Path $rootDir '.env'
 $configDir = Join-Path $rootDir 'config'
 $configFile = Join-Path $configDir 'aionos.config.yaml'
@@ -55,8 +101,6 @@ $resolveUnderRoot = {
     $trimmed = $Path -replace '^[.][\\/]', ''
     return Join-Path $Root $trimmed
 }
-$policyPath = & $resolveUnderRoot $rootDir $PolicyDir
-$volumePath = & $resolveUnderRoot $rootDir $VolumeRoot
 function New-RandomSecret {
     param([int]$Bytes = 32)
     $buffer = New-Object byte[] $Bytes
@@ -70,6 +114,13 @@ $defaultDbName = 'omerta_db'
 $defaultDbUrl = "postgresql://${defaultDbUser}:${defaultDbPassword}@postgres:5432/${defaultDbName}?schema=public"
 $telemetryEndpoint = if ($env:AION_TELEMETRY_ENDPOINT) { $env:AION_TELEMETRY_ENDPOINT } else { 'http://localhost:4317' }
 
+function Test-ProjectRootPath {
+    param([string]$Path)
+    return (Test-Path (Join-Path $Path 'docker-compose.yml')) -and (Test-Path (Join-Path $Path 'control')) -and (Test-Path (Join-Path $Path 'gateway')) -and (Test-Path (Join-Path $Path 'console'))
+}
+
+$hasProjectStructure = Test-ProjectRootPath -Path $rootDir
+
 if ((Test-Path (Join-Path $rootDir '.git')) -and $Update.IsPresent) {
     Write-Info "Updating repository ($Branch)"
     Push-Location $rootDir
@@ -79,22 +130,29 @@ if ((Test-Path (Join-Path $rootDir '.git')) -and $Update.IsPresent) {
     Pop-Location
 }
 
-if (-not (Test-Path (Join-Path $rootDir '.git'))) {
+if ((-not (Test-Path (Join-Path $rootDir '.git'))) -and (-not $hasProjectStructure)) {
     Write-Warn "Git metadata not found at $rootDir."
     $parent = Split-Path $rootDir -Parent
     $target = Join-Path $parent 'OMERTAOS'
     if ($target -ne $rootDir) {
         Write-Info "Cloning repository into $target"
         git clone --branch $Branch --single-branch $Repo $target | Out-Null
-        $rootDir = Resolve-Path $target
-        $envPath = Join-Path $rootDir '.env'
-        $configDir = Join-Path $rootDir 'config'
-        $configFile = Join-Path $configDir 'aionos.config.yaml'
-        $profileDir = Join-Path $rootDir '.aionos'
+        $rootDir = Resolve-PathSafe $target
     } else {
         Write-Warn "Running from archive snapshot; skipping clone."
     }
 }
+
+# Refresh derived paths after any clone or detection update
+$envPath = Join-Path $rootDir '.env'
+$configDir = Join-Path $rootDir 'config'
+$configFile = Join-Path $configDir 'aionos.config.yaml'
+$profileDir = Join-Path $rootDir '.aionos'
+$hasProjectStructure = Test-ProjectRootPath -Path $rootDir
+Set-Location -Path $rootDir
+
+$policyPath = & $resolveUnderRoot $rootDir $PolicyDir
+$volumePath = & $resolveUnderRoot $rootDir $VolumeRoot
 
 if (-not (Test-Path $configDir)) { New-Item -ItemType Directory -Force -Path $configDir | Out-Null }
 if (-not (Test-Path $profileDir)) { New-Item -ItemType Directory -Force -Path $profileDir | Out-Null }
@@ -334,22 +392,23 @@ telemetry:
 "@ | Set-Content -Path $configFile -Encoding UTF8
 }
 
+function Ensure-ComposeCommand {
+    if ($script:ComposeCommand) { return }
+
+    if (Get-Command docker compose -ErrorAction SilentlyContinue) {
+        $script:ComposeCommand = @{ Command = @('docker', 'compose'); Display = 'docker compose' }
+    } elseif (Get-Command docker-compose -ErrorAction SilentlyContinue) {
+        Write-Warn 'Docker Compose v2 not detected; using docker-compose fallback.'
+        $script:ComposeCommand = @{ Command = @('docker-compose'); Display = 'docker-compose' }
+    } else {
+        Write-ErrorAndExit 'Docker Compose v2 or docker-compose is required.'
+    }
+}
+
 function Invoke-Compose {
     param([string[]]$ComposeArgs)
-    $composev2 = $false
-    try {
-        & docker compose version *> $null
-        if ($LASTEXITCODE -eq 0) { $composev2 = $true }
-    } catch { $composev2 = $false }
-    if ($composev2) {
-        & docker compose @ComposeArgs
-        return
-    }
-    if (Get-Command docker-compose -ErrorAction SilentlyContinue) {
-        & docker-compose @ComposeArgs
-        return
-    }
-    Write-ErrorAndExit 'Docker Compose v2 or docker-compose is required.'
+    Ensure-ComposeCommand
+    & $script:ComposeCommand.Command @ComposeArgs
 }
 
 $composePath = Join-Path $rootDir $ComposeFile
@@ -357,6 +416,10 @@ if (-not (Test-Path $composePath)) {
     Write-ErrorAndExit "Compose file '$ComposeFile' not found in $rootDir."
 }
 
+Ensure-ComposeCommand
+if ($script:ComposeCommand) {
+    Write-Info "Using $($script:ComposeCommand.Display)"
+}
 Write-Info "Starting services with compose file $ComposeFile"
 $attempt = 1
 while ($attempt -le 3) {
@@ -392,7 +455,7 @@ if ($Model) {
 
 Write-Info "AION_GATEWAY_ADMIN_TOKEN=$gatewayAdminToken"
 Write-Info "AION_GATEWAY_API_KEYS=$gatewayApiKeys"
-Write-Info "NEXTAUTH_URL=http://localhost:3000"
+Write-Info "NEXTAUTH_URL=http://localhost:3001"
 Write-Info "NEXTAUTH_SECRET=$nextAuthSecret"
 Write-Info "Console admin user: $consoleAdminEmail / $consoleAdminPassword"
 
