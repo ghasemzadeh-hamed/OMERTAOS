@@ -22,7 +22,7 @@ export interface SelectProps {
   children: React.ReactNode;
 }
 
-export function Select({ value, defaultValue, onValueChange, children }: SelectProps): JSX.Element {
+export function Select({ value, defaultValue, onValueChange, children }: SelectProps): React.ReactElement {
   const [open, setOpen] = React.useState(false);
   const [internalValue, setInternalValue] = React.useState<string | undefined>(defaultValue);
   const [labels, setLabels] = React.useState<Record<string, string>>({});
@@ -113,7 +113,7 @@ export interface SelectValueProps {
   className?: string;
 }
 
-export const SelectValue = ({ placeholder, className }: SelectValueProps): JSX.Element => {
+export const SelectValue = ({ placeholder, className }: SelectValueProps): React.ReactElement => {
   const context = React.useContext(SelectContext);
   if (!context) {
     throw new Error('SelectValue must be used within a Select');

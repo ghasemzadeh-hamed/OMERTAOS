@@ -1,5 +1,5 @@
 {
-  "extends": ["next", "next/core-web-vitals", "plugin:react-hooks/recommended"],
+  "extends": ["next", "next/core-web-vitals"],
   "rules": {
     "react-hooks/exhaustive-deps": "warn"
   }

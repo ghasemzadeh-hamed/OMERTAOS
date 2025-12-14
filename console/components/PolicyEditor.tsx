@@ -51,13 +51,29 @@ export function PolicyEditor() {
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
       <div>
-        <label className="block text-sm text-slate-200">Budget default (USD)</label>
-        <input type="number" step="0.01" className="glass-input" {...register('budget.default_usd', { valueAsNumber: true })} />
+        <label className="block text-sm text-slate-200" htmlFor="budget-default">
+          Budget default (USD)
+        </label>
+        <input
+          id="budget-default"
+          type="number"
+          step="0.01"
+          className="glass-input"
+          {...register('budget.default_usd', { valueAsNumber: true })}
+        />
         {errors.budget?.default_usd ? <p className="text-xs text-rose-300">{errors.budget.default_usd.message}</p> : null}
       </div>
       <div>
-        <label className="block text-sm text-slate-200">Budget hard cap (USD)</label>
-        <input type="number" step="0.01" className="glass-input" {...register('budget.hard_cap_usd', { valueAsNumber: true })} />
+        <label className="block text-sm text-slate-200" htmlFor="budget-hard-cap">
+          Budget hard cap (USD)
+        </label>
+        <input
+          id="budget-hard-cap"
+          type="number"
+          step="0.01"
+          className="glass-input"
+          {...register('budget.hard_cap_usd', { valueAsNumber: true })}
+        />
         {errors.budget?.hard_cap_usd ? <p className="text-xs text-rose-300">{errors.budget.hard_cap_usd.message}</p> : null}
       </div>
       <div className="grid gap-3 md:grid-cols-3">
