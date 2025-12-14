@@ -84,7 +84,7 @@ export default function SetupPage() {
             disabled={submitting}
             className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow hover:bg-emerald-400 disabled:opacity-60"
           >
-            {submitting ? 'Saving…' : 'Continue'}
+            {submitting ? 'Saving...' : 'Continue'}
           </button>
         </div>
         {error ? <p className="text-sm text-rose-300">{error}</p> : null}

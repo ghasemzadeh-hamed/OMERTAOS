@@ -140,7 +140,7 @@ export function OsChatView({ initialThreadId }: { initialThreadId?: string }) {
             </div>
           )}
           {loadingMessages ? (
-            <div className="flex flex-1 items-center justify-center text-sm text-slate-500">Loading messages…</div>
+            <div className="flex flex-1 items-center justify-center text-sm text-slate-500">Loading messages...</div>
           ) : (
             <ChatMessageList messages={messages} />
           )}

@@ -19,7 +19,7 @@ type ComponentProps = {
 };
 
 function StatCard({ component, data }: ComponentProps) {
-  const value = component.value ?? (component.valueKey ? data?.[component.valueKey] : undefined) ?? '—';
+  const value = component.value ?? (component.valueKey ? data?.[component.valueKey] : undefined) ?? '-';
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-4 shadow-sm">
       <p className="text-xs uppercase tracking-wide text-white/60">{component.title}</p>
@@ -64,7 +64,7 @@ function Table({ component, data, onAction, params }: ComponentProps) {
           {rows.map((row: any, idx: number) => (
             <tr key={row.id ?? idx} className="border-t border-white/5">
               {component.columns?.map((col: string) => (
-                <td key={col} className="px-4 py-2">{row[col] ?? '—'}</td>
+                <td key={col} className="px-4 py-2">{row[col] ?? '-'}</td>
               ))}
               {component.rowActions?.length ? (
                 <td className="px-4 py-2">
@@ -308,7 +308,7 @@ export default function PageRenderer({ schema, context, params }: RendererProps)
                     onClick={() => handleAction(action, data)}
                     className="rounded-md bg-cyan-500/80 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-cyan-400 disabled:opacity-50"
                   >
-                    {working === action.id ? 'Working…' : action.label}
+                    {working === action.id ? 'Working...' : action.label}
                   </button>
                 ))}
               </div>
