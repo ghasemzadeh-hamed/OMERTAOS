@@ -257,7 +257,7 @@ export default function PageRenderer({ schema, context, params }: RendererProps)
     return () => {
       cancelled = true;
     };
-  }, [effectiveSchema, context.tenancyMode, context.featureFlags, params]);
+  }, [effectiveSchema, context.tenancyMode, context.featureFlags, context.tenantId, params]);
 
   const handleAction = async (action: any, payload?: any) => {
     if (action.rbacRoles && !action.rbacRoles.includes(context.role)) {
