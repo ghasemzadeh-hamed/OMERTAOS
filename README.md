@@ -140,6 +140,7 @@ Compatibility matrices (GPU, NIC, WiFi, firmware) and the reporting process live
 ## Documentation hub
 
 Enterprise-facing runbooks start at [`docs/README.md`](docs/README.md): quickstart guides, install modes, profiles, security baselines, troubleshooting, release, privacy, and hardware compatibility.
+Claude Code marketplace setup steps live in [`docs/claude-code-marketplace.md`](docs/claude-code-marketplace.md).
 
 ## Contributing and license
 

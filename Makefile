@@ -1,4 +1,4 @@
-.PHONY: dev-control doctor bundle edge-setup test status logs restart start stop setup train train-ci guard model-all run-user run-pro run-ent
+.PHONY: dev-control doctor bundle edge-setup test status logs restart start stop setup train train-ci guard model-all run-user run-pro run-ent claude-install claude-bootstrap claude-status
 
 PY ?= python3
 CLI=$(PY) -m aionos_core.cli
@@ -89,4 +89,13 @@ compose-clean:
 	docker compose -f docker-compose.quickstart.yml down -v --remove-orphans
 
 build-image:
-	docker compose -f docker-compose.quickstart.yml build
+        docker compose -f docker-compose.quickstart.yml build
+
+claude-install:
+        bash scripts/claude/install-claude-code.sh
+
+claude-bootstrap:
+        bash scripts/claude/bootstrap-marketplace.sh
+
+claude-status:
+        bash scripts/claude/status.sh

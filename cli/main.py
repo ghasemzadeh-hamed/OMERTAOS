@@ -4,7 +4,7 @@ from __future__ import annotations
 import argparse
 from typing import Callable, Dict
 
-from . import install, status, policy, personal, backup
+from . import install, status, policy, personal, backup, claude
 
 COMMANDS: Dict[str, Callable[[argparse.Namespace], int]] = {
     "install": install.handle,
@@ -12,6 +12,7 @@ COMMANDS: Dict[str, Callable[[argparse.Namespace], int]] = {
     "policy": policy.handle,
     "personal": personal.handle,
     "backup": backup.handle,
+    "claude": claude.handle,
 }
 
 
@@ -24,6 +25,7 @@ def build_parser() -> argparse.ArgumentParser:
     policy.register(subparsers.add_parser("policy", help="Manage policy packages"))
     personal.register(subparsers.add_parser("personal", help="Personal edition helpers"))
     backup.register(subparsers.add_parser("backup", help="Backup and restore"))
+    claude.register(subparsers.add_parser("claude", help="Claude Code + marketplace helpers"))
     return parser
 
 
