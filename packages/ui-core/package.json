@@ -9,8 +9,10 @@
     "./theme/tokens.css": "./src/theme/tokens.css"
   },
   "dependencies": {
-    "react": "^18.3.0",
-    "@types/react": "^18.2.73"
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "@types/react": "19.2.3",
+    "@types/react-dom": "19.2.3"
   },
   "devDependencies": {}
 }
