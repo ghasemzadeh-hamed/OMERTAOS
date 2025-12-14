@@ -81,7 +81,7 @@ class ExplorerApp(App):
             self.log.write(f" - {item.get('label')} -> {item.get('path')}")
         self.log.write("Dashboard widgets:")
         for widget in dashboard.get("widgets", []):
-            self.log.write(f" • {widget.get('title')} ({widget.get('description')})")
+            self.log.write(f" - {widget.get('title')} ({widget.get('description')})")
 
     async def refresh_sidebar(self) -> None:
         providers = await self.run_in_thread(self.api.list_providers)
