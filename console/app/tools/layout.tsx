@@ -35,6 +35,7 @@ const tools: ToolLink[] = [
   { href: '/tools/metrics', label: 'Metrics Dashboard', description: 'Bridge Prometheus/Grafana dashboards or view local stats.', minRole: 'MANAGER' },
   { href: '/tools/backup', label: 'Backup & Snapshot', description: 'Trigger configuration backups and review history.', minRole: 'ADMIN' },
   { href: '/tools/update', label: 'Update Center', description: 'Check and apply platform updates safely.', minRole: 'ADMIN' },
+  { href: '/tools/claude', label: 'Claude Marketplace', description: 'Verify Claude Code setup and recommended plugins.', minRole: 'MANAGER' },
 ];
 
 function normalizeRole(role?: string | null): RoleKey {
