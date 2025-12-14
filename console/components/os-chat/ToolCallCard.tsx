@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button';
 import { ToolCallEvent } from '@/types/os-chat';
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-800',
-  running: 'bg-blue-100 text-blue-800',
-  succeeded: 'bg-emerald-100 text-emerald-800',
-  failed: 'bg-red-100 text-red-800',
+  pending: 'border-transparent bg-amber-100 text-amber-800',
+  running: 'border-transparent bg-blue-100 text-blue-800',
+  succeeded: 'border-transparent bg-emerald-100 text-emerald-800',
+  failed: 'border-transparent bg-red-100 text-red-800',
 };
 
 export function ToolCallCard({ toolCall }: { toolCall: ToolCallEvent }) {
@@ -22,7 +22,7 @@ export function ToolCallCard({ toolCall }: { toolCall: ToolCallEvent }) {
       <div className="flex items-center justify-between gap-2">
         <div className="space-x-2">
           <Badge variant="outline">{toolCall.toolName}</Badge>
-          <Badge className={statusClass} variant="secondary">
+          <Badge className={statusClass} variant="outline">
             {toolCall.status}
           </Badge>
         </div>
