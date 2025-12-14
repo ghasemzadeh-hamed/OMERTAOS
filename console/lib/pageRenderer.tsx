@@ -31,7 +31,7 @@ function StatCard({ component, data }: ComponentProps) {
 function Alert({ component }: ComponentProps) {
   const tone = component.variant === 'error' ? 'border-red-500/40 bg-red-900/30 text-red-100' : 'border-cyan-400/30 bg-cyan-900/20 text-cyan-100';
   return (
-    <div className={`rounded-lg border ${tone} p-3`}> 
+    <div className={`rounded-lg border ${tone} p-3`}>
       <p className="font-semibold">{component.title}</p>
       {component.description && <p className="text-sm opacity-90">{component.description}</p>}
     </div>
