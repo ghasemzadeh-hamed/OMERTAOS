@@ -1,4 +1,4 @@
-
+#!/usr/bin/env pwsh
 param(
     [string]$Profile,
     [switch]$Local,
@@ -9,11 +9,13 @@ param(
     [string]$Repo = $env:AIONOS_REPO_URL,
     [string]$Branch = $env:AIONOS_REPO_BRANCH,
     [string]$PolicyDir = $env:AION_POLICY_DIR,
-    [string]$VolumeRoot = $env:AION_VOLUME_ROOT
+    [string]$VolumeRoot = $env:AION_VOLUME_ROOT,
+    [switch]$SkipSelfCheck
 )
-#!/usr/bin/env pwsh
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+$script:ComposeCommand = $null
 
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" }
 function Write-Warn([string]$Message) { Write-Host "[WARN] $Message" -ForegroundColor Yellow }
@@ -24,33 +26,36 @@ function Resolve-PathSafe {
     try { return Resolve-Path $Path -ErrorAction Stop } catch { return $Path }
 }
 
-function Get-RepoRoot {
+function Resolve-RepoRoot {
     param([string]$ScriptDir)
 
-    $candidate = Resolve-PathSafe (Join-Path $ScriptDir '..')
-    $isProjectRoot = {
-        param([string]$Path)
-        return (Test-Path (Join-Path $Path 'docker-compose.yml')) -and (Test-Path (Join-Path $Path 'control')) -and (Test-Path (Join-Path $Path 'gateway')) -and (Test-Path (Join-Path $Path 'console'))
+    $resolvedScriptDir = Resolve-PathSafe $ScriptDir
+    $candidate = $resolvedScriptDir
+    while ($candidate -and (Test-Path $candidate)) {
+        if (Test-Path (Join-Path $candidate '.git')) { break }
+        $parent = Split-Path $candidate -Parent
+        if (-not $parent -or $parent -eq $candidate) { break }
+        $candidate = $parent
     }
 
-    if ((Test-Path (Join-Path $candidate '.git')) -or (& $isProjectRoot $candidate)) {
-        return Resolve-PathSafe $candidate
+    if (-not (Test-Path (Join-Path $candidate '.git'))) {
+        $candidate = Resolve-PathSafe (Join-Path $resolvedScriptDir '..')
     }
 
-    $parent = Split-Path $candidate -Parent
-    $target = Join-Path $parent 'OMERTAOS'
-    if ((Test-Path (Join-Path $target '.git')) -or (& $isProjectRoot $target)) {
-        return Resolve-PathSafe $target
+    $leaf = Split-Path $candidate -Leaf
+    $parentLeaf = Split-Path (Split-Path $candidate -Parent) -Leaf
+    if ($leaf -eq 'OMERTAOS' -and $parentLeaf -eq 'OMERTAOS') {
+        $higher = Split-Path $candidate -Parent
+        if (Test-Path (Join-Path $higher '.git')) {
+            Write-Warn "Detected nested OMERTAOS directory. Using parent '$higher' as repository root."
+            $candidate = $higher
+        } else {
+            Write-Warn "Detected nested OMERTAOS directory ($candidate). Continuing with current path."
+        }
     }
 
     return Resolve-PathSafe $candidate
 }
-
-if (-not $Model) { $Model = 'llama3.2:3b' }
-if (-not $Repo) { $Repo = 'https://github.com/Hamedghz/OMERTAOS.git' }
-if (-not $Branch) { $Branch = 'main' }
-if (-not $PolicyDir) { $PolicyDir = './policies' }
-if (-not $VolumeRoot) { $VolumeRoot = './volumes' }
 
 function Require-Command {
     param([string]$Name, [string]$Hint)
@@ -63,33 +68,109 @@ function Require-Command {
     }
 }
 
+function Test-DockerDaemon {
+    param([switch]$ThrowOnFailure)
+
+    $dockerCommand = Get-Command docker -ErrorAction SilentlyContinue
+    if (-not $dockerCommand) {
+        if ($ThrowOnFailure) { Write-ErrorAndExit "Docker CLI not found. Install Docker Desktop with Compose v2." }
+        return $false
+    }
+
+    try {
+        $output = & $dockerCommand.Path info --format '{{.ServerVersion}}' 2>&1
+        if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($output)) { return $true }
+        if ($ThrowOnFailure) {
+            Write-ErrorAndExit "Docker daemon not reachable. Ensure Docker Desktop is running and WSL integration is enabled.`n$output"
+        }
+    } catch {
+        if ($ThrowOnFailure) {
+            Write-ErrorAndExit "Docker daemon not reachable. Ensure Docker Desktop is running and WSL integration is enabled. $($_.Exception.Message)"
+        }
+    }
+
+    return $false
+}
+
+function Resolve-ComposeCommand {
+    if ($script:ComposeCommand) { return $script:ComposeCommand }
+
+    $dockerCommand = Get-Command docker -ErrorAction SilentlyContinue
+    if (-not $dockerCommand) {
+        Write-ErrorAndExit "Docker CLI not found. Install Docker Desktop with Compose v2."
+    }
+
+    $composeCheck = & $dockerCommand.Path @('compose', 'version') 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        $script:ComposeCommand = @{ Exe = $dockerCommand.Path; PreArgs = @('compose'); Display = 'docker compose' }
+        return $script:ComposeCommand
+    }
+
+    if (-not (Test-DockerDaemon)) {
+        Write-ErrorAndExit "Docker daemon not reachable. Ensure Docker Desktop is running and WSL integration is enabled.`n$composeCheck"
+    }
+
+    $dockerCompose = Get-Command docker-compose -ErrorAction SilentlyContinue
+    if ($dockerCompose) {
+        Write-Warn 'Docker Compose v2 not detected; using docker-compose fallback.'
+        $script:ComposeCommand = @{ Exe = $dockerCompose.Path; PreArgs = @(); Display = 'docker-compose' }
+        return $script:ComposeCommand
+    }
+
+    Write-ErrorAndExit "Docker Compose v2 (docker compose) is required."
+}
+
+function Invoke-Compose {
+    param([string[]]$Args)
+
+    $command = Resolve-ComposeCommand
+    $allArgs = @()
+    if ($command.PreArgs) { $allArgs += $command.PreArgs }
+    if ($Args) { $allArgs += $Args }
+    $commandLine = "$($command.Exe) " + ($allArgs -join ' ')
+
+    Write-Info "Executing compose command: $commandLine"
+    $output = & $command.Exe @allArgs 2>&1
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -ne 0) {
+        $lines = $output -split "`n" | Select-Object -First 80
+        Write-Host "[ERROR] Compose command failed (exit $exitCode): $commandLine" -ForegroundColor Red
+        if ($lines) { Write-Host ($lines -join "`n") -ForegroundColor Red }
+        throw "Compose command failed with exit code $exitCode"
+    }
+
+    return $output
+}
+
+function Invoke-SelfCheck {
+    param([string]$ScriptDir)
+
+    $selfCheckPath = Join-Path $ScriptDir 'selfcheck_windows.ps1'
+    if (-not (Test-Path $selfCheckPath)) { return }
+
+    Write-Info 'Running environment self-checks'
+    & $selfCheckPath
+}
+
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$rootDir = Resolve-RepoRoot -ScriptDir $scriptDir
+
+if (-not $Model) { $Model = 'llama3.2:3b' }
+if (-not $Repo) { $Repo = 'https://github.com/Hamedghz/OMERTAOS.git' }
+if (-not $Branch) { $Branch = 'main' }
+if (-not $PolicyDir) { $PolicyDir = './policies' }
+if (-not $VolumeRoot) { $VolumeRoot = './volumes' }
+
+if (-not $SkipSelfCheck) { Invoke-SelfCheck -ScriptDir $scriptDir }
+
 Require-Command git "Install Git from https://git-scm.com/downloads"
 Require-Command docker "Install Docker Desktop or Engine with Compose support"
-if (-not (Get-Command docker compose -ErrorAction SilentlyContinue)) {
-    if (Get-Command docker-compose -ErrorAction SilentlyContinue) {
-        Write-Warn "Docker Compose v2 not found; docker-compose detected. Windows quicksetup expects Docker Desktop with Compose v2."
-    } else {
-        Write-ErrorAndExit "Docker Compose v2 (docker compose) is required."
-    }
-}
 if (-not (Get-Command curl -ErrorAction SilentlyContinue) -and -not (Get-Command wget -ErrorAction SilentlyContinue)) {
     Write-ErrorAndExit "Either 'curl' or 'wget' must be available."
 }
 
-function Test-DockerRunning {
-    try {
-        $info = & docker info --format '{{.ServerVersion}}' 2>$null
-        if ([string]::IsNullOrWhiteSpace($info)) { return $false }
-        return $true
-    } catch { return $false }
-}
+Test-DockerDaemon -ThrowOnFailure | Out-Null
 
-if (-not (Test-DockerRunning)) {
-    Write-ErrorAndExit "Docker engine is not responding. Ensure Docker Desktop is running."
-}
-
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$rootDir = Get-RepoRoot -ScriptDir $scriptDir
 $envPath = Join-Path $rootDir '.env'
 $configDir = Join-Path $rootDir 'config'
 $configFile = Join-Path $configDir 'aionos.config.yaml'
@@ -392,31 +473,12 @@ telemetry:
 "@ | Set-Content -Path $configFile -Encoding UTF8
 }
 
-function Ensure-ComposeCommand {
-    if ($script:ComposeCommand) { return }
-
-    if (Get-Command docker compose -ErrorAction SilentlyContinue) {
-        $script:ComposeCommand = @{ Command = @('docker', 'compose'); Display = 'docker compose' }
-    } elseif (Get-Command docker-compose -ErrorAction SilentlyContinue) {
-        Write-Warn 'Docker Compose v2 not detected; using docker-compose fallback.'
-        $script:ComposeCommand = @{ Command = @('docker-compose'); Display = 'docker-compose' }
-    } else {
-        Write-ErrorAndExit 'Docker Compose v2 or docker-compose is required.'
-    }
-}
-
-function Invoke-Compose {
-    param([string[]]$ComposeArgs)
-    Ensure-ComposeCommand
-    & $script:ComposeCommand.Command @ComposeArgs
-}
-
 $composePath = Join-Path $rootDir $ComposeFile
 if (-not (Test-Path $composePath)) {
     Write-ErrorAndExit "Compose file '$ComposeFile' not found in $rootDir."
 }
 
-Ensure-ComposeCommand
+Resolve-ComposeCommand | Out-Null
 if ($script:ComposeCommand) {
     Write-Info "Using $($script:ComposeCommand.Display)"
 }
@@ -425,13 +487,13 @@ $attempt = 1
 while ($attempt -le 3) {
     try {
         Push-Location $rootDir
-        Invoke-Compose -ComposeArgs @('-f', $ComposeFile, 'up', '-d', '--build')
+        Invoke-Compose -Args @('-f', $ComposeFile, 'up', '-d', '--build')
         Pop-Location
         break
     } catch {
         Pop-Location
         if ($attempt -ge 3) { throw }
-        Write-Warn "docker compose attempt $attempt failed; retrying"
+        Write-Warn "compose attempt $attempt failed; retrying"
         Start-Sleep -Seconds ($attempt * 5)
         $attempt += 1
     }
@@ -470,6 +532,6 @@ if ($Local) {
     Write-Host '  Console UI:       http://localhost:3001'
 } else {
     Write-Host 'Next steps:'
-    Write-Host "  - Monitor stack: docker compose -f $ComposeFile ps"
+    Write-Host "  - Monitor stack: $($script:ComposeCommand.Display) -f $ComposeFile ps"
     Write-Host '  - Smoke test: scripts/smoke_e2e.ps1'
 }

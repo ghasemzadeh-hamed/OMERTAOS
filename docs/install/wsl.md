@@ -6,7 +6,7 @@ AION-OS supports Windows developers through WSL2. Disk actions are skipped; the 
 
 - Windows 11 with WSL2 enabled (`wsl --install`)
 - Ubuntu distribution installed from the Microsoft Store
-- Docker Desktop with WSL2 integration enabled
+- Docker Desktop with WSL2 integration enabled (verify with `PowerShell -ExecutionPolicy Bypass -File .\scripts\selfcheck_windows.ps1`)
 - Windows Terminal or PowerShell with administrator rights
 
 ## Steps
