@@ -124,8 +124,19 @@ function Resolve-ComposeCommand {
 function Assert-ComposeArgsContainsUp {
     param([string[]]$Args)
 
-    if (-not $Args -or -not ($Args -contains 'up')) {
-        throw "Invalid compose arguments; ComposeArgs must include the 'up' subcommand."
+    if (-not $Args -or $Args.Count -eq 0) {
+        throw "Compose arguments cannot be empty."
+    }
+
+    $hasUp = $false
+    foreach ($arg in $Args) {
+        if ($arg -eq 'up') { $hasUp = $true; break }
+        if (($arg -is [string]) -and ($arg -match '(?<!\S)up(?!\S)')) { $hasUp = $true; break }
+    }
+
+    if (-not $hasUp) {
+        $joined = ($Args -join ' ')
+        throw "Invalid compose arguments; ComposeArgs must include the 'up' subcommand. Provided: '$joined'"
     }
 }
 
@@ -558,6 +569,14 @@ Write-Info "Starting services with compose file $ComposeFile"
 $composeProfileMap = @{
     'enterprise-vip' = 'vault'
 }
+$isWindowsHost = $null
+try {
+    $isWindowsHost = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)
+} catch {
+    $isWindowsHost = $IsWindows -or ($env:OS -like 'Windows*')
+}
+$script:IsWindowsPlatform = $isWindowsHost
+
 $ComposeArgs = [string[]]@('-f', $ComposeFile)
 $isWindowsHost = $null
 try {
@@ -575,6 +594,7 @@ if ($script:IsWindowsPlatform) {
 }
 $ComposeArgs += @('up', '-d', '--remove-orphans')
 Assert-ComposeArgsContainsUp -Args $ComposeArgs
+Write-Info "Compose arguments: $($ComposeArgs -join ' ')"
 $attempt = 1
 while ($attempt -le 3) {
     try {
