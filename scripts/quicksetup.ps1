@@ -426,7 +426,7 @@ $profileFile = Join-Path $profileDir 'profile.json'
 $profileObject = [ordered]@{
     profile = $Profile
     setupDone = $true
-    updatedAt = (Get-Date -AsUTC).ToString('yyyy-MM-ddTHH:mm:ssZ')
+    updatedAt = ([DateTimeOffset]::UtcNow).ToString("yyyy-MM-ddTHH:mm:ss'Z'")
 }
 $profileJson = $profileObject | ConvertTo-Json -Depth 4
 Set-Content -Path $profileFile -Value $profileJson -Encoding UTF8
