@@ -13,18 +13,49 @@ function Write-Info([string]$Message) { Write-Host "[INFO] $Message" }
 function Write-Warn([string]$Message) { Write-Host "[WARN] $Message" -ForegroundColor Yellow }
 function Write-ErrorAndExit([string]$Message) { Write-Host "[ERROR] $Message" -ForegroundColor Red; exit 1 }
 
+function Test-DockerDaemon {
+    param([switch]$ThrowOnFailure)
+
+    $dockerCommand = Get-Command docker -ErrorAction SilentlyContinue
+    if (-not $dockerCommand) {
+        if ($ThrowOnFailure) { Write-ErrorAndExit "Docker CLI not found. Install Docker Desktop with Compose v2." }
+        return $false
+    }
+
+    try {
+        $output = & $dockerCommand.Path info --format '{{.ServerVersion}}' 2>&1
+        if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($output)) { return $true }
+        if ($ThrowOnFailure) {
+            Write-ErrorAndExit "Docker daemon not reachable. Ensure Docker Desktop is running and WSL integration is enabled.`n$output"
+        }
+    } catch {
+        if ($ThrowOnFailure) {
+            Write-ErrorAndExit "Docker daemon not reachable. Ensure Docker Desktop is running and WSL integration is enabled. $($_.Exception.Message)"
+        }
+    }
+
+    return $false
+}
+
 function Resolve-ComposeCommand {
-    if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-        Write-ErrorAndExit "Docker is required for smoke tests."
+    $dockerCommand = Get-Command docker -ErrorAction SilentlyContinue
+    if (-not $dockerCommand) {
+        Write-ErrorAndExit "Docker is required for smoke tests. Install Docker Desktop with Compose v2."
     }
 
-    if (Get-Command docker compose -ErrorAction SilentlyContinue) {
-        return @{ Command = @('docker', 'compose'); Display = 'docker compose' }
+    $composeCheck = & $dockerCommand.Path @('compose', 'version') 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        return @{ Exe = $dockerCommand.Path; PreArgs = @('compose'); Display = 'docker compose' }
     }
 
-    if (Get-Command docker-compose -ErrorAction SilentlyContinue) {
+    if (-not (Test-DockerDaemon)) {
+        Write-ErrorAndExit "Docker daemon not reachable. Ensure Docker Desktop is running and WSL integration is enabled.`n$composeCheck"
+    }
+
+    $dockerCompose = Get-Command docker-compose -ErrorAction SilentlyContinue
+    if ($dockerCompose) {
         Write-Warn "Docker Compose v2 not detected; using docker-compose fallback."
-        return @{ Command = @('docker-compose'); Display = 'docker-compose' }
+        return @{ Exe = $dockerCompose.Path; PreArgs = @(); Display = 'docker-compose' }
     }
 
     Write-ErrorAndExit "Docker Compose v2 (docker compose) is required."
@@ -47,7 +78,22 @@ $consoleHealth = if ($env:CONSOLE_HEALTH_URL) { $env:CONSOLE_HEALTH_URL } else {
 
 function Invoke-Compose {
     param([string[]]$Args)
-    & $compose.Command @Args
+
+    $allArgs = @()
+    if ($compose.PreArgs) { $allArgs += $compose.PreArgs }
+    if ($Args) { $allArgs += $Args }
+    $commandLine = "$($compose.Exe) " + ($allArgs -join ' ')
+
+    Write-Info "Executing compose command: $commandLine"
+    $output = & $compose.Exe @allArgs 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        $lines = $output -split "`n" | Select-Object -First 80
+        Write-Host "[ERROR] Compose command failed: $commandLine" -ForegroundColor Red
+        if ($lines) { Write-Host ($lines -join "`n") -ForegroundColor Red }
+        throw "Compose command failed with exit code $LASTEXITCODE"
+    }
+
+    return $output
 }
 
 function Start-Stack {

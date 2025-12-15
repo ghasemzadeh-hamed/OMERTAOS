@@ -4,9 +4,16 @@ This guide aligns the Windows experience with the Linux quicksetup while preserv
 
 ## Prerequisites
 - Windows 10/11 with administrator rights for Docker Desktop.
-- Docker Desktop with Compose v2 enabled and running.
+- PowerShell 5.1 **or** PowerShell 7+.
+- Docker Desktop with Compose v2 enabled **and running** (WSL integration recommended).
 - Git.
-- PowerShell 7+ (WSL2 optional for shell only).
+- Optional: WSL2 for shell convenience.
+
+Validate your environment before running QuickSetup:
+
+```powershell
+PowerShell -ExecutionPolicy Bypass -File .\scripts\selfcheck_windows.ps1
+```
 
 ## Quick setup
 Run from the repository root in PowerShell:
@@ -15,15 +22,19 @@ Run from the repository root in PowerShell:
 PowerShell -ExecutionPolicy Bypass -File .\scripts\quicksetup.ps1
 ```
 
+Add `-SkipSelfCheck` if you already ran `selfcheck_windows.ps1` in the same session.
+
 What the script does:
 - Creates `.env` from the repo templates if it does not already exist and preserves existing values.
 - Writes profile metadata to `.aionos/profile.json`.
-- Starts the Control (8000), Gateway (3000), and Console (3001) containers with `docker compose up -d --build`.
+- Detects Compose deterministically (docker compose v2 preferred, docker-compose fallback) and shows the exact command it runs.
+- Starts the Control (8000), Gateway (3000), and Console (3001) containers with compose and surfaces stderr on failure.
 - Prints generated admin tokens and credentials.
 
 Flags (optional):
 - `-NonInteractive` to skip prompts and auto-generate secrets.
 - `-ComposeFile <path>` to target an alternate compose file (defaults to `docker-compose.yml`).
+- `-SkipSelfCheck` to skip the preflight validations when chaining runs.
 
 ## Start, stop, and logs
 ```powershell
@@ -60,3 +71,5 @@ The script runs `docker compose up` (respecting `-ComposeFile` and `-NoBuild` fl
 - Ensure Docker Desktop is running: `docker info` should return a server version.
 - If Compose v2 is missing, install or enable it in Docker Desktop; the scripts warn when falling back to `docker-compose`.
 - Ports 8000 (Control), 3000 (Gateway), and 3001 (Console) must be free.
+- If you see `Docker daemon not reachable. Ensure Docker Desktop is running and WSL integration is enabled.`, start Docker Desktop and re-run `scripts/selfcheck_windows.ps1` to confirm connectivity.
+- If compose retries fail, the script prints the exact command and the first lines of stderr—no need to dig through hidden logs.
