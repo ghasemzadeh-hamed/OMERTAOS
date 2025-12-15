@@ -146,18 +146,20 @@ function Invoke-Compose {
     param([string[]]$ComposeCommandArgs)
 
     if (-not $ComposeCommandArgs -or $ComposeCommandArgs.Count -eq 0) {
-        $scope = $MyInvocation.MyCommand.Name
-        $caller = if ($MyInvocation.InvocationName) { $MyInvocation.InvocationName } else { 'Invoke-Compose' }
-        throw "Compose invocation requires non-empty arguments (scope=$scope, caller=$caller)."
+        throw "Compose arguments cannot be empty."
     }
 
     $command = Resolve-ComposeCommand
+
     $allArgs = @()
     if ($command.PreArgs) { $allArgs += $command.PreArgs }
     $allArgs += $ComposeCommandArgs
 
     $commandLine = "$($command.ExePath) " + ($allArgs -join ' ')
     Write-Info "Executing compose: $commandLine"
+    Write-Debug "Compose executable: $($command.ExePath)"
+    Write-Debug "Compose pre-args: $($command.PreArgs -join ' ')"
+    Write-Debug "Compose command args: $($ComposeCommandArgs -join ' ')"
 
     $output = & $command.ExePath @allArgs 2>&1
     $exitCode = $LASTEXITCODE
