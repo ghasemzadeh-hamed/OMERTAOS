@@ -16,6 +16,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $script:ComposeCommand = $null
+$script:IsWindowsPlatform = $null
 
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" }
 function Write-Warn([string]$Message) { Write-Host "[WARN] $Message" -ForegroundColor Yellow }
@@ -102,7 +103,7 @@ function Resolve-ComposeCommand {
 
     $composeCheck = & $dockerCommand.Path @('compose', 'version') 2>&1
     if ($LASTEXITCODE -eq 0) {
-        $script:ComposeCommand = @{ Exe = $dockerCommand.Path; PreArgs = @('compose'); Display = 'docker compose' }
+        $script:ComposeCommand = [PSCustomObject]@{ ExePath = $dockerCommand.Path; PreArgs = @('compose'); Display = 'docker compose' }
         return $script:ComposeCommand
     }
 
@@ -113,24 +114,48 @@ function Resolve-ComposeCommand {
     $dockerCompose = Get-Command docker-compose -ErrorAction SilentlyContinue
     if ($dockerCompose) {
         Write-Warn 'Docker Compose v2 not detected; using docker-compose fallback.'
-        $script:ComposeCommand = @{ Exe = $dockerCompose.Path; PreArgs = @(); Display = 'docker-compose' }
+        $script:ComposeCommand = [PSCustomObject]@{ ExePath = $dockerCompose.Path; PreArgs = @(); Display = 'docker-compose' }
         return $script:ComposeCommand
     }
 
     Write-ErrorAndExit "Docker Compose v2 (docker compose) is required."
 }
 
+function Assert-ComposeArgsContainsUp {
+    param([string[]]$Args)
+
+    if (-not $Args -or $Args.Count -eq 0) {
+        throw "Compose arguments cannot be empty."
+    }
+
+    $hasUp = $false
+    foreach ($arg in $Args) {
+        if ($arg -eq 'up') { $hasUp = $true; break }
+        if (($arg -is [string]) -and ($arg -match '(?<!\S)up(?!\S)')) { $hasUp = $true; break }
+    }
+
+    if (-not $hasUp) {
+        $joined = ($Args -join ' ')
+        throw "Invalid compose arguments; ComposeArgs must include the 'up' subcommand. Provided: '$joined'"
+    }
+}
+
 function Invoke-Compose {
     param([string[]]$Args)
+
+    if (-not $Args -or $Args.Count -eq 0) {
+        throw "Compose invocation requires non-empty arguments."
+    }
 
     $command = Resolve-ComposeCommand
     $allArgs = @()
     if ($command.PreArgs) { $allArgs += $command.PreArgs }
-    if ($Args) { $allArgs += $Args }
-    $commandLine = "$($command.Exe) " + ($allArgs -join ' ')
+    $allArgs += $Args
 
-    Write-Info "Executing compose command: $commandLine"
-    $output = & $command.Exe @allArgs 2>&1
+    $commandLine = "$($command.ExePath) " + ($allArgs -join ' ')
+    Write-Info "Executing compose: $commandLine"
+
+    $output = & $command.ExePath @allArgs 2>&1
     $exitCode = $LASTEXITCODE
     if ($exitCode -ne 0) {
         $lines = $output -split "`n" | Select-Object -First 80
@@ -140,6 +165,56 @@ function Invoke-Compose {
     }
 
     return $output
+}
+
+function Convert-ComposePsOutput {
+    param([string[]]$Output)
+
+    try {
+        return @($Output | ConvertFrom-Json)
+    } catch {
+        $parsed = @()
+        foreach ($line in $Output) {
+            if ($line -match "^(?<name>[^\\s]+)\\s+(?<state>running|exited|restarting).*") {
+                $parsed += [PSCustomObject]@{ Service = $Matches.name; State = $Matches.state }
+            }
+        }
+        return $parsed
+    }
+}
+
+function Test-ComposeServicesRunning {
+    param([array]$Services, [string[]]$Required)
+
+    foreach ($name in $Required) {
+        $candidate = $Services | Where-Object { $_.Service -eq $name -or $_.Name -like "*_${name}_*" }
+        if (-not $candidate) { return $false }
+        $stateText = ($candidate | Select-Object -First 1).State
+        if (-not $stateText -or ($stateText -notmatch 'running')) { return $false }
+    }
+    return $true
+}
+
+function Wait-HttpReady {
+    param(
+        [string]$Url,
+        [int]$TimeoutSeconds = 120,
+        [int]$DelaySeconds = 2
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    while ((Get-Date) -lt $deadline) {
+        try {
+            $response = Invoke-WebRequest -Uri $Url -UseBasicParsing -MaximumRedirection 3 -TimeoutSec 15
+            if ($response.StatusCode -in 200, 302) { return $true }
+        } catch {
+            Start-Sleep -Seconds $DelaySeconds
+            continue
+        }
+        Start-Sleep -Seconds $DelaySeconds
+    }
+
+    return $false
 }
 
 function Invoke-SelfCheck {
@@ -419,6 +494,14 @@ $envUpdates['AION_JWT_SECRET_PATH'] = if ($env:AION_JWT_SECRET_PATH) { $env:AION
 $envUpdates['SECRET_PROVIDER_MODE'] = if ($env:SECRET_PROVIDER_MODE) { $env:SECRET_PROVIDER_MODE } else { 'local' }
 $envUpdates['CONSOLE_ADMIN_EMAIL'] = $consoleAdminEmail
 $envUpdates['CONSOLE_ADMIN_PASSWORD'] = $consoleAdminPassword
+$envUpdates['ORCH_PROVIDER'] = if ($env:ORCH_PROVIDER) { $env:ORCH_PROVIDER } else { '' }
+$envUpdates['ORCH_MODEL'] = if ($env:ORCH_MODEL) { $env:ORCH_MODEL } else { '' }
+$envUpdates['ORCH_ENDPOINT'] = if ($env:ORCH_ENDPOINT) { $env:ORCH_ENDPOINT } else { '' }
+$envUpdates['ORCH_API_KEY'] = if ($env:ORCH_API_KEY) { $env:ORCH_API_KEY } else { '' }
+$envUpdates['CODER_PROVIDER'] = if ($env:CODER_PROVIDER) { $env:CODER_PROVIDER } else { '' }
+$envUpdates['CODER_MODEL'] = if ($env:CODER_MODEL) { $env:CODER_MODEL } else { '' }
+$envUpdates['CODER_ENDPOINT'] = if ($env:CODER_ENDPOINT) { $env:CODER_ENDPOINT } else { '' }
+$envUpdates['CODER_API_KEY'] = if ($env:CODER_API_KEY) { $env:CODER_API_KEY } else { '' }
 if (-not $env:SKIP_CONSOLE_SEED) { $envUpdates['SKIP_CONSOLE_SEED'] = 'false' }
 Set-EnvValues -Path $envPath -Values $envUpdates
 
@@ -426,7 +509,7 @@ $profileFile = Join-Path $profileDir 'profile.json'
 $profileObject = [ordered]@{
     profile = $Profile
     setupDone = $true
-    updatedAt = ([DateTimeOffset]::UtcNow).ToString("yyyy-MM-ddTHH:mm:ss'Z'")
+    updatedAt = ([DateTimeOffset]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ss'Z'"))
 }
 $profileJson = $profileObject | ConvertTo-Json -Depth 4
 Set-Content -Path $profileFile -Value $profileJson -Encoding UTF8
@@ -486,21 +569,29 @@ Write-Info "Starting services with compose file $ComposeFile"
 $composeProfileMap = @{
     'enterprise-vip' = 'vault'
 }
+$isWindowsHost = $null
+try {
+    $isWindowsHost = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)
+} catch {
+    $isWindowsHost = $IsWindows -or ($env:OS -like 'Windows*')
+}
+$script:IsWindowsPlatform = $isWindowsHost
+
 $ComposeArgs = [string[]]@('-f', $ComposeFile)
 if ($composeProfileMap.ContainsKey($Profile) -and $composeProfileMap[$Profile]) {
     $ComposeArgs += @('--profile', [string]$composeProfileMap[$Profile])
 }
-$ComposeArgs += @('up', '-d', '--remove-orphans')
-if (-not $ComposeArgs -or -not ($ComposeArgs -contains 'up')) {
-    throw "Invalid compose arguments; ComposeArgs must include the 'up' subcommand."
+if ($script:IsWindowsPlatform) {
+    $ComposeArgs += @('--profile', 'windows')
 }
-$composeExitCode = $null
+$ComposeArgs += @('up', '-d', '--remove-orphans')
+Assert-ComposeArgsContainsUp -Args $ComposeArgs
+Write-Info "Compose arguments: $($ComposeArgs -join ' ')"
 $attempt = 1
 while ($attempt -le 3) {
     try {
         Push-Location $rootDir
         Invoke-Compose -Args $ComposeArgs
-        $composeExitCode = $LASTEXITCODE
         Pop-Location
         break
     } catch {
@@ -511,18 +602,14 @@ while ($attempt -le 3) {
         $attempt += 1
     }
 }
-if ($composeExitCode -ne 0) {
-    throw "Compose up failed with exit code $composeExitCode"
-}
 
 $psOutput = Invoke-Compose -Args @('-f', $ComposeFile, 'ps', '--format', 'json')
-try {
-    $psObjects = @($psOutput | ConvertFrom-Json)
-} catch {
-    $psObjects = @()
-}
-if (-not $psObjects -or $psObjects.Count -eq 0) {
-    throw "Compose stack did not report any running services after startup."
+$psObjects = Convert-ComposePsOutput -Output $psOutput
+if (-not $psObjects -or $psObjects.Count -eq 0 -or -not (Test-ComposeServicesRunning -Services $psObjects -Required @('control','gateway','console'))) {
+    Write-Warn 'compose ps reported issues; dumping status and recent logs.'
+    Invoke-Compose -Args @('-f', $ComposeFile, 'ps') | ForEach-Object { Write-Host $_ }
+    Invoke-Compose -Args @('-f', $ComposeFile, 'logs', '--tail', '200') | ForEach-Object { Write-Host $_ }
+    throw "Compose stack did not report required running services after startup."
 }
 
 if ($Model) {
@@ -547,17 +634,41 @@ Write-Info "NEXTAUTH_URL=http://localhost:3001"
 Write-Info "NEXTAUTH_SECRET=$nextAuthSecret"
 Write-Info "Console admin user: $consoleAdminEmail / $consoleAdminPassword"
 
+$consoleLoginUrl = 'http://localhost:3001/login'
+$consoleRootUrl = 'http://localhost:3001/'
+$consoleReady = $false
+if (Wait-HttpReady -Url $consoleLoginUrl) {
+    $consoleReady = $true
+} elseif (Wait-HttpReady -Url $consoleRootUrl) {
+    $consoleReady = $true
+    $consoleLoginUrl = $consoleRootUrl
+}
+
+if ($consoleReady) {
+    Write-Info "Console is reachable at $consoleLoginUrl"
+    try {
+        Start-Process $consoleLoginUrl | Out-Null
+        Write-Info "Opened browser: $consoleLoginUrl"
+    } catch {
+        Write-Warn "Failed to automatically open the browser: $($_.Exception.Message)"
+    }
+} else {
+    Write-Warn "Console endpoint did not become ready within the timeout. Visit $consoleRootUrl manually to verify."
+}
+
 Write-Host ''
 Write-Host '[AION-OS] QuickSetup completed.'
 Write-Host "Profile: $Profile"
 Write-Host "Compose file: $ComposeFile"
-if ($Local) {
-    Write-Host 'Services:'
-    Write-Host '  Kernel API:       http://localhost:8010'
-    Write-Host '  Gateway (REST):   http://localhost:3000'
-    Write-Host '  Console UI:       http://localhost:3001'
-} else {
-    Write-Host 'Next steps:'
-    Write-Host "  - Monitor stack: $($script:ComposeCommand.Display) -f $ComposeFile ps"
-    Write-Host '  - Smoke test: scripts/smoke_e2e.ps1'
-}
+Write-Host 'Services:'
+Write-Host '  Control API:      http://localhost:8000'
+Write-Host '  Gateway (REST):   http://localhost:3000'
+Write-Host '  Console UI:       http://localhost:3001'
+Write-Host ''
+Write-Host "Credentials: Console admin $consoleAdminEmail / $consoleAdminPassword"
+Write-Host "Gateway admin token: $gatewayAdminToken"
+Write-Host "Gateway API keys: $gatewayApiKeys"
+Write-Host ''
+Write-Host "Monitor stack: $($script:ComposeCommand.Display) -f $ComposeFile ps"
+Write-Host "View logs:    $($script:ComposeCommand.Display) -f $ComposeFile logs --tail=200"
+Write-Host 'Smoke test:   scripts/smoke_e2e.ps1'

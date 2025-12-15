@@ -59,6 +59,8 @@ services:
   qdrant:
     image: qdrant/qdrant:latest
     ports: ["6333:6333"]
+    volumes:
+      - qdrant-data:/qdrant/storage
     healthcheck:
       test:
         - "CMD-SHELL"
@@ -70,9 +72,9 @@ services:
           echo "Qdrant readiness status: $$status";
           exit 1
       interval: 10s
-      timeout: 5s
-      retries: 30
-      start_period: 60s
+      timeout: 10s
+      retries: 40
+      start_period: 120s
     networks: [aionos]
 
   minio:
@@ -122,7 +124,7 @@ services:
       redis:
         condition: service_healthy
       qdrant:
-        condition: service_healthy
+        condition: service_started
       minio:
         condition: service_healthy
     ports:
@@ -168,7 +170,7 @@ services:
       redis:
         condition: service_healthy
       control:
-        condition: service_healthy
+        condition: service_started
     ports:
       - "3000:${AION_GATEWAY_PORT:-3000}"
     volumes:
@@ -205,7 +207,7 @@ services:
       AION_ENV: ${AION_ENV:-dev}
     depends_on:
       gateway:
-        condition: service_healthy
+        condition: service_started
     ports:
       - "3001:${CONSOLE_PORT:-3001}"
     healthcheck:
@@ -231,14 +233,14 @@ services:
     environment:
       AION_ENV: dev
       AION_KERNEL_PROFILE: dev-qwen-coder
-      ORCH_PROVIDER: ${ORCH_PROVIDER}
-      ORCH_MODEL: ${ORCH_MODEL}
-      ORCH_ENDPOINT: ${ORCH_ENDPOINT}
-      ORCH_API_KEY: ${ORCH_API_KEY}
-      CODER_PROVIDER: ${CODER_PROVIDER}
-      CODER_MODEL: ${CODER_MODEL}
-      CODER_ENDPOINT: ${CODER_ENDPOINT}
-      CODER_API_KEY: ${CODER_API_KEY}
+      ORCH_PROVIDER: ${ORCH_PROVIDER:-}
+      ORCH_MODEL: ${ORCH_MODEL:-}
+      ORCH_ENDPOINT: ${ORCH_ENDPOINT:-}
+      ORCH_API_KEY: ${ORCH_API_KEY:-}
+      CODER_PROVIDER: ${CODER_PROVIDER:-}
+      CODER_MODEL: ${CODER_MODEL:-}
+      CODER_ENDPOINT: ${CODER_ENDPOINT:-}
+      CODER_API_KEY: ${CODER_API_KEY:-}
       AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
       AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
       AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
@@ -265,6 +267,7 @@ services:
 
 volumes:
   minio-data: {}
+  qdrant-data: {}
   vault-data: {}
 
 networks:

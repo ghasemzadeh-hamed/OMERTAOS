@@ -9,6 +9,13 @@ This guide aligns the Windows experience with the Linux quicksetup while preserv
 - Git.
 - Optional: WSL2 for shell convenience.
 
+Make sure Docker is reachable and Compose v2 is available:
+
+```powershell
+docker info
+docker compose version
+```
+
 Validate your environment before running QuickSetup:
 
 ```powershell
@@ -23,6 +30,13 @@ PowerShell -ExecutionPolicy Bypass -File .\scripts\quicksetup.ps1
 ```
 
 Add `-SkipSelfCheck` if you already ran `selfcheck_windows.ps1` in the same session.
+
+The quicksetup script now:
+- Detects Docker Compose v2 (falls back to `docker-compose` when necessary) without relying on "docker compose" parsing quirks.
+- Uses the `windows` Compose profile automatically on Windows/WSL to relax startup gating while keeping other profiles (for example, `vault`) intact.
+- Persists Qdrant data in a named volume for stability.
+- Writes defaults for ORCH_* and CODER_* variables to `.env` to silence warning messages.
+- Starts the stack with `docker compose -f docker-compose.yml --profile windows up -d --remove-orphans`, validates that Control, Gateway, and Console are running, and opens the Console login page in your default browser after the endpoint becomes reachable.
 
 What the script does:
 - Creates `.env` from the repo templates if it does not already exist and preserves existing values.
@@ -53,6 +67,13 @@ docker compose -f $composeFile logs -f --tail 200
 docker compose -f $composeFile ps
 ```
 
+If you run with an additional profile (for example `vault`), add it consistently:
+
+```powershell
+docker compose -f $composeFile --profile windows --profile vault up -d --remove-orphans
+docker compose -f $composeFile --profile windows --profile vault ps
+```
+
 ## Health checks
 Default endpoints (override with `CONTROL_HEALTH_URL`, `GATEWAY_HEALTH_URL`, or `CONSOLE_HEALTH_URL` if needed):
 ```powershell
@@ -73,3 +94,5 @@ The script runs `docker compose up` (respecting `-ComposeFile` and `-NoBuild` fl
 - Ports 8000 (Control), 3000 (Gateway), and 3001 (Console) must be free.
 - If you see `Docker daemon not reachable. Ensure Docker Desktop is running and WSL integration is enabled.`, start Docker Desktop and re-run `scripts/selfcheck_windows.ps1` to confirm connectivity.
 - If compose retries fail, the script prints the exact command and the first lines of stderr—no need to dig through hidden logs.
+- For `qdrant` unhealthy or startup stalls, the Windows profile relaxes gating to `service_started` and the data directory is now stored in a named volume (`qdrant-data`). You can inspect with `docker compose -f docker-compose.yml --profile windows ps` and `docker compose -f docker-compose.yml --profile windows logs --tail=200`.
+- The installer will open the Console URL automatically after the services become reachable. If the browser does not open, manually visit `http://localhost:3001/` and use the printed admin credentials.
