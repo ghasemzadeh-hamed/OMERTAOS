@@ -121,32 +121,42 @@ function Resolve-ComposeCommand {
     Write-ErrorAndExit "Docker Compose v2 (docker compose) is required."
 }
 
+[CmdletBinding()]
 function Assert-ComposeArgsContainsUp {
-    param([string[]]$Args)
+    param(
+        [Parameter(Mandatory=$true)]
+        [string[]]$ComposeArgsToValidate
+    )
 
-    if (-not $Args -or $Args.Count -eq 0) {
+    if (-not $ComposeArgsToValidate -or $ComposeArgsToValidate.Count -eq 0) {
         $scope = $MyInvocation.MyCommand.Name
         $caller = if ($MyInvocation.InvocationName) { $MyInvocation.InvocationName } else { 'Assert-ComposeArgsContainsUp' }
-        throw "Compose arguments cannot be empty (scope=$scope, caller=$caller)."
+        $joined = ($ComposeArgsToValidate -join ' ')
+        throw "Compose arguments cannot be empty (scope=$scope, caller=$caller). Provided: '$joined'"
     }
 
     $hasUp = $false
-    foreach ($arg in $Args) {
+    foreach ($arg in $ComposeArgsToValidate) {
         if ($arg -eq 'up') { $hasUp = $true; break }
         if (($arg -is [string]) -and ($arg -match '(?<!\S)up(?!\S)')) { $hasUp = $true; break }
     }
 
     if (-not $hasUp) {
-        $joined = ($Args -join ' ')
+        $joined = ($ComposeArgsToValidate -join ' ')
         throw "Invalid compose arguments; ComposeArgs must include the 'up' subcommand. Provided: '$joined'"
     }
 }
 
+[CmdletBinding()]
 function Invoke-Compose {
-    param([string[]]$ComposeCommandArgs)
+    param(
+        [Parameter(Mandatory=$true)]
+        [string[]]$ComposeCommandArgs
+    )
 
     if (-not $ComposeCommandArgs -or $ComposeCommandArgs.Count -eq 0) {
-        throw "Compose arguments cannot be empty."
+        $joined = ($ComposeCommandArgs -join ' ')
+        throw "Compose arguments cannot be empty. Provided: '$joined'"
     }
 
     $command = Resolve-ComposeCommand
@@ -594,7 +604,8 @@ while ($attempt -le 3) {
             $localComposeArgs += @('--profile', 'windows')
         }
         $localComposeArgs += @('up', '-d', '--remove-orphans')
-        Assert-ComposeArgsContainsUp -Args $localComposeArgs
+        Write-Info ("ComposeArgs (count={0}): {1}" -f $localComposeArgs.Count, ($localComposeArgs -join ' '))
+        Assert-ComposeArgsContainsUp -ComposeArgsToValidate $localComposeArgs
         Write-Info "Compose arguments: $($localComposeArgs -join ' ')"
         Push-Location $rootDir
         Invoke-Compose -ComposeCommandArgs $localComposeArgs
