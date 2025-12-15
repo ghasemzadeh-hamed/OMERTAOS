@@ -121,8 +121,8 @@ function Resolve-ComposeCommand {
     Write-ErrorAndExit "Docker Compose v2 (docker compose) is required."
 }
 
-[CmdletBinding()]
 function Assert-ComposeArgsContainsUp {
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
         [string[]]$ComposeArgsToValidate
@@ -147,8 +147,8 @@ function Assert-ComposeArgsContainsUp {
     }
 }
 
-[CmdletBinding()]
 function Invoke-Compose {
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
         [string[]]$ComposeCommandArgs
