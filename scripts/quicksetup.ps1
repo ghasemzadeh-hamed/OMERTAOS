@@ -578,6 +578,14 @@ try {
 $script:IsWindowsPlatform = $isWindowsHost
 
 $ComposeArgs = [string[]]@('-f', $ComposeFile)
+$isWindowsHost = $null
+try {
+    $isWindowsHost = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)
+} catch {
+    $isWindowsHost = $IsWindows -or ($env:OS -like 'Windows*')
+}
+$script:IsWindowsPlatform = $isWindowsHost
+
 if ($composeProfileMap.ContainsKey($Profile) -and $composeProfileMap[$Profile]) {
     $ComposeArgs += @('--profile', [string]$composeProfileMap[$Profile])
 }
