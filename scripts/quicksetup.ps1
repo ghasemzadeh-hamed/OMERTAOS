@@ -125,7 +125,9 @@ function Assert-ComposeArgsContainsUp {
     param([string[]]$Args)
 
     if (-not $Args -or $Args.Count -eq 0) {
-        throw "Compose arguments cannot be empty."
+        $scope = $MyInvocation.MyCommand.Name
+        $caller = if ($MyInvocation.InvocationName) { $MyInvocation.InvocationName } else { 'Assert-ComposeArgsContainsUp' }
+        throw "Compose arguments cannot be empty (scope=$scope, caller=$caller)."
     }
 
     $hasUp = $false
@@ -141,16 +143,18 @@ function Assert-ComposeArgsContainsUp {
 }
 
 function Invoke-Compose {
-    param([string[]]$Args)
+    param([string[]]$ComposeCommandArgs)
 
-    if (-not $Args -or $Args.Count -eq 0) {
-        throw "Compose invocation requires non-empty arguments."
+    if (-not $ComposeCommandArgs -or $ComposeCommandArgs.Count -eq 0) {
+        $scope = $MyInvocation.MyCommand.Name
+        $caller = if ($MyInvocation.InvocationName) { $MyInvocation.InvocationName } else { 'Invoke-Compose' }
+        throw "Compose invocation requires non-empty arguments (scope=$scope, caller=$caller)."
     }
 
     $command = Resolve-ComposeCommand
     $allArgs = @()
     if ($command.PreArgs) { $allArgs += $command.PreArgs }
-    $allArgs += $Args
+    $allArgs += $ComposeCommandArgs
 
     $commandLine = "$($command.ExePath) " + ($allArgs -join ' ')
     Write-Info "Executing compose: $commandLine"
@@ -577,29 +581,21 @@ try {
 }
 $script:IsWindowsPlatform = $isWindowsHost
 
-$ComposeArgs = [string[]]@('-f', $ComposeFile)
-$isWindowsHost = $null
-try {
-    $isWindowsHost = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)
-} catch {
-    $isWindowsHost = $IsWindows -or ($env:OS -like 'Windows*')
-}
-$script:IsWindowsPlatform = $isWindowsHost
-
-if ($composeProfileMap.ContainsKey($Profile) -and $composeProfileMap[$Profile]) {
-    $ComposeArgs += @('--profile', [string]$composeProfileMap[$Profile])
-}
-if ($script:IsWindowsPlatform) {
-    $ComposeArgs += @('--profile', 'windows')
-}
-$ComposeArgs += @('up', '-d', '--remove-orphans')
-Assert-ComposeArgsContainsUp -Args $ComposeArgs
-Write-Info "Compose arguments: $($ComposeArgs -join ' ')"
 $attempt = 1
 while ($attempt -le 3) {
     try {
+        $localComposeArgs = [string[]]@('-f', $ComposeFile)
+        if ($composeProfileMap.ContainsKey($Profile) -and $composeProfileMap[$Profile]) {
+            $localComposeArgs += @('--profile', [string]$composeProfileMap[$Profile])
+        }
+        if ($script:IsWindowsPlatform) {
+            $localComposeArgs += @('--profile', 'windows')
+        }
+        $localComposeArgs += @('up', '-d', '--remove-orphans')
+        Assert-ComposeArgsContainsUp -Args $localComposeArgs
+        Write-Info "Compose arguments: $($localComposeArgs -join ' ')"
         Push-Location $rootDir
-        Invoke-Compose -Args $ComposeArgs
+        Invoke-Compose -ComposeCommandArgs $localComposeArgs
         Pop-Location
         break
     } catch {
@@ -611,12 +607,12 @@ while ($attempt -le 3) {
     }
 }
 
-$psOutput = Invoke-Compose -Args @('-f', $ComposeFile, 'ps', '--format', 'json')
+$psOutput = Invoke-Compose -ComposeCommandArgs @('-f', $ComposeFile, 'ps', '--format', 'json')
 $psObjects = Convert-ComposePsOutput -Output $psOutput
 if (-not $psObjects -or $psObjects.Count -eq 0 -or -not (Test-ComposeServicesRunning -Services $psObjects -Required @('control','gateway','console'))) {
     Write-Warn 'compose ps reported issues; dumping status and recent logs.'
-    Invoke-Compose -Args @('-f', $ComposeFile, 'ps') | ForEach-Object { Write-Host $_ }
-    Invoke-Compose -Args @('-f', $ComposeFile, 'logs', '--tail', '200') | ForEach-Object { Write-Host $_ }
+    Invoke-Compose -ComposeCommandArgs @('-f', $ComposeFile, 'ps') | ForEach-Object { Write-Host $_ }
+    Invoke-Compose -ComposeCommandArgs @('-f', $ComposeFile, 'logs', '--tail', '200') | ForEach-Object { Write-Host $_ }
     throw "Compose stack did not report required running services after startup."
 }
 
