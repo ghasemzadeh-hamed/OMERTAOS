@@ -483,11 +483,24 @@ if ($script:ComposeCommand) {
     Write-Info "Using $($script:ComposeCommand.Display)"
 }
 Write-Info "Starting services with compose file $ComposeFile"
+$composeProfileMap = @{
+    'enterprise-vip' = 'vault'
+}
+$ComposeArgs = [string[]]@('-f', $ComposeFile)
+if ($composeProfileMap.ContainsKey($Profile) -and $composeProfileMap[$Profile]) {
+    $ComposeArgs += @('--profile', [string]$composeProfileMap[$Profile])
+}
+$ComposeArgs += @('up', '-d', '--remove-orphans')
+if (-not $ComposeArgs -or -not ($ComposeArgs -contains 'up')) {
+    throw "Invalid compose arguments; ComposeArgs must include the 'up' subcommand."
+}
+$composeExitCode = $null
 $attempt = 1
 while ($attempt -le 3) {
     try {
         Push-Location $rootDir
-        Invoke-Compose -Args @('-f', $ComposeFile, 'up', '-d', '--build')
+        Invoke-Compose -Args $ComposeArgs
+        $composeExitCode = $LASTEXITCODE
         Pop-Location
         break
     } catch {
@@ -497,6 +510,19 @@ while ($attempt -le 3) {
         Start-Sleep -Seconds ($attempt * 5)
         $attempt += 1
     }
+}
+if ($composeExitCode -ne 0) {
+    throw "Compose up failed with exit code $composeExitCode"
+}
+
+$psOutput = Invoke-Compose -Args @('-f', $ComposeFile, 'ps', '--format', 'json')
+try {
+    $psObjects = @($psOutput | ConvertFrom-Json)
+} catch {
+    $psObjects = @()
+}
+if (-not $psObjects -or $psObjects.Count -eq 0) {
+    throw "Compose stack did not report any running services after startup."
 }
 
 if ($Model) {
