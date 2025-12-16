@@ -36,7 +36,10 @@ The quicksetup script now:
 - Uses the `windows` Compose profile automatically on Windows/WSL to relax startup gating while keeping other profiles (for example, `vault`) intact.
 - Persists Qdrant data in a named volume for stability.
 - Writes defaults for ORCH_* and CODER_* variables to `.env` to silence warning messages.
-- Starts the stack with `docker compose -f docker-compose.yml --profile windows up -d --remove-orphans`, validates that Control, Gateway, and Console are running, and opens the Console login page in your default browser after the endpoint becomes reachable.
+- Starts the stack with `docker compose -f docker-compose.yml --profile windows up -d --remove-orphans`, then **waits up to three minutes for services that report `health: starting`** before failing.
+- Treats `health: starting` as expected during boot and only errors on `unhealthy`/`exited` states; on timeout it prints `compose ps` and the last 200 log lines automatically.
+- Opens the Console login page in your default browser once the endpoint answers (200/302) and prints the URLs and credentials on completion.
+- Publishes the Console UI on `http://localhost:3001` (mapped to container port 3000) while keeping Gateway at `http://localhost:3000` and Control at `http://localhost:8000`.
 
 What the script does:
 - Creates `.env` from the repo templates if it does not already exist and preserves existing values.
@@ -79,8 +82,15 @@ Default endpoints (override with `CONTROL_HEALTH_URL`, `GATEWAY_HEALTH_URL`, or 
 ```powershell
 Invoke-WebRequest -UseBasicParsing http://localhost:8000/healthz | Out-Null
 Invoke-WebRequest -UseBasicParsing http://localhost:3000/health | Out-Null
-Invoke-WebRequest -UseBasicParsing http://localhost:3001/health | Out-Null
+Invoke-WebRequest -UseBasicParsing http://localhost:3001/ | Out-Null
 ```
+
+The Control API now serves both `/healthz` and `/api/healthz` for backward compatibility so internal callers no longer hit a 404.
+
+## Quick Windows smoke test
+1. `docker compose -f docker-compose.yml down -v`
+2. `pwsh ./install.ps1` (or `PowerShell -ExecutionPolicy Bypass -File .\install.ps1`)
+3. Wait for the readiness loop to report success, confirm `docker compose -f docker-compose.yml ps` shows `running` (health `starting` is acceptable while bootstrapping), and verify your browser opens `http://localhost:3001/login` automatically.
 
 ## Smoke test
 ```powershell

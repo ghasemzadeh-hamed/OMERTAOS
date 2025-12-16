@@ -192,13 +192,50 @@ function Invoke-Compose {
 function Convert-ComposePsOutput {
     param([string[]]$Output)
 
+    if (-not $Output) { return @() }
+    if ($Output -is [string]) { $Output = $Output -split "`r?`n" }
+
+    $joined = ($Output | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) -join "`n"
+
     try {
-        return @($Output | ConvertFrom-Json)
+        $raw = @($joined | ConvertFrom-Json)
+        $parsed = @()
+        foreach ($entry in $raw) {
+            $state = $entry.State
+            $health = $entry.Health
+            if (-not $health -and $state -and ($state -match 'health:\s*(?<status>\w+)')) {
+                $health = $Matches.status
+                $state = ($state -replace "\s*\(health:.*", '').Trim()
+            }
+            if (-not $health -and $entry.Status -and ($entry.Status -match 'health:\s*(?<status>\w+)')) {
+                $health = $Matches.status
+            }
+            $serviceName = if ($entry.Service) { $entry.Service } elseif ($entry.Name) { $entry.Name } else { $null }
+            $parsed += [PSCustomObject]@{
+                Service = $serviceName
+                Name    = if ($entry.Name) { $entry.Name } else { $serviceName }
+                State   = $state
+                Health  = $health
+            }
+        }
+        return $parsed
     } catch {
         $parsed = @()
         foreach ($line in $Output) {
-            if ($line -match "^(?<name>[^\\s]+)\\s+(?<state>running|exited|restarting).*") {
-                $parsed += [PSCustomObject]@{ Service = $Matches.name; State = $Matches.state }
+            if ($line -match "^(?<name>[^\s]+)\s+(?<maybeCommand>\S+\s+)?(?<service>[^\s]+)\s+(?<state>running|exited|restarting|paused|created)(?:\s+\(health:\s*(?<health>\w+)\))?") {
+                $parsed += [PSCustomObject]@{
+                    Service = $Matches.service
+                    Name    = $Matches.name
+                    State   = $Matches.state
+                    Health  = $Matches.health
+                }
+            } elseif ($line -match "^(?<name>[^\s]+)\s+(?<state>running|exited|restarting)(?:\s+\(health:\s*(?<health>\w+)\))?") {
+                $parsed += [PSCustomObject]@{
+                    Service = $Matches.name
+                    Name    = $Matches.name
+                    State   = $Matches.state
+                    Health  = $Matches.health
+                }
             }
         }
         return $parsed
@@ -209,12 +246,89 @@ function Test-ComposeServicesRunning {
     param([array]$Services, [string[]]$Required)
 
     foreach ($name in $Required) {
-        $candidate = $Services | Where-Object { $_.Service -eq $name -or $_.Name -like "*_${name}_*" }
+        $candidate = $Services | Where-Object { $_.Service -eq $name -or $_.Name -like "*_${name}_*" -or $_.Name -like "*${name}*" }
         if (-not $candidate) { return $false }
         $stateText = ($candidate | Select-Object -First 1).State
         if (-not $stateText -or ($stateText -notmatch 'running')) { return $false }
     }
     return $true
+}
+
+function Get-ComposeServices {
+    param(
+        [string]$ComposeFile
+    )
+
+    $psArgs = @('-f', $ComposeFile, 'ps', '--format', 'json')
+    try {
+        $output = Invoke-Compose -ComposeCommandArgs $psArgs
+        $parsed = Convert-ComposePsOutput -Output $output
+        if ($parsed -and $parsed.Count -gt 0) { return $parsed }
+    } catch {
+        Write-Warn "compose ps --format json failed; falling back to text parse ($($_.Exception.Message))"
+    }
+
+    $fallbackOutput = Invoke-Compose -ComposeCommandArgs @('-f', $ComposeFile, 'ps')
+    return Convert-ComposePsOutput -Output $fallbackOutput
+}
+
+function Get-RequiredServices {
+    param([string]$Profile)
+
+    $services = @('postgres', 'redis', 'minio', 'qdrant', 'control', 'gateway', 'console')
+    if ($Profile -eq 'enterprise-vip') { $services += 'vault' }
+    return $services
+}
+
+function Wait-ComposeReady {
+    param(
+        [string]$ComposeFile,
+        [string]$Profile,
+        [int]$TimeoutSeconds = 180,
+        [int]$DelaySeconds = 3
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    $required = Get-RequiredServices -Profile $Profile
+
+    while ((Get-Date) -lt $deadline) {
+        $services = Get-ComposeServices -ComposeFile $ComposeFile
+        $allReady = $true
+
+        foreach ($name in $required) {
+            $candidate = $services | Where-Object { $_.Service -eq $name -or $_.Name -like "*_${name}_*" -or $_.Name -like "*${name}*" }
+            if (-not $candidate) { $allReady = $false; break }
+            $entry = $candidate | Select-Object -First 1
+            $state = $entry.State
+            $health = $entry.Health
+
+            if ($state -match 'exited|dead') {
+                throw "Service '$name' exited (state=$state)."
+            }
+
+            if ($health -and ($health -match 'unhealthy')) {
+                throw "Service '$name' reported unhealthy."
+            }
+
+            if (-not ($state -match 'running')) {
+                $allReady = $false
+                break
+            }
+
+            if ($health -and ($health -match 'starting')) {
+                $allReady = $false
+                break
+            }
+        }
+
+        if ($allReady) { return $true }
+        Start-Sleep -Seconds $DelaySeconds
+    }
+
+    Write-Warn "Compose stack did not become ready within ${TimeoutSeconds}s. Dumping compose status and recent logs."
+    Invoke-Compose -ComposeCommandArgs @('-f', $ComposeFile, 'ps') | ForEach-Object { Write-Host $_ }
+    Invoke-Compose -ComposeCommandArgs @('-f', $ComposeFile, 'logs', '--tail', '200') | ForEach-Object { Write-Host $_ }
+    throw "Compose services were not ready before timeout."
 }
 
 function Wait-HttpReady {
@@ -626,14 +740,14 @@ while ($attempt -le 3) {
     }
 }
 
+$requiredServices = Get-RequiredServices -Profile $Profile
 $psOutput = Invoke-Compose -ComposeCommandArgs @('-f', $ComposeFile, 'ps', '--format', 'json')
 $psObjects = Convert-ComposePsOutput -Output $psOutput
-if (-not $psObjects -or $psObjects.Count -eq 0 -or -not (Test-ComposeServicesRunning -Services $psObjects -Required @('control','gateway','console'))) {
-    Write-Warn 'compose ps reported issues; dumping status and recent logs.'
-    Invoke-Compose -ComposeCommandArgs @('-f', $ComposeFile, 'ps') | ForEach-Object { Write-Host $_ }
-    Invoke-Compose -ComposeCommandArgs @('-f', $ComposeFile, 'logs', '--tail', '200') | ForEach-Object { Write-Host $_ }
-    throw "Compose stack did not report required running services after startup."
+if (-not $psObjects -or $psObjects.Count -eq 0 -or -not (Test-ComposeServicesRunning -Services $psObjects -Required $requiredServices)) {
+    Write-Warn 'compose ps reported issues; waiting for services to become ready.'
 }
+
+Wait-ComposeReady -ComposeFile $ComposeFile -Profile $Profile -TimeoutSeconds 180 -DelaySeconds 3
 
 if ($Model) {
     if (Get-Command ollama -ErrorAction SilentlyContinue) {

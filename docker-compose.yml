@@ -197,7 +197,7 @@ services:
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3001}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev-secret-change-me}
       NEXT_PUBLIC_GATEWAY_URL: ${NEXT_PUBLIC_GATEWAY_URL:-http://gateway:3000}
-      PORT: ${CONSOLE_PORT:-3001}
+      PORT: ${CONSOLE_PORT:-3000}
       AION_GATEWAY_ADMIN_TOKEN: ${AION_GATEWAY_ADMIN_TOKEN:-dev-admin-token}
       AION_ADMIN_TOKEN_SECRET_PATH: ${AION_ADMIN_TOKEN_SECRET_PATH:-}
       AION_ADMIN_TOKEN: ${AION_ADMIN_TOKEN:-dev-admin-token}
@@ -209,18 +209,13 @@ services:
       gateway:
         condition: service_started
     ports:
-      - "3001:${CONSOLE_PORT:-3001}"
+      - "3001:${CONSOLE_PORT:-3000}"
     healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "const port = process.env.PORT || '3001'; fetch('http://127.0.0.1:' + port + '/healthz',{cache:'no-store'}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
-        ]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:${PORT:-3000}/ >/dev/null 2>&1 || exit 1"]
       interval: 5s
       timeout: 3s
-      retries: 60
+      retries: 30
+      start_period: 20s
     networks: [aionos]
 
   dev-kernel:

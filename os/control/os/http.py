@@ -94,6 +94,11 @@ async def healthz() -> dict[str, str]:
     return await _health_response()
 
 
+@app.get("/api/healthz")
+async def api_healthz() -> dict[str, str]:
+    return await _health_response()
+
+
 @app.get("/health")
 async def health() -> dict[str, str]:
     return await _health_response()
