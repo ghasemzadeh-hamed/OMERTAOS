@@ -171,16 +171,22 @@ function Invoke-Compose {
     Write-Debug "Compose pre-args: $($command.PreArgs -join ' ')"
     Write-Debug "Compose command args: $($ComposeCommandArgs -join ' ')"
 
-    $output = & $command.ExePath @allArgs 2>&1
-    $exitCode = $LASTEXITCODE
-    if ($exitCode -ne 0) {
-        $lines = $output -split "`n" | Select-Object -First 80
-        Write-Host "[ERROR] Compose command failed (exit $exitCode): $commandLine" -ForegroundColor Red
-        if ($lines) { Write-Host ($lines -join "`n") -ForegroundColor Red }
-        throw "Compose command failed with exit code $exitCode"
+    $prevEAP = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+      $output = & $command.ExePath @allArgs 2>&1 | Out-String
+      $exit = $LASTEXITCODE
+    } finally {
+      $ErrorActionPreference = $prevEAP
     }
-
+    
+    if ($exit -ne 0) {
+      Write-Error "docker compose failed (exit=$exit). Output:`n$output"
+      throw "docker compose failed with exit code $exit"
+    }
+    
     return $output
+
 }
 
 function Convert-ComposePsOutput {
