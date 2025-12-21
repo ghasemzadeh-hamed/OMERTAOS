@@ -179,12 +179,12 @@ function Invoke-Compose {
     } finally {
       $ErrorActionPreference = $prevEAP
     }
-    
+
     if ($exit -ne 0) {
       Write-Error "docker compose failed (exit=$exit). Output:`n$output"
       throw "docker compose failed with exit code $exit"
     }
-    
+
     return $output
 
 }
