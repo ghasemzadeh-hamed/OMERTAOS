@@ -36,23 +36,13 @@ export async function middleware(req: NextRequest) {
           return NextResponse.redirect(url);
         }
 
-        if (setupDone && pathname === "/setup") {
-          url.pathname = authenticated ? "/" : "/login";
-          return NextResponse.redirect(url);
-        }
-
         if (setupDone && !authenticated && pathname !== "/login") {
           url.pathname = "/login";
           return NextResponse.redirect(url);
         }
 
-        if (setupDone && authenticated && !onboardingComplete && pathname !== "/onboarding") {
-          url.pathname = "/onboarding";
-          return NextResponse.redirect(url);
-        }
-
-        if (setupDone && authenticated && pathname === "/login") {
-          url.pathname = "/";
+        if (setupDone && authenticated && ["/login", "/setup", "/"].includes(pathname)) {
+          url.pathname = "/dashboard";
           return NextResponse.redirect(url);
         }
       } else {

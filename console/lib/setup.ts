@@ -1,23 +1,18 @@
-import { fetchProfileState } from '@/lib/profile';
+import { ensureSetupState, readSetupState, setSetupState } from '@/lib/systemState';
 
 export async function isSetupComplete(): Promise<boolean> {
   try {
-    const profile = await fetchProfileState();
-    return Boolean(profile.setupDone);
+    return await ensureSetupState();
   } catch (error) {
-    console.error('[console] Failed to determine setup status from gateway', error);
+    console.error('[console] Failed to determine setup status from database', error);
     return false;
   }
 }
 
 export async function getSetupStatus() {
   try {
-    const profile = await fetchProfileState();
-    return {
-      setupComplete: Boolean(profile.setupDone),
-      profile: profile.profile,
-      updatedAt: profile.updatedAt,
-    };
+    const setupComplete = await readSetupState();
+    return { setupComplete, profile: null as string | null, updatedAt: undefined as string | undefined };
   } catch (error) {
     console.error('[console] Failed to read setup status', error);
     return {
@@ -26,4 +21,8 @@ export async function getSetupStatus() {
       updatedAt: undefined as string | undefined,
     };
   }
+}
+
+export async function completeSetup() {
+  return setSetupState(true);
 }

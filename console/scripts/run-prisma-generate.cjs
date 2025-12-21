@@ -9,11 +9,15 @@ if (process.env.SKIP_PRISMA_GENERATE === 'true') {
 }
 
 const env = { ...process.env };
+
 if (!env.DATABASE_URL) {
-  env.DATABASE_URL = 'file:./dev.db';
-  console.warn(
-    'DATABASE_URL not set. Falling back to local SQLite database for prisma generate.'
-  );
+  console.error('DATABASE_URL is required for prisma generate and must point to Postgres.');
+  process.exit(1);
+}
+
+if (!/^postgres(ql)?:\/\//i.test(env.DATABASE_URL)) {
+  console.error('DATABASE_URL must be a Postgres connection string.');
+  process.exit(1);
 }
 
 const prismaCli = require.resolve('prisma/build/index.js');

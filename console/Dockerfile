@@ -44,6 +44,7 @@ ENV DATABASE_URL=${PRISMA_DATABASE_URL}
 
 RUN pnpm prisma generate
 RUN pnpm build
+RUN pnpm exec tsc --project scripts/tsconfig.json
 RUN pnpm prune --prod
 
 # Stage 3: runtime image
@@ -63,9 +64,12 @@ COPY --from=builder /workspace/console/node_modules ./node_modules
 COPY --from=builder /workspace/console/package.json ./package.json
 COPY --from=builder /workspace/console/next.config.mjs ./next.config.mjs
 COPY --from=builder /workspace/console/prisma ./prisma
+COPY --from=builder /workspace/console/scripts ./scripts
 
 USER nextjs
 
 EXPOSE 3000
 
-CMD ["node", "node_modules/next/dist/bin/next", "start", "-p", "3000"]
+COPY console/scripts/entrypoint.sh ./entrypoint.sh
+
+CMD ["sh", "entrypoint.sh"]
