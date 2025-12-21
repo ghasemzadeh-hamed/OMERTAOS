@@ -98,21 +98,8 @@ const handleRedisErrors = async <T>(op: () => Promise<T>, fallback: T): Promise<
   }
 };
 
-function assertOk(res: unknown): asserts res is 'OK' {
-  if (res !== 'OK') {
-    throw new Error(`unexpected redis response: ${String(res)}`);
-  }
-}
-
 export const cacheIdempotency = async (key: string, payload: string, ttlSeconds: number, tenantId?: string) => {
-  await handleRedisErrors(
-    async () => {
-      const res = await redis.set(idemKey(key, tenantId), payload, 'EX', ttlSeconds);
-      assertOk(res);
-      return res;
-    },
-    'OK',
-  );
+  await handleRedisErrors(() => redis.set(idemKey(key, tenantId), payload, 'EX', ttlSeconds), undefined as unknown as void);
 };
 
 export const getIdempotency = async (key: string, tenantId?: string): Promise<string | null> => {
