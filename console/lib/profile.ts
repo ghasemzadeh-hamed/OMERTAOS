@@ -1,5 +1,6 @@
 import { GATEWAY_HTTP_URL } from '@/lib/gatewayConfig';
 import { getConsoleSecrets } from '@/lib/serverConfig';
+import { setSetupState, ensureSetupState } from '@/lib/systemState';
 
 export type ProfileId = 'user' | 'professional' | 'enterprise-vip';
 
@@ -43,7 +44,8 @@ export async function fetchProfileState(): Promise<ProfileState> {
     throw new GatewayProfileError(message, res.status);
   }
   const data = text ? (() => { try { return JSON.parse(text); } catch { return {}; } })() : {};
-  return normalizeProfileResponse(data);
+  const setupDone = await ensureSetupState();
+  return { ...normalizeProfileResponse(data), setupDone };
 }
 
 export async function updateProfileState(
@@ -69,7 +71,8 @@ export async function updateProfileState(
           : text || `Gateway responded with status ${res.status} while updating profile`;
     throw new GatewayProfileError(message, res.status);
   }
-  return { ok: true, ...normalizeProfileResponse(data) };
+  const updatedSetup = body.setupDone ? await setSetupState(true) : await ensureSetupState();
+  return { ok: true, ...normalizeProfileResponse(data), setupDone: updatedSetup };
 }
 
 export { GatewayProfileError };

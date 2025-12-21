@@ -1,15 +1,19 @@
 import { PrismaClient } from '@prisma/client';
 
-const DEFAULT_SQLITE_URL = 'file:./dev.db';
+import { getDatabaseDiagnostics, requirePostgresUrl } from './databaseInfo';
 
-if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = DEFAULT_SQLITE_URL;
-  // eslint-disable-next-line no-console
-  console.warn(
-    `[console] DATABASE_URL not set; defaulting to local SQLite database at ${DEFAULT_SQLITE_URL}. ` +
-      'Set DATABASE_URL to a Postgres DSN for production.',
-  );
-}
+const isDockerEnv = process.env.AION_DOCKER === '1' || process.env.DOCKER === 'true';
+const isProdEnv = process.env.NODE_ENV === 'production';
+const enforceDatabaseUrl = isDockerEnv || isProdEnv;
+
+const databaseUrl = process.env.DATABASE_URL;
+requirePostgresUrl(databaseUrl, enforceDatabaseUrl);
+
+const databaseDiagnostics = getDatabaseDiagnostics(databaseUrl, enforceDatabaseUrl);
+// eslint-disable-next-line no-console
+console.info(
+  `[console] Database provider: ${databaseDiagnostics.provider}; URL: ${databaseDiagnostics.redactedUrl}`,
+);
 
 type GlobalWithPrisma = typeof globalThis & {
   prisma?: PrismaClient | null;

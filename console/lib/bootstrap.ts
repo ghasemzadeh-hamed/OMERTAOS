@@ -1,8 +1,8 @@
 import { headers } from 'next/headers';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { gatewayFetch } from '@/lib/gatewayClient';
 import { fetchProfileState, ProfileId } from '@/lib/profile';
+import { ensureSetupState } from '@/lib/systemState';
 
 export type BootstrapState = {
   setupDone: boolean;
@@ -34,11 +34,11 @@ export async function getBootstrapState(): Promise<BootstrapState> {
   const tenantId = resolveTenantId();
 
   try {
-    const profileState = await fetchProfileState();
-    setupDone = Boolean(profileState?.setupDone);
-    profile = profileState.profile;
+    setupDone = await ensureSetupState();
+    const profileState = await fetchProfileState().catch(() => null);
+    profile = profileState?.profile ?? null;
   } catch (error) {
-    console.error('[console] Failed to fetch profile state', error);
+    console.error('[console] Failed to read setup state', error);
     setupUnknown = true;
   }
 
@@ -51,15 +51,7 @@ export async function getBootstrapState(): Promise<BootstrapState> {
     authenticated = false;
   }
 
-  if (setupDone) {
-    try {
-      const res = await gatewayFetch('/api/onboarding/status', { method: 'GET' });
-      onboardingComplete = Boolean((res as any)?.onboardingComplete ?? (res as any)?.data?.onboardingComplete);
-    } catch (error) {
-      console.error('[console] Failed to read onboarding status', error);
-      onboardingComplete = false;
-    }
-  }
+  onboardingComplete = setupDone;
 
   return { setupDone, onboardingComplete, authenticated, setupUnknown, role, tenantId, profile };
 }

@@ -7,7 +7,7 @@ dev-control:
 	cd control && PYTHONPATH=$(CURDIR):$(CURDIR)/os uvicorn os.control.main:app --reload --port 8001
 
 doctor:
-	$(CLI) doctor
+bash scripts/doctor.sh
 
 bundle:
 	@tar czf deploy/bundles/example.tgz -C deploy/bundles/example .

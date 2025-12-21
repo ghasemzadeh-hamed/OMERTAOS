@@ -28,6 +28,7 @@ import { registerConfigRoutes } from './routes/config.js';
 import { registerSealRoutes } from './routes/seal.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerClaudeRoutes } from './routes/claude.js';
+import { registerSetupRoutes } from './routes/setup.js';
 import {
   buildDevKernelPayload,
   callDevKernel,
@@ -71,6 +72,7 @@ const controlClient = createControlClient();
 const streamEmitter = new EventEmitter();
 registerHealthRoutes(app);
 registerClaudeRoutes(app);
+registerSetupRoutes(app);
 
 const invokeControlUnary = (method: 'Submit' | 'StatusById', payload: any, metadata: Metadata) => {
   return new Promise<any>((resolve, reject) => {
