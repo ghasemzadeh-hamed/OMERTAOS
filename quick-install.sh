@@ -17,14 +17,26 @@ else
   echo "Backed up existing .env"
 fi
 
+PYTHON_BIN="${PYTHON_BIN:-}"
+if [ -z "$PYTHON_BIN" ]; then
+  if command -v python3 >/dev/null 2>&1; then
+    PYTHON_BIN="python3"
+  elif command -v python >/dev/null 2>&1; then
+    PYTHON_BIN="python"
+  else
+    echo "Python is required but was not found. Please install python3." >&2
+    exit 1
+  fi
+fi
+
 DEV_ADMIN_EMAIL=${DEV_ADMIN_EMAIL:-dev-admin@aion.local}
-DEV_ADMIN_PASSWORD=${DEV_ADMIN_PASSWORD:-$(python - <<'PY'
+DEV_ADMIN_PASSWORD=${DEV_ADMIN_PASSWORD:-$($PYTHON_BIN - <<'PY'
 import secrets,string
 alphabet=string.ascii_letters+string.digits
 print(''.join(secrets.choice(alphabet) for _ in range(16)))
 PY
 )}
-DEV_API_KEY=${DEV_API_KEY:-$(python - <<'PY'
+DEV_API_KEY=${DEV_API_KEY:-$($PYTHON_BIN - <<'PY'
 import secrets
 print(secrets.token_hex(12))
 PY
