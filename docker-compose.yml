@@ -13,8 +13,7 @@ services:
       server -dev
       -dev-root-token-id=${VAULT_DEV_ROOT_TOKEN_ID:-aionos-dev-root}
       -dev-listen-address=0.0.0.0:8200
-    ports:
-      - "8200:8200"
+    ports: []
     healthcheck:
       test:
         - "CMD-SHELL"
@@ -37,8 +36,7 @@ services:
       POSTGRES_USER: ${AION_DB_USER:-aionos}
       POSTGRES_PASSWORD: ${AION_DB_PASSWORD:-password}
       POSTGRES_DB: ${AION_DB_NAME:-omerta_db}
-    ports:
-      - "5432:5432"
+    ports: []
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${AION_DB_USER:-aionos} -d ${AION_DB_NAME:-omerta_db} || exit 1"]
       interval: 5s
@@ -48,7 +46,7 @@ services:
 
   redis:
     image: redis:7
-    ports: ["6379:6379"]
+    ports: []
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -58,7 +56,7 @@ services:
 
   qdrant:
     image: qdrant/qdrant:latest
-    ports: ["6333:6333"]
+    ports: []
     volumes:
       - qdrant-data:/qdrant/storage
     healthcheck:
@@ -83,9 +81,7 @@ services:
       MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minio}
       MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-miniosecret}
     command: server /data --console-address ":9001"
-    ports:
-      - "9000:9000"
-      - "9001:9001"
+    ports: []
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:9000/minio/health/ready"]
       interval: 5s
@@ -129,7 +125,6 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
-      - "50051:50051"
     healthcheck:
       test: ["CMD", "python", "-m", "os.control.os.healthcheck"]
       interval: 5s
@@ -144,7 +139,7 @@ services:
       dockerfile: gateway/Dockerfile
     env_file: dev.env
     environment:
-      AION_GATEWAY_PORT: ${AION_GATEWAY_PORT:-3000}
+      AION_GATEWAY_PORT: ${AION_GATEWAY_PORT:-8080}
       AION_GATEWAY_HOST: ${AION_GATEWAY_HOST:-0.0.0.0}
       AION_CONTROL_GRPC: ${AION_CONTROL_GRPC:-http://control:50051}
       AION_CONTROL_BASE_URL: ${AION_CONTROL_BASE_URL:-http://control:8000}
@@ -172,7 +167,7 @@ services:
       control:
         condition: service_started
     ports:
-      - "3000:${AION_GATEWAY_PORT:-3000}"
+      - "8080:${AION_GATEWAY_PORT:-8080}"
     volumes:
       - ./protos:/protos:ro
     healthcheck:
@@ -194,9 +189,9 @@ services:
       dockerfile: console/Dockerfile
     env_file: dev.env
     environment:
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3001}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev-secret-change-me}
-      NEXT_PUBLIC_GATEWAY_URL: ${NEXT_PUBLIC_GATEWAY_URL:-http://gateway:3000}
+      NEXT_PUBLIC_GATEWAY_URL: ${NEXT_PUBLIC_GATEWAY_URL:-http://gateway:8080}
       PORT: ${CONSOLE_PORT:-3000}
       AION_GATEWAY_ADMIN_TOKEN: ${AION_GATEWAY_ADMIN_TOKEN:-dev-admin-token}
       AION_ADMIN_TOKEN_SECRET_PATH: ${AION_ADMIN_TOKEN_SECRET_PATH:-}
@@ -209,7 +204,7 @@ services:
       gateway:
         condition: service_started
     ports:
-      - "3001:${CONSOLE_PORT:-3000}"
+      - "3000:${CONSOLE_PORT:-3000}"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:${PORT:-3000}/ >/dev/null 2>&1 || exit 1"]
       interval: 5s
@@ -242,8 +237,7 @@ services:
     volumes:
       - ./app:/app/app
       - ./config:/app/config
-    ports:
-      - "9101:9100"
+    ports: []
     depends_on:
       - llm-gateway
       - vault
@@ -255,8 +249,7 @@ services:
     container_name: aionos-llm-gateway
     environment:
       DUMMY: "1"
-    ports:
-      - "8008:8008"
+    ports: []
     profiles: ["dev-kernel"]
     networks: [aionos]
 
@@ -268,3 +261,4 @@ volumes:
 networks:
   aionos:
     driver: bridge
+    internal: true

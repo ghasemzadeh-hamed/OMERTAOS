@@ -1,17 +1,22 @@
+const isDockerEnv = process.env.AION_DOCKER === '1' || process.env.DOCKER === 'true';
+const localDefaultGateway = 'http://localhost:8080';
+const dockerDefaultGateway = 'http://gateway:8080';
+
 const resolveGatewayUrl = (): string => {
+  const defaultGateway = isDockerEnv ? dockerDefaultGateway : localDefaultGateway;
   const raw =
     process.env.GATEWAY_URL ||
     process.env.AION_GATEWAY_URL ||
     process.env.NEXT_PUBLIC_GATEWAY_URL ||
-    'http://gateway:8080';
+    defaultGateway;
 
   const trimmed = raw.trim();
   if (!trimmed) {
-    return 'http://gateway:8080';
+    return defaultGateway;
   }
 
   // Avoid trailing slashes so callers can safely append paths.
-  return trimmed.replace(/\/+$/, '') || 'http://gateway:8080';
+  return trimmed.replace(/\/+$/, '') || defaultGateway;
 };
 
 export const GATEWAY_HTTP_URL = resolveGatewayUrl();
