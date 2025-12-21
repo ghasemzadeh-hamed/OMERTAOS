@@ -64,6 +64,28 @@ Control binds to `http://localhost:8000`, the gateway to `http://localhost:8080`
 Defaults match `dev.env` (`aionos` / `password` / `omerta_db` for Postgres); update `AION_DB_*` and `DATABASE_URL` together if you override them.
 Rotate placeholder tokens such as `AION_GATEWAY_ADMIN_TOKEN` before production use.
 
+### Quickstart credentials (dev only)
+
+- Console: http://localhost:3000
+- Gateway API: http://localhost:8080
+- Control API: http://localhost:8000
+
+`quick-install.sh` now generates deterministic dev credentials (printed after the script finishes) and writes them to `.env`:
+
+- `DEV_ADMIN_EMAIL` / `DEV_ADMIN_PASSWORD`: initial console admin login
+- `DEV_API_KEY`: added to `AION_GATEWAY_API_KEYS` for gateway calls via `x-api-key`
+- `AION_GATEWAY_ADMIN_TOKEN` / `AION_ADMIN_TOKEN`: reused for gateway/control bootstrap
+
+Override any of these by setting environment variables before running `./quick-install.sh`.
+
+Troubleshooting: if the gateway logs `EAI_AGAIN redis`, confirm the compose network is healthy:
+
+```bash
+docker compose -f docker-compose.quickstart.yml ps
+docker compose -f docker-compose.quickstart.yml logs gateway redis
+docker inspect $(docker compose -f docker-compose.quickstart.yml ps -q redis) --format '{{ .NetworkSettings.Networks }}'
+```
+
 ### Other flows
 
 Detailed guides for ISO, native Linux, WSL, and Docker modes live in [`docs/quickstart.md`](docs/quickstart.md). ISO and native installers gate destructive actions behind the `AIONOS_ALLOW_INSTALL` flag.

@@ -89,7 +89,10 @@ compose-clean:
 	docker compose -f docker-compose.quickstart.yml down -v --remove-orphans
 
 build-image:
-        docker compose -f docker-compose.quickstart.yml build
+	docker compose -f docker-compose.quickstart.yml build
+
+bootstrap:
+	./quick-install.sh
 
 claude-install:
         bash scripts/claude/install-claude-code.sh

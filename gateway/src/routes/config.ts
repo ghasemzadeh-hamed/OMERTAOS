@@ -2,7 +2,7 @@ import createError from 'http-errors';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 
 import { gatewayConfig } from '../config.js';
-import { isPublicSetupRoute } from '../auth/index.js';
+import { devBypassAuth, isPublicSetupRoute } from '../auth/index.js';
 
 type KernelProfile = 'user' | 'professional' | 'enterprise-vip';
 
@@ -10,11 +10,6 @@ interface ProfileState {
   profile: KernelProfile;
   setupDone: boolean;
 }
-
-const isDevMode =
-  process.env.AION_ENV === 'dev' ||
-  process.env.AION_AUTH_MODE === 'disabled' ||
-  process.env.NODE_ENV === 'development';
 
 let devProfileState: ProfileState = { profile: 'user', setupDone: false };
 
@@ -27,7 +22,7 @@ const controlHeaders = () => {
 };
 
 const requireAdmin = (request: FastifyRequest) => {
-  if (isDevMode && isPublicSetupRoute(request)) {
+  if (devBypassAuth && isPublicSetupRoute(request)) {
     // During initial bootstrap in dev/quickstart we allow unauthenticated
     // access so the console setup wizard can persist the chosen profile.
     return;
@@ -84,7 +79,7 @@ export const registerConfigRoutes = (app: FastifyInstance) => {
   // Profile selection is stored canonically inside control (backed by .aionos/profile.json).
   // Public in dev/quickstart for setup bootstrap. Protected by JWT in production.
   app.get('/v1/config/profile', async (request) => {
-    if (isDevMode) {
+    if (devBypassAuth) {
       // In dev/quickstart the profile lives only in memory to bootstrap the setup wizard.
       return devProfileState;
     }
@@ -99,7 +94,7 @@ export const registerConfigRoutes = (app: FastifyInstance) => {
 
   // Public in dev/quickstart for setup bootstrap. Protected by JWT in production.
   app.post('/v1/config/profile', async (request, _reply) => {
-    if (isDevMode) {
+    if (devBypassAuth) {
       const payload = (request.body ?? {}) as Partial<ProfileState>;
       if (payload.profile && !['user', 'professional', 'enterprise-vip'].includes(payload.profile)) {
         throw createError(400, 'Invalid profile');

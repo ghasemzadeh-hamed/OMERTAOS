@@ -18,9 +18,16 @@ services:
       interval: 5s
       timeout: 3s
       retries: 30
+    restart: unless-stopped
   redis:
     image: redis:7
     ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
 
   mongo:
     image: mongo:7
@@ -67,6 +74,7 @@ services:
       - minio
     ports:
       - "8000:8000"
+    restart: unless-stopped
   gateway:
     build:
       context: .
@@ -79,9 +87,13 @@ services:
       AION_ENV: dev
       AION_AUTH_MODE: disabled
     depends_on:
-      - control
+      control:
+        condition: service_started
+      redis:
+        condition: service_healthy
     ports:
       - "8080:8080"
+    restart: unless-stopped
   console:
     build:
       context: .
@@ -98,9 +110,11 @@ services:
       AION_ADMIN_TOKEN: ${AION_ADMIN_TOKEN:-dev-admin-token}
       PORT: 3000
     depends_on:
-      - gateway
+      gateway:
+        condition: service_started
     ports:
       - "3000:3000"
+    restart: unless-stopped
 
 volumes:
   postgres-data:
