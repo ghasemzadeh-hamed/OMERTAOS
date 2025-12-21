@@ -31,10 +31,10 @@ const ensureRole = (roles: string[], required: string[]): boolean => {
   return required.some((role) => roles.includes(role));
 };
 
+const devBypassAuth = process.env.AION_ENV === 'dev' || process.env.AION_DEV_BYPASS_AUTH === '1';
+
 const isDevMode =
-  process.env.AION_ENV === 'dev' ||
-  process.env.AION_AUTH_MODE === 'disabled' ||
-  process.env.NODE_ENV === 'development';
+  devBypassAuth || process.env.AION_AUTH_MODE === 'disabled' || process.env.NODE_ENV === 'development';
 
 const isDevAuthMode = gatewayConfig.environment === 'development' || isDevMode;
 
@@ -66,7 +66,10 @@ const decodeJwt = (token: string, request: FastifyRequest) => {
   const publicKey = gatewayConfig.jwtPublicKey;
   if (!publicKey) {
     warnMissingJwtOnce(request);
-    throw createError(401, 'Authentication required');
+    if (devBypassAuth && isPublicSetupRoute(request)) {
+      throw createError(401, 'Authentication required');
+    }
+    throw createError(503, 'JWT public key not configured. Set AION_JWT_PUBLIC_KEY or enable dev bypass.');
   }
   return jwt.verify(token, publicKey, { algorithms: ['RS256'] });
 };
@@ -93,7 +96,7 @@ export const authPreHandler = (requiredRoles: string[] = []) => {
       return;
     }
 
-    if (isDevMode && isPublicSetupRoute(request)) {
+    if (devBypassAuth && isPublicSetupRoute(request)) {
       warnMissingJwtOnce(request);
       request.aionContext = context;
       return;
@@ -128,7 +131,7 @@ export const authPreHandler = (requiredRoles: string[] = []) => {
     }
 
     if (!context.user && requiredRoles.length > 0) {
-      throw createError(401, 'Authentication required');
+      throw createError(503, 'Authentication required and JWT key missing.');
     }
 
     if (context.user && requiredRoles.length > 0 && !ensureRole(context.user.roles, requiredRoles)) {
@@ -143,4 +146,4 @@ if (isDevMode && !gatewayConfig.jwtPublicKey) {
   warnMissingJwtOnce();
 }
 
-export { isDevAuthMode, isPublicSetupRoute, PUBLIC_SETUP_ROUTES, isDevMode };
+export { isDevAuthMode, isPublicSetupRoute, PUBLIC_SETUP_ROUTES, isDevMode, devBypassAuth };
