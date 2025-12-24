@@ -39,13 +39,13 @@ The quicksetup script now:
 - Starts the stack with `docker compose -f docker-compose.yml --profile windows up -d --remove-orphans`, then **waits up to three minutes for services that report `health: starting`** before failing.
 - Treats `health: starting` as expected during boot and only errors on `unhealthy`/`exited` states; on timeout it prints `compose ps` and the last 200 log lines automatically.
 - Opens the Console login page in your default browser once the endpoint answers (200/302) and prints the URLs and credentials on completion.
-- Publishes the Console UI on `http://localhost:3001` (mapped to container port 3000) while keeping Gateway at `http://localhost:3000` and Control at `http://localhost:8000`.
+- Publishes the Console UI on `http://localhost:3000` while keeping Gateway at `http://localhost:8080` and Control at `http://localhost:8000`.
 
 What the script does:
 - Creates `.env` from the repo templates if it does not already exist and preserves existing values.
 - Writes profile metadata to `.aionos/profile.json`.
 - Detects Compose deterministically (docker compose v2 preferred, docker-compose fallback) and shows the exact command it runs.
-- Starts the Control (8000), Gateway (3000), and Console (3001) containers with compose and surfaces stderr on failure.
+- Starts the Control (8000), Gateway (8080), and Console (3000) containers with compose and surfaces stderr on failure.
 - Prints generated admin tokens and credentials.
 
 Flags (optional):
