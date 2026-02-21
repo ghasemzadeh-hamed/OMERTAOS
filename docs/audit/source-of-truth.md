@@ -15,6 +15,7 @@ The following host ports are declared in `docker-compose.yml` and must remain do
 - 6379
 - 8000
 - 8008
+- 8080
 - 8200
 - 9000
 - 9001

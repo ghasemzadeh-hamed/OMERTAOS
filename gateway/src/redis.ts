@@ -99,7 +99,7 @@ const handleRedisErrors = async <T>(op: () => Promise<T>, fallback: T): Promise<
 };
 
 export const cacheIdempotency = async (key: string, payload: string, ttlSeconds: number, tenantId?: string) => {
-  await handleRedisErrors(() => redis.set(idemKey(key, tenantId), payload, 'EX', ttlSeconds), undefined as unknown as void);
+  await handleRedisErrors(() => redis.set(idemKey(key, tenantId), payload, 'EX', ttlSeconds), null);
 };
 
 export const getIdempotency = async (key: string, tenantId?: string): Promise<string | null> => {
