@@ -1,0 +1,33 @@
+{
+  "commits": [
+    {
+      "hash": "8cf1e2e",
+      "message": "chore(architecture): introduce unified config & registry abstraction"
+    }
+  ],
+  "moves": [],
+  "artifacts": [
+    "migration/architecture_comparison.md",
+    "migration/dependency_graph_after.json",
+    "migration/dependency_graph_before.json",
+    "migration/failed_items.log",
+    "migration/final_structure.txt",
+    "migration/logs",
+    "migration/metrics_after.json",
+    "migration/metrics_before.json",
+    "migration/migration_plan.json",
+    "migration/migration_report.md",
+    "migration/omertaos_analysis.md",
+    "migration/target_architecture.md",
+    "migration/validation-unified-abstractions.log"
+  ],
+  "validation_logs": [
+    "migration/logs/cargo-abstraction.log",
+    "migration/logs/console-build.log",
+    "migration/logs/console-npmci.log",
+    "migration/logs/mypy-abstraction.log",
+    "migration/logs/pytest-abstraction.log",
+    "migration/logs/ruff-abstraction.log",
+    "migration/logs/validation-abstraction.log"
+  ]
+}

@@ -1,0 +1,111 @@
+
+==================================== ERRORS ====================================
+________________________ ERROR collecting control/tests ________________________
+Defining 'pytest_plugins' in a non-top-level conftest is no longer supported:
+It affects the entire test suite instead of just below the conftest as expected.
+  /workspace/OMERTAOS/control/tests/conftest.py
+Please move it to a top level conftest file at the rootdir:
+  /workspace/OMERTAOS
+For more information, visit:
+  https://docs.pytest.org/en/stable/deprecations.html#pytest-plugins-in-non-top-level-conftest-files
+__________________ ERROR collecting tests/test_cli_bundle.py ___________________
+ImportError while importing test module '/workspace/OMERTAOS/tests/test_cli_bundle.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/root/.pyenv/versions/3.14.0/lib/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_cli_bundle.py:7: in <module>
+    from typer.testing import CliRunner
+E   ModuleNotFoundError: No module named 'typer'
+________________ ERROR collecting tests/test_stream_control.py _________________
+ImportError while importing test module '/workspace/OMERTAOS/tests/test_stream_control.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/root/.pyenv/versions/3.14.0/lib/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_stream_control.py:4: in <module>
+    from os.control.os.grpc_server import AionTasksService
+os/control/os/grpc_server.py:10: in <module>
+    from os.control.os.aion_grpc.aion.v1 import tasks_pb2, tasks_pb2_grpc
+os/control/os/aion_grpc/aion/v1/tasks_pb2_grpc.py:5: in <module>
+    from aion.v1 import tasks_pb2 as aion_dot_v1_dot_tasks__pb2
+cli/aion/__init__.py:3: in <module>
+    from .cli import app
+cli/aion/cli.py:8: in <module>
+    import typer
+E   ModuleNotFoundError: No module named 'typer'
+=============================== warnings summary ===============================
+os/control/os/schemas/provider.py:21
+  /workspace/OMERTAOS/os/control/os/schemas/provider.py:21: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class ProviderOut(ProviderBase):
+
+../../root/.pyenv/versions/3.14.0/lib/python3.14/site-packages/pydantic/_internal/_config.py:383
+  /root/.pyenv/versions/3.14.0/lib/python3.14/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+  * 'orm_mode' has been renamed to 'from_attributes'
+    warnings.warn(message, UserWarning)
+
+os/control/os/schemas/datasource.py:20
+  /workspace/OMERTAOS/os/control/os/schemas/datasource.py:20: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class DataSourceOut(DataSourceBase):
+
+os/control/os/schemas/module.py:17
+  /workspace/OMERTAOS/os/control/os/schemas/module.py:17: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class ModuleOut(ModuleManifest):
+
+os/control/os/schemas/agent.py:9
+  /workspace/OMERTAOS/os/control/os/schemas/agent.py:9: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class AgentTemplate(BaseModel):
+
+os/control/os/schemas/agent.py:48
+  /workspace/OMERTAOS/os/control/os/schemas/agent.py:48: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class AgentInstanceOut(BaseModel):
+
+os/control/os/schemas/recommendations.py:9
+  /workspace/OMERTAOS/os/control/os/schemas/recommendations.py:9: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class ToolResource(BaseModel):
+
+os/control/os/api/config.py:104
+  /workspace/OMERTAOS/os/control/os/api/config.py:104: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class ConfigDocument(BaseModel):
+
+os/control/os/http.py:69
+  /workspace/OMERTAOS/os/control/os/http.py:69: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event("startup")
+
+../../root/.pyenv/versions/3.14.0/lib/python3.14/site-packages/fastapi/applications.py:4573
+../../root/.pyenv/versions/3.14.0/lib/python3.14/site-packages/fastapi/applications.py:4573
+  /root/.pyenv/versions/3.14.0/lib/python3.14/site-packages/fastapi/applications.py:4573: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    return self.router.on_event(event_type)
+
+os/control/os/http.py:78
+  /workspace/OMERTAOS/os/control/os/http.py:78: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event("shutdown")
+
+tests/test_policy_state.py:12
+  /workspace/OMERTAOS/tests/test_policy_state.py:12: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR control/tests - Failed: Defining 'pytest_plugins' in a non-top-level co...
+ERROR tests/test_cli_bundle.py
+ERROR tests/test_stream_control.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 3 errors during collection !!!!!!!!!!!!!!!!!!!!
+13 warnings, 3 errors in 5.11s

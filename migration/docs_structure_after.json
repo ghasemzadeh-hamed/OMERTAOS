@@ -1,0 +1,604 @@
+{
+  "markdown_files": 116,
+  "folders_exist": {
+    "core": "True",
+    "agents": "True",
+    "control": "True",
+    "registry": "True",
+    "config": "True",
+    "schemas": "True",
+    "execution": "True",
+    "db": "False",
+    "bigdata": "True",
+    "cli": "True",
+    "console": "True",
+    "kernel": "True",
+    "policies": "True",
+    "shared": "True",
+    "deploy": "True",
+    "tests": "True",
+    "tools": "True"
+  },
+  "validation": [
+    {
+      "file": "deploy/headless-bundle/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "aion/ui/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "config/certs/dev/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "config/certs/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "config/certs/bootstrap/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "integrations/windows-agentic-bridge/docs/SETUP_WINDOWS_AGENTIC.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "integrations/windows-agentic-bridge/docs/ARCHITECTURE.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "integrations/windows-agentic-bridge/docs/SETUP_WSL.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "integrations/windows-agentic-bridge/docs/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "integrations/windows-agentic-bridge/docs/SECURITY.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "integrations/windows-agentic-bridge/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "ai_registry/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "migration/target_architecture.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "migration/api_endpoints_snapshot.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "migration/migration_report.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "migration/omertaos_analysis.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "migration/architecture_comparison.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "CODE_OF_CONDUCT.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/architecture.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/modules.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/agentos_ai_registry.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/AGENT_RUNTIME.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/deploy/headless-cli.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": false
+    },
+    {
+      "file": "docs/deploy/terminal-explorer.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/audit/source-of-truth.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/operations_and_support.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/business_overview.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/DOCS_PARITY_REPORT.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/manual-setup.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/quickstart.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/POLICIES.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/CLI_REFERENCE.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/BIGDATA_PIPELINES.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/WINDOWS_SETUP.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/logo.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/WINDOWS_SETUP_PARITY_REPORT.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/hcl/index.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/hcl/nic.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/hcl/gpu.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/models/kimi-k2.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/tools.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/WHITEPAPER.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/omertaos_console_prd.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/security.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/ARCHITECTURE.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/requirements_analysis.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/REGISTRY_SYSTEM.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/ui-touch-and-virtual-keyboard.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/INSTALL_native.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/user_team_documentation.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": false
+    },
+    {
+      "file": "docs/MULTI_TENANT_KERNEL.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/capabilities.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/CONFIG_SYSTEM.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/aionupgrade.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/compliance/iso27001.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/profiles/user.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/profiles/pro.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/profiles/enterprise.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/claude-code-marketplace.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/SYSTEM_DESIGN.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/architecture_and_design.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/release.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/full_system_review.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/CONTROL_PLANE.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/native-services.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/troubleshooting.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/aion_kernel_upgrade_plan.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/INVENTORY.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/adr/0001-wasm-first.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/adr/0004-multi-tenant-uplift.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/adr/0002-kafka-required.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/adr/0003-public-grpc.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/adr/0005-oras-packaging.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/qa_testing_security.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/runbook.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/change_and_release_management.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/DEV_GUIDE.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/EXECUTION_SANDBOX.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/ci_smoke_status.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/secrets.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/UI_REGISTRY.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/events.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/infrastructure_and_devops.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/DOCS_UPDATE_REPORT.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/TEST_MATRIX.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/privacy.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/CONTRIBUTING.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "console/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/install/wsl.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/install/native.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/install/quicksetup-report.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/install/docker.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/install/iso.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/DEPLOYMENT.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/security/secure-boot-fde.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/security/updates.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/security/baseline.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/api_contracts_review.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/enterprise_it_infrastructure.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/API_REFERENCE.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "docs/data_architecture.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "GOVERNANCE.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "process-analytics/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "CONTRIBUTING.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "SECURITY.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "UPGRADE_NOTES.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "core/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "core/installer/bridge/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "core/windows/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "kernel-multitenant/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "kernel-multitenant/registry/layout.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "kernel-multitenant/shared/workers/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "kernel-multitenant/shared/console/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    },
+    {
+      "file": "os/control/README.md",
+      "broken_links": [],
+      "heading_hierarchy_ok": true
+    }
+  ]
+}
