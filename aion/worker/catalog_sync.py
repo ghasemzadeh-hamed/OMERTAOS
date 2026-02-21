@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import logging
-import os
 import pathlib
 import time
 from typing import Dict
 
 import httpx
 import yaml
+from omertaos.config import get_config, load_scope
 
 
 logger = logging.getLogger(__name__)
@@ -15,9 +15,9 @@ logging.basicConfig(level=logging.INFO)
 
 BASE_DIR = pathlib.Path(__file__).resolve().parents[1]
 CONFIG_PATH = pathlib.Path(
-    os.getenv("AION_CONFIG_FILE", BASE_DIR / "config" / "aion.yaml")
+    get_config("AION_CONFIG_FILE", BASE_DIR / "config" / "aion.yaml")
 )
-API_ROOT = os.getenv("AION_CONTROL_API", "http://control:8000")
+API_ROOT = get_config("AION_CONTROL_API", "http://control:8000")
 DEFAULT_TIMEOUT = httpx.Timeout(60.0, connect=10.0)
 
 CONFIG_SCHEMAS: Dict[str, Dict[str, object]] = {
@@ -91,22 +91,9 @@ CONFIG_SCHEMAS: Dict[str, Dict[str, object]] = {
 }
 
 
-def _resolve_env(value: str) -> str:
-    if value.startswith("${") and value.endswith("}"):
-        body = value[2:-1]
-        if ":-" in body:
-            var, default = body.split(":-", 1)
-            return os.getenv(var, default)
-        return os.getenv(body, "")
-    return value
-
-
 def load_config() -> Dict[str, Dict[str, str]]:
-    with CONFIG_PATH.open("r", encoding="utf-8") as fh:
-        cfg = yaml.safe_load(fh)
+    cfg = load_scope(str(CONFIG_PATH))
     catalog_cfg = cfg.get("catalog", {})
-    if isinstance(catalog_cfg.get("seed_file"), str):
-        catalog_cfg["seed_file"] = _resolve_env(catalog_cfg["seed_file"])
     return cfg
 
 
@@ -132,7 +119,7 @@ def pull_pypi(client: httpx.Client, pkg: str) -> Dict[str, str]:
     }
 
 
-def sync_once(seed_path: str | os.PathLike[str] | None = None) -> None:
+def sync_once(seed_path: str | pathlib.Path | None = None) -> None:
     cfg = load_config()
     catalog_cfg = cfg.get("catalog", {})
     path = catalog_seed_path(seed_path or catalog_cfg.get("seed_file"))

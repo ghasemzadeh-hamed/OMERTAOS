@@ -1,0 +1,1741 @@
+{
+  "python": {
+    "nodes": 376,
+    "edges": 250,
+    "sample_edges": [
+      [
+        "sitecustomize.py",
+        "os/__init__.py"
+      ],
+      [
+        "control/context_manager.py",
+        "os/__init__.py"
+      ],
+      [
+        "control/run_uvicorn.py",
+        "os/__init__.py"
+      ],
+      [
+        "control/run_uvicorn.py",
+        "os/control/main.py"
+      ],
+      [
+        "aionos_core/cli.py",
+        "core/installer/__init__.py"
+      ],
+      [
+        "aionos_core/cli.py",
+        "explorer/aion_explorer.py"
+      ],
+      [
+        "aionos_control/__init__.py",
+        "os/control/aionos_control/__init__.py"
+      ],
+      [
+        "aionos_control/main.py",
+        "os/control/aionos_control/main.py"
+      ],
+      [
+        "scripts/train_eval.py",
+        "scripts/utils/features.py"
+      ],
+      [
+        "scripts/train_eval.py",
+        "scripts/utils/models.py"
+      ],
+      [
+        "scripts/train_eval.py",
+        "os/__init__.py"
+      ],
+      [
+        "scripts/train_eval.py",
+        "scripts/utils/data.py"
+      ],
+      [
+        "scripts/train_eval.py",
+        "scripts/metrics.py"
+      ],
+      [
+        "scripts/bootstrap_vault_dev.py",
+        "os/__init__.py"
+      ],
+      [
+        "tests/test_stream_control.py",
+        "os/control/os/orchestrator.py"
+      ],
+      [
+        "tests/test_stream_control.py",
+        "os/control/os/grpc_server.py"
+      ],
+      [
+        "tests/test_stream_control.py",
+        "os/control/os/aion_grpc/aion/v1/__init__.py"
+      ],
+      [
+        "tests/test_stream_control.py",
+        "os/control/os/router_engine.py"
+      ],
+      [
+        "tests/test_policy_state.py",
+        "os/control/os/core/state.py"
+      ],
+      [
+        "tests/test_latentbox_recommendations.py",
+        "os/control/os/http.py"
+      ],
+      [
+        "tests/test_latentbox_recommendations.py",
+        "os/control/os/recommendations/__init__.py"
+      ],
+      [
+        "tests/test_latentbox_recommendations.py",
+        "os/__init__.py"
+      ],
+      [
+        "tests/test_api_webhooks.py",
+        "os/__init__.py"
+      ],
+      [
+        "tests/test_api_webhooks.py",
+        "os/control/os/api/__init__.py"
+      ],
+      [
+        "tests/test_api_webhooks.py",
+        "os/control/main.py"
+      ],
+      [
+        "tests/test_api_webhooks.py",
+        "os/control/os/core/deps.py"
+      ],
+      [
+        "tests/test_api_webhooks.py",
+        "os/control/os/core/state.py"
+      ],
+      [
+        "tests/test_agent_catalog_api.py",
+        "os/control/os/http.py"
+      ],
+      [
+        "tests/test_agent_catalog_api.py",
+        "os/__init__.py"
+      ],
+      [
+        "tests/test_agent_catalog_api.py",
+        "os/control/os/agent_catalog/__init__.py"
+      ],
+      [
+        "cli/aion_pkg.py",
+        "os/control/os/api/__init__.py"
+      ],
+      [
+        "aion/control/catalog_api.py",
+        "os/__init__.py"
+      ],
+      [
+        "aion/control/install_runner.py",
+        "os/__init__.py"
+      ],
+      [
+        "aion/control/secrets_vault.py",
+        "os/__init__.py"
+      ],
+      [
+        "aion/worker/catalog_sync.py",
+        "os/__init__.py"
+      ],
+      [
+        "aion/v1/tasks_pb2.py",
+        "os/control/os/aion_grpc/aion/v1/tasks_pb2.py"
+      ],
+      [
+        "aion/v1/tasks_pb2_grpc.py",
+        "os/control/os/aion_grpc/aion/v1/tasks_pb2_grpc.py"
+      ],
+      [
+        "cli/aion/__init__.py",
+        "cli/__init__.py"
+      ],
+      [
+        "tests/control/test_queue.py",
+        "control/task_queue.py"
+      ],
+      [
+        "tests/control/test_config_cors.py",
+        "os/control/os/config.py"
+      ],
+      [
+        "tests/kernel/test_policy_engine.py",
+        "os/kernel/policy_engine.py"
+      ],
+      [
+        "tests/kernel/test_scheduler.py",
+        "os/kernel/scheduler.py"
+      ],
+      [
+        "tests/cli/test_cli.py",
+        "cli/__init__.py"
+      ],
+      [
+        "services/aion-seal-adapter/evaluator.py",
+        "os/__init__.py"
+      ],
+      [
+        "services/aion-seal-adapter/config.py",
+        "os/__init__.py"
+      ],
+      [
+        "services/aion-model-registry/config.py",
+        "os/__init__.py"
+      ],
+      [
+        "services/aion-memory/config.py",
+        "os/__init__.py"
+      ],
+      [
+        "scripts/utils/data.py",
+        "os/__init__.py"
+      ],
+      [
+        "app/control/router.py",
+        "app/control/handlers/__init__.py"
+      ],
+      [
+        "app/kernel/dev_qwen_coder_kernel.py",
+        "app/llm/client.py"
+      ],
+      [
+        "app/kernel/dev_qwen_coder_kernel.py",
+        "app/config/profiles.py"
+      ],
+      [
+        "app/kernel/dev_qwen_coder_kernel.py",
+        "app/utils/json_utils.py"
+      ],
+      [
+        "app/kernel/dev_qwen_coder_kernel.py",
+        "app/utils/context.py"
+      ],
+      [
+        "app/kernel/main.py",
+        "os/__init__.py"
+      ],
+      [
+        "app/kernel/main.py",
+        "app/kernel/dev_qwen_coder_kernel.py"
+      ],
+      [
+        "app/config/profiles.py",
+        "os/__init__.py"
+      ],
+      [
+        "app/kernel/engines/vllm.py",
+        "os/__init__.py"
+      ],
+      [
+        "app/kernel/engines/openai.py",
+        "os/__init__.py"
+      ],
+      [
+        "app/kernel/engines/ollama.py",
+        "os/__init__.py"
+      ],
+      [
+        "app/control/api/metrics.py",
+        "os/control/os/api/metrics.py"
+      ],
+      [
+        "app/control/api/datasets.py",
+        "os/control/os/api/datasets.py"
+      ],
+      [
+        "app/control/api/auth_admin.py",
+        "os/control/os/api/auth_admin.py"
+      ],
+      [
+        "app/control/api/logs.py",
+        "os/control/os/api/logs.py"
+      ],
+      [
+        "app/control/api/files.py",
+        "os/control/os/api/files.py"
+      ],
+      [
+        "app/control/api/models.py",
+        "os/control/os/api/models.py"
+      ],
+      [
+        "app/control/api/packages.py",
+        "os/control/os/api/packages.py"
+      ],
+      [
+        "app/control/api/services.py",
+        "os/control/os/api/services.py"
+      ],
+      [
+        "app/control/api/update.py",
+        "os/control/os/api/update.py"
+      ],
+      [
+        "app/control/api/config.py",
+        "os/control/os/api/config.py"
+      ],
+      [
+        "app/control/api/backup.py",
+        "os/control/os/api/backup.py"
+      ],
+      [
+        "app/control/tools/rag_tool.py",
+        "os/__init__.py"
+      ],
+      [
+        "app/control/handlers/__init__.py",
+        "app/control/handlers/agent_chat.py"
+      ],
+      [
+        "app/control/handlers/agent_chat.py",
+        "os/__init__.py"
+      ],
+      [
+        "app/control/handlers/agent_chat.py",
+        "app/control/tools/__init__.py"
+      ],
+      [
+        "app/control/handlers/agent_chat.py",
+        "app/kernel/engines/__init__.py"
+      ],
+      [
+        "control/tests/test_model_registry.py",
+        "os/control/models/__init__.py"
+      ],
+      [
+        "control/tests/test_health.py",
+        "os/control/main.py"
+      ],
+      [
+        "control/tests/test_plugins_api.py",
+        "aionos_control/main.py"
+      ],
+      [
+        "control/tests/test_kernel_proposals.py",
+        "os/kernel/runtime.py"
+      ],
+      [
+        "control/tests/test_kernel_proposals.py",
+        "os/control/routes/kernel_proposals.py"
+      ],
+      [
+        "control/tests/test_config_paths.py",
+        "os/control/config_paths.py"
+      ],
+      [
+        "control/tests/test_config_paths.py",
+        "os/control/ai_router.py"
+      ],
+      [
+        "control/tests/test_memory_routes.py",
+        "os/__init__.py"
+      ],
+      [
+        "core/installer/__init__.py",
+        "app/shared/__init__.py"
+      ],
+      [
+        "kernel-multitenant/registry/indexer.py",
+        "os/__init__.py"
+      ],
+      [
+        "kernel-multitenant/shared/control/core/profiles.py",
+        "os/__init__.py"
+      ],
+      [
+        "kernel-multitenant/shared/control/core/chatops.py",
+        "os/__init__.py"
+      ],
+      [
+        "kernel-multitenant/shared/control/seal/main.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/main.py",
+        "os/control/os/http.py"
+      ],
+      [
+        "os/control/aionos_profiles.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/http.py",
+        "os/control/os/http.py"
+      ],
+      [
+        "os/kernel/integration_layer.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/secret_store/provider.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/main.py",
+        "os/control/os/http.py"
+      ],
+      [
+        "os/control/os/main.py",
+        "os/control/os/grpc_server.py"
+      ],
+      [
+        "os/control/os/main.py",
+        "os/control/os/config.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/api/backup.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/api/logs.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/api/provisioner.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/api/config.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/core/workers.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/api/models.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/api/auth_admin.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/api/metrics.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/api/update.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/api/files.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/core/tenancy.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/api/datasets.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/api/services.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/api/__init__.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/aionos_profiles.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/api/packages.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/routes/__init__.py"
+      ],
+      [
+        "os/control/os/http.py",
+        "os/control/os/core/deps.py"
+      ],
+      [
+        "os/control/os/healthcheck.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/grpc_server.py",
+        "os/control/os/orchestrator.py"
+      ],
+      [
+        "os/control/os/grpc_server.py",
+        "os/control/os/aion_grpc/aion/v1/__init__.py"
+      ],
+      [
+        "os/control/os/grpc_server.py",
+        "os/control/os/models/__init__.py"
+      ],
+      [
+        "os/control/os/grpc_server.py",
+        "os/control/os/config.py"
+      ],
+      [
+        "os/control/os/router_engine.py",
+        "os/control/os/models/__init__.py"
+      ],
+      [
+        "os/control/os/router_engine.py",
+        "os/control/aionos_profiles.py"
+      ],
+      [
+        "os/control/os/router_engine.py",
+        "os/control/os/policy.py"
+      ],
+      [
+        "os/control/os/router_engine.py",
+        "os/control/os/config.py"
+      ],
+      [
+        "os/control/os/config_paths.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/policy.py",
+        "os/control/os/config.py"
+      ],
+      [
+        "os/control/os/llm_local.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/ai_router.py",
+        "os/control/os/llm_local.py"
+      ],
+      [
+        "os/control/os/ai_router.py",
+        "os/control/os/config_paths.py"
+      ],
+      [
+        "os/control/os/orchestrator.py",
+        "app/control/router.py"
+      ],
+      [
+        "os/control/os/orchestrator.py",
+        "os/control/os/models/__init__.py"
+      ],
+      [
+        "os/control/os/orchestrator.py",
+        "os/control/os/router_engine.py"
+      ],
+      [
+        "os/control/os/config.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/config.py",
+        "os/secret_store/__init__.py"
+      ],
+      [
+        "os/control/os/api/metrics.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/api/metrics.py",
+        "os/control/os/core/deps.py"
+      ],
+      [
+        "os/control/os/api/metrics.py",
+        "os/control/os/core/state.py"
+      ],
+      [
+        "os/control/os/api/datasets.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/api/auth_admin.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/api/__init__.py",
+        "os/control/os/api/recommendations.py"
+      ],
+      [
+        "os/control/os/api/__init__.py",
+        "os/control/os/api/registry.py"
+      ],
+      [
+        "os/control/os/api/__init__.py",
+        "os/control/os/api/router.py"
+      ],
+      [
+        "os/control/os/api/__init__.py",
+        "os/control/os/api/agent_catalog.py"
+      ],
+      [
+        "os/control/os/api/__init__.py",
+        "os/control/os/api/datasources.py"
+      ],
+      [
+        "os/control/os/api/__init__.py",
+        "os/control/os/api/providers.py"
+      ],
+      [
+        "os/control/os/api/__init__.py",
+        "os/control/os/api/health.py"
+      ],
+      [
+        "os/control/os/api/__init__.py",
+        "os/control/os/api/webhooks.py"
+      ],
+      [
+        "os/control/os/api/__init__.py",
+        "os/control/os/api/modules.py"
+      ],
+      [
+        "os/control/os/api/logs.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/api/recommendations.py",
+        "os/control/os/recommendations/__init__.py"
+      ],
+      [
+        "os/control/os/api/recommendations.py",
+        "os/control/os/schemas/recommendations.py"
+      ],
+      [
+        "os/control/os/api/recommendations.py",
+        "os/control/os/core/deps.py"
+      ],
+      [
+        "os/control/os/api/recommendations.py",
+        "os/control/os/core/state.py"
+      ],
+      [
+        "os/control/os/api/agent_catalog.py",
+        "os/control/os/agent_catalog/__init__.py"
+      ],
+      [
+        "os/control/os/api/agent_catalog.py",
+        "os/control/os/schemas/agent.py"
+      ],
+      [
+        "os/control/os/api/agent_catalog.py",
+        "os/control/os/core/tenancy.py"
+      ],
+      [
+        "os/control/os/api/agent_catalog.py",
+        "os/control/os/core/deps.py"
+      ],
+      [
+        "os/control/os/api/agent_catalog.py",
+        "os/control/os/core/state.py"
+      ],
+      [
+        "os/control/os/api/registry.py",
+        "os/control/os/registry/__init__.py"
+      ],
+      [
+        "os/control/os/api/files.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/api/models.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/api/packages.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/api/modules.py",
+        "os/control/os/schemas/module.py"
+      ],
+      [
+        "os/control/os/api/modules.py",
+        "os/control/os/core/deps.py"
+      ],
+      [
+        "os/control/os/api/modules.py",
+        "os/control/os/core/state.py"
+      ],
+      [
+        "os/control/os/api/health.py",
+        "os/control/os/core/deps.py"
+      ],
+      [
+        "os/control/os/api/health.py",
+        "os/control/os/core/state.py"
+      ],
+      [
+        "os/control/os/api/providers.py",
+        "os/control/os/schemas/provider.py"
+      ],
+      [
+        "os/control/os/api/providers.py",
+        "os/control/os/core/deps.py"
+      ],
+      [
+        "os/control/os/api/providers.py",
+        "os/control/os/core/state.py"
+      ],
+      [
+        "os/control/os/api/datasources.py",
+        "os/control/os/schemas/datasource.py"
+      ],
+      [
+        "os/control/os/api/datasources.py",
+        "os/control/os/core/deps.py"
+      ],
+      [
+        "os/control/os/api/datasources.py",
+        "os/control/os/core/state.py"
+      ],
+      [
+        "os/control/os/api/services.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/api/security.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/api/webhooks.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/api/webhooks.py",
+        "os/control/os/core/deps.py"
+      ],
+      [
+        "os/control/os/api/webhooks.py",
+        "os/control/os/schemas/webhook.py"
+      ],
+      [
+        "os/control/os/api/webhooks.py",
+        "os/control/os/core/state.py"
+      ],
+      [
+        "os/control/os/api/update.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/api/provisioner.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/api/router.py",
+        "os/control/os/schemas/router_policy.py"
+      ],
+      [
+        "os/control/os/api/router.py",
+        "os/control/os/core/deps.py"
+      ],
+      [
+        "os/control/os/api/router.py",
+        "os/control/os/core/state.py"
+      ],
+      [
+        "os/control/os/api/config.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/api/backup.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/core/__init__.py",
+        "os/control/os/core/workers.py"
+      ],
+      [
+        "os/control/os/core/__init__.py",
+        "os/control/os/core/state.py"
+      ],
+      [
+        "os/control/os/core/deps.py",
+        "os/control/os/core/state.py"
+      ],
+      [
+        "os/control/os/core/tenancy.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/core/state.py",
+        "os/control/os/recommendations/__init__.py"
+      ],
+      [
+        "os/control/os/core/state.py",
+        "os/control/os/agent_catalog/store.py"
+      ],
+      [
+        "os/control/os/core/state.py",
+        "os/control/os/core/logger.py"
+      ],
+      [
+        "os/control/os/core/workers.py",
+        "os/control/os/core/logger.py"
+      ],
+      [
+        "os/control/os/core/workers.py",
+        "os/control/os/core/state.py"
+      ],
+      [
+        "os/control/os/schemas/__init__.py",
+        "os/control/os/schemas/datasource.py"
+      ],
+      [
+        "os/control/os/schemas/__init__.py",
+        "os/control/os/schemas/agent.py"
+      ],
+      [
+        "os/control/os/schemas/__init__.py",
+        "os/control/os/schemas/webhook.py"
+      ],
+      [
+        "os/control/os/schemas/__init__.py",
+        "os/control/os/schemas/router_policy.py"
+      ],
+      [
+        "os/control/os/schemas/__init__.py",
+        "os/control/os/schemas/provider.py"
+      ],
+      [
+        "os/control/os/schemas/__init__.py",
+        "os/control/os/schemas/recommendations.py"
+      ],
+      [
+        "os/control/os/schemas/__init__.py",
+        "os/control/os/schemas/module.py"
+      ],
+      [
+        "os/control/os/agent_catalog/catalog.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/agent_catalog/catalog.py",
+        "os/control/os/schemas/agent.py"
+      ],
+      [
+        "os/control/os/agent_catalog/catalog.py",
+        "os/control/os/core/logger.py"
+      ],
+      [
+        "os/control/os/registry/aggregator.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/registry/aggregator.py",
+        "os/control/os/core/logger.py"
+      ],
+      [
+        "os/control/os/recommendations/latentbox.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/recommendations/latentbox.py",
+        "os/control/os/core/logger.py"
+      ],
+      [
+        "os/control/os/recommendations/latentbox.py",
+        "os/control/os/recommendations/store.py"
+      ],
+      [
+        "os/control/os/routes/agent.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/routes/ingest_excel.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/routes/ingest_excel.py",
+        "os/control/os/routes/deps.py"
+      ],
+      [
+        "os/control/os/routes/ingest_excel.py",
+        "os/control/os/config.py"
+      ],
+      [
+        "os/control/os/routes/__init__.py",
+        "os/control/os/routes/ai_chat.py"
+      ],
+      [
+        "os/control/os/routes/__init__.py",
+        "os/control/os/routes/memory.py"
+      ],
+      [
+        "os/control/os/routes/__init__.py",
+        "os/control/os/routes/admin_onboarding.py"
+      ],
+      [
+        "os/control/os/routes/__init__.py",
+        "os/control/os/routes/kernel_proposals.py"
+      ],
+      [
+        "os/control/os/routes/__init__.py",
+        "os/control/os/routes/seal.py"
+      ],
+      [
+        "os/control/os/routes/__init__.py",
+        "os/control/os/routes/rag.py"
+      ],
+      [
+        "os/control/os/routes/__init__.py",
+        "os/control/os/routes/agent.py"
+      ],
+      [
+        "os/control/os/routes/__init__.py",
+        "os/control/os/routes/profile.py"
+      ],
+      [
+        "os/control/os/routes/__init__.py",
+        "os/control/os/routes/config.py"
+      ],
+      [
+        "os/control/os/routes/__init__.py",
+        "os/control/os/routes/models.py"
+      ],
+      [
+        "os/control/os/routes/seal.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/routes/seal.py",
+        "os/control/aionos_profiles.py"
+      ],
+      [
+        "os/control/os/routes/seal.py",
+        "os/control/os/policy.py"
+      ],
+      [
+        "os/control/os/routes/admin_onboarding.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/routes/admin_onboarding.py",
+        "os/control/os/config_paths.py"
+      ],
+      [
+        "os/control/os/routes/ai_chat.py",
+        "os/kernel/integration_layer.py"
+      ],
+      [
+        "os/control/os/routes/ai_chat.py",
+        "os/kernel/policy_engine.py"
+      ],
+      [
+        "os/control/os/routes/ai_chat.py",
+        "os/kernel/ai_router.py"
+      ],
+      [
+        "os/control/os/routes/ai_chat.py",
+        "os/kernel/governance_hook.py"
+      ],
+      [
+        "os/control/os/routes/deps.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/routes/deps.py",
+        "os/control/os/config.py"
+      ],
+      [
+        "os/control/os/routes/models.py",
+        "os/control/os/models/registry.py"
+      ],
+      [
+        "os/control/os/routes/models.py",
+        "os/control/os/config.py"
+      ],
+      [
+        "os/control/os/routes/rag.py",
+        "os/control/os/rag/__init__.py"
+      ],
+      [
+        "os/control/os/routes/memory.py",
+        "os/control/os/config.py"
+      ],
+      [
+        "os/control/os/routes/kernel_proposals.py",
+        "os/kernel/runtime.py"
+      ],
+      [
+        "os/control/os/routes/config.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/routes/config.py",
+        "os/control/aionos_profiles.py"
+      ],
+      [
+        "os/control/os/routes/profile.py",
+        "os/control/aionos_profiles.py"
+      ],
+      [
+        "os/control/os/models/registry.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/models/registry.py",
+        "os/control/os/config.py"
+      ],
+      [
+        "os/control/os/rag/__init__.py",
+        "os/control/os/rag/qdrant_client.py"
+      ],
+      [
+        "os/control/os/rag/__init__.py",
+        "os/control/os/rag/ingest.py"
+      ],
+      [
+        "os/control/os/rag/qdrant_client.py",
+        "os/__init__.py"
+      ],
+      [
+        "os/control/os/rag/ingest.py",
+        "os/control/os/rag/qdrant_client.py"
+      ],
+      [
+        "os/control/os/aion_grpc/aion/v1/tasks_pb2_grpc.py",
+        "aion/v1/__init__.py"
+      ]
+    ]
+  },
+  "rust": {
+    "execution/sandbox_runner.rs": [
+      "anyhow::Context",
+      "serde::",
+      "std::process::",
+      "std::thread",
+      "std::time::",
+      "wasmtime::"
+    ],
+    "execution/agent_optimizer.rs": [
+      "crate::agent_registry::AgentMetadata",
+      "rand::Rng",
+      "serde::",
+      "std::collections::HashMap"
+    ],
+    "execution/agent_registry.rs": [
+      "parking_lot::RwLock",
+      "ring::signature::",
+      "serde::",
+      "serde_json",
+      "std::collections::HashMap",
+      "std::sync::Arc"
+    ],
+    "execution/resource_controller.rs": [
+      "parking_lot::Mutex",
+      "std::collections::HashMap",
+      "std::sync::Arc"
+    ],
+    "modules/invoice_ocr/src/main.rs": [
+      "regex::Regex",
+      "serde::",
+      "std::io::"
+    ],
+    "modules/host/src/main.rs": [
+      "anyhow::Result",
+      "serde::",
+      "std::os::unix::process::CommandExt",
+      "std::process::Command",
+      "tracing::",
+      "tracing_subscriber::FmtSubscriber"
+    ],
+    "modules/summarize_text/src/lib.rs": [
+      "serde::",
+      "std::collections::HashMap"
+    ],
+    "tests/execution/test_sandbox.rs": [
+      "execution::sandbox_runner::"
+    ],
+    "tests/execution/test_security.rs": [
+      "execution::resource_controller::"
+    ],
+    "execution/src/lib.rs": []
+  },
+  "api_endpoints": [
+    {
+      "file": "aion/control/catalog_api.py",
+      "method": "GET",
+      "path": "/catalog"
+    },
+    {
+      "file": "aion/control/catalog_api.py",
+      "method": "POST",
+      "path": "/catalog/upsert"
+    },
+    {
+      "file": "aion/control/catalog_api.py",
+      "method": "POST",
+      "path": "/catalog/{name}/install"
+    },
+    {
+      "file": "aion/control/catalog_api.py",
+      "method": "POST",
+      "path": "/catalog/{name}/config"
+    },
+    {
+      "file": "aion/control/catalog_api.py",
+      "method": "GET",
+      "path": "/catalog/{name}/config"
+    },
+    {
+      "file": "cli/aion/services/tui.py",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "file": "services/aion-seal-adapter/main.py",
+      "method": "POST",
+      "path": "/run"
+    },
+    {
+      "file": "services/aion-model-registry/main.py",
+      "method": "POST",
+      "path": "/models"
+    },
+    {
+      "file": "services/aion-model-registry/main.py",
+      "method": "GET",
+      "path": "/models"
+    },
+    {
+      "file": "services/aion-model-registry/main.py",
+      "method": "POST",
+      "path": "/routes"
+    },
+    {
+      "file": "services/aion-model-registry/main.py",
+      "method": "GET",
+      "path": "/routes/{agent_id}"
+    },
+    {
+      "file": "services/aion-memory/main.py",
+      "method": "POST",
+      "path": "/interactions"
+    },
+    {
+      "file": "services/aion-memory/main.py",
+      "method": "GET",
+      "path": "/interactions/{interaction_id}"
+    },
+    {
+      "file": "services/aion-memory/main.py",
+      "method": "POST",
+      "path": "/self-edits"
+    },
+    {
+      "file": "services/aion-memory/main.py",
+      "method": "GET",
+      "path": "/self-edits/top"
+    },
+    {
+      "file": "app/kernel/main.py",
+      "method": "POST",
+      "path": "/kernel"
+    },
+    {
+      "file": "app/kernel/main.py",
+      "method": "GET",
+      "path": "/healthz"
+    },
+    {
+      "file": "console/tui/web_server.py",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "file": "console/tui/web_server.py",
+      "method": "POST",
+      "path": "/chat"
+    },
+    {
+      "file": "console/tui/web_server.py",
+      "method": "GET",
+      "path": "/reset"
+    },
+    {
+      "file": "process-analytics/api/routers/events.py",
+      "method": "POST",
+      "path": "/"
+    },
+    {
+      "file": "process-analytics/api/routers/decisions.py",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "file": "process-analytics/api/routers/decisions.py",
+      "method": "POST",
+      "path": "/"
+    },
+    {
+      "file": "process-analytics/api/routers/analytics.py",
+      "method": "GET",
+      "path": "/kpis"
+    },
+    {
+      "file": "process-analytics/api/routers/analytics.py",
+      "method": "GET",
+      "path": "/conformance"
+    },
+    {
+      "file": "process-analytics/api/routers/analytics.py",
+      "method": "GET",
+      "path": "/anomalies"
+    },
+    {
+      "file": "kernel-multitenant/shared/control/core/chatops.py",
+      "method": "GET",
+      "path": "/healthz"
+    },
+    {
+      "file": "kernel-multitenant/shared/control/core/chatops.py",
+      "method": "POST",
+      "path": "/v1/config/propose"
+    },
+    {
+      "file": "kernel-multitenant/shared/control/core/chatops.py",
+      "method": "POST",
+      "path": "/v1/config/apply"
+    },
+    {
+      "file": "kernel-multitenant/shared/control/core/chatops.py",
+      "method": "POST",
+      "path": "/v1/config/revert"
+    },
+    {
+      "file": "kernel-multitenant/shared/control/core/chatops.py",
+      "method": "POST",
+      "path": "/v1/router/policy/reload"
+    },
+    {
+      "file": "kernel-multitenant/shared/control/seal/main.py",
+      "method": "GET",
+      "path": "/healthz"
+    },
+    {
+      "file": "kernel-multitenant/shared/control/seal/main.py",
+      "method": "POST",
+      "path": "/v1/seal/jobs"
+    },
+    {
+      "file": "kernel-multitenant/shared/control/seal/main.py",
+      "method": "GET",
+      "path": "/v1/seal/jobs/{job_id}/status"
+    },
+    {
+      "file": "kernel-multitenant/shared/control/seal/main.py",
+      "method": "GET",
+      "path": "/v1/seal/streams/{job_id}"
+    },
+    {
+      "file": "kernel-multitenant/shared/control/seal/main.py",
+      "method": "POST",
+      "path": "/v1/router/policy/reload"
+    },
+    {
+      "file": "os/kernel/devserver.py",
+      "method": "GET",
+      "path": "/healthz"
+    },
+    {
+      "file": "os/kernel/devserver.py",
+      "method": "POST",
+      "path": "/v1/agent/register"
+    },
+    {
+      "file": "os/kernel/devserver.py",
+      "method": "POST",
+      "path": "/v1/agent/heartbeat"
+    },
+    {
+      "file": "os/kernel/devserver.py",
+      "method": "POST",
+      "path": "/v1/syscall/{name}"
+    },
+    {
+      "file": "os/kernel/devserver.py",
+      "method": "POST",
+      "path": "/v1/memory/put"
+    },
+    {
+      "file": "os/kernel/devserver.py",
+      "method": "POST",
+      "path": "/v1/memory/query"
+    },
+    {
+      "file": "os/kernel/devserver.py",
+      "method": "POST",
+      "path": "/v1/schedule/submit"
+    },
+    {
+      "file": "os/kernel/devserver.py",
+      "method": "POST",
+      "path": "/v1/brain/propose-policy"
+    },
+    {
+      "file": "os/kernel/devserver.py",
+      "method": "POST",
+      "path": "/v1/policy/rollback/{version}"
+    },
+    {
+      "file": "os/control/os/http.py",
+      "method": "GET",
+      "path": "/healthz"
+    },
+    {
+      "file": "os/control/os/http.py",
+      "method": "GET",
+      "path": "/api/healthz"
+    },
+    {
+      "file": "os/control/os/http.py",
+      "method": "GET",
+      "path": "/health"
+    },
+    {
+      "file": "os/control/os/http.py",
+      "method": "GET",
+      "path": "/metrics"
+    },
+    {
+      "file": "os/control/aionos_control/main.py",
+      "method": "GET",
+      "path": "/healthz"
+    },
+    {
+      "file": "os/control/aionos_control/main.py",
+      "method": "GET",
+      "path": "/health"
+    },
+    {
+      "file": "os/control/aionos_control/routes/plugins.py",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "file": "os/control/aionos_control/routes/plugins.py",
+      "method": "POST",
+      "path": "/call"
+    },
+    {
+      "file": "os/control/os/api/metrics.py",
+      "method": "GET",
+      "path": "/system"
+    },
+    {
+      "file": "os/control/os/api/metrics.py",
+      "method": "GET",
+      "path": "/services"
+    },
+    {
+      "file": "os/control/os/api/metrics.py",
+      "method": "GET",
+      "path": "/agents"
+    },
+    {
+      "file": "os/control/os/api/datasets.py",
+      "method": "POST",
+      "path": "/register"
+    },
+    {
+      "file": "os/control/os/api/datasets.py",
+      "method": "POST",
+      "path": "/delete"
+    },
+    {
+      "file": "os/control/os/api/auth_admin.py",
+      "method": "GET",
+      "path": "/roles"
+    },
+    {
+      "file": "os/control/os/api/auth_admin.py",
+      "method": "GET",
+      "path": "/users"
+    },
+    {
+      "file": "os/control/os/api/auth_admin.py",
+      "method": "POST",
+      "path": "/users/{user_id}/roles"
+    },
+    {
+      "file": "os/control/os/api/auth_admin.py",
+      "method": "GET",
+      "path": "/tokens"
+    },
+    {
+      "file": "os/control/os/api/auth_admin.py",
+      "method": "POST",
+      "path": "/tokens"
+    },
+    {
+      "file": "os/control/os/api/logs.py",
+      "method": "GET",
+      "path": "/streams"
+    },
+    {
+      "file": "os/control/os/api/logs.py",
+      "method": "GET",
+      "path": "/tail"
+    },
+    {
+      "file": "os/control/os/api/files.py",
+      "method": "GET",
+      "path": "/list"
+    },
+    {
+      "file": "os/control/os/api/files.py",
+      "method": "POST",
+      "path": "/mkdir"
+    },
+    {
+      "file": "os/control/os/api/files.py",
+      "method": "POST",
+      "path": "/delete"
+    },
+    {
+      "file": "os/control/os/api/files.py",
+      "method": "POST",
+      "path": "/rename"
+    },
+    {
+      "file": "os/control/os/api/files.py",
+      "method": "GET",
+      "path": "/content"
+    },
+    {
+      "file": "os/control/os/api/files.py",
+      "method": "POST",
+      "path": "/save"
+    },
+    {
+      "file": "os/control/os/api/files.py",
+      "method": "GET",
+      "path": "/preview"
+    },
+    {
+      "file": "os/control/os/api/files.py",
+      "method": "GET",
+      "path": "/../data/preview"
+    },
+    {
+      "file": "os/control/os/api/models.py",
+      "method": "POST",
+      "path": "/install"
+    },
+    {
+      "file": "os/control/os/api/models.py",
+      "method": "POST",
+      "path": "/remove"
+    },
+    {
+      "file": "os/control/os/api/packages.py",
+      "method": "POST",
+      "path": "/install"
+    },
+    {
+      "file": "os/control/os/api/packages.py",
+      "method": "POST",
+      "path": "/remove"
+    },
+    {
+      "file": "os/control/os/api/modules.py",
+      "method": "POST",
+      "path": "/{name}/enable"
+    },
+    {
+      "file": "os/control/os/api/modules.py",
+      "method": "POST",
+      "path": "/{name}/upgrade"
+    },
+    {
+      "file": "os/control/os/api/modules.py",
+      "method": "POST",
+      "path": "/{name}/rollback"
+    },
+    {
+      "file": "os/control/os/api/modules.py",
+      "method": "GET",
+      "path": "/{name}/health"
+    },
+    {
+      "file": "os/control/os/api/health.py",
+      "method": "GET",
+      "path": "/api/health"
+    },
+    {
+      "file": "os/control/os/api/health.py",
+      "method": "GET",
+      "path": "/api/jobs"
+    },
+    {
+      "file": "os/control/os/api/providers.py",
+      "method": "POST",
+      "path": "/{name}/enable"
+    },
+    {
+      "file": "os/control/os/api/providers.py",
+      "method": "GET",
+      "path": "/{name}/health"
+    },
+    {
+      "file": "os/control/os/api/datasources.py",
+      "method": "GET",
+      "path": "/{name}/health"
+    },
+    {
+      "file": "os/control/os/api/services.py",
+      "method": "POST",
+      "path": "/{service_name}/action"
+    },
+    {
+      "file": "os/control/os/api/webhooks.py",
+      "method": "POST",
+      "path": "/{source}"
+    },
+    {
+      "file": "os/control/os/api/update.py",
+      "method": "GET",
+      "path": "/status"
+    },
+    {
+      "file": "os/control/os/api/update.py",
+      "method": "POST",
+      "path": "/check"
+    },
+    {
+      "file": "os/control/os/api/update.py",
+      "method": "POST",
+      "path": "/apply"
+    },
+    {
+      "file": "os/control/os/api/provisioner.py",
+      "method": "POST",
+      "path": "/ensure"
+    },
+    {
+      "file": "os/control/os/api/router.py",
+      "method": "GET",
+      "path": "/policy"
+    },
+    {
+      "file": "os/control/os/api/router.py",
+      "method": "POST",
+      "path": "/policy"
+    },
+    {
+      "file": "os/control/os/api/router.py",
+      "method": "POST",
+      "path": "/policy/reload"
+    },
+    {
+      "file": "os/control/os/api/router.py",
+      "method": "POST",
+      "path": "/policy/rollback"
+    },
+    {
+      "file": "os/control/os/api/backup.py",
+      "method": "GET",
+      "path": "/history"
+    },
+    {
+      "file": "os/control/os/api/backup.py",
+      "method": "POST",
+      "path": "/run"
+    },
+    {
+      "file": "os/control/os/routes/agent.py",
+      "method": "POST",
+      "path": "/run"
+    },
+    {
+      "file": "os/control/os/routes/ingest_excel.py",
+      "method": "POST",
+      "path": "/infer"
+    },
+    {
+      "file": "os/control/os/routes/ingest_excel.py",
+      "method": "POST",
+      "path": "/apply-mapping"
+    },
+    {
+      "file": "os/control/os/routes/ingest_excel.py",
+      "method": "POST",
+      "path": "/trigger-train"
+    },
+    {
+      "file": "os/control/os/routes/seal.py",
+      "method": "POST",
+      "path": "/jobs"
+    },
+    {
+      "file": "os/control/os/routes/seal.py",
+      "method": "GET",
+      "path": "/jobs/{job_id}/status"
+    },
+    {
+      "file": "os/control/os/routes/seal.py",
+      "method": "GET",
+      "path": "/streams/{job_id}"
+    },
+    {
+      "file": "os/control/os/routes/seal.py",
+      "method": "POST",
+      "path": "/router/policy/reload"
+    },
+    {
+      "file": "os/control/os/routes/admin_onboarding.py",
+      "method": "GET",
+      "path": "/status"
+    },
+    {
+      "file": "os/control/os/routes/admin_onboarding.py",
+      "method": "POST",
+      "path": "/submit"
+    },
+    {
+      "file": "os/control/os/routes/admin_onboarding.py",
+      "method": "POST",
+      "path": "/apply"
+    },
+    {
+      "file": "os/control/os/routes/ai_chat.py",
+      "method": "POST",
+      "path": "/chat"
+    },
+    {
+      "file": "os/control/os/routes/models.py",
+      "method": "GET",
+      "path": "/models"
+    },
+    {
+      "file": "os/control/os/routes/models.py",
+      "method": "POST",
+      "path": "/models/select"
+    },
+    {
+      "file": "os/control/os/routes/models.py",
+      "method": "POST",
+      "path": "/models/reload"
+    },
+    {
+      "file": "os/control/os/routes/models.py",
+      "method": "GET",
+      "path": "/models/{model_name}/health"
+    },
+    {
+      "file": "os/control/os/routes/models.py",
+      "method": "POST",
+      "path": "/models/install"
+    },
+    {
+      "file": "os/control/os/routes/rag.py",
+      "method": "GET",
+      "path": "/collections"
+    },
+    {
+      "file": "os/control/os/routes/rag.py",
+      "method": "POST",
+      "path": "/ingest"
+    },
+    {
+      "file": "os/control/os/routes/rag.py",
+      "method": "POST",
+      "path": "/query"
+    },
+    {
+      "file": "os/control/os/routes/memory.py",
+      "method": "POST",
+      "path": "/ingest"
+    },
+    {
+      "file": "os/control/os/routes/memory.py",
+      "method": "GET",
+      "path": "/status"
+    },
+    {
+      "file": "os/control/os/routes/memory.py",
+      "method": "POST",
+      "path": "/profile"
+    },
+    {
+      "file": "os/control/os/routes/kernel_proposals.py",
+      "method": "POST",
+      "path": "/proposals"
+    },
+    {
+      "file": "os/control/os/routes/kernel_proposals.py",
+      "method": "GET",
+      "path": "/proposals"
+    },
+    {
+      "file": "os/control/os/routes/kernel_proposals.py",
+      "method": "GET",
+      "path": "/proposals/{proposal_id}"
+    },
+    {
+      "file": "os/control/os/routes/kernel_proposals.py",
+      "method": "POST",
+      "path": "/proposals/{proposal_id}/approve"
+    },
+    {
+      "file": "os/control/os/routes/kernel_proposals.py",
+      "method": "POST",
+      "path": "/proposals/{proposal_id}/reject"
+    },
+    {
+      "file": "os/control/os/routes/kernel_proposals.py",
+      "method": "POST",
+      "path": "/proposals/{proposal_id}/apply-now"
+    },
+    {
+      "file": "os/control/os/routes/config.py",
+      "method": "POST",
+      "path": "/propose"
+    },
+    {
+      "file": "os/control/os/routes/config.py",
+      "method": "POST",
+      "path": "/apply"
+    },
+    {
+      "file": "os/control/os/routes/config.py",
+      "method": "POST",
+      "path": "/revert"
+    },
+    {
+      "file": "os/control/os/routes/config.py",
+      "method": "GET",
+      "path": "/status"
+    },
+    {
+      "file": "os/control/os/routes/profile.py",
+      "method": "GET",
+      "path": "/profile"
+    },
+    {
+      "file": "os/control/os/routes/profile.py",
+      "method": "POST",
+      "path": "/profile"
+    }
+  ],
+  "workers": [
+    "control/task_queue.py",
+    "kernel-multitenant/shared/control/seal/main.py",
+    "os/control/os/api/metrics.py",
+    "os/control/os/api/services.py",
+    "os/control/os/http.py",
+    "os/control/os/main.py",
+    "os/control/os/routes/models.py",
+    "os/control/os/routes/seal.py",
+    "os/kernel/scheduler.py"
+  ],
+  "cycles": [],
+  "violations": []
+}

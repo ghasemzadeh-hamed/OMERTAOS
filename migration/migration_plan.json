@@ -1,0 +1,27 @@
+{
+  "generated_at": "2026-02-21T22:21:30Z",
+  "circular_risk_detected": false,
+  "items": [
+    {
+      "old_path": "scattered env/config access across python modules",
+      "new_path": "omertaos/config/* unified API",
+      "order": 1,
+      "risk": "medium",
+      "rollback": "revert abstraction commit"
+    },
+    {
+      "old_path": "direct registry file/loader calls",
+      "new_path": "omertaos/registry/* unified registry API",
+      "order": 2,
+      "risk": "medium",
+      "rollback": "revert abstraction commit"
+    },
+    {
+      "old_path": "legacy imports",
+      "new_path": "compatibility shims preserving old paths",
+      "order": 3,
+      "risk": "low",
+      "rollback": "remove shim modules"
+    }
+  ]
+}

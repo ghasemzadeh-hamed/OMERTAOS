@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 import pathlib
 from typing import Any, Dict, Iterable, Optional
 
@@ -15,6 +14,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from .install_runner import install
 from .schemas import InstallReq, SaveConfigReq, UpsertPayload
 from .secrets_vault import Vault
+from omertaos.config import get_config, load_scope
 
 
 logger = logging.getLogger(__name__)
@@ -22,30 +22,10 @@ logging.basicConfig(level=logging.INFO)
 
 BASE_DIR = pathlib.Path(__file__).resolve().parents[1]
 CONFIG_PATH = pathlib.Path(
-    os.getenv("AION_CONFIG_FILE", BASE_DIR / "config" / "aion.yaml")
+    get_config("AION_CONFIG_FILE", BASE_DIR / "config" / "aion.yaml")
 )
 
-
-def _resolve_env(value: Any) -> Any:
-    if isinstance(value, str) and value.startswith("${") and value.endswith("}"):
-        body = value[2:-1]
-        if ":-" in body:
-            var, default = body.split(":-", 1)
-            return os.getenv(var, default)
-        return os.getenv(body, "")
-    return value
-
-
-def _resolve_tree(node: Any) -> Any:
-    if isinstance(node, dict):
-        return {k: _resolve_tree(v) for k, v in node.items()}
-    if isinstance(node, list):
-        return [_resolve_tree(v) for v in node]
-    return _resolve_env(node)
-
-
-with CONFIG_PATH.open("r", encoding="utf-8") as fh:
-    CFG = _resolve_tree(yaml.safe_load(fh))
+CFG = load_scope(str(CONFIG_PATH))
 
 vault_cfg = CFG.get("vault", {})
 file_cfg = vault_cfg.get("file", {})
@@ -64,7 +44,7 @@ DEFAULT_ROLE = rbac_cfg.get("default_role", "viewer").lower()
 
 VAULT = Vault(vault_cfg)
 
-DB_URL = os.getenv("DB_URL", "sqlite:///" + str((BASE_DIR / "aion_catalog.db").resolve()))
+DB_URL = get_config("DB_URL", "sqlite:///" + str((BASE_DIR / "aion_catalog.db").resolve()))
 ENGINE = create_engine(DB_URL, future=True)
 SessionLocal = sessionmaker(bind=ENGINE, autoflush=False, expire_on_commit=False)
 

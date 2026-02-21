@@ -1,0 +1,17 @@
+[python3 -m pip install -e .]
+FAILED: Package requires Python <3.13 while environment is 3.14
+
+[pytest -q]
+FAILED during collection due to existing repository test/plugin issues (not introduced by this change).
+
+[ruff check .]
+FAILED with pre-existing lint violations across repository.
+
+[mypy .]
+FAILED with pre-existing module/package typing layout issues.
+
+[cargo build --workspace]
+FAILED at repository root because no top-level Cargo.toml workspace manifest exists.
+
+[cd console && npm ci && npm run build]
+npm ci passed; build failed due to existing Prisma type mismatch in console/scripts/bootstrap-admin.ts.

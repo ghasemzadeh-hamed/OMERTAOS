@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-import os
 from pathlib import Path
 import shutil
 from typing import Any
@@ -11,21 +10,25 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from .security import admin_or_devops_required, admin_required
+from omertaos.config import get_config
+from omertaos.registry import load_registry_lock
 
 
 router = APIRouter(prefix="/api/models", tags=["models"])
 
 
 def _default_app_dir() -> Path:
-    if os.getenv("APP_DIR"):
-        return Path(os.getenv("APP_DIR")).expanduser()
-    if os.getenv("APP_ROOT"):
-        return Path(os.getenv("APP_ROOT")).expanduser() / "OMERTAOS"
+    app_dir = get_config("APP_DIR")
+    if app_dir:
+        return Path(app_dir).expanduser()
+    app_root = get_config("APP_ROOT")
+    if app_root:
+        return Path(app_root).expanduser() / "OMERTAOS"
     return Path(__file__).resolve().parents[3]
 
 
 def _resolve_models_dir() -> Path:
-    env_value = os.getenv("AION_CONTROL_MODELS_DIRECTORY")
+    env_value = get_config("AION_CONTROL_MODELS_DIRECTORY")
     default_dir = _default_app_dir() / "models"
     fallback_dir = Path.home() / ".aionos" / "models"
 
@@ -53,10 +56,17 @@ def _resolve_models_dir() -> Path:
 
 MODELS_DIR = _resolve_models_dir()
 
-REGISTRY_PATH = Path(os.getenv("AION_MODEL_REGISTRY", "config/model-registry.json"))
+REGISTRY_PATH = Path(get_config("AION_MODEL_REGISTRY", "config/model-registry.json"))
 
 
 def _load_registry() -> list[dict[str, Any]]:
+    try:
+        lock = load_registry_lock()
+        if isinstance(lock, dict) and isinstance(lock.get("models"), list):
+            return list(lock["models"])
+    except FileNotFoundError:
+        pass
+
     if not REGISTRY_PATH.exists():
         return []
     import json
