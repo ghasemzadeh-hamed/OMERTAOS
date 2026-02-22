@@ -43,7 +43,7 @@ The system separates responsibilities into isolated layers:
 
 ### 1. Clone the Repository
 
-```bash
+
 git clone https://github.com/Hamedghz/OMERTAOS.git
 cd OMERTAOS
 
@@ -105,7 +105,7 @@ Roadmap
 
 ⸻
 
-```bash
+
 License
 
 MIT License
