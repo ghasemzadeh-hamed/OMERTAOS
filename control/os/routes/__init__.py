@@ -5,6 +5,7 @@ from os.control.os.routes.ai_chat import router as ai_chat_router
 from os.control.os.routes.agent import router as agent_router
 from os.control.os.routes.config import router as config_router
 from os.control.os.routes.profile import router as profile_router
+from os.control.os.routes.setup import router as setup_router
 from os.control.os.routes.kernel_proposals import router as kernel_router
 from os.control.os.routes.memory import router as memory_router
 from os.control.os.routes.models import router as models_router
@@ -23,6 +24,7 @@ __all__ = [
     "agent_router",
     "config_router",
     "profile_router",
+    "setup_router",
     "kernel_router",
     "memory_router",
     "models_router",

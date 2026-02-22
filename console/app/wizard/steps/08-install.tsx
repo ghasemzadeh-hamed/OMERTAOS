@@ -21,7 +21,12 @@ export default function Install() {
     setStatus('running');
     setError(null);
     try {
-      const response: RunResponse = await trigger('apply.partition');
+      const bootstrap: RunResponse = await trigger('bootstrap.runtime');
+      if (!bootstrap?.ok) {
+        throw new Error(bootstrap?.error ?? 'Failed to prepare runtime packages');
+      }
+
+      const response: RunResponse = await trigger('apply.partition', { mode: 'native' });
       if (response?.ok) {
         setStatus('done');
       } else {
@@ -37,7 +42,7 @@ export default function Install() {
   return (
     <div>
       <h3>Install</h3>
-      <p>Disk operations require kiosk mode with root access and the AION_ALLOW_INSTALL flag.</p>
+      <p>Installer will download missing runtime packages, run services, and then apply disk actions.</p>
       <button onClick={execute} disabled={status === 'running'}>
         Begin installation
       </button>

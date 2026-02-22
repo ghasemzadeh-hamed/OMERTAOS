@@ -12,9 +12,37 @@ from typing import Any, Dict, Tuple
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 PROFILE_FILE = ROOT_DIR / ".aion" / "profile.json"
+BOOTSTRAP_FILE = ROOT_DIR / ".aion" / "bootstrap.json"
 ENV_PATH = ROOT_DIR / ".env"
 _VALID_PROFILES = {"user", "professional", "enterprise-vip"}
 
+
+
+
+def read_bootstrap_state() -> Dict[str, Any]:
+    if not BOOTSTRAP_FILE.is_file():
+        profile, setup_done = read_profile_state()
+        return {"profile": profile, "setupDone": setup_done, "encryptData": True, "defaults": {}}
+    try:
+        data = json.loads(BOOTSTRAP_FILE.read_text())
+    except Exception:
+        profile, setup_done = read_profile_state()
+        return {"profile": profile, "setupDone": setup_done, "encryptData": True, "defaults": {}}
+    data.setdefault("defaults", {})
+    data.setdefault("encryptData", True)
+    data.setdefault("setupDone", True)
+    return data
+
+
+def set_bootstrap_state(state: Dict[str, Any]) -> Dict[str, Any]:
+    BOOTSTRAP_FILE.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        **state,
+        "setupDone": True,
+        "updatedAt": datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
+    }
+    BOOTSTRAP_FILE.write_text(json.dumps(payload, indent=2))
+    return payload
 
 def _load_profile_module() -> ModuleType:
     module_path = ROOT_DIR / "kernel-multitenant" / "profile_loader.py"
@@ -124,4 +152,6 @@ __all__ = [
     "load_profile",
     "read_profile_state",
     "set_profile_state",
+    "read_bootstrap_state",
+    "set_bootstrap_state",
 ]

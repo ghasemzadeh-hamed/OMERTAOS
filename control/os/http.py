@@ -13,6 +13,7 @@ from os.control.os.routes import (
     agent_router,
     config_router,
     profile_router,
+    setup_router,
     kernel_router,
     memory_router,
     models_router,
@@ -31,6 +32,7 @@ from os.control.os.api import (
     agents_router,
     router_policy_router,
     webhook_router,
+    feature_catalog_router,
 )
 from os.control.os.api.files import router as files_router, data_router
 from os.control.os.api.config import router as config_center_router, network_router
@@ -128,6 +130,7 @@ app.include_router(ai_chat_router)
 app.include_router(agent_router)
 app.include_router(config_router)
 app.include_router(profile_router)
+app.include_router(setup_router)
 app.include_router(kernel_router)
 app.include_router(memory_router)
 app.include_router(models_router)
@@ -160,3 +163,4 @@ app.include_router(packages_router)
 app.include_router(backup_router)
 app.include_router(update_router)
 app.include_router(provisioner_router)
+app.include_router(feature_catalog_router)
