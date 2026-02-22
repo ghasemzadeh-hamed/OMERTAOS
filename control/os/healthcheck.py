@@ -42,12 +42,14 @@ async def _probe() -> int:
     timeout = get_float("AION_CONTROL_HEALTH_TIMEOUT", _DEFAULT_TIMEOUT)
     http_url = get_config("AION_CONTROL_HEALTH_URL", _DEFAULT_HTTP_URL)
     grpc_target = get_config("AION_CONTROL_GRPC", _DEFAULT_GRPC_TARGET)
+    strict_http = os.getenv("AION_CONTROL_HEALTH_STRICT_HTTP") == "1"
 
     try:
         if await _check_http(http_url, timeout):
             return 0
-    except Exception:  # pragma: no cover - health checks should be resilient
-        pass
+    except Exception:
+        if strict_http:
+            return 1
 
     try:
         if await _check_grpc(grpc_target, timeout):
