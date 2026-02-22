@@ -21,7 +21,7 @@ async def _serve_http(shutdown: asyncio.Event) -> None:
     port = settings.http_port
     config = uvicorn.Config(
         http_app,
-        host=host,
+        host="0.0.0.0",
         port=port,
         loop="asyncio",
         reload=False,
