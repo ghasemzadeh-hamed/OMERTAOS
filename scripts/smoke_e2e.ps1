@@ -48,4 +48,3 @@ if ($adminToken) {
 }
 
 Write-Host 'Smoke test completed'
-
