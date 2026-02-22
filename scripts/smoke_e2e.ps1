@@ -5,7 +5,7 @@ param(
   [string]$ConsoleUrl = $env:NEXTAUTH_URL
 )
 
-$gatewayPort = if ($env:AION_GATEWAY_PORT) { $env:AION_GATEWAY_PORT } else { '3000' }
+$gatewayPort = if ($env:AION_GATEWAY_PORT) { $env:AION_GATEWAY_PORT } else { '8080' }
 
 if (-not $GatewayUrl) {
   $GatewayUrl = "http://localhost:$gatewayPort"
@@ -48,3 +48,4 @@ if ($adminToken) {
 }
 
 Write-Host 'Smoke test completed'
+
