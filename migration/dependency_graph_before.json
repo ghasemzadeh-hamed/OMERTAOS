@@ -20,20 +20,20 @@
         "os/control/main.py"
       ],
       [
-        "aionos_core/cli.py",
+        "aion_core/cli.py",
         "core/installer/__init__.py"
       ],
       [
-        "aionos_core/cli.py",
+        "aion_core/cli.py",
         "explorer/aion_explorer.py"
       ],
       [
-        "aionos_control/__init__.py",
-        "os/control/aionos_control/__init__.py"
+        "aion_control/__init__.py",
+        "os/control/aion_control/__init__.py"
       ],
       [
-        "aionos_control/main.py",
-        "os/control/aionos_control/main.py"
+        "aion_control/main.py",
+        "os/control/aion_control/main.py"
       ],
       [
         "scripts/train_eval.py",
@@ -313,7 +313,7 @@
       ],
       [
         "control/tests/test_plugins_api.py",
-        "aionos_control/main.py"
+        "aion_control/main.py"
       ],
       [
         "control/tests/test_kernel_proposals.py",
@@ -360,7 +360,7 @@
         "os/control/os/http.py"
       ],
       [
-        "os/control/aionos_profiles.py",
+        "os/control/aion_profiles.py",
         "os/__init__.py"
       ],
       [
@@ -449,7 +449,7 @@
       ],
       [
         "os/control/os/http.py",
-        "os/control/aionos_profiles.py"
+        "os/control/aion_profiles.py"
       ],
       [
         "os/control/os/http.py",
@@ -489,7 +489,7 @@
       ],
       [
         "os/control/os/router_engine.py",
-        "os/control/aionos_profiles.py"
+        "os/control/aion_profiles.py"
       ],
       [
         "os/control/os/router_engine.py",
@@ -905,7 +905,7 @@
       ],
       [
         "os/control/os/routes/seal.py",
-        "os/control/aionos_profiles.py"
+        "os/control/aion_profiles.py"
       ],
       [
         "os/control/os/routes/seal.py",
@@ -969,11 +969,11 @@
       ],
       [
         "os/control/os/routes/config.py",
-        "os/control/aionos_profiles.py"
+        "os/control/aion_profiles.py"
       ],
       [
         "os/control/os/routes/profile.py",
-        "os/control/aionos_profiles.py"
+        "os/control/aion_profiles.py"
       ],
       [
         "os/control/os/models/registry.py",
@@ -1305,22 +1305,22 @@
       "path": "/metrics"
     },
     {
-      "file": "os/control/aionos_control/main.py",
+      "file": "os/control/aion_control/main.py",
       "method": "GET",
       "path": "/healthz"
     },
     {
-      "file": "os/control/aionos_control/main.py",
+      "file": "os/control/aion_control/main.py",
       "method": "GET",
       "path": "/health"
     },
     {
-      "file": "os/control/aionos_control/routes/plugins.py",
+      "file": "os/control/aion_control/routes/plugins.py",
       "method": "GET",
       "path": "/"
     },
     {
-      "file": "os/control/aionos_control/routes/plugins.py",
+      "file": "os/control/aion_control/routes/plugins.py",
       "method": "POST",
       "path": "/call"
     },

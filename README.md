@@ -42,8 +42,8 @@ ai_registry]
 
 ## Recent Architecture Standardization Notes
 - `config` and `registry` are root-level canonical Python modules (the legacy `omertaos/*` package scaffold has been removed).
-- `aionos_core` implementation is now in `cli/aionos_core` with compatibility wrappers at `aionos_core/*`.
-- `aionos_control` implementation is now in `control/aionos_control` with compatibility wrappers retained.
+- `aion_core` implementation is now in `cli/aion_core` with compatibility wrappers at `aion_core/*`.
+- `aion_control` implementation is now in `control/aion_control` with compatibility wrappers retained.
 - legacy `os/secret_store` has been distributed to `shared/secret_store` with compatibility shims.
 - local compose canonical path is `deploy/compose/docker-compose.local.yml` (root `docker-compose.local.yml` remains as compatibility symlink).
 

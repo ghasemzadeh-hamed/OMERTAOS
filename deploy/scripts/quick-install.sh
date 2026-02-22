@@ -71,7 +71,7 @@ append_if_missing "DEV_API_KEY" "${DEV_API_KEY}"
 append_if_missing "AION_GATEWAY_PORT" "8080"
 append_if_missing "CONSOLE_PORT" "3000"
 
-DB_USER=${AION_DB_USER:-aionos}
+DB_USER=${AION_DB_USER:-aion}
 DB_PASSWORD=${AION_DB_PASSWORD:-password}
 DB_NAME=${AION_DB_NAME:-omerta_db}
 DB_HOST=${AION_DB_HOST:-postgres}

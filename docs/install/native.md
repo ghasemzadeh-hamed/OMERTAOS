@@ -21,7 +21,7 @@ Run the installer on an existing Ubuntu host to reuse the wizard and bridge stac
    ```bash
    cd core/installer/bridge
    pnpm install
-   sudo AIONOS_ALLOW_INSTALL=1 pnpm start
+   sudo AION_ALLOW_INSTALL=1 pnpm start
    ```
 4. Launch the console wizard in a separate terminal:
    ```bash
@@ -30,10 +30,10 @@ Run the installer on an existing Ubuntu host to reuse the wizard and bridge stac
    pnpm dev
    ```
 5. Visit https://localhost:3000/wizard, accept the development certificate warning, and select **Native Install**.
-6. Review hardware probes and the storage plan before approving changes. Destructive steps require `AIONOS_ALLOW_INSTALL=1`.
+6. Review hardware probes and the storage plan before approving changes. Destructive steps require `AION_ALLOW_INSTALL=1`.
 7. After the wizard reports success, stop services and reboot the host.
 
 ## Notes
 
 - The bridge enforces root privileges for driver and security tasks.
-- Copy the rendered `.env` to `/etc/aionos/profile.env` if you want systemd units to reuse the same configuration on first boot.
+- Copy the rendered `.env` to `/etc/aion/profile.env` if you want systemd units to reuse the same configuration on first boot.

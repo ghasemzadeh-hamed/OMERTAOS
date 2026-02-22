@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://aionos.dev/schemas/task.schema.json",
+  "$id": "https://aion.dev/schemas/task.schema.json",
   "title": "Task",
   "type": "object",
   "required": ["schema_version", "intent", "params"],

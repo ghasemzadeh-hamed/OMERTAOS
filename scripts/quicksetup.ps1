@@ -4,10 +4,10 @@ param(
     [switch]$Local,
     [switch]$NonInteractive,
     [string]$ComposeFile,
-    [string]$Model = $env:AIONOS_LOCAL_MODEL,
+    [string]$Model = $env:AION_LOCAL_MODEL,
     [switch]$Update,
-    [string]$Repo = $env:AIONOS_REPO_URL,
-    [string]$Branch = $env:AIONOS_REPO_BRANCH,
+    [string]$Repo = $env:AION_REPO_URL,
+    [string]$Branch = $env:AION_REPO_BRANCH,
     [string]$PolicyDir = $env:AION_POLICY_DIR,
     [string]$VolumeRoot = $env:AION_VOLUME_ROOT,
     [switch]$SkipSelfCheck
@@ -384,8 +384,8 @@ Test-DockerDaemon -ThrowOnFailure | Out-Null
 
 $envPath = Join-Path $rootDir '.env'
 $configDir = Join-Path $rootDir 'config'
-$configFile = Join-Path $configDir 'aionos.config.yaml'
-$profileDir = Join-Path $rootDir '.aionos'
+$configFile = Join-Path $configDir 'aion.config.yaml'
+$profileDir = Join-Path $rootDir '.aion'
 $resolveUnderRoot = {
     param([string]$Root, [string]$Path)
     if ([string]::IsNullOrWhiteSpace($Path)) { return $Root }
@@ -400,7 +400,7 @@ function New-RandomSecret {
     return [System.Convert]::ToBase64String($buffer)
 }
 
-$defaultDbUser = 'aionos'
+$defaultDbUser = 'aion'
 $defaultDbPassword = 'password'
 $defaultDbName = 'omerta_db'
 $defaultDbUrl = "postgresql://${defaultDbUser}:${defaultDbPassword}@postgres:5432/${defaultDbName}?schema=public"
@@ -438,8 +438,8 @@ if ((-not (Test-Path (Join-Path $rootDir '.git'))) -and (-not $hasProjectStructu
 # Refresh derived paths after any clone or detection update
 $envPath = Join-Path $rootDir '.env'
 $configDir = Join-Path $rootDir 'config'
-$configFile = Join-Path $configDir 'aionos.config.yaml'
-$profileDir = Join-Path $rootDir '.aionos'
+$configFile = Join-Path $configDir 'aion.config.yaml'
+$profileDir = Join-Path $rootDir '.aion'
 $hasProjectStructure = Test-ProjectRootPath -Path $rootDir
 Set-Location -Path $rootDir
 

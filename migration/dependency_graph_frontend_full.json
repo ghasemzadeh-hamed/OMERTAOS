@@ -1,9 +1,9 @@
 {
   "console/package.json": {
-    "name": "aionos-console",
+    "name": "aion-console",
     "dependencies": [
-      "@aionos/secret-provider",
-      "@aionos/ui-core",
+      "@aion/secret-provider",
+      "@aion/ui-core",
       "@headlessui/react",
       "@heroicons/react",
       "@hookform/resolvers",
@@ -72,9 +72,9 @@
     ]
   },
   "gateway/package.json": {
-    "name": "aionos-gateway",
+    "name": "aion-gateway",
     "dependencies": [
-      "@aionos/secret-provider",
+      "@aion/secret-provider",
       "@fastify/compress",
       "@fastify/cors",
       "@fastify/helmet",
@@ -170,7 +170,7 @@
     ]
   },
   "packages/ui-core/package.json": {
-    "name": "@aionos/ui-core",
+    "name": "@aion/ui-core",
     "dependencies": [
       "@types/react",
       "@types/react-dom",
@@ -181,7 +181,7 @@
     "scripts": []
   },
   "core/installer/package.json": {
-    "name": "aionos-installer-core",
+    "name": "aion-installer-core",
     "dependencies": [
       "yaml",
       "zod"
@@ -190,7 +190,7 @@
     "scripts": []
   },
   "core/desktop-shell/electron/package.json": {
-    "name": "aionos-desktop",
+    "name": "aion-desktop",
     "dependencies": [
       "electron"
     ],
@@ -200,7 +200,7 @@
     ]
   },
   "core/installer/bridge/package.json": {
-    "name": "aionos-installer-bridge",
+    "name": "aion-installer-bridge",
     "dependencies": [
       "express",
       "yaml"
@@ -209,7 +209,7 @@
     "scripts": []
   },
   "shared/secret-provider-node/package.json": {
-    "name": "@aionos/secret-provider",
+    "name": "@aion/secret-provider",
     "dependencies": [],
     "devDependencies": [],
     "scripts": []

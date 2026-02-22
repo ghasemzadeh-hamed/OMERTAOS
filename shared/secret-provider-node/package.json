@@ -1,5 +1,5 @@
 {
-  "name": "@aionos/secret-provider",
+  "name": "@aion/secret-provider",
   "version": "0.1.0",
   "type": "module",
   "main": "index.js",

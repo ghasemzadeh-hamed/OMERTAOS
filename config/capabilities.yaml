@@ -19,7 +19,7 @@ capabilities:
         - method: GET
           path: /api/setup/profile
           service: gateway (console proxy)
-      persistence: control stores canonical profile in .aionos/profile.json
+      persistence: control stores canonical profile in .aion/profile.json
     config:
       env:
         - AION_ENV

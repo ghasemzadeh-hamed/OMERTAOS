@@ -3,7 +3,7 @@ name: Docs Parity
 on:
   pull_request:
   push:
-    branches: ["main", "AIONOS"]
+    branches: ["main", "AION"]
 
 jobs:
   doc-truth:

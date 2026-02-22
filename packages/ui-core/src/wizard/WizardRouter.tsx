@@ -10,7 +10,7 @@ export default function WizardRouter() {
   const Step = active?.component ?? (() => null);
 
   return (
-    <div className="aionos-wizard">
+    <div className="aion-wizard">
       <div className="head">
         <h1>{active?.title ?? ''}</h1>
       </div>

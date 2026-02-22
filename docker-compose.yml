@@ -2,16 +2,16 @@ services:
   vault:
     profiles: ["vault"]
     image: hashicorp/vault:1.17
-    container_name: aionos-vault
+    container_name: aion-vault
     restart: unless-stopped
     cap_add:
       - IPC_LOCK
     environment:
-      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_DEV_ROOT_TOKEN_ID:-aionos-dev-root}
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_DEV_ROOT_TOKEN_ID:-aion-dev-root}
       VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
     command: >-
       server -dev
-      -dev-root-token-id=${VAULT_DEV_ROOT_TOKEN_ID:-aionos-dev-root}
+      -dev-root-token-id=${VAULT_DEV_ROOT_TOKEN_ID:-aion-dev-root}
       -dev-listen-address=0.0.0.0:8200
     ports: []
     healthcheck:
@@ -28,21 +28,21 @@ services:
       timeout: 3s
       retries: 20
       start_period: 10s
-    networks: [aionos]
+    networks: [aion]
 
   postgres:
     image: postgres:16
     environment:
-      POSTGRES_USER: ${AION_DB_USER:-aionos}
+      POSTGRES_USER: ${AION_DB_USER:-aion}
       POSTGRES_PASSWORD: ${AION_DB_PASSWORD:-password}
       POSTGRES_DB: ${AION_DB_NAME:-omerta_db}
     ports: []
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${AION_DB_USER:-aionos} -d ${AION_DB_NAME:-omerta_db} || exit 1"]
+      test: ["CMD-SHELL", "pg_isready -U ${AION_DB_USER:-aion} -d ${AION_DB_NAME:-omerta_db} || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 60
-    networks: [aionos]
+    networks: [aion]
 
   redis:
     image: redis:7
@@ -52,7 +52,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 60
-    networks: [aionos]
+    networks: [aion]
 
   qdrant:
     image: qdrant/qdrant:latest
@@ -73,7 +73,7 @@ services:
       timeout: 10s
       retries: 40
       start_period: 120s
-    networks: [aionos]
+    networks: [aion]
 
   minio:
     image: minio/minio:latest
@@ -87,7 +87,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 60
-    networks: [aionos]
+    networks: [aion]
     volumes:
       - minio-data:/data
 
@@ -100,7 +100,7 @@ services:
       AION_CONTROL_DISABLE_SECRETS: ${AION_CONTROL_DISABLE_SECRETS:-1}
       AION_CONTROL_API_PREFIX: ${AION_CONTROL_API_PREFIX:-/api}
       AION_CONTROL_REDIS_URL: ${AION_CONTROL_REDIS_URL:-redis://redis:6379/0}
-      AION_CONTROL_MONGO_DSN: ${AION_CONTROL_MONGO_DSN:-mongodb://mongo:27017/aionos?retryWrites=true&w=majority}
+      AION_CONTROL_MONGO_DSN: ${AION_CONTROL_MONGO_DSN:-mongodb://mongo:27017/aion?retryWrites=true&w=majority}
       AION_CONTROL_QDRANT_URL: ${AION_CONTROL_QDRANT_URL:-http://qdrant:6333}
       AION_CONTROL_MODELS_DIRECTORY: ${AION_CONTROL_MODELS_DIRECTORY:-/srv/app/models}
       AION_CONTROL_POLICIES_DIRECTORY: ${AION_CONTROL_POLICIES_DIRECTORY:-/srv/app/policies}
@@ -131,7 +131,7 @@ services:
       timeout: 5s
       retries: 60
     command: ["python", "-m", "os.control.os.main"]
-    networks: [aionos]
+    networks: [aion]
 
   gateway:
     build:
@@ -181,7 +181,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 60
-    networks: [aionos]
+    networks: [aion]
 
   console:
     build:
@@ -211,13 +211,13 @@ services:
       timeout: 3s
       retries: 30
       start_period: 20s
-    networks: [aionos]
+    networks: [aion]
 
   dev-kernel:
     build:
       context: .
       dockerfile: app/kernel/Dockerfile
-    container_name: aionos-dev-kernel
+    container_name: aion-dev-kernel
     env_file:
       - .env
     environment:
@@ -242,16 +242,16 @@ services:
       - llm-gateway
       - vault
     profiles: ["dev-kernel"]
-    networks: [aionos]
+    networks: [aion]
 
   llm-gateway:
     image: your-llm-gateway:latest
-    container_name: aionos-llm-gateway
+    container_name: aion-llm-gateway
     environment:
       DUMMY: "1"
     ports: []
     profiles: ["dev-kernel"]
-    networks: [aionos]
+    networks: [aion]
 
 volumes:
   minio-data: {}
@@ -259,6 +259,6 @@ volumes:
   vault-data: {}
 
 networks:
-  aionos:
+  aion:
     driver: bridge
     internal: true

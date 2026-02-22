@@ -307,7 +307,7 @@
         "Recent log"
       ],
       "referenced_modules": [
-        "\n8cf1e2e chore(architecture): introduce unified config & registry abstraction\n4bea677 Merge pull request #172 from Hamedghz/omertaos/implement-console-auth-and-database-setup-fixes-snodhp\ncac875b Merge branch 'AIONOS' into omertaos/implement-console-auth-and-database-setup-fixes-snodhp\neaab0ef Fix Redis set result handling in gateway\naf5781b Merge pull request #171 from Hamedghz/omertaos/implement-console-auth-and-database-setup-fixes\n\n",
+        "\n8cf1e2e chore(architecture): introduce unified config & registry abstraction\n4bea677 Merge pull request #172 from Hamedghz/omertaos/implement-console-auth-and-database-setup-fixes-snodhp\ncac875b Merge branch 'AION' into omertaos/implement-console-auth-and-database-setup-fixes-snodhp\neaab0ef Fix Redis set result handling in gateway\naf5781b Merge pull request #171 from Hamedghz/omertaos/implement-console-auth-and-database-setup-fixes\n\n",
         " across runtime modules.\n4. Stabilize test/lint/typecheck baselines before path relocation.\n\n## Recent log\n",
         " failed due to pre-existing module/package layout issue.\n- ",
         " failed during collection due to existing repo plugin/layout issues.\n- ",
@@ -320,7 +320,7 @@
         "os/control/os/api/models.py"
       ],
       "referenced_paths": [
-        "\n8cf1e2e chore(architecture): introduce unified config & registry abstraction\n4bea677 Merge pull request #172 from Hamedghz/omertaos/implement-console-auth-and-database-setup-fixes-snodhp\ncac875b Merge branch 'AIONOS' into omertaos/implement-console-auth-and-database-setup-fixes-snodhp\neaab0ef Fix Redis set result handling in gateway\naf5781b Merge pull request #171 from Hamedghz/omertaos/implement-console-auth-and-database-setup-fixes\n\n",
+        "\n8cf1e2e chore(architecture): introduce unified config & registry abstraction\n4bea677 Merge pull request #172 from Hamedghz/omertaos/implement-console-auth-and-database-setup-fixes-snodhp\ncac875b Merge branch 'AION' into omertaos/implement-console-auth-and-database-setup-fixes-snodhp\neaab0ef Fix Redis set result handling in gateway\naf5781b Merge pull request #171 from Hamedghz/omertaos/implement-console-auth-and-database-setup-fixes\n\n",
         " across runtime modules.\n4. Stabilize test/lint/typecheck baselines before path relocation.\n\n## Recent log\n",
         " failed due to pre-existing module/package layout issue.\n- ",
         " failed during collection due to existing repo plugin/layout issues.\n- ",
@@ -334,7 +334,7 @@
       ],
       "broken_links": [],
       "outdated_references": [
-        "AIONOS"
+        "AION"
       ]
     },
     {
@@ -483,10 +483,10 @@
       ],
       "referenced_modules": [
         "\n\nThis command pushes the artifact and signs it with Cosign for downstream verification.\n\n## Adapter generation workflow\n\nVendors that do not provide AIP-compliant OCI/WASM packages can be wrapped with an auto-generated adapter. Submit a vendor REST\nor gRPC specification to the Builder service:\n\n",
-        "bash\nCOSIGN_KEY=cosign.key ./scripts/register_module.sh summarize_text modules/summarize_text ghcr.io/aionos/modules\n",
-        "bash\nCOSIGN_KEY=cosign.pub ./scripts/install_module.sh ghcr.io/aionos/modules/summarize_text:1.2.0 modules/summarize_text\n",
+        "bash\nCOSIGN_KEY=cosign.key ./scripts/register_module.sh summarize_text modules/summarize_text ghcr.io/aion/modules\n",
+        "bash\nCOSIGN_KEY=cosign.pub ./scripts/install_module.sh ghcr.io/aion/modules/summarize_text:1.2.0 modules/summarize_text\n",
         "builder/adapter_generator/",
-        "cosign sign --key cosign.key ghcr.io/aionos/modules/summarize_text:1.2.0",
+        "cosign sign --key cosign.key ghcr.io/aion/modules/summarize_text:1.2.0",
         "http\nPOST /v1/builder/adapter\nContent-Type: application/json\n\n{\n  \"name\": \"acme-summarizer\",\n  \"protocol\": \"grpc\",\n  \"source\": \"https://vendor.example.com/specs/summarizer.proto\",\n  \"signing\": {\n    \"cosign_key_ref\": \"s3://omerta/keys/builder.pub\"\n  }\n}\n",
         "modules/**/manifest.yaml",
         "policies/modules.yml",
@@ -495,10 +495,10 @@
       ],
       "referenced_paths": [
         "\n\nThis command pushes the artifact and signs it with Cosign for downstream verification.\n\n## Adapter generation workflow\n\nVendors that do not provide AIP-compliant OCI/WASM packages can be wrapped with an auto-generated adapter. Submit a vendor REST\nor gRPC specification to the Builder service:\n\n",
-        "bash\nCOSIGN_KEY=cosign.key ./scripts/register_module.sh summarize_text modules/summarize_text ghcr.io/aionos/modules\n",
-        "bash\nCOSIGN_KEY=cosign.pub ./scripts/install_module.sh ghcr.io/aionos/modules/summarize_text:1.2.0 modules/summarize_text\n",
+        "bash\nCOSIGN_KEY=cosign.key ./scripts/register_module.sh summarize_text modules/summarize_text ghcr.io/aion/modules\n",
+        "bash\nCOSIGN_KEY=cosign.pub ./scripts/install_module.sh ghcr.io/aion/modules/summarize_text:1.2.0 modules/summarize_text\n",
         "builder/adapter_generator/",
-        "cosign sign --key cosign.key ghcr.io/aionos/modules/summarize_text:1.2.0",
+        "cosign sign --key cosign.key ghcr.io/aion/modules/summarize_text:1.2.0",
         "http\nPOST /v1/builder/adapter\nContent-Type: application/json\n\n{\n  \"name\": \"acme-summarizer\",\n  \"protocol\": \"grpc\",\n  \"source\": \"https://vendor.example.com/specs/summarizer.proto\",\n  \"signing\": {\n    \"cosign_key_ref\": \"s3://omerta/keys/builder.pub\"\n  }\n}\n",
         "modules/**/manifest.yaml",
         "policies/modules.yml",
@@ -582,7 +582,7 @@
         "/",
         "1)",
         "2)  CLI ( UI)",
-        "CLI  :  virtualenv  /opt/aionos/cli",
+        "CLI  :  virtualenv  /opt/aion/cli",
         "3)",
         "4)",
         "~/.aion.env   secrets",
@@ -598,33 +598,33 @@
         "\n\n               CI  .\n\n## 7)    (CPU/GPU)\n\n",
         "\n\n## 9)    CI/CD\n\n- Secrets      ENV  Secrets Manager  .\n- ",
         "\nmy-config/\n  config/\n    providers.yaml\n    router.policy.yaml\n    data-sources.yaml\n  modules/\n    summarize-rs/\n      aip.yaml\n      cosign.pub\n    ocr-py/\n      aip.yaml\n  services/\n    aion-control.service\n    aion-gateway.service\n    aion-console.service\n  env/\n    aion.env.example\n  scripts/\n    pre-apply.sh\n    post-apply.sh\n    verify.sh\n  VERSION\n  CHECKSUMS.txt\n",
-        "/var/log/aionos",
-        "bash\ncurl -L \"https://<artifact-host>/aion/latest/linux-x64/aion\" -o /usr/local/bin/aion\nsudo chmod +x /usr/local/bin/aion\n#   CLI  :  virtualenv  /opt/aionos/cli\n",
+        "/var/log/aion",
+        "bash\ncurl -L \"https://<artifact-host>/aion/latest/linux-x64/aion\" -o /usr/local/bin/aion\nsudo chmod +x /usr/local/bin/aion\n#   CLI  :  virtualenv  /opt/aion/cli\n",
         "bash\nscp my-config-v2.tgz user@server:/tmp/\n\nsudo -iu aion aion apply --bundle /tmp/my-config-v2.tgz --atomic\nsudo -iu aion aion rollback --last\nsudo -iu aion aion module rollback summarize-rs --to 0.3.1\nsudo -iu aion aion router policy-rollback --rev 17\n",
         "bash\nscp my-config.tgz user@server:/tmp/\n\nsudo -iu aion bash -lc '\n  mkdir -p ~/deploy && cp /tmp/my-config.tgz ~/deploy/\n  cd ~/deploy && tar xzf my-config.tgz\n  cp my-config/env/aion.env.example ~/.aion.env\n  #  ~/.aion.env   secrets\n'\n",
         "bash\nsudo -iu aion aion doctor --verbose\ncurl -s http://127.0.0.1:8001/api/health | jq .\ncurl -s http://127.0.0.1:8001/api/providers | jq '.items[].name'\n",
         "bash\nsudo -iu aion bash -lc '\n  export $(grep -v \"^#\" ~/.aion.env | xargs -d \"\\n\" -n1)\n  aion apply --bundle ~/deploy/my-config.tgz --no-browser\n'\n",
         "bash\nsudo apt-get update\nsudo apt-get install -y curl git unzip tar jq ca-certificates\nsudo apt-get install -y python3 python3-venv python3-pip\n#   : Node.js\n# sudo apt-get install -y nodejs npm\n# /\nsudo apt-get install -y postgresql redis\n",
         "bash\nsudo cp /home/aion/deploy/my-config/services/*.service /etc/systemd/system/\nsudo systemctl daemon-reload\nsudo systemctl enable aion-control aion-gateway aion-console\nsudo systemctl start  aion-control aion-gateway aion-console\n",
-        "bash\nsudo useradd -m -s /bin/bash aion || true\nsudo mkdir -p /opt/aionos /var/lib/aionos /var/log/aionos /etc/aionos/{config,keys}\nsudo chown -R aion:aion /opt/aionos /var/lib/aionos /var/log/aionos /etc/aionos\n",
+        "bash\nsudo useradd -m -s /bin/bash aion || true\nsudo mkdir -p /opt/aion /var/lib/aion /var/log/aion /etc/aion/{config,keys}\nsudo chown -R aion:aion /opt/aion /var/lib/aion /var/log/aion /etc/aion\n",
         "deploy/headless-bundle",
-        "ini\n[Unit]\nDescription=AION Control (FastAPI)\nAfter=network.target postgresql.service redis.service\n\n[Service]\nUser=aion\nEnvironmentFile=/home/aion/.aion.env\nWorkingDirectory=/opt/aionos/control\nExecStart=/usr/bin/python3 -m uvicorn os.control.main:app --host 0.0.0.0 --port 8001 --workers 4\nRestart=always\nRestartSec=3\nStandardOutput=append:/var/log/aionos/control.log\nStandardError=append:/var/log/aionos/control.err\n\n[Install]\nWantedBy=multi-user.target\n"
+        "ini\n[Unit]\nDescription=AION Control (FastAPI)\nAfter=network.target postgresql.service redis.service\n\n[Service]\nUser=aion\nEnvironmentFile=/home/aion/.aion.env\nWorkingDirectory=/opt/aion/control\nExecStart=/usr/bin/python3 -m uvicorn os.control.main:app --host 0.0.0.0 --port 8001 --workers 4\nRestart=always\nRestartSec=3\nStandardOutput=append:/var/log/aion/control.log\nStandardError=append:/var/log/aion/control.err\n\n[Install]\nWantedBy=multi-user.target\n"
       ],
       "referenced_paths": [
         "\n\n               CI  .\n\n## 7)    (CPU/GPU)\n\n",
         "\n\n## 9)    CI/CD\n\n- Secrets      ENV  Secrets Manager  .\n- ",
         "\nmy-config/\n  config/\n    providers.yaml\n    router.policy.yaml\n    data-sources.yaml\n  modules/\n    summarize-rs/\n      aip.yaml\n      cosign.pub\n    ocr-py/\n      aip.yaml\n  services/\n    aion-control.service\n    aion-gateway.service\n    aion-console.service\n  env/\n    aion.env.example\n  scripts/\n    pre-apply.sh\n    post-apply.sh\n    verify.sh\n  VERSION\n  CHECKSUMS.txt\n",
-        "/var/log/aionos",
-        "bash\ncurl -L \"https://<artifact-host>/aion/latest/linux-x64/aion\" -o /usr/local/bin/aion\nsudo chmod +x /usr/local/bin/aion\n#   CLI  :  virtualenv  /opt/aionos/cli\n",
+        "/var/log/aion",
+        "bash\ncurl -L \"https://<artifact-host>/aion/latest/linux-x64/aion\" -o /usr/local/bin/aion\nsudo chmod +x /usr/local/bin/aion\n#   CLI  :  virtualenv  /opt/aion/cli\n",
         "bash\nscp my-config-v2.tgz user@server:/tmp/\n\nsudo -iu aion aion apply --bundle /tmp/my-config-v2.tgz --atomic\nsudo -iu aion aion rollback --last\nsudo -iu aion aion module rollback summarize-rs --to 0.3.1\nsudo -iu aion aion router policy-rollback --rev 17\n",
         "bash\nscp my-config.tgz user@server:/tmp/\n\nsudo -iu aion bash -lc '\n  mkdir -p ~/deploy && cp /tmp/my-config.tgz ~/deploy/\n  cd ~/deploy && tar xzf my-config.tgz\n  cp my-config/env/aion.env.example ~/.aion.env\n  #  ~/.aion.env   secrets\n'\n",
         "bash\nsudo -iu aion aion doctor --verbose\ncurl -s http://127.0.0.1:8001/api/health | jq .\ncurl -s http://127.0.0.1:8001/api/providers | jq '.items[].name'\n",
         "bash\nsudo -iu aion bash -lc '\n  export $(grep -v \"^#\" ~/.aion.env | xargs -d \"\\n\" -n1)\n  aion apply --bundle ~/deploy/my-config.tgz --no-browser\n'\n",
         "bash\nsudo apt-get update\nsudo apt-get install -y curl git unzip tar jq ca-certificates\nsudo apt-get install -y python3 python3-venv python3-pip\n#   : Node.js\n# sudo apt-get install -y nodejs npm\n# /\nsudo apt-get install -y postgresql redis\n",
         "bash\nsudo cp /home/aion/deploy/my-config/services/*.service /etc/systemd/system/\nsudo systemctl daemon-reload\nsudo systemctl enable aion-control aion-gateway aion-console\nsudo systemctl start  aion-control aion-gateway aion-console\n",
-        "bash\nsudo useradd -m -s /bin/bash aion || true\nsudo mkdir -p /opt/aionos /var/lib/aionos /var/log/aionos /etc/aionos/{config,keys}\nsudo chown -R aion:aion /opt/aionos /var/lib/aionos /var/log/aionos /etc/aionos\n",
+        "bash\nsudo useradd -m -s /bin/bash aion || true\nsudo mkdir -p /opt/aion /var/lib/aion /var/log/aion /etc/aion/{config,keys}\nsudo chown -R aion:aion /opt/aion /var/lib/aion /var/log/aion /etc/aion\n",
         "deploy/headless-bundle",
-        "ini\n[Unit]\nDescription=AION Control (FastAPI)\nAfter=network.target postgresql.service redis.service\n\n[Service]\nUser=aion\nEnvironmentFile=/home/aion/.aion.env\nWorkingDirectory=/opt/aionos/control\nExecStart=/usr/bin/python3 -m uvicorn os.control.main:app --host 0.0.0.0 --port 8001 --workers 4\nRestart=always\nRestartSec=3\nStandardOutput=append:/var/log/aionos/control.log\nStandardError=append:/var/log/aionos/control.err\n\n[Install]\nWantedBy=multi-user.target\n"
+        "ini\n[Unit]\nDescription=AION Control (FastAPI)\nAfter=network.target postgresql.service redis.service\n\n[Service]\nUser=aion\nEnvironmentFile=/home/aion/.aion.env\nWorkingDirectory=/opt/aion/control\nExecStart=/usr/bin/python3 -m uvicorn os.control.main:app --host 0.0.0.0 --port 8001 --workers 4\nRestart=always\nRestartSec=3\nStandardOutput=append:/var/log/aion/control.log\nStandardError=append:/var/log/aion/control.err\n\n[Install]\nWantedBy=multi-user.target\n"
       ],
       "broken_links": [],
       "outdated_references": []
@@ -779,7 +779,7 @@
       ],
       "broken_links": [],
       "outdated_references": [
-        "AIONOS"
+        "AION"
       ]
     },
     {
@@ -810,13 +810,13 @@
         "bash\n   head -c 32 /dev/urandom | xxd -p >> agent_token.txt\n   echo \"AGENT_API_TOKEN=$(cat agent_token.txt)\" >> .env\n   ",
         "bash\n./scripts/smoke_e2e.sh\n",
         "bash\ncp config/templates/.env.example .env\ncp console/.env.example console/.env\ncp control/.env.example control/.env\n",
-        "bash\ncurl -F \"col=aionos-docs\" -F \"files=@README.md\" http://localhost:8000/rag/ingest\ncurl -X POST http://localhost:8000/rag/query \\\n  -H \"content-type: application/json\" \\\n  -d '{\"collection\":\"aionos-docs\",\"query\":\"What is AION-OS?\",\"limit\":3}'\n",
+        "bash\ncurl -F \"col=aion-docs\" -F \"files=@README.md\" http://localhost:8000/rag/ingest\ncurl -X POST http://localhost:8000/rag/query \\\n  -H \"content-type: application/json\" \\\n  -d '{\"collection\":\"aion-docs\",\"query\":\"What is AION-OS?\",\"limit\":3}'\n",
         "bash\ncurl -H \"X-API-Key: demo-key\" http://localhost:3000/v1/stream/<task_id>\n",
         "bash\ncurl -X POST http://localhost:3000/v1/tasks \\\n  -H \"X-API-Key: demo-key\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"schemaVersion\":\"1.0\",\"intent\":\"summarize\",\"params\":{\"text\":\"Hello AION-OS!\"}}'\n",
-        "bash\nexport AIONOS_CONFIG_PATH=/absolute/path/to/aionos.config.yaml\n",
-        "bash\ngit clone -b AIONOS --single-branch https://github.com/Hamedghz/OMERTAOS.git\ncd OMERTAOS\n",
+        "bash\nexport AION_CONFIG_PATH=/absolute/path/to/aion.config.yaml\n",
+        "bash\ngit clone -b AION --single-branch https://github.com/Hamedghz/OMERTAOS.git\ncd OMERTAOS\n",
         "bigdata/docker-compose.bigdata.yml",
-        "config/aionos.config.yaml",
+        "config/aion.config.yaml",
         "console/.env",
         "control/.env",
         "docker compose -f docker-compose.yml -f bigdata/docker-compose.bigdata.yml up -d",
@@ -825,7 +825,7 @@
         "http://localhost:3000/agent",
         "http://localhost:8000/docs",
         "policies/secrets/",
-        "yaml\nversion: 1\nonboardingComplete: false\n\nadmin:\n  email: \"admin@localhost\"\n  password: \"admin\"\n\nconsole:\n  port: 3001\n  baseUrl: \"http://localhost:3001\"\n  locale: \"fa\"\n\ngateway:\n  port: 3000\n  apiKey: \"\"\n\ncontrol:\n  httpPort: 8000\n  grpcPort: 50051\n\ndata:\n  postgres:\n    {\n      host: \"postgres\",\n      port: 5432,\n      user: \"aionos\",\n      password: \"aionos\",\n      db: \"aionos\",\n    }\n  redis: { host: \"redis\", port: 6379 }\n  qdrant: { host: \"qdrant\", port: 6333 }\n  minio:\n    {\n      endpoint: \"http://minio:9000\",\n      accessKey: \"minioadmin\",\n      secretKey: \"minioadmin\",\n      bucket: \"aionos\",\n    }\n\nmodels:\n  provider: \"local\"\n  local:\n    engine: \"ollama\" # options: ollama, vllm\n    model: \"llama3.2:3b\"\n    ctx: 4096\n    temperature: 0.2\n    num_gpu: 0\n  routing:\n    mode: \"local-first\"\n    budget_ms: 18000\n    allow_remote: false\n\nagent:\n  enabled: true\n  allow_ui_tool: false\n  policy:\n    allowed_paths:\n      - \"/api/*\"\n    allowed_ui_actions:\n      - \"click\"\n      - \"fill\"\n      - \"press\"\n\nsecurity:\n  agent_api_token: \"\"\n\ntelemetry:\n  otelEnabled: true\n  serviceName: \"aionos\"\n"
+        "yaml\nversion: 1\nonboardingComplete: false\n\nadmin:\n  email: \"admin@localhost\"\n  password: \"admin\"\n\nconsole:\n  port: 3001\n  baseUrl: \"http://localhost:3001\"\n  locale: \"fa\"\n\ngateway:\n  port: 3000\n  apiKey: \"\"\n\ncontrol:\n  httpPort: 8000\n  grpcPort: 50051\n\ndata:\n  postgres:\n    {\n      host: \"postgres\",\n      port: 5432,\n      user: \"aion\",\n      password: \"aion\",\n      db: \"aion\",\n    }\n  redis: { host: \"redis\", port: 6379 }\n  qdrant: { host: \"qdrant\", port: 6333 }\n  minio:\n    {\n      endpoint: \"http://minio:9000\",\n      accessKey: \"minioadmin\",\n      secretKey: \"minioadmin\",\n      bucket: \"aion\",\n    }\n\nmodels:\n  provider: \"local\"\n  local:\n    engine: \"ollama\" # options: ollama, vllm\n    model: \"llama3.2:3b\"\n    ctx: 4096\n    temperature: 0.2\n    num_gpu: 0\n  routing:\n    mode: \"local-first\"\n    budget_ms: 18000\n    allow_remote: false\n\nagent:\n  enabled: true\n  allow_ui_tool: false\n  policy:\n    allowed_paths:\n      - \"/api/*\"\n    allowed_ui_actions:\n      - \"click\"\n      - \"fill\"\n      - \"press\"\n\nsecurity:\n  agent_api_token: \"\"\n\ntelemetry:\n  otelEnabled: true\n  serviceName: \"aion\"\n"
       ],
       "referenced_paths": [
         "/admin/onboarding/*",
@@ -834,13 +834,13 @@
         "bash\n   head -c 32 /dev/urandom | xxd -p >> agent_token.txt\n   echo \"AGENT_API_TOKEN=$(cat agent_token.txt)\" >> .env\n   ",
         "bash\n./scripts/smoke_e2e.sh\n",
         "bash\ncp config/templates/.env.example .env\ncp console/.env.example console/.env\ncp control/.env.example control/.env\n",
-        "bash\ncurl -F \"col=aionos-docs\" -F \"files=@README.md\" http://localhost:8000/rag/ingest\ncurl -X POST http://localhost:8000/rag/query \\\n  -H \"content-type: application/json\" \\\n  -d '{\"collection\":\"aionos-docs\",\"query\":\"What is AION-OS?\",\"limit\":3}'\n",
+        "bash\ncurl -F \"col=aion-docs\" -F \"files=@README.md\" http://localhost:8000/rag/ingest\ncurl -X POST http://localhost:8000/rag/query \\\n  -H \"content-type: application/json\" \\\n  -d '{\"collection\":\"aion-docs\",\"query\":\"What is AION-OS?\",\"limit\":3}'\n",
         "bash\ncurl -H \"X-API-Key: demo-key\" http://localhost:3000/v1/stream/<task_id>\n",
         "bash\ncurl -X POST http://localhost:3000/v1/tasks \\\n  -H \"X-API-Key: demo-key\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"schemaVersion\":\"1.0\",\"intent\":\"summarize\",\"params\":{\"text\":\"Hello AION-OS!\"}}'\n",
-        "bash\nexport AIONOS_CONFIG_PATH=/absolute/path/to/aionos.config.yaml\n",
-        "bash\ngit clone -b AIONOS --single-branch https://github.com/Hamedghz/OMERTAOS.git\ncd OMERTAOS\n",
+        "bash\nexport AION_CONFIG_PATH=/absolute/path/to/aion.config.yaml\n",
+        "bash\ngit clone -b AION --single-branch https://github.com/Hamedghz/OMERTAOS.git\ncd OMERTAOS\n",
         "bigdata/docker-compose.bigdata.yml",
-        "config/aionos.config.yaml",
+        "config/aion.config.yaml",
         "console/.env",
         "control/.env",
         "docker compose -f docker-compose.yml -f bigdata/docker-compose.bigdata.yml up -d",
@@ -849,11 +849,11 @@
         "http://localhost:3000/agent",
         "http://localhost:8000/docs",
         "policies/secrets/",
-        "yaml\nversion: 1\nonboardingComplete: false\n\nadmin:\n  email: \"admin@localhost\"\n  password: \"admin\"\n\nconsole:\n  port: 3001\n  baseUrl: \"http://localhost:3001\"\n  locale: \"fa\"\n\ngateway:\n  port: 3000\n  apiKey: \"\"\n\ncontrol:\n  httpPort: 8000\n  grpcPort: 50051\n\ndata:\n  postgres:\n    {\n      host: \"postgres\",\n      port: 5432,\n      user: \"aionos\",\n      password: \"aionos\",\n      db: \"aionos\",\n    }\n  redis: { host: \"redis\", port: 6379 }\n  qdrant: { host: \"qdrant\", port: 6333 }\n  minio:\n    {\n      endpoint: \"http://minio:9000\",\n      accessKey: \"minioadmin\",\n      secretKey: \"minioadmin\",\n      bucket: \"aionos\",\n    }\n\nmodels:\n  provider: \"local\"\n  local:\n    engine: \"ollama\" # options: ollama, vllm\n    model: \"llama3.2:3b\"\n    ctx: 4096\n    temperature: 0.2\n    num_gpu: 0\n  routing:\n    mode: \"local-first\"\n    budget_ms: 18000\n    allow_remote: false\n\nagent:\n  enabled: true\n  allow_ui_tool: false\n  policy:\n    allowed_paths:\n      - \"/api/*\"\n    allowed_ui_actions:\n      - \"click\"\n      - \"fill\"\n      - \"press\"\n\nsecurity:\n  agent_api_token: \"\"\n\ntelemetry:\n  otelEnabled: true\n  serviceName: \"aionos\"\n"
+        "yaml\nversion: 1\nonboardingComplete: false\n\nadmin:\n  email: \"admin@localhost\"\n  password: \"admin\"\n\nconsole:\n  port: 3001\n  baseUrl: \"http://localhost:3001\"\n  locale: \"fa\"\n\ngateway:\n  port: 3000\n  apiKey: \"\"\n\ncontrol:\n  httpPort: 8000\n  grpcPort: 50051\n\ndata:\n  postgres:\n    {\n      host: \"postgres\",\n      port: 5432,\n      user: \"aion\",\n      password: \"aion\",\n      db: \"aion\",\n    }\n  redis: { host: \"redis\", port: 6379 }\n  qdrant: { host: \"qdrant\", port: 6333 }\n  minio:\n    {\n      endpoint: \"http://minio:9000\",\n      accessKey: \"minioadmin\",\n      secretKey: \"minioadmin\",\n      bucket: \"aion\",\n    }\n\nmodels:\n  provider: \"local\"\n  local:\n    engine: \"ollama\" # options: ollama, vllm\n    model: \"llama3.2:3b\"\n    ctx: 4096\n    temperature: 0.2\n    num_gpu: 0\n  routing:\n    mode: \"local-first\"\n    budget_ms: 18000\n    allow_remote: false\n\nagent:\n  enabled: true\n  allow_ui_tool: false\n  policy:\n    allowed_paths:\n      - \"/api/*\"\n    allowed_ui_actions:\n      - \"click\"\n      - \"fill\"\n      - \"press\"\n\nsecurity:\n  agent_api_token: \"\"\n\ntelemetry:\n  otelEnabled: true\n  serviceName: \"aion\"\n"
       ],
       "broken_links": [],
       "outdated_references": [
-        "AIONOS"
+        "AION"
       ]
     },
     {
@@ -884,7 +884,7 @@
         "/v1/config/profile",
         "](../docker-compose.quickstart.yml).\n4. Open the services once they report healthy:\n   - Console: http://localhost:3000\n   - Gateway: http://localhost:8080/healthz\n   - Control: http://localhost:8000/healthz\n5. Stop the environment with ",
         "](../docker-compose.quickstart.yml). The script pins ",
-        "bash\n   cd core/installer/bridge\n   pnpm install\n   sudo AIONOS_ALLOW_INSTALL=1 pnpm start\n   ",
+        "bash\n   cd core/installer/bridge\n   pnpm install\n   sudo AION_ALLOW_INSTALL=1 pnpm start\n   ",
         "config/keys",
         "docs/release.md",
         "git clone https://github.com/Hamedghz/OMERTAOS.git && cd OMERTAOS",
@@ -904,7 +904,7 @@
         "/v1/config/profile",
         "](../docker-compose.quickstart.yml).\n4. Open the services once they report healthy:\n   - Console: http://localhost:3000\n   - Gateway: http://localhost:8080/healthz\n   - Control: http://localhost:8000/healthz\n5. Stop the environment with ",
         "](../docker-compose.quickstart.yml). The script pins ",
-        "bash\n   cd core/installer/bridge\n   pnpm install\n   sudo AIONOS_ALLOW_INSTALL=1 pnpm start\n   ",
+        "bash\n   cd core/installer/bridge\n   pnpm install\n   sudo AION_ALLOW_INSTALL=1 pnpm start\n   ",
         "config/keys",
         "docs/release.md",
         "git clone https://github.com/Hamedghz/OMERTAOS.git && cd OMERTAOS",
@@ -912,7 +912,7 @@
       ],
       "broken_links": [],
       "outdated_references": [
-        "AIONOS"
+        "AION"
       ]
     },
     {
@@ -935,7 +935,7 @@
       "referenced_modules": [
         " Compose profile automatically on Windows/WSL to relax startup gating while keeping other profiles (for example, ",
         " and the last 200 log lines automatically.\n- Opens the Console login page in your default browser once the endpoint answers (200/302) and prints the URLs and credentials on completion.\n- Publishes the Console UI on ",
-        ".aionos/profile.json",
+        ".aion/profile.json",
         "/api/healthz",
         "http://localhost:3000",
         "http://localhost:3001/",
@@ -948,7 +948,7 @@
       "referenced_paths": [
         " Compose profile automatically on Windows/WSL to relax startup gating while keeping other profiles (for example, ",
         " and the last 200 log lines automatically.\n- Opens the Console login page in your default browser once the endpoint answers (200/302) and prints the URLs and credentials on completion.\n- Publishes the Console UI on ",
-        ".aionos/profile.json",
+        ".aion/profile.json",
         "/api/healthz",
         "http://localhost:3000",
         "http://localhost:3001/",
@@ -1035,12 +1035,12 @@
         "Reporting"
       ],
       "referenced_modules": [
-        "/var/log/aionos-firstboot.log",
-        "/var/log/aionos-installer.log"
+        "/var/log/aion-firstboot.log",
+        "/var/log/aion-installer.log"
       ],
       "referenced_paths": [
-        "/var/log/aionos-firstboot.log",
-        "/var/log/aionos-installer.log"
+        "/var/log/aion-firstboot.log",
+        "/var/log/aion-installer.log"
       ],
       "broken_links": [],
       "outdated_references": []
@@ -1053,10 +1053,10 @@
         "Tips"
       ],
       "referenced_modules": [
-        "/var/log/aionos-installer.log"
+        "/var/log/aion-installer.log"
       ],
       "referenced_paths": [
-        "/var/log/aionos-installer.log"
+        "/var/log/aion-installer.log"
       ],
       "broken_links": [],
       "outdated_references": []
@@ -1070,11 +1070,11 @@
       ],
       "referenced_modules": [
         " / ",
-        "/var/log/aionos-firstboot.log"
+        "/var/log/aion-firstboot.log"
       ],
       "referenced_paths": [
         " / ",
-        "/var/log/aionos-firstboot.log"
+        "/var/log/aion-firstboot.log"
       ],
       "broken_links": [],
       "outdated_references": []
@@ -1135,7 +1135,7 @@
         "/api/packages",
         "/api/services",
         "/api/update",
-        "config/aionos.yaml"
+        "config/aion.yaml"
       ],
       "referenced_paths": [
         "\nAION_ALLOWED_PATHS=/models:/data:/logs:/config\nAION_CONTROL_MODELS_DIRECTORY=./models\nAION_MODEL_REGISTRY=config/model-registry.json\nAION_DATASET_REGISTRY=config/datasets.json\nAION_PACKAGE_REGISTRY=config/packages/registry.json\nAION_PACKAGE_STATE=config/packages/installed.json\nAION_BACKUP_TARGET=backups\nAION_BACKUP_HISTORY=backups/history.json\nAION_SERVICE_CONTROL_MODE=disabled\nAION_SERVICE_CONTROL_SCRIPT=\nAION_LOG_STREAMS=gateway:/var/log/aion/gateway.log,control:/var/log/aion/control.log\nAION_METRICS_ENABLED=1\nAION_METRICS_PROM_URL=\nAION_UPDATE_FEED_URL=\nAION_UPDATE_SCRIPT=scripts/update.sh\nAION_GATEWAY_HEALTH_URL=http://gateway:3000/healthz\nAION_CONTROL_HEALTH_URL=http://control:8000/healthz\nAION_CONSOLE_HEALTH_URL=http://console:3000/healthz\nAION_KERNEL_HEALTH_URL=http://kernel:7000/healthz\n",
@@ -1155,7 +1155,7 @@
         "/api/packages",
         "/api/services",
         "/api/update",
-        "config/aionos.yaml"
+        "config/aion.yaml"
       ],
       "broken_links": [],
       "outdated_references": [
@@ -1260,7 +1260,7 @@
       ],
       "broken_links": [],
       "outdated_references": [
-        "AIONOS"
+        "AION"
       ]
     },
     {
@@ -1388,7 +1388,7 @@
         "./quick-install.sh",
         "/agents/catalog",
         "/agents/my-agents",
-        "/var/log/aionos-firstboot.log",
+        "/var/log/aion-firstboot.log",
         "bash\n     ./install.sh --profile user --local\n     # Windows / WSL2\n     pwsh ./install.ps1 -Profile user -Local\n     ",
         "bash\n     git clone https://github.com/Hamedghz/OMERTAOS.git\n     cd OMERTAOS\n     ",
         "bash\n     sudo ./install.sh --profile enterprise --update\n     # Optional: add --compose-overlay docker-compose.obsv.yml for observability\n     ",
@@ -1423,7 +1423,7 @@
         "./quick-install.sh",
         "/agents/catalog",
         "/agents/my-agents",
-        "/var/log/aionos-firstboot.log",
+        "/var/log/aion-firstboot.log",
         "bash\n     ./install.sh --profile user --local\n     # Windows / WSL2\n     pwsh ./install.ps1 -Profile user -Local\n     ",
         "bash\n     git clone https://github.com/Hamedghz/OMERTAOS.git\n     cd OMERTAOS\n     ",
         "bash\n     sudo ./install.sh --profile enterprise --update\n     # Optional: add --compose-overlay docker-compose.obsv.yml for observability\n     ",
@@ -1473,7 +1473,7 @@
         ".\n- **Database/Storage/Infra**: ",
         ".\n- **Gateway/Auth**: ",
         ".\n- **Telemetry/TLS**: ",
-        ".aionos/profile.json",
+        ".aion/profile.json",
         "/agents/catalog",
         "/agents/my-agents",
         "/api/agents",
@@ -1502,7 +1502,7 @@
         ".\n- **Database/Storage/Infra**: ",
         ".\n- **Gateway/Auth**: ",
         ".\n- **Telemetry/TLS**: ",
-        ".aionos/profile.json",
+        ".aion/profile.json",
         "/agents/catalog",
         "/agents/my-agents",
         "/api/agents",
@@ -1649,10 +1649,10 @@
         "Post-install steps"
       ],
       "referenced_modules": [
-        "/var/log/aionos-firstboot.log"
+        "/var/log/aion-firstboot.log"
       ],
       "referenced_paths": [
-        "/var/log/aionos-firstboot.log"
+        "/var/log/aion-firstboot.log"
       ],
       "broken_links": [],
       "outdated_references": []
@@ -1667,10 +1667,10 @@
         "Post-install steps"
       ],
       "referenced_modules": [
-        "/var/log/aionos-firstboot.log"
+        "/var/log/aion-firstboot.log"
       ],
       "referenced_paths": [
-        "/var/log/aionos-firstboot.log"
+        "/var/log/aion-firstboot.log"
       ],
       "broken_links": [],
       "outdated_references": []
@@ -1686,11 +1686,11 @@
       ],
       "referenced_modules": [
         "/etc/ldap/ldap.conf",
-        "/var/log/aionos-firstboot.log"
+        "/var/log/aion-firstboot.log"
       ],
       "referenced_paths": [
         "/etc/ldap/ldap.conf",
-        "/var/log/aionos-firstboot.log"
+        "/var/log/aion-firstboot.log"
       ],
       "broken_links": [],
       "outdated_references": []
@@ -1956,22 +1956,22 @@
         "Console or gateway offline"
       ],
       "referenced_modules": [
-        "/etc/aionos/profile.env",
-        "/var/log/aionos-installer.log",
-        "core/firstboot/aionos-firstboot.sh",
+        "/etc/aion/profile.env",
+        "/var/log/aion-installer.log",
+        "core/firstboot/aion-firstboot.sh",
         "core/installer/bridge",
-        "sudo /usr/lib/aionos/aionos-firstboot.sh"
+        "sudo /usr/lib/aion/aion-firstboot.sh"
       ],
       "referenced_paths": [
-        "/etc/aionos/profile.env",
-        "/var/log/aionos-installer.log",
-        "core/firstboot/aionos-firstboot.sh",
+        "/etc/aion/profile.env",
+        "/var/log/aion-installer.log",
+        "core/firstboot/aion-firstboot.sh",
         "core/installer/bridge",
-        "sudo /usr/lib/aionos/aionos-firstboot.sh"
+        "sudo /usr/lib/aion/aion-firstboot.sh"
       ],
       "broken_links": [],
       "outdated_references": [
-        "AIONOS"
+        "AION"
       ]
     },
     {
@@ -2008,7 +2008,7 @@
       "referenced_paths": [],
       "broken_links": [],
       "outdated_references": [
-        "AIONOS"
+        "AION"
       ]
     },
     {
@@ -2264,36 +2264,36 @@
       ],
       "referenced_modules": [
         " / ",
-        "@aionos/secret-provider",
+        "@aion/secret-provider",
         "bash\npython scripts/bootstrap_vault_dev.py\n",
         "bash\npython scripts/generate_dev_certs.py\n",
         "config/certs/bootstrap/",
         "config/certs/bootstrap/.generated",
         "config/certs/dev/",
         "http://vault:8200",
-        "kv/data/aionos/db-main",
-        "kv/data/aionos/minio",
+        "kv/data/aion/db-main",
+        "kv/data/aion/minio",
         "policies/vault",
         "scripts/bootstrap_vault_dev.py",
         "scripts/quicksetup.sh",
-        "secret/data/aionos/dev/*",
+        "secret/data/aion/dev/*",
         "tools/preflight.sh"
       ],
       "referenced_paths": [
         " / ",
-        "@aionos/secret-provider",
+        "@aion/secret-provider",
         "bash\npython scripts/bootstrap_vault_dev.py\n",
         "bash\npython scripts/generate_dev_certs.py\n",
         "config/certs/bootstrap/",
         "config/certs/bootstrap/.generated",
         "config/certs/dev/",
         "http://vault:8200",
-        "kv/data/aionos/db-main",
-        "kv/data/aionos/minio",
+        "kv/data/aion/db-main",
+        "kv/data/aion/minio",
         "policies/vault",
         "scripts/bootstrap_vault_dev.py",
         "scripts/quicksetup.sh",
-        "secret/data/aionos/dev/*",
+        "secret/data/aion/dev/*",
         "tools/preflight.sh"
       ],
       "broken_links": [],
@@ -2435,15 +2435,15 @@
       ],
       "referenced_modules": [
         " environment variable before any metrics are emitted.\n\n## Data collected (opt-in only)\n\n- Installer mode and profile selection (when enabled)\n- Hardware class (GPU vendor, NIC vendor)\n- Success or failure of driver/security tasks\n- No personal data or workload content\n\n## Control plane\n\n- Metrics are sent over HTTPS to the configured endpoint.\n- Leave telemetry disabled by default (the installer prompt defaults to \"No\" and the console toggle is unchecked).\n- Opt in by setting ",
-        "/etc/logrotate.d/aionos",
-        "/var/log/aionos-firstboot.log",
-        "/var/log/aionos-installer.log"
+        "/etc/logrotate.d/aion",
+        "/var/log/aion-firstboot.log",
+        "/var/log/aion-installer.log"
       ],
       "referenced_paths": [
         " environment variable before any metrics are emitted.\n\n## Data collected (opt-in only)\n\n- Installer mode and profile selection (when enabled)\n- Hardware class (GPU vendor, NIC vendor)\n- Success or failure of driver/security tasks\n- No personal data or workload content\n\n## Control plane\n\n- Metrics are sent over HTTPS to the configured endpoint.\n- Leave telemetry disabled by default (the installer prompt defaults to \"No\" and the console toggle is unchecked).\n- Opt in by setting ",
-        "/etc/logrotate.d/aionos",
-        "/var/log/aionos-firstboot.log",
-        "/var/log/aionos-installer.log"
+        "/etc/logrotate.d/aion",
+        "/var/log/aion-firstboot.log",
+        "/var/log/aion-installer.log"
       ],
       "broken_links": [],
       "outdated_references": []
@@ -2481,17 +2481,17 @@
       ],
       "referenced_modules": [
         "\n5. Visit https://localhost:3000/wizard, accept the development certificate warning, and select **Native Install**.\n6. Review hardware probes and the storage plan before approving changes. Destructive steps require ",
-        "/etc/aionos/profile.env",
-        "bash\n   cd core/installer/bridge\n   pnpm install\n   sudo AIONOS_ALLOW_INSTALL=1 pnpm start\n   "
+        "/etc/aion/profile.env",
+        "bash\n   cd core/installer/bridge\n   pnpm install\n   sudo AION_ALLOW_INSTALL=1 pnpm start\n   "
       ],
       "referenced_paths": [
         "\n5. Visit https://localhost:3000/wizard, accept the development certificate warning, and select **Native Install**.\n6. Review hardware probes and the storage plan before approving changes. Destructive steps require ",
-        "/etc/aionos/profile.env",
-        "bash\n   cd core/installer/bridge\n   pnpm install\n   sudo AIONOS_ALLOW_INSTALL=1 pnpm start\n   "
+        "/etc/aion/profile.env",
+        "bash\n   cd core/installer/bridge\n   pnpm install\n   sudo AION_ALLOW_INSTALL=1 pnpm start\n   "
       ],
       "broken_links": [],
       "outdated_references": [
-        "AIONOS"
+        "AION"
       ]
     },
     {
@@ -2512,7 +2512,7 @@
         ") and\n  normalizes profile/telemetry variables.\n- Persists ",
         ", enforces prerequisites, and shares the\n    same configuration defaults, including policy/volume directory creation and environment updates.\n\nThe reusable modules introduced for QuickSetup are:\n\n- ",
         "cli/install.py",
-        "config/aionos.config.yaml",
+        "config/aion.config.yaml",
         "scripts/install.ps1",
         "scripts/install.sh",
         "scripts/install_linux.sh",
@@ -2537,7 +2537,7 @@
         ") and\n  normalizes profile/telemetry variables.\n- Persists ",
         ", enforces prerequisites, and shares the\n    same configuration defaults, including policy/volume directory creation and environment updates.\n\nThe reusable modules introduced for QuickSetup are:\n\n- ",
         "cli/install.py",
-        "config/aionos.config.yaml",
+        "config/aion.config.yaml",
         "scripts/install.ps1",
         "scripts/install.sh",
         "scripts/install_linux.sh",
@@ -2589,14 +2589,14 @@
         "Offline mode"
       ],
       "referenced_modules": [
-        "/var/log/aionos-installer.log",
+        "/var/log/aion-installer.log",
         "core/installer/bridge/server.ts",
         "core/iso/cache/",
         "core/iso/out/",
         "https://localhost/wizard"
       ],
       "referenced_paths": [
-        "/var/log/aionos-installer.log",
+        "/var/log/aion-installer.log",
         "core/installer/bridge/server.ts",
         "core/iso/cache/",
         "core/iso/out/",
@@ -2604,7 +2604,7 @@
       ],
       "broken_links": [],
       "outdated_references": [
-        "AIONOS"
+        "AION"
       ]
     },
     {
@@ -2667,20 +2667,20 @@
         "Verification"
       ],
       "referenced_modules": [
-        "/root/aionos-recovery.txt",
-        "/var/log/aionos-firstboot.log",
-        "/var/log/aionos-installer.log",
-        "cryptsetup status /dev/mapper/aionos-root"
+        "/root/aion-recovery.txt",
+        "/var/log/aion-firstboot.log",
+        "/var/log/aion-installer.log",
+        "cryptsetup status /dev/mapper/aion-root"
       ],
       "referenced_paths": [
-        "/root/aionos-recovery.txt",
-        "/var/log/aionos-firstboot.log",
-        "/var/log/aionos-installer.log",
-        "cryptsetup status /dev/mapper/aionos-root"
+        "/root/aion-recovery.txt",
+        "/var/log/aion-firstboot.log",
+        "/var/log/aion-installer.log",
+        "cryptsetup status /dev/mapper/aion-root"
       ],
       "broken_links": [],
       "outdated_references": [
-        "AIONOS"
+        "AION"
       ]
     },
     {
@@ -2694,12 +2694,12 @@
         "Reporting"
       ],
       "referenced_modules": [
-        "/var/log/aionos-firstboot.log",
-        "core/firstboot/aionos-firstboot.sh"
+        "/var/log/aion-firstboot.log",
+        "core/firstboot/aion-firstboot.sh"
       ],
       "referenced_paths": [
-        "/var/log/aionos-firstboot.log",
-        "core/firstboot/aionos-firstboot.sh"
+        "/var/log/aion-firstboot.log",
+        "core/firstboot/aion-firstboot.sh"
       ],
       "broken_links": [],
       "outdated_references": []
@@ -2713,14 +2713,14 @@
         "Customisation"
       ],
       "referenced_modules": [
-        "/etc/aionos/hardening.d/*.conf",
-        "/var/log/aionos-firstboot.log",
-        "/var/log/aionos-installer.log"
+        "/etc/aion/hardening.d/*.conf",
+        "/var/log/aion-firstboot.log",
+        "/var/log/aion-installer.log"
       ],
       "referenced_paths": [
-        "/etc/aionos/hardening.d/*.conf",
-        "/var/log/aionos-firstboot.log",
-        "/var/log/aionos-installer.log"
+        "/etc/aion/hardening.d/*.conf",
+        "/var/log/aion-firstboot.log",
+        "/var/log/aion-installer.log"
       ],
       "broken_links": [],
       "outdated_references": []
@@ -2965,7 +2965,7 @@
       ],
       "broken_links": [],
       "outdated_references": [
-        "AIONOS"
+        "AION"
       ]
     },
     {
@@ -2983,9 +2983,9 @@
     },
     {
       "file": "core/installer/bridge/README.md",
-      "title": "AIONOS Installer Bridge",
+      "title": "AION Installer Bridge",
       "sections": [
-        "AIONOS Installer Bridge",
+        "AION Installer Bridge",
         "Permission model"
       ],
       "referenced_modules": [
@@ -2996,14 +2996,14 @@
       ],
       "broken_links": [],
       "outdated_references": [
-        "AIONOS"
+        "AION"
       ]
     },
     {
       "file": "CONTRIBUTING.md",
-      "title": "Contributing to aionOS (AIONOS)",
+      "title": "Contributing to aionOS (AION)",
       "sections": [
-        "Contributing to aionOS (AIONOS)",
+        "Contributing to aionOS (AION)",
         "1) Ground Rules",
         "2) Developer Setup (native)",
         "Gateway",
@@ -3021,7 +3021,7 @@
       ],
       "broken_links": [],
       "outdated_references": [
-        "AIONOS"
+        "AION"
       ]
     },
     {
@@ -3060,7 +3060,7 @@
         "/api/agent-catalog",
         "/api/agents",
         "/api/agents/{id}/deploy",
-        "/var/log/aionos-firstboot.log",
+        "/var/log/aion-firstboot.log",
         ": reused for gateway/control bootstrap\n\nOverride any of these by setting environment variables before running ",
         "GET /api/agent-catalog",
         "GET /api/agent-catalog/{id}",
@@ -3114,7 +3114,7 @@
         "/api/agent-catalog",
         "/api/agents",
         "/api/agents/{id}/deploy",
-        "/var/log/aionos-firstboot.log",
+        "/var/log/aion-firstboot.log",
         ": reused for gateway/control bootstrap\n\nOverride any of these by setting environment variables before running ",
         "GET /api/agent-catalog",
         "GET /api/agent-catalog/{id}",
@@ -3157,7 +3157,7 @@
       ],
       "broken_links": [],
       "outdated_references": [
-        "AIONOS"
+        "AION"
       ]
     },
     {

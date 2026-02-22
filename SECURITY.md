@@ -4,11 +4,11 @@ We take the security of aionOS seriously. This document explains **supported ver
 
 ## Supported Versions
 
-We actively maintain the `AIONOS` branch and the latest tagged releases.
+We actively maintain the `AION` branch and the latest tagged releases.
 
 | Version / Branch | Supported | Notes                    |
 | ---------------- | --------: | ------------------------ |
-| `AIONOS` (HEAD)  |         | Active development       |
+| `AION` (HEAD)  |         | Active development       |
 | Latest release   |         | Receives fixes as needed |
 | Older releases   |         | Please upgrade           |
 

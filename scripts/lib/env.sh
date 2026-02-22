@@ -92,7 +92,7 @@ PY
 write_profile_metadata() {
   local root_dir=$1
   local profile=$2
-  local metadata_dir="${root_dir}/.aionos"
+  local metadata_dir="${root_dir}/.aion"
 
   mkdir -p "${metadata_dir}"
 

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: control
-          image: ghcr.io/aionos/control:0.1.0
+          image: ghcr.io/aion/control:0.1.0
           ports:
             - containerPort: 8000
             - containerPort: 50051
@@ -24,7 +24,7 @@ spec:
             - name: AION_CONTROL_REDIS_URL
               value: redis://aion-redis:6379/0
             - name: AION_CONTROL_POSTGRES_DSN
-              value: postgresql://aionos:password@aion-postgres:5432/omerta_db?schema=public
+              value: postgresql://aion:password@aion-postgres:5432/omerta_db?schema=public
           readinessProbe:
             httpGet:
               path: /healthz

@@ -54,7 +54,7 @@ services:
     image: postgres:15
     environment:
       POSTGRES_DB: omerta_db
-      POSTGRES_USER: aionos
+      POSTGRES_USER: aion
       POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"

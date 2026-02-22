@@ -24,7 +24,7 @@ This guide walks through configuring AION-OS without the helper scripts. It cove
 ## 2. Clone the Repository
 
 ```bash
-git clone -b AIONOS --single-branch https://github.com/Hamedghz/OMERTAOS.git
+git clone -b AION --single-branch https://github.com/Hamedghz/OMERTAOS.git
 cd OMERTAOS
 ```
 
@@ -52,7 +52,7 @@ Minimum values to review:
 
 ## 4. Configure the Runtime (Optional)
 
-If you need to customize the runtime (e.g., change local LLM defaults), edit `config/aionos.config.yaml`. If the file does not exist, create one based on the snippet below:
+If you need to customize the runtime (e.g., change local LLM defaults), edit `config/aion.config.yaml`. If the file does not exist, create one based on the snippet below:
 
 ```yaml
 version: 1
@@ -80,9 +80,9 @@ data:
     {
       host: "postgres",
       port: 5432,
-      user: "aionos",
-      password: "aionos",
-      db: "aionos",
+      user: "aion",
+      password: "aion",
+      db: "aion",
     }
   redis: { host: "redis", port: 6379 }
   qdrant: { host: "qdrant", port: 6333 }
@@ -91,7 +91,7 @@ data:
       endpoint: "http://minio:9000",
       accessKey: "minioadmin",
       secretKey: "minioadmin",
-      bucket: "aionos",
+      bucket: "aion",
     }
 
 models:
@@ -123,13 +123,13 @@ security:
 
 telemetry:
   otelEnabled: true
-  serviceName: "aionos"
+  serviceName: "aion"
 ```
 
 Save the file and export the path if you store it elsewhere:
 
 ```bash
-export AIONOS_CONFIG_PATH=/absolute/path/to/aionos.config.yaml
+export AION_CONFIG_PATH=/absolute/path/to/aion.config.yaml
 ```
 
 ---
@@ -212,10 +212,10 @@ curl -H "X-API-Key: <YOUR_API_KEY>" http://localhost:3000/v1/stream/<TASK_ID>
 ### Knowledge & RAG
 
 ```bash
-curl -F "col=aionos-docs" -F "files=@README.md" http://localhost:8000/rag/ingest
+curl -F "col=aion-docs" -F "files=@README.md" http://localhost:8000/rag/ingest
 curl -X POST http://localhost:8000/rag/query \
   -H "content-type: application/json" \
-  -d '{"collection":"aionos-docs","query":"What is AION-OS?","limit":3}'
+  -d '{"collection":"aion-docs","query":"What is AION-OS?","limit":3}'
 ```
 
 ### Agent Mode
@@ -224,7 +224,7 @@ Set `NEXT_PUBLIC_CONTROL_BASE` and `NEXT_PUBLIC_AGENT_API_TOKEN` in `console/.en
 
 ### Switching Model Providers
 
-Edit `config/aionos.config.yaml` and toggle between `ollama` and `vllm`. Restart the affected services after changes:
+Edit `config/aion.config.yaml` and toggle between `ollama` and `vllm`. Restart the affected services after changes:
 
 ```bash
 docker compose restart console control gateway

@@ -22,5 +22,5 @@ repos:
       entry: python tools/sanitize_ascii.py
       language: system
       pass_filenames: false
-      exclude: "(^|/)aionos_core\\.egg-info/"
+      exclude: "(^|/)aion_core\\.egg-info/"
       stages: [pre-commit]

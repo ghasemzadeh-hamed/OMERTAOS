@@ -17,6 +17,6 @@ AION-OS ships without telemetry by default. Administrators must explicitly opt i
 
 ## Logs
 
-- Installer logs: `/var/log/aionos-installer.log`
-- First boot logs: `/var/log/aionos-firstboot.log`
-- Rotate logs with your existing log pipeline or configure `logrotate` entries under `/etc/logrotate.d/aionos`.
+- Installer logs: `/var/log/aion-installer.log`
+- First boot logs: `/var/log/aion-firstboot.log`
+- Rotate logs with your existing log pipeline or configure `logrotate` entries under `/etc/logrotate.d/aion`.

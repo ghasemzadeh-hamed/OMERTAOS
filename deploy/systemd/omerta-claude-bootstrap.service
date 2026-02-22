@@ -4,8 +4,8 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-WorkingDirectory=/opt/aionos/OMERTAOS
-ExecStart=/opt/aionos/OMERTAOS/scripts/claude/bootstrap-marketplace.sh
+WorkingDirectory=/opt/aion/OMERTAOS
+ExecStart=/opt/aion/OMERTAOS/scripts/claude/bootstrap-marketplace.sh
 RemainAfterExit=no
 
 [Install]

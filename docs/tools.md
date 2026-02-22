@@ -8,7 +8,7 @@ The auxiliary tool suite adds operational controls to the Control plane and Cons
 | ------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | File Explorer | `/api/files`                         | List, create, delete, rename files within `AION_ALLOWED_PATHS`. Text editing available via `/api/files/content` + `/api/files/save`. |
 | Data Studio   | `/api/data/preview`                  | Preview CSV/JSON payloads (limit configurable).                                                                                      |
-| Config Center | `/api/config`, `/api/network/config` | Read merged configuration from `.env` & `config/aionos.yaml`; write overrides to YAML.                                               |
+| Config Center | `/api/config`, `/api/network/config` | Read merged configuration from `.env` & `config/aion.yaml`; write overrides to YAML.                                               |
 | Metrics       | `/api/metrics`                       | CPU, memory, disk, GPU, service & agent status. Exposes `/metrics` (Prometheus) when `AION_METRICS_ENABLED=1`.                       |
 | Services      | `/api/services`                      | Inspect and control core services. Backends selected via `AION_SERVICE_CONTROL_MODE` (`docker`, `systemd`, `script`, `disabled`).    |
 | Logs          | `/api/logs`                          | Enumerate streams and tail log files defined by `AION_LOG_STREAMS` or defaults in `./logs`.                                          |

@@ -54,18 +54,18 @@
   "tools.translate_docs_to_fa": [],
   "tools.preflight": [],
   "tools.registry_validate": [],
-  "aionos_core": [
-    "cli.aionos_core"
+  "aion_core": [
+    "cli.aion_core"
   ],
-  "aionos_core.cli": [
-    "cli.aionos_core.cli"
+  "aion_core.cli": [
+    "cli.aion_core.cli"
   ],
   "os": [],
-  "aionos_control.main": [
-    "control.aionos_control.main"
+  "aion_control.main": [
+    "control.aion_control.main"
   ],
-  "aionos_control": [
-    "control.aionos_control"
+  "aion_control": [
+    "control.aion_control"
   ],
   "tests.test_agent_catalog_api": [
     "os",
@@ -204,7 +204,7 @@
   "os.control.config_paths": [],
   "os.control": [],
   "os.control.orchestrator": [],
-  "os.control.aionos_profiles": [
+  "os.control.aion_profiles": [
     "os"
   ],
   "os.control.router_engine": [],
@@ -260,9 +260,9 @@
     "os.control.os.http"
   ],
   "os.control.os.http": [
-    "aionos_control",
+    "aion_control",
     "os",
-    "os.control.aionos_profiles",
+    "os.control.aion_profiles",
     "os.control.os.api",
     "os.control.os.api.auth_admin",
     "os.control.os.api.backup",
@@ -299,7 +299,7 @@
     "os.control.os.router_engine"
   ],
   "os.control.os.router_engine": [
-    "os.control.aionos_profiles",
+    "os.control.aion_profiles",
     "os.control.os.config",
     "os.control.os.models",
     "os.control.os.policy"
@@ -316,11 +316,11 @@
     "os.control.os.models",
     "os.control.os.orchestrator"
   ],
-  "os.control.aionos_control.main": [
-    "control.aionos_control.main"
+  "os.control.aion_control.main": [
+    "control.aion_control.main"
   ],
-  "os.control.aionos_control": [
-    "control.aionos_control"
+  "os.control.aion_control": [
+    "control.aion_control"
   ],
   "os.control.rag": [],
   "os.control.rag.ingest": [],
@@ -506,7 +506,7 @@
   ],
   "os.control.os.routes.config": [
     "os",
-    "os.control.aionos_profiles"
+    "os.control.aion_profiles"
   ],
   "os.control.os.routes.agent": [
     "os"
@@ -540,7 +540,7 @@
   ],
   "os.control.os.routes.seal": [
     "config",
-    "os.control.aionos_profiles",
+    "os.control.aion_profiles",
     "os.control.os.policy"
   ],
   "os.control.os.routes.admin_onboarding": [
@@ -557,7 +557,7 @@
     "os.kernel.policy_engine"
   ],
   "os.control.os.routes.profile": [
-    "os.control.aionos_profiles"
+    "os.control.aion_profiles"
   ],
   "os.control.os.routes.models": [
     "os.control.os.config",
@@ -674,15 +674,15 @@
   "tools.repo_audit.doc_truth_check": [],
   "tools.repo_audit.architecture_standardizer": [],
   "tools.repo_audit.inventory": [],
-  "control.aionos_control.main": [
-    "control.aionos_control.routes"
+  "control.aion_control.main": [
+    "control.aion_control.routes"
   ],
-  "control.aionos_control": [],
+  "control.aion_control": [],
   "control.tests.test_health": [
     "os.control.main"
   ],
   "control.tests.test_plugins_api": [
-    "aionos_control.main"
+    "aion_control.main"
   ],
   "control.tests.test_memory_routes": [
     "os"
@@ -699,22 +699,22 @@
     "os.kernel.runtime"
   ],
   "control.tests.conftest": [],
-  "control.aionos_control.plugins": [
-    "control.aionos_control"
+  "control.aion_control.plugins": [
+    "control.aion_control"
   ],
-  "control.aionos_control.plugins.registry": [],
-  "control.aionos_control.routes.schemas": [],
-  "control.aionos_control.routes.plugins": [
-    "control.aionos_control.plugins.registry",
-    "control.aionos_control.routes.schemas"
+  "control.aion_control.plugins.registry": [],
+  "control.aion_control.routes.schemas": [],
+  "control.aion_control.routes.plugins": [
+    "control.aion_control.plugins.registry",
+    "control.aion_control.routes.schemas"
   ],
-  "control.aionos_control.routes": [
-    "control.aionos_control.plugins"
+  "control.aion_control.routes": [
+    "control.aion_control.plugins"
   ],
-  "control.aionos_control.plugins.entries.nevergrad_entry": [],
-  "control.aionos_control.plugins.entries": [],
-  "control.aionos_control.plugins.entries.cleanlab_entry": [],
-  "control.aionos_control.plugins.entries.stumpy_entry": [],
+  "control.aion_control.plugins.entries.nevergrad_entry": [],
+  "control.aion_control.plugins.entries": [],
+  "control.aion_control.plugins.entries.cleanlab_entry": [],
+  "control.aion_control.plugins.entries.stumpy_entry": [],
   "core.installer": [
     "app.shared"
   ],
@@ -726,8 +726,8 @@
     "cli"
   ],
   "cli.aion.cli": [],
-  "cli.aionos_core": [],
-  "cli.aionos_core.cli": [
+  "cli.aion_core": [],
+  "cli.aion_core.cli": [
     "core.installer",
     "explorer.aion_explorer"
   ],

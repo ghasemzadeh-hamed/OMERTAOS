@@ -37,7 +37,7 @@ export default function Install() {
   return (
     <div>
       <h3>Install</h3>
-      <p>Disk operations require kiosk mode with root access and the AIONOS_ALLOW_INSTALL flag.</p>
+      <p>Disk operations require kiosk mode with root access and the AION_ALLOW_INSTALL flag.</p>
       <button onClick={execute} disabled={status === 'running'}>
         Begin installation
       </button>

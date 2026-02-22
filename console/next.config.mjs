@@ -1,7 +1,7 @@
 const locales = ['en', 'fa'];
 
 const nextConfig = {
-  transpilePackages: ['@aionos/ui-core'],
+  transpilePackages: ['@aion/ui-core'],
   reactStrictMode: true,
   i18n: {
     locales,

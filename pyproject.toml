@@ -1,5 +1,5 @@
 [project]
-name = "aionos-core"
+name = "aion-core"
 version = "0.2.0"
 description = "Unified AION-OS core meta-package and CLI"
 readme = "README.md"
@@ -126,7 +126,7 @@ all-ml = [
 ]
 
 [project.scripts]
-aionos = "aionos_core.cli:main"
+aion = "aion_core.cli:main"
 aion-pkg = "cli.aion_pkg:main"
 
 [build-system]
@@ -137,4 +137,4 @@ build-backend = "setuptools.build_meta"
 py-modules = ["sitecustomize"]
 
 [tool.setuptools.packages.find]
-include = ["aionos_core*", "app*", "os*", "aionos_control*", "aion*"]
+include = ["aion_core*", "app*", "os*", "aion_control*", "aion*"]

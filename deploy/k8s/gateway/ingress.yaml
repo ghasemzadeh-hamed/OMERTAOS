@@ -15,11 +15,11 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - console.aionos.local
-        - api.aionos.local
+        - console.aion.local
+        - api.aion.local
       secretName: gateway-tls
   rules:
-    - host: api.aionos.local
+    - host: api.aion.local
       http:
         paths:
           - path: /
@@ -29,7 +29,7 @@ spec:
                 name: aion-gateway
                 port:
                   number: 80
-    - host: console.aionos.local
+    - host: console.aion.local
       http:
         paths:
           - path: /

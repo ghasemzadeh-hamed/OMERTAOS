@@ -1,4 +1,4 @@
-# Contributing to aionOS (AIONOS)
+# Contributing to aionOS (AION)
 
 First off, thank you for taking the time to contribute! This document explains how to set up your environment, coding standards, and the workflow we use.
 

@@ -1,6 +1,6 @@
 # ISO / Kiosk installation
 
-The kiosk ISO delivers a locked-down Chromium session that hosts the Next.js installer wizard. Disk operations are gated behind `AIONOS_ALLOW_INSTALL=1` to prevent accidental wipes.
+The kiosk ISO delivers a locked-down Chromium session that hosts the Next.js installer wizard. Disk operations are gated behind `AION_ALLOW_INSTALL=1` to prevent accidental wipes.
 
 ## Prerequisites
 
@@ -21,8 +21,8 @@ The kiosk ISO delivers a locked-down Chromium session that hosts the Next.js ins
 2. The kiosk session auto-launches Chromium pointing to `https://localhost/wizard`.
 3. Confirm networking; the wizard relies on the local bridge (`core/installer/bridge/server.ts`).
 4. Set locale, mode, and storage preferences. Secure Boot and full-disk encryption toggles live on the storage step.
-5. When prompted to apply disk changes, press the gate icon, export `AIONOS_ALLOW_INSTALL=1`, and re-run the apply action.
-6. Monitor `/var/log/aionos-installer.log` for driver and security task output.
+5. When prompted to apply disk changes, press the gate icon, export `AION_ALLOW_INSTALL=1`, and re-run the apply action.
+6. Monitor `/var/log/aion-installer.log` for driver and security task output.
 7. Reboot when the wizard reports success.
 
 ## Offline mode

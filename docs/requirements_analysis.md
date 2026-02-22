@@ -3,7 +3,7 @@
 ## 1. Functional Requirements
 | ID | Description | Actors | Acceptance Criteria |
 | -- | ----------- | ------ | ------------------- |
-| FR-1 | Provide guided installation with selectable profiles (user, pro, enterprise) across Linux, Windows/WSL, and Docker overlays. | Operators, Platform Engineers | Install completes with profile defaults applied, .env rendered, services start without errors, and logs captured for first-boot; destructive actions gated by `AIONOS_ALLOW_INSTALL`. |
+| FR-1 | Provide guided installation with selectable profiles (user, pro, enterprise) across Linux, Windows/WSL, and Docker overlays. | Operators, Platform Engineers | Install completes with profile defaults applied, .env rendered, services start without errors, and logs captured for first-boot; destructive actions gated by `AION_ALLOW_INSTALL`. |
 | FR-2 | Expose control plane APIs for agent lifecycle management (create, list, update, deploy, disable). | Operators, Data Scientists, Gateway | API endpoints respond with correct status codes, validate schemas, update runtime state, and changes reflect in console "My Agents" view. |
 | FR-3 | Deliver agent catalog discovery with recipe-driven forms and validation. | Operators, Data Scientists, Console | Catalog endpoints and UI render available agents, enforce required fields, and allow deployment with tenancy headers; invalid inputs return actionable errors. |
 | FR-4 | Manage model and AI registry resolution for deterministic deployments. | Gateway, Control Services, Platform Engineers | Registry entries resolve `model://` references to configured backends; manifests are versioned and validated before deployment with reproducibility logs. |

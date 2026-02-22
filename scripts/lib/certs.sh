@@ -56,7 +56,7 @@ ensure_ephemeral_certs() {
   log_info "Generating ephemeral bootstrap certificate authority (${days} day validity)."
 
   openssl req -x509 -newkey rsa:4096 -nodes -sha256 \
-    -subj "/CN=AIONOS Bootstrap CA" \
+    -subj "/CN=AION Bootstrap CA" \
     -keyout "${ca_key}" \
     -out "${ca_cert}" \
     -days "${days}" >/dev/null 2>&1

@@ -5,12 +5,12 @@ After=network.target postgresql.service redis.service
 [Service]
 User=aion
 EnvironmentFile=/home/aion/.aion.env
-WorkingDirectory=/opt/aionos/control
+WorkingDirectory=/opt/aion/control
 ExecStart=/usr/bin/python3 -m uvicorn os.control.main:app --host 0.0.0.0 --port 8001 --workers 4
 Restart=always
 RestartSec=3
-StandardOutput=append:/var/log/aionos/control.log
-StandardError=append:/var/log/aionos/control.err
+StandardOutput=append:/var/log/aion/control.log
+StandardError=append:/var/log/aion/control.err
 
 [Install]
 WantedBy=multi-user.target

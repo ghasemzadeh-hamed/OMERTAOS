@@ -640,7 +640,7 @@ export async function buildGatewayConfig(): Promise<GatewayConfig> {
     },
     telemetry: {
       enabled: process.env.AION_OTEL_ENABLED === 'true',
-      serviceName: process.env.AION_SERVICE_NAME || 'aionos-gateway',
+      serviceName: process.env.AION_SERVICE_NAME || 'aion-gateway',
     },
     profile,
     featureSeal,

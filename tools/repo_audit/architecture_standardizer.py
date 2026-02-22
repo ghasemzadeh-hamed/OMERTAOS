@@ -367,7 +367,7 @@ def orphan_dirs() -> list[str]:
     for d in sorted([p for p in REPO_ROOT.iterdir() if p.is_dir()]):
         if d.name in ignored:
             continue
-        if d.name not in CANONICAL_DIRS and d.name not in {"docs", "scripts", "os", "aion", "app", "services", "profiles", "models", "modules", "configs", "kernel-multitenant", "omertaos", "aionos_core", "aionos_control", "ai_registry", "process-analytics", "integrations", "packages"}:
+        if d.name not in CANONICAL_DIRS and d.name not in {"docs", "scripts", "os", "aion", "app", "services", "profiles", "models", "modules", "configs", "kernel-multitenant", "omertaos", "aion_core", "aion_control", "ai_registry", "process-analytics", "integrations", "packages"}:
             out.append(d.name)
     return out
 

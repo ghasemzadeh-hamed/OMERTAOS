@@ -104,8 +104,8 @@ class SecretProvider:
     def get_secret(self, path: str) -> Dict[str, Any] | str:
         """Return the secret payload stored at *path*.
 
-        The path may include the mount point (e.g. ``kv/data/aionos/db-main``) or just the
-        logical KV path (``aionos/db-main``). When a KV-v2 mount is used we automatically
+        The path may include the mount point (e.g. ``kv/data/aion/db-main``) or just the
+        logical KV path (``aion/db-main``). When a KV-v2 mount is used we automatically
         normalise the mount/data prefixes.
         """
 

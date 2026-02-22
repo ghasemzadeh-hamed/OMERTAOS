@@ -35,7 +35,7 @@ services:
     volumes:
       - vault-data:/vault/data
     networks:
-      - aionos-local
+      - aion-local
 
   postgres:
     image: postgres:16
@@ -51,7 +51,7 @@ services:
       timeout: 3s
       retries: 30
     networks:
-      - aionos-local
+      - aion-local
 
   redis:
     image: redis:7
@@ -63,7 +63,7 @@ services:
       timeout: 3s
       retries: 30
     networks:
-      - aionos-local
+      - aion-local
 
   qdrant:
     image: qdrant/qdrant:latest
@@ -77,7 +77,7 @@ services:
       timeout: 3s
       retries: 30
     networks:
-      - aionos-local
+      - aion-local
 
   minio:
     image: minio/minio:latest
@@ -96,7 +96,7 @@ services:
       timeout: 5s
       retries: 30
     networks:
-      - aionos-local
+      - aion-local
 
   kernel:
     build:
@@ -120,7 +120,7 @@ services:
     ports:
       - "8010:8010"
     networks:
-      - aionos-local
+      - aion-local
 
   control:
     build: ./control
@@ -131,10 +131,10 @@ services:
       AION_CONTROL_MODELS_DIRECTORY: /app/models
       AION_CONTROL_POLICIES_DIRECTORY: /app/policies
       TENANCY_MODE: single
-      AION_DB_SECRET_PATH: secret/aionos/dev/db-main
-      AION_MINIO_SECRET_PATH: secret/aionos/dev/minio
-      AION_CONTROL_TLS_SECRET_PATH: secret/aionos/dev/control-tls
-      AION_CONTROL_TLS_CLIENT_CA_SECRET_PATH: secret/aionos/dev/mtls-ca
+      AION_DB_SECRET_PATH: secret/aion/dev/db-main
+      AION_MINIO_SECRET_PATH: secret/aion/dev/minio
+      AION_CONTROL_TLS_SECRET_PATH: secret/aion/dev/control-tls
+      AION_CONTROL_TLS_CLIENT_CA_SECRET_PATH: secret/aion/dev/mtls-ca
       AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
       AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
       AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
@@ -160,7 +160,7 @@ services:
       - "8000:8000"
       - "50051:50051"
     networks:
-      - aionos-local
+      - aion-local
 
   gateway:
     build: ./gateway
@@ -177,11 +177,11 @@ services:
       AION_TLS_REQUIRE_MTLS: "false"
       AION_TLS_REQUIRED: "false"
       AION_KERNEL_URL: http://kernel:8010
-      AION_GATEWAY_API_KEYS_SECRET_PATH: secret/aionos/dev/gateway-api-keys
-      AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH: secret/aionos/dev/admin-token
-      AION_ADMIN_TOKEN_SECRET_PATH: secret/aionos/dev/admin-token
-      AION_TLS_SECRET_PATH: secret/aionos/dev/gateway-tls
-      AION_TLS_CLIENT_CA_SECRET_PATH: secret/aionos/dev/mtls-ca
+      AION_GATEWAY_API_KEYS_SECRET_PATH: secret/aion/dev/gateway-api-keys
+      AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH: secret/aion/dev/admin-token
+      AION_ADMIN_TOKEN_SECRET_PATH: secret/aion/dev/admin-token
+      AION_TLS_SECRET_PATH: secret/aion/dev/gateway-tls
+      AION_TLS_CLIENT_CA_SECRET_PATH: secret/aion/dev/mtls-ca
       AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
       AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
       AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
@@ -198,7 +198,7 @@ services:
     volumes:
       - ./protos:/protos:ro
     networks:
-      - aionos-local
+      - aion-local
 
   console:
     build: ./console
@@ -208,8 +208,8 @@ services:
       NEXT_PUBLIC_GATEWAY_URL: http://localhost:3000
       NEXT_PUBLIC_KERNEL_URL: http://localhost:8010
       PORT: ${CONSOLE_PORT:-3001}
-      AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH: secret/aionos/dev/admin-token
-      AION_ADMIN_TOKEN_SECRET_PATH: secret/aionos/dev/admin-token
+      AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH: secret/aion/dev/admin-token
+      AION_ADMIN_TOKEN_SECRET_PATH: secret/aion/dev/admin-token
       AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
       AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
       AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
@@ -222,7 +222,7 @@ services:
     ports:
       - "3001:${CONSOLE_PORT:-3001}"
     networks:
-      - aionos-local
+      - aion-local
 
 volumes:
   minio-data:
@@ -231,5 +231,5 @@ volumes:
   vault-data:
 
 networks:
-  aionos-local:
+  aion-local:
     driver: bridge

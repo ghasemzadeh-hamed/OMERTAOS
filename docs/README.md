@@ -29,6 +29,6 @@
 
 ## Compatibility Notes
 - Canonical local compose file: `deploy/compose/docker-compose.local.yml`.
-- `aionos_core` implementation lives under `cli/aionos_core` (root wrapper preserved).
-- `aionos_control` implementation lives under `control/aionos_control` (legacy import shims preserved).
+- `aion_core` implementation lives under `cli/aion_core` (root wrapper preserved).
+- `aion_control` implementation lives under `control/aion_control` (legacy import shims preserved).
 - `shared/secret_store` is canonical; `os/secret_store` remains as compatibility shim.

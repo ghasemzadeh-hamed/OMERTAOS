@@ -7,12 +7,12 @@ AION-OS treats security updates as a first-boot requirement and encourages regul
 - Runs `apt-get update` and `apt-get upgrade`
 - Refreshes snaps when available
 - Installs profile-specific packages (drivers, ML tooling)
-- Logs actions to `/var/log/aionos-firstboot.log`
+- Logs actions to `/var/log/aion-firstboot.log`
 
 ## Scheduled maintenance
 
 1. Configure unattended upgrades if your policy allows (`sudo apt-get install unattended-upgrades`).
-2. For managed fleets, orchestrate updates via Ansible or Landscape, invoking `core/firstboot/aionos-firstboot.sh` in dry-run mode for validation.
+2. For managed fleets, orchestrate updates via Ansible or Landscape, invoking `core/firstboot/aion-firstboot.sh` in dry-run mode for validation.
 3. Monitor Canonical USNs and vendor advisories for NVIDIA/AMD/Intel drivers.
 
 ## CVE response SLA

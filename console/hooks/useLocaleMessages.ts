@@ -16,7 +16,7 @@ export function useLocaleMessages(pathname?: string) {
 
   useEffect(() => {
     const urlLocale = (searchParams?.get('locale') as Locale | null) ?? undefined;
-    const storageLocale = (typeof window !== 'undefined' ? localStorage.getItem('aionos-locale') : null) as Locale | null;
+    const storageLocale = (typeof window !== 'undefined' ? localStorage.getItem('aion-locale') : null) as Locale | null;
     const resolvedLocale: Locale = urlLocale && locales.includes(urlLocale) ? urlLocale : storageLocale && locales.includes(storageLocale) ? storageLocale : 'en';
     setLocale(resolvedLocale);
     setMessages(resolvedLocale === 'fa' ? faMessages : enMessages);
@@ -24,7 +24,7 @@ export function useLocaleMessages(pathname?: string) {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('aionos-locale', locale);
+      localStorage.setItem('aion-locale', locale);
     }
   }, [locale]);
 

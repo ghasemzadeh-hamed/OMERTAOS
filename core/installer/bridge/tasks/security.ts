@@ -7,8 +7,8 @@ type SecurityOptions = {
 };
 
 function resolveInstallerRoot() {
-  if (process.env.AIONOS_INSTALLER_ROOT) {
-    return process.env.AIONOS_INSTALLER_ROOT;
+  if (process.env.AION_INSTALLER_ROOT) {
+    return process.env.AION_INSTALLER_ROOT;
   }
   return path.resolve(__dirname, '../../../..');
 }

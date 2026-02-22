@@ -16,7 +16,7 @@ if [[ ! -d "$MODULE_PATH" ]]; then
   exit 1
 fi
 
-oras push "$REGISTRY_REF/$NAME:latest" "$MODULE_PATH" --manifest-config /dev/null:application/vnd.aionos.config.v1+json
+oras push "$REGISTRY_REF/$NAME:latest" "$MODULE_PATH" --manifest-config /dev/null:application/vnd.aion.config.v1+json
 cosign sign --key "$COSIGN_KEY" "$REGISTRY_REF/$NAME:latest"
 
 echo "Module $NAME published and signed"

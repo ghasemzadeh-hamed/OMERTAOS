@@ -26,9 +26,9 @@ services:
       timeout: 5s
       retries: 30
     networks:
-      - aionos
+      - aion
 volumes:
   hf-cache:
 networks:
-  aionos:
+  aion:
     external: true
