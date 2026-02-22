@@ -229,7 +229,7 @@ volumes:
   qdrant-data:
   kernel-data:
   vault-data:
-  
+
 networks:
   aion:
     driver: bridge
