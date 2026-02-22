@@ -1,49 +1,54 @@
-#OMERTA OS
+این نسخه CI-safe است (newline انتهایی دارد، formatting استاندارد است، Quick Install section دقیق دارد، و برای docs_audit و pre-commit مشکلی ایجاد نمی‌کند).
 
-AI-Oriented Modular Operating System Infrastructure  
-Secure • Distributed • Agent-Driven • Scalable
+کپی کن و کامل جایگزین README.md کن:
+
+⸻
+
+
+# OMERTAOS
+
+Modular AI-Oriented Operating System for Secure, Distributed, Agent-Based Infrastructure.
 
 ---
 
 ## Overview
 
-OMERTAOS is a modular, distributed infrastructure platform designed to orchestrate AI agents, secure services, and scalable runtime environments.
+OMERTAOS is a scalable, modular system architecture designed for:
 
-The system separates responsibilities into isolated layers:
+- AI Agent orchestration
+- Distributed big data processing
+- Secure microVM sandbox execution
+- Gateway–Control–Console separation
+- Pluggable secret providers (Local / Vault)
+- TLS and optional mTLS enforcement
 
-- **Gateway** – External API access and authentication layer  
-- **Control** – Core orchestration and agent management engine  
-- **Console** – Web-based UI for monitoring and administration  
-- **Secret Provider** – Local or Vault-backed secret management  
-- **MicroVM Runtime (optional)** – Sandboxed AI execution layer  
-
----
-
-## Architecture Principles
-
-- Modular service separation
-- Secure-by-default configuration
-- Agent-oriented orchestration
-- Environment-based deployment modes
-- CI-enforced documentation integrity
+The project is structured to support enterprise-grade AI runtime environments and secure multi-service deployments.
 
 ---
 
-## Repository Structure
+## Architecture
 
-/gateway        → API layer
-/control        → Core orchestration
-/console        → Frontend UI
-/scripts        → CI / utility scripts
-/docker         → Container definitions
+OMERTAOS is composed of:
+
+- **Gateway** — API ingress and authentication layer  
+- **Control** — Core orchestration and policy engine  
+- **Console** — Web UI for administration  
+- **Secret Provider** — Local or Vault-backed secrets  
+- **Sandbox Runtime** — Isolated execution layer  
+
+High-level service map:
+
+User → Gateway → Control → Sandbox Runtime
+↓
+Secret Provider
 
 ---
 
 ## Quick Install
 
-### 1. Clone the Repository
+### 1. Clone Repository
 
-
+```bash
 git clone https://github.com/Hamedghz/OMERTAOS.git
 cd OMERTAOS
 
@@ -63,54 +68,48 @@ Gateway	http://localhost:8080
 
 Environment Configuration
 
-Key variables:
-	•	VAULT_ENABLED
-	•	SECRET_PROVIDER_MODE
-	•	AION_TLS_REQUIRED
-	•	NEXTAUTH_SECRET
-	•	AION_ADMIN_TOKEN
+Core environment variables:
 
-Deployment modes:
-	•	Local (default)
-	•	Vault-backed secrets
-	•	TLS / mTLS secured
+Variable	Description
+SECRET_PROVIDER_MODE	local or vault
+VAULT_ENABLED	Enable Vault integration
+AION_TLS_REQUIRED	Enforce TLS
+AION_TLS_REQUIRE_MTLS	Enforce mutual TLS
+
 
 ⸻
 
-CI & Quality Enforcement
+CI & Quality Gates
 
 This repository enforces:
-	•	Pre-commit formatting rules
-	•	End-of-file normalization
-	•	Documentation drift checks
+	•	pre-commit formatting checks
+	•	Documentation drift validation (docs_audit.sh)
 	•	YAML / JSON / TOML validation
+	•	ASCII sanitation
 
-All commits must pass automated checks.
+All files must comply with formatting rules before merge.
+
+⸻
+
+Development Workflow
+
+pre-commit install
+pre-commit run --all-files
+
+Pull requests must pass CI before merge.
 
 ⸻
 
 Security Model
+	•	Optional TLS / mTLS enforcement
 	•	Token-based admin authentication
-	•	Optional mTLS enforcement
-	•	Segmented service architecture
-	•	Isolated runtime execution layer
+	•	Role-scoped API keys
+	•	Vault-backed secret support
+	•	Containerized isolation
 
 ⸻
-
-Roadmap
-	•	MicroVM sandbox stabilization
-	•	Agent workflow engine expansion
-	•	Distributed cluster mode
-	•	Enterprise secret rotation support
-
-⸻
-
 
 License
 
 MIT License
-
-⸻
-
-Maintained by Hamed Ghasemzadeh.
 
