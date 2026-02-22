@@ -73,8 +73,8 @@ if (-not (Test-Path $composePath)) {
 }
 
 $controlHealth = if ($env:CONTROL_HEALTH_URL) { $env:CONTROL_HEALTH_URL } else { 'http://localhost:8000/healthz' }
-$gatewayHealth = if ($env:GATEWAY_HEALTH_URL) { $env:GATEWAY_HEALTH_URL } else { 'http://localhost:3000/health' }
-$consoleHealth = if ($env:CONSOLE_HEALTH_URL) { $env:CONSOLE_HEALTH_URL } else { 'http://localhost:3001/health' }
+$gatewayHealth = if ($env:GATEWAY_HEALTH_URL) { $env:GATEWAY_HEALTH_URL } else { 'http://localhost:8080/health' }
+$consoleHealth = if ($env:CONSOLE_HEALTH_URL) { $env:CONSOLE_HEALTH_URL } else { 'http://localhost:3000/health' }
 
 function Invoke-Compose {
     param([string[]]$Args)
