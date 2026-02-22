@@ -34,8 +34,8 @@ APP_DIR="$APP_ROOT/OMERTAOS"
 ENV_FILE="$APP_DIR/.env"
 SYSTEMD_DIR="$APP_DIR/config/systemd"
 CONTROL_PORT=${CONTROL_PORT:-8000}
-GATEWAY_PORT=${GATEWAY_PORT:-3000}
-CONSOLE_PORT=${CONSOLE_PORT:-3001}
+GATEWAY_PORT=${GATEWAY_PORT:-8080}
+CONSOLE_PORT=${CONSOLE_PORT:-3000}
 NODE_REQUIRED_MAJOR=18
 PYTHON_DEB_PACKAGES=()
 PYTHON_PREFERRED_BIN=""
@@ -465,8 +465,8 @@ self_check() {
 
   echo "[install] running CI health checks"
   local control_url="http://localhost:${CONTROL_PORT:-8000}/healthz"
-  local gateway_url="http://localhost:${GATEWAY_PORT:-3000}/healthz"
-  local console_url="http://localhost:${CONSOLE_PORT:-3001}/healthz"
+  local gateway_url="http://localhost:${GATEWAY_PORT:-8080}/healthz"
+  local console_url="http://localhost:${CONSOLE_PORT:-3000}/healthz"
 
   curl -fsS --max-time 10 "$control_url" >/dev/null
   curl -fsS --max-time 10 "$gateway_url" >/dev/null
@@ -480,8 +480,8 @@ print_summary() {
   console_port=$(parse_env_value CONSOLE_PORT)
 
   control_port=${control_port:-8000}
-  gateway_port=${gateway_port:-3000}
-  console_port=${console_port:-3001}
+  gateway_port=${gateway_port:-8080}
+  console_port=${console_port:-3000}
 
   cat <<MSG
 
