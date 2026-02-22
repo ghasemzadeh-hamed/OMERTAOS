@@ -3,9 +3,9 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from os.control.os.core.deps import get_state
-from os.control.os.core.state import ControlState, RouterPolicy, RouterPolicySnapshot
-from os.control.os.schemas.router_policy import (
+from control.os.core.deps import get_state
+from control.os.core.state import ControlState, RouterPolicy, RouterPolicySnapshot
+from control.os.schemas.router_policy import (
     RouterPolicyDocument,
     RouterPolicyHistory,
     RouterPolicyResponse,

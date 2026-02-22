@@ -13,8 +13,8 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from minio import Minio
 from pydantic import BaseModel
 
-from os.control.os.config import get_settings
-from os.control.os.routes.deps import get_clickhouse_client, get_pg_conn
+from control.os.config import get_settings
+from control.os.routes.deps import get_clickhouse_client, get_pg_conn
 
 router = APIRouter(prefix="/api/ingest/excel", tags=["ingest:excel"])
 

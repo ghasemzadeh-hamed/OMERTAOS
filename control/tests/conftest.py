@@ -5,9 +5,7 @@ from pathlib import Path
 
 pytest_plugins = ("pytest_asyncio",)
 
-CONTROL_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = Path(__file__).resolve().parents[2]
-
-for path in (str(REPO_ROOT), str(CONTROL_ROOT)):
-    if path not in sys.path:
-        sys.path.insert(0, path)
+repo_root_str = str(REPO_ROOT)
+if repo_root_str not in sys.path:
+    sys.path.insert(0, repo_root_str)

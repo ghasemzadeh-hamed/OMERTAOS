@@ -5,8 +5,8 @@ import time
 from typing import Dict, Optional
 
 from app.control.router import get_handler
-from os.control.os.models import RouterDecision, Task, TaskStatus
-from os.control.os.router_engine import decision_engine
+from control.os.models import RouterDecision, Task, TaskStatus
+from control.os.router_engine import decision_engine
 
 logger = logging.getLogger(__name__)
 

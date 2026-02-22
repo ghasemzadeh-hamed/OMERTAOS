@@ -11,7 +11,7 @@ install-extras:
 	pip install -e .[$$EXTRAS]
 
 run:
-	uvicorn os.control.main:app --host 0.0.0.0 --port 8080 --reload
+	uvicorn control.main:app --host 0.0.0.0 --port 8080 --reload
 
 lint:
 	ruff --fix .

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends
 
-from os.control.os.registry import RegistryAggregator
+from control.os.registry import RegistryAggregator
 
 from .security import admin_or_devops_required
 

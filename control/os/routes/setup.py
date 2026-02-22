@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, status
 
-from os.control.aion_profiles import read_bootstrap_state, set_bootstrap_state, set_profile_state
+from control.aion_profiles import read_bootstrap_state, set_bootstrap_state, set_profile_state
 
 router = APIRouter(prefix="/v1/setup", tags=["setup"])
 

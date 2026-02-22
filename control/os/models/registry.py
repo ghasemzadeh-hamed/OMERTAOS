@@ -10,7 +10,7 @@ import os
 import httpx
 import yaml
 
-from os.control.os.config import get_settings
+from control.os.config import get_settings
 
 
 class PrivacyLevel(str, Enum):

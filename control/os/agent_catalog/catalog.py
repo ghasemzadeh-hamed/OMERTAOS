@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Optional
 import yaml
 from pydantic import ValidationError
 
-from os.control.os.core.logger import get_logger
-from os.control.os.schemas.agent import AgentTemplate
+from control.os.core.logger import get_logger
+from control.os.schemas.agent import AgentTemplate
 
 LOGGER = get_logger(__name__)
 

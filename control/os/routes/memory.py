@@ -12,7 +12,7 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from os.control.os.config import get_settings
+from control.os.config import get_settings
 
 
 def _utc_now() -> datetime:

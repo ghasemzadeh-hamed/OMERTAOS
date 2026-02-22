@@ -13,9 +13,9 @@ from typing import Dict
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from os.control.os.core.deps import get_state
-from os.control.os.core.state import ControlState, generate_event_id
-from os.control.os.schemas.webhook import WebhookEnvelope
+from control.os.core.deps import get_state
+from control.os.core.state import ControlState, generate_event_id
+from control.os.schemas.webhook import WebhookEnvelope
 
 router = APIRouter(prefix="/api/webhooks", tags=["webhooks"])
 

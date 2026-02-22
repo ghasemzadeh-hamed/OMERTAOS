@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict
 
-from os.control.os.config import get_settings
+from control.os.config import get_settings
 
 
 class PolicyStore:

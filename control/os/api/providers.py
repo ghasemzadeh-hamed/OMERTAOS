@@ -5,9 +5,9 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from os.control.os.core.deps import get_state
-from os.control.os.core.state import ControlState, Provider
-from os.control.os.schemas.provider import ProviderCreate, ProviderOut
+from control.os.core.deps import get_state
+from control.os.core.state import ControlState, Provider
+from control.os.schemas.provider import ProviderCreate, ProviderOut
 
 router = APIRouter(prefix="/api/providers", tags=["providers"])
 
