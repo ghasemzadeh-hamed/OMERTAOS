@@ -229,7 +229,8 @@ volumes:
   qdrant-data:
   kernel-data:
   vault-data:
-
+  
 networks:
-  aion-local:
+  aion:
     driver: bridge
+    internal: false
