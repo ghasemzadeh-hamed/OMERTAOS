@@ -17,7 +17,7 @@ jobs:
       VAULT_AUTH_METHOD: 'token'
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN || vars.VAULT_TOKEN || '' }}
       NEXTAUTH_URL: 'http://localhost:3000'
-      NEXT_PUBLIC_GATEWAY_URL: 'http://gateway:3000'
+      NEXT_PUBLIC_GATEWAY_URL: 'http://gateway:8080'
       NEXT_PUBLIC_CONTROL_URL: 'http://control:8000'
       SECRET_PROVIDER_MODE: 'local'
       AION_TLS_REQUIRE_MTLS: 'false'
