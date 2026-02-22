@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import logging
 import pathlib
-from typing import Any, Dict, Iterable, Optional
+from typing import Dict, Iterable, Optional
 
-import yaml
 from fastapi import Depends, FastAPI, Header, HTTPException, status
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, MetaData, String, Table, create_engine, func, or_, select
 from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
@@ -14,7 +13,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from .install_runner import install
 from .schemas import InstallReq, SaveConfigReq, UpsertPayload
 from .secrets_vault import Vault
-from omertaos.config import get_config, load_scope
+from config import get_config, load_scope
 
 
 logger = logging.getLogger(__name__)

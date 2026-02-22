@@ -7,7 +7,7 @@ from typing import Dict
 
 import httpx
 import yaml
-from omertaos.config import get_config, load_scope
+from config import get_config, load_scope
 
 
 logger = logging.getLogger(__name__)
@@ -94,7 +94,7 @@ CONFIG_SCHEMAS: Dict[str, Dict[str, object]] = {
 def load_config() -> Dict[str, Dict[str, str]]:
     cfg = load_scope(str(CONFIG_PATH))
     catalog_cfg = cfg.get("catalog", {})
-    return cfg
+    return catalog_cfg if isinstance(catalog_cfg, dict) else {}
 
 
 def catalog_seed_path(seed_file: str | None) -> pathlib.Path:
@@ -120,8 +120,7 @@ def pull_pypi(client: httpx.Client, pkg: str) -> Dict[str, str]:
 
 
 def sync_once(seed_path: str | pathlib.Path | None = None) -> None:
-    cfg = load_config()
-    catalog_cfg = cfg.get("catalog", {})
+    catalog_cfg = load_config()
     path = catalog_seed_path(seed_path or catalog_cfg.get("seed_file"))
     logger.info("Starting catalog sync", extra={"seed_path": str(path)})
 

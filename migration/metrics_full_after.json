@@ -1,0 +1,99 @@
+{
+  "python": {
+    "modules": 385,
+    "edges": 365,
+    "coupling_score": 0.948,
+    "circular_groups": 0,
+    "max_depth": 7,
+    "top_centrality": [
+      {
+        "module": "os",
+        "fan_in": 58,
+        "fan_out": 0,
+        "centrality": 58
+      },
+      {
+        "module": "os.control.os.http",
+        "fan_in": 5,
+        "fan_out": 20,
+        "centrality": 25
+      },
+      {
+        "module": "os.control.os.core.state",
+        "fan_in": 14,
+        "fan_out": 3,
+        "centrality": 17
+      },
+      {
+        "module": "os.control.os.api.security",
+        "fan_in": 14,
+        "fan_out": 1,
+        "centrality": 15
+      },
+      {
+        "module": "process-analytics.api.context",
+        "fan_in": 0,
+        "fan_out": 13,
+        "centrality": 13
+      },
+      {
+        "module": "os.control.os.config",
+        "fan_in": 10,
+        "fan_out": 2,
+        "centrality": 12
+      },
+      {
+        "module": "os.control.os.core.deps",
+        "fan_in": 11,
+        "fan_out": 1,
+        "centrality": 12
+      },
+      {
+        "module": "os.control.os.api",
+        "fan_in": 3,
+        "fan_out": 9,
+        "centrality": 12
+      },
+      {
+        "module": "os.control.os.routes",
+        "fan_in": 1,
+        "fan_out": 10,
+        "centrality": 11
+      },
+      {
+        "module": "config",
+        "fan_in": 7,
+        "fan_out": 1,
+        "centrality": 8
+      }
+    ]
+  },
+  "rust": {
+    "crates": 4,
+    "edges": 0
+  },
+  "frontend": {
+    "projects": 10
+  },
+  "violations": {
+    "cross_layer": 0
+  },
+  "smells": {
+    "env_access_points": 318,
+    "direct_registry_reads": 14,
+    "duplicated_schema_filenames": 0
+  },
+  "orphans": [
+    ".claude",
+    ".github",
+    "aionos_core.egg-info",
+    "ci",
+    "config-schemas",
+    "explorer",
+    "gateway",
+    "migration",
+    "policies",
+    "protos",
+    "templates"
+  ]
+}

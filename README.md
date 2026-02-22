@@ -40,9 +40,16 @@ ai_registry]
 /deploy /tests /tools
 ```
 
+## Recent Architecture Standardization Notes
+- `config` and `registry` are root-level canonical Python modules (the legacy `omertaos/*` package scaffold has been removed).
+- `aionos_core` implementation is now in `cli/aionos_core` with compatibility wrappers at `aionos_core/*`.
+- `aionos_control` implementation is now in `control/aionos_control` with compatibility wrappers retained.
+- legacy `os/secret_store` has been distributed to `shared/secret_store` with compatibility shims.
+- local compose canonical path is `deploy/compose/docker-compose.local.yml` (root `docker-compose.local.yml` remains as compatibility symlink).
+
 ## Key Components Overview
 - **Control Plane:** API routing, orchestration, async workers.
-- **Agents:** runtime agents and algorithm modules (including LSTM/GA surfaces).
+- **Agents:** runtime agents and algorithm modules.
 - **Registry:** canonical metadata for models, agents, and locks.
 - **Execution:** isolated Rust runtime modules.
 - **Kernel:** multi-tenant runtime + policy enforcement.
@@ -55,21 +62,8 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and [docs/DEV_GUIDE.md](docs/DEV_GU
 ```bash
 git clone <repo-url>
 cd OMERTAOS
-# choose your flow
-# docker compose / helm / native dev guide
+./install.sh --profile user --local
 ```
-
-## Example Agent Execution Flow
-1. Control plane receives task request.
-2. Registry resolves agent + model metadata.
-3. Kernel applies tenancy and policy constraints.
-4. Execution sandbox runs workload.
-5. State and telemetry persist to DB/analytics layers.
-
-## Deployment Overview
-- Local/dev: Docker Compose
-- Cluster/prod: Helm + Kubernetes
-- Service hardening: policy bundles and environment-scoped config
 
 ## Documentation Links
 - [Architecture](docs/ARCHITECTURE.md)
@@ -82,8 +76,5 @@ cd OMERTAOS
 - [Deployment](docs/DEPLOYMENT.md)
 - [Whitepaper](docs/WHITEPAPER.md)
 
-## Research Context
-OMERTAOS is designed to bridge production platform engineering with research workflows in agent orchestration, adaptive planning, policy-constrained autonomy, and scalable analytics.
-
 ## License
-See [LICENSE](LICENSE) if present in your distribution, or your organizational licensing policy.
+See [LICENSE](LICENSE).

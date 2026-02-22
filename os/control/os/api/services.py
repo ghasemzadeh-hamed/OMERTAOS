@@ -2,12 +2,13 @@
 from __future__ import annotations
 
 import asyncio
-import os
 import shlex
 import subprocess
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
+
+from config import get_config
 
 from .security import admin_required, admin_or_devops_required
 
@@ -16,11 +17,11 @@ router = APIRouter(prefix="/api/services", tags=["services"])
 
 
 DEFAULT_SERVICES = [
-    {"name": "gateway", "display_name": "Gateway", "health_url": os.getenv("AION_GATEWAY_HEALTH_URL")},
-    {"name": "control", "display_name": "Control", "health_url": os.getenv("AION_CONTROL_HEALTH_URL")},
-    {"name": "console", "display_name": "Console", "health_url": os.getenv("AION_CONSOLE_HEALTH_URL")},
-    {"name": "kernel", "display_name": "Kernel", "health_url": os.getenv("AION_KERNEL_HEALTH_URL")},
-    {"name": "workers", "display_name": "Workers", "health_url": os.getenv("AION_WORKER_HEALTH_URL")},
+    {"name": "gateway", "display_name": "Gateway", "health_url": get_config("AION_GATEWAY_HEALTH_URL")},
+    {"name": "control", "display_name": "Control", "health_url": get_config("AION_CONTROL_HEALTH_URL")},
+    {"name": "console", "display_name": "Console", "health_url": get_config("AION_CONSOLE_HEALTH_URL")},
+    {"name": "kernel", "display_name": "Kernel", "health_url": get_config("AION_KERNEL_HEALTH_URL")},
+    {"name": "workers", "display_name": "Workers", "health_url": get_config("AION_WORKER_HEALTH_URL")},
 ]
 
 
@@ -40,7 +41,7 @@ async def _probe_service(service: dict[str, Any]) -> dict[str, Any]:
 
 @router.get("")
 async def list_services(principal=Depends(admin_or_devops_required())) -> dict[str, Any]:
-    configured = os.getenv("AION_SERVICES_CONFIG")
+    configured = get_config("AION_SERVICES_CONFIG")
     services: list[dict[str, Any]] = []
     if configured:
         for chunk in configured.split(";"):
@@ -56,15 +57,15 @@ async def list_services(principal=Depends(admin_or_devops_required())) -> dict[s
 
 
 def _compose_command(name: str, action: str) -> list[str]:
-    mode = (os.getenv("AION_SERVICE_CONTROL_MODE") or "disabled").lower()
+    mode = (get_config("AION_SERVICE_CONTROL_MODE", "disabled") or "disabled").lower()
     if mode == "docker":
-        compose_file = os.getenv("AION_DOCKER_COMPOSE_FILE", "docker-compose.yml")
+        compose_file = get_config("AION_DOCKER_COMPOSE_FILE", "docker-compose.yml")
         return ["docker", "compose", "-f", compose_file, action, name]
     if mode == "systemd":
-        unit_prefix = os.getenv("AION_SYSTEMD_PREFIX", "aion")
+        unit_prefix = get_config("AION_SYSTEMD_PREFIX", "aion")
         return ["systemctl", action, f"{unit_prefix}-{name}.service"]
     if mode == "script":
-        script = os.getenv("AION_SERVICE_CONTROL_SCRIPT")
+        script = get_config("AION_SERVICE_CONTROL_SCRIPT")
         if not script:
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="script not configured")
         return shlex.split(script) + [name, action]
