@@ -67,6 +67,10 @@ jobs:
       - name: Install control (editable)
         run: pip install -e .[control,dev]
 
+      - name: Normalize whitespace
+        run: |
+          sed -i 's/[ \t]*$//' README.md
+
       - name: Run pre-commit
         run: pre-commit run --all-files
 
