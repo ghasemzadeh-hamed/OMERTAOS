@@ -49,7 +49,7 @@ def main() -> None:
     except ValueError:
         workers = 1
 
-    uvicorn.run(app, host=host, port=port, workers=workers)
+    uvicorn.run(app, host=host, port=port, workers=1)
 
 
 if __name__ == "__main__":
