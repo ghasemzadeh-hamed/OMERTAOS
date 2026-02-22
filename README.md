@@ -65,6 +65,16 @@ cd OMERTAOS
 ./install.sh --profile user --local
 ```
 
+
+## Self-Contained Linux Bootstrap
+For Ubuntu 24 minimal hosts that need GUI + sandbox + security bootstrapping in one step:
+
+```bash
+sudo GIT_REPO_URL=<repo-url> ./scripts/self-contained-installer.sh
+```
+
+The script is idempotent and can be re-run safely; it updates an existing checkout in `/opt/platform`, reinstalls missing dependencies, refreshes Xpra/LightDM/LXC configuration, and keeps generated security material under `/etc/platform/security`.
+
 ## Documentation Links
 - [Architecture](docs/ARCHITECTURE.md)
 - [System Design](docs/SYSTEM_DESIGN.md)
