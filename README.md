@@ -1,10 +1,4 @@
-این یک README تمیز، production-grade و کاملاً سازگار با pre-commit (دارای trailing newline صحیح) برای پروژه OMERTAOS است.
-می‌توانی مستقیم داخل GitHub جایگزین کنی.
-
-⸻
-
-
-# OMERTAOS
+#OMERTA OS
 
 AI-Oriented Modular Operating System Infrastructure  
 Secure • Distributed • Agent-Driven • Scalable
@@ -118,3 +112,4 @@ MIT License
 ⸻
 
 Maintained by Hamed Ghasemzadeh.
+
