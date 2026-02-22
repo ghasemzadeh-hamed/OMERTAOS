@@ -71,31 +71,31 @@ os/control/os/api/config.py:104
     class ConfigDocument(BaseModel):
 
 os/control/os/http.py:69
-  /workspace/OMERTAOS/os/control/os/http.py:69: DeprecationWarning: 
+  /workspace/OMERTAOS/os/control/os/http.py:69: DeprecationWarning:
           on_event is deprecated, use lifespan event handlers instead.
-  
+
           Read more about it in the
           [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
-          
+
     @app.on_event("startup")
 
 ../../root/.pyenv/versions/3.14.0/lib/python3.14/site-packages/fastapi/applications.py:4573
 ../../root/.pyenv/versions/3.14.0/lib/python3.14/site-packages/fastapi/applications.py:4573
-  /root/.pyenv/versions/3.14.0/lib/python3.14/site-packages/fastapi/applications.py:4573: DeprecationWarning: 
+  /root/.pyenv/versions/3.14.0/lib/python3.14/site-packages/fastapi/applications.py:4573: DeprecationWarning:
           on_event is deprecated, use lifespan event handlers instead.
-  
+
           Read more about it in the
           [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
-          
+
     return self.router.on_event(event_type)
 
 os/control/os/http.py:78
-  /workspace/OMERTAOS/os/control/os/http.py:78: DeprecationWarning: 
+  /workspace/OMERTAOS/os/control/os/http.py:78: DeprecationWarning:
           on_event is deprecated, use lifespan event handlers instead.
-  
+
           Read more about it in the
           [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
-          
+
     @app.on_event("shutdown")
 
 tests/test_policy_state.py:12
