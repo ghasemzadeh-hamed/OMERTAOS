@@ -105,6 +105,7 @@ Roadmap
 
 ⸻
 
+```bash
 License
 
 MIT License
