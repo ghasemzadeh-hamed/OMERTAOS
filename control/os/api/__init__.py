@@ -8,6 +8,7 @@ from os.control.os.api.webhooks import router as webhook_router
 from os.control.os.api.registry import router as registry_router
 from os.control.os.api.agent_catalog import catalog_router, agents_router
 from os.control.os.api.recommendations import recommendations_router
+from os.control.os.api.feature_catalog import router as feature_catalog_router
 
 __all__ = [
     "providers_router",
@@ -20,4 +21,5 @@ __all__ = [
     "recommendations_router",
     "catalog_router",
     "agents_router",
+    "feature_catalog_router",
 ]

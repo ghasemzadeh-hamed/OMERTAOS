@@ -31,6 +31,7 @@ from os.control.os.api import (
     agents_router,
     router_policy_router,
     webhook_router,
+    feature_catalog_router,
 )
 from os.control.os.api.files import router as files_router, data_router
 from os.control.os.api.config import router as config_center_router, network_router
@@ -160,3 +161,4 @@ app.include_router(packages_router)
 app.include_router(backup_router)
 app.include_router(update_router)
 app.include_router(provisioner_router)
+app.include_router(feature_catalog_router)
