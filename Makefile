@@ -7,7 +7,7 @@ dev-control:
 	cd control && PYTHONPATH=$(CURDIR):$(CURDIR)/os uvicorn os.control.main:app --reload --port 8001
 
 doctor:
-bash scripts/doctor.sh
+	bash scripts/doctor.sh
 
 bundle:
 	@tar czf deploy/bundles/example.tgz -C deploy/bundles/example .
@@ -40,8 +40,8 @@ stop:
 	systemctl stop aion-control aion-gateway aion-console
 
 setup:
-        $(PY) -m pip install -U pip
-        $(PY) -m pip install -e .[dev]
+	$(PY) -m pip install -U pip
+	$(PY) -m pip install -e .[dev]
 
 train:
 	$(PY) scripts/train_eval.py --config policies/training.yaml
@@ -58,10 +58,10 @@ run-user:
 	AION_PROFILE=user docker compose -f docker-compose.yml up -d
 
 run-pro:
-        AION_PROFILE=professional docker compose -f docker-compose.yml up -d
+	AION_PROFILE=professional docker compose -f docker-compose.yml up -d
 
 run-ent:
-        AION_PROFILE=enterprise-vip FEATURE_SEAL=1 docker compose -f docker-compose.yml up -d
+	AION_PROFILE=enterprise-vip FEATURE_SEAL=1 docker compose -f docker-compose.yml up -d
 
 # Developer quality gates
 install-deps:
@@ -77,6 +77,9 @@ lint:
 
 verify:
 	ci/verify.sh
+
+structure-audit:
+	$(PY) tools/repo_audit/check_structure_consistency.py
 
 # Docker Compose helpers for the quickstart stack
 compose-up:
@@ -95,10 +98,10 @@ bootstrap:
 	./quick-install.sh
 
 claude-install:
-        bash scripts/claude/install-claude-code.sh
+	bash scripts/claude/install-claude-code.sh
 
 claude-bootstrap:
-        bash scripts/claude/bootstrap-marketplace.sh
+	bash scripts/claude/bootstrap-marketplace.sh
 
 claude-status:
-        bash scripts/claude/status.sh
+	bash scripts/claude/status.sh

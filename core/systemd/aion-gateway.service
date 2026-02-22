@@ -1,15 +1,1 @@
-[Unit]
-Description=AION Gateway API
-After=network.target
-
-[Service]
-Type=simple
-User=aion
-WorkingDirectory=/opt/omertaos/gateway
-Environment=NODE_ENV=production
-ExecStart=/usr/bin/env bash -lc 'npm run start'
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=aion.target
+../../deploy/systemd/aion-gateway.service

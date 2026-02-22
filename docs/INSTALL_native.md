@@ -182,7 +182,7 @@ the Windows Apache equivalent). Enable TLS termination as needed for production 
 - **Database authentication failures**: Ensure PostgreSQL trusts local connections or update
   credentials in `.env` and rerun the installer.
 - **pnpm not found in services**: The systemd units set `PATH` explicitly. If you relocate pnpm,
-  update the unit files under `configs/systemd/` and rerun the installer.
+  update the unit files under `config/systemd/` and rerun the installer.
 - **Windows services fail immediately**: Check the NSSM logs in `C:\ProgramData\NSSM\service\<Name>`
   and ensure Redis/PostgreSQL endpoints are reachable.
 
