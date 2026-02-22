@@ -62,7 +62,7 @@ If the file is missing, the script recreates it; if present, it is validated for
 
 ## Systemd (optional)
 
-A disabled oneshot unit is available at `os/systemd/omerta-claude-bootstrap.service`:
+A disabled oneshot unit is available at `deploy/systemd/omerta-claude-bootstrap.service`:
 
 ```bash
 sudo systemctl enable --now omerta-claude-bootstrap.service

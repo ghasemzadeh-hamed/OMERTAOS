@@ -3,15 +3,14 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-import shutil
 from typing import Any
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from .security import admin_or_devops_required, admin_required
-from omertaos.config import get_config
-from omertaos.registry import load_registry_lock
+from config import get_config
+from registry import load_registry_lock
 
 
 router = APIRouter(prefix="/api/models", tags=["models"])

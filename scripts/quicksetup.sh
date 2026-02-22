@@ -64,7 +64,7 @@ Usage: $(basename "$0") [options]
 
 Options:
   --profile <user|professional|enterprise>  Desired profile (default prompts interactively).
-  --local                                   Use docker-compose.local.yml.
+  --local                                   Use deploy/compose/docker-compose.local.yml.
   --compose-file <path>                     Explicit docker compose file to use.
   --model <name>                            Ollama model to pull (default: ${MODEL_NAME}).
   --noninteractive                          Disable prompts; defaults apply.
@@ -139,7 +139,7 @@ parse_args() {
         ;;
       --local)
         LOCAL_MODE=true
-        COMPOSE_FILE="docker-compose.local.yml"
+        COMPOSE_FILE="deploy/compose/docker-compose.local.yml"
         shift
         ;;
       --compose-file)

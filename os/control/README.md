@@ -2,7 +2,13 @@
 
 This package provides the control plane services for aionOS. It exposes FastAPI
 routes for health checks, memory operations, kernel proposal management, and
-model registry interactions that are exercised by the automated tests.
+model registry interactions.
 
-This lightweight README exists so that Poetry can install the project during
-continuous integration runs.
+## Canonical Placement
+- Primary implementation is under `os/control/os/*`.
+- Plugin/control extension package has been redistributed to `control/aionos_control/*`.
+- Legacy compatibility imports remain available at `aionos_control/*` and `os/control/aionos_control/*`.
+
+## Notes
+This lightweight README exists so packaging/install flows can resolve the control
+modules consistently during CI and local development.

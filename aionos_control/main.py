@@ -2,6 +2,6 @@
 
 from __future__ import annotations
 
-from os.control.aionos_control.main import app
+from control.aionos_control.main import app
 
 __all__ = ["app"]

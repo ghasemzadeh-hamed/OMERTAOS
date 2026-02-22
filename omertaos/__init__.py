@@ -1,1 +1,0 @@
-"""OMERTAOS architecture abstraction package."""
