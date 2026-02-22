@@ -1,15 +1,1 @@
-[Unit]
-Description=AION Control Plane
-After=network.target
-
-[Service]
-Type=simple
-User=aion
-WorkingDirectory=/opt/omertaos
-Environment=PYTHONUNBUFFERED=1
-ExecStart=/usr/bin/python3 -m os.control.main
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=aion.target
+../../deploy/systemd/aion-control.service

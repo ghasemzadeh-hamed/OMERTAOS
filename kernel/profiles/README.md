@@ -9,8 +9,8 @@ This directory stores kernel profile definitions.
 ## Minimum required profile set
 
 - `enterprise/` (existing)
-- `professional/` (pending)
-- `user/` (pending)
+- `professional/` (scaffolded)
+- `user/` (scaffolded)
 
 ## Ownership
 

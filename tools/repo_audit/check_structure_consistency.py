@@ -20,12 +20,41 @@ def exists(path: str) -> bool:
     return (REPO_ROOT / path).exists()
 
 
+def is_symlink(path: str) -> bool:
+    return (REPO_ROOT / path).is_symlink()
+
+
+def is_symlink_to(path: str, target: str) -> bool:
+    source = REPO_ROOT / path
+    if not source.is_symlink():
+        return False
+    return source.resolve() == (REPO_ROOT / target).resolve()
+
+
 def collect_findings() -> list[Finding]:
     findings: list[Finding] = []
 
-    legacy_roots = ["v1", "worker", "ui", "protos", "llm", "process-analytics"]
-    for root in legacy_roots:
-        if exists(root):
+    migrated_legacy_roots = {
+        "v1": "schemas/protos/python/v1",
+        "worker": "execution/worker",
+        "ui": "console/ui",
+        "protos": "schemas/protos",
+        "llm": "shared/llm",
+        "process-analytics": "bigdata/process_analytics",
+    }
+    for root, target in migrated_legacy_roots.items():
+        if not exists(root):
+            continue
+        if is_symlink_to(root, target):
+            findings.append(
+                Finding(
+                    id=f"legacy-compat:{root}",
+                    severity="info",
+                    message=f"Legacy root '{root}' is now a compatibility symlink.",
+                    remediation=f"Update callers to '{target}' and remove '{root}' after migration window.",
+                )
+            )
+        else:
             findings.append(
                 Finding(
                     id=f"legacy-root:{root}",
@@ -36,52 +65,79 @@ def collect_findings() -> list[Finding]:
             )
 
     if exists("config") and exists("configs"):
-        findings.append(
-            Finding(
-                id="duplicate-config-roots",
-                severity="error",
-                message="Both 'config/' and 'configs/' exist.",
-                remediation="Keep runtime config in config/ and migrate installer/deployment templates to deploy/ + docs references.",
+        if is_symlink_to("configs/systemd", "config/systemd") and is_symlink_to("configs/windows", "config/windows"):
+            findings.append(
+                Finding(
+                    id="config-compatibility-symlink",
+                    severity="info",
+                    message="configs/{systemd,windows} are compatibility symlinks to config/.",
+                    remediation="Keep until external callers fully migrate to config/ paths, then remove configs/ symlinks.",
+                )
             )
-        )
+        else:
+            findings.append(
+                Finding(
+                    id="duplicate-config-roots",
+                    severity="error",
+                    message="Both 'config/' and 'configs/' exist.",
+                    remediation="Keep runtime config in config/ and migrate installer/deployment templates to deploy/ + docs references.",
+                )
+            )
 
-    if exists("models") and exists("control/models"):
-        findings.append(
-            Finding(
-                id="duplicate-model-roots",
-                severity="warn",
-                message="Both 'models/' and 'control/models/' exist.",
-                remediation="Define one source of truth (registry/models or control/models) and keep the other as compatibility wrappers only.",
+    if exists("models") and exists("registry/models"):
+        if is_symlink_to("models", "registry/models"):
+            findings.append(
+                Finding(
+                    id="models-compatibility-symlink",
+                    severity="info",
+                    message="models/ now points to registry/models as compatibility path.",
+                    remediation="Migrate remaining references to registry/models and retire models/ symlink later.",
+                )
             )
-        )
 
     if exists("ci") and exists("deploy/ci"):
         findings.append(
             Finding(
-                id="duplicate-ci-roots",
-                severity="warn",
-                message="Both 'ci/' and 'deploy/ci/' exist.",
-                remediation="Use deploy/ci as canonical; keep ci/ as thin compatibility wrappers or remove after migration.",
+                id="ci-layout",
+                severity="info",
+                message="ci/ is retained as a wrapper while deploy/ci is canonical.",
+                remediation="Move direct callers to deploy/ci and delete wrapper files in ci/ in a future cleanup.",
             )
         )
 
     if exists("scripts") and exists("deploy/scripts"):
         findings.append(
             Finding(
-                id="duplicate-script-roots",
-                severity="warn",
-                message="Both 'scripts/' and 'deploy/scripts/' exist.",
-                remediation="Use scripts/ for developer workflows and deploy/scripts for operations-only scripts; document boundary clearly.",
+                id="scripts-split",
+                severity="info",
+                message="Both scripts/ (dev) and deploy/scripts (ops) are present by design.",
+                remediation="Keep boundaries documented; avoid duplicating script logic across both roots.",
             )
         )
 
     if exists("core/systemd") and exists("deploy/systemd"):
+        service_links = [
+            is_symlink_to("core/systemd/aion-control.service", "deploy/systemd/aion-control.service"),
+            is_symlink_to("core/systemd/aion-gateway.service", "deploy/systemd/aion-gateway.service"),
+            is_symlink_to("core/systemd/aion-console.service", "deploy/systemd/aion-console.service"),
+        ]
+        severity = "info" if all(service_links) else "warn"
         findings.append(
             Finding(
-                id="duplicate-systemd-roots",
-                severity="warn",
-                message="Both 'core/systemd/' and 'deploy/systemd/' exist.",
-                remediation="Consolidate service units under deploy/systemd and keep references in core/ only when coupled to source artifacts.",
+                id="systemd-layout",
+                severity=severity,
+                message="core/systemd and deploy/systemd both exist.",
+                remediation="Keep deploy/systemd canonical; preserve core/systemd only as compatibility links and target units.",
+            )
+        )
+
+    if exists("core/windows") and is_symlink_to("core/windows", "deploy/windows/core"):
+        findings.append(
+            Finding(
+                id="windows-core-compat",
+                severity="info",
+                message="core/windows is now a compatibility symlink to deploy/windows/core.",
+                remediation="Use deploy/windows/core as canonical path.",
             )
         )
 

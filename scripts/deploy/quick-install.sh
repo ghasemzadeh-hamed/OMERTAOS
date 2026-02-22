@@ -1,0 +1,1 @@
+../../deploy/scripts/quick-install.sh

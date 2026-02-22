@@ -1,0 +1,5 @@
+profile: user
+inherits: enterprise/base
+status: draft
+notes:
+  - "Initial scaffold for user kernel profile during structure consolidation."
