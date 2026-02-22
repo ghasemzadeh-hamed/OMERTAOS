@@ -18,7 +18,7 @@ We actively maintain the `AION` branch and the latest tagged releases.
 - If thats not available, contact the maintainers privately (avoid public issues/PRs for security topics).
 - Include:
   - Affected component(s) and version/commit
-  - Reproduction steps and PoC (if any)
+  - Reproduction steps and PoC (any)
   - Impact assessment (confidentiality/integrity/availability)
   - Suggested fixes or mitigations (optional)
 
