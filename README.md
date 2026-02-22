@@ -18,7 +18,7 @@ OMERTAOS is a scalable, modular operating system architecture designed for:
 
 - Gateway (API Layer)
 - Control (Core Orchestration)
-- Console (UI)
+- Console (UI Glasses)
 - Secure Secret Provider
 - Optional Vault Integration
 - MicroVM Sandbox Runtime
