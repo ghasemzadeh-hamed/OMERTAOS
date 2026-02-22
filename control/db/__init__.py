@@ -1,10 +1,10 @@
 
-"""Compatibility proxy to the relocated ``os.control.os.db`` package."""
+"""Compatibility proxy to the relocated ``control.os.db`` package."""
 from __future__ import annotations
 
 from importlib import import_module as _import_module
 
-_proxy = _import_module("os.control.os.db")
+_proxy = _import_module("control.os.db")
 __all__ = getattr(_proxy, "__all__", [name for name in dir(_proxy) if not name.startswith("_")])
 __path__ = getattr(_proxy, "__path__", [])  # type: ignore[assignment]
 __spec__ = getattr(_proxy, "__spec__", None)

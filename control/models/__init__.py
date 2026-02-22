@@ -1,4 +1,4 @@
-"""Compatibility shim for ``os.control.models``."""
+"""Compatibility shim for ``control.models``."""
 
 from __future__ import annotations
 

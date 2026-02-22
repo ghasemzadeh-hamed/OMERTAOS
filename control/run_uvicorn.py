@@ -7,7 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import uvicorn
 
-from os.control.main import app
+from control.main import app
 
 
 def _load_env() -> None:

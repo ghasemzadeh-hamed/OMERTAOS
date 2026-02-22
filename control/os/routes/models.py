@@ -7,8 +7,8 @@ from typing import List, Optional
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from os.control.os.config import get_settings
-from os.control.os.models.registry import ModelRegistry, PrivacyLevel, get_model_registry
+from control.os.config import get_settings
+from control.os.models.registry import ModelRegistry, PrivacyLevel, get_model_registry
 
 router = APIRouter()
 

@@ -1,11 +1,11 @@
 """Pydantic schema exports for the control API."""
 
-from os.control.os.schemas.provider import ProviderCreate, ProviderOut
-from os.control.os.schemas.datasource import DataSourceCreate, DataSourceOut
-from os.control.os.schemas.module import ModuleManifest, ModuleOut
-from os.control.os.schemas.router_policy import RouterPolicyDocument, RouterPolicyResponse
-from os.control.os.schemas.webhook import WebhookEnvelope
-from os.control.os.schemas.agent import (
+from control.os.schemas.provider import ProviderCreate, ProviderOut
+from control.os.schemas.datasource import DataSourceCreate, DataSourceOut
+from control.os.schemas.module import ModuleManifest, ModuleOut
+from control.os.schemas.router_policy import RouterPolicyDocument, RouterPolicyResponse
+from control.os.schemas.webhook import WebhookEnvelope
+from control.os.schemas.agent import (
     AgentCatalogResponse,
     AgentInstanceCreate,
     AgentInstanceOut,
@@ -13,7 +13,7 @@ from os.control.os.schemas.agent import (
     AgentTemplate,
     AgentTemplateResponse,
 )
-from os.control.os.schemas.recommendations import ToolRecommendationResponse, ToolResource, ToolSyncResponse
+from control.os.schemas.recommendations import ToolRecommendationResponse, ToolResource, ToolSyncResponse
 
 __all__ = [
     "ProviderCreate",

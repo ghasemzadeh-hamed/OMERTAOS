@@ -8,7 +8,7 @@ if str(PROJECT_ROOT) not in sys.path:
 import pytest
 import yaml
 
-from os.control.models import ModelRegistry, PrivacyLevel
+from control.models import ModelRegistry, PrivacyLevel
 
 
 @pytest.fixture()

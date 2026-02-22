@@ -1,9 +1,9 @@
 from typing import Any, Dict
 import random
-from os.control.os.config import get_settings
-from os.control.os.models import RouterDecision, Task
-from os.control.os.policy import policy_store
-from os.control.aion_profiles import get_profile
+from control.os.config import get_settings
+from control.os.models import RouterDecision, Task
+from control.os.policy import policy_store
+from control.aion_profiles import get_profile
 
 
 class DecisionEngine:

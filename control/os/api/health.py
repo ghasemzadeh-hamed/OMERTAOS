@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends
 
-from os.control.os.core.deps import get_state
-from os.control.os.core.state import ControlState
+from control.os.core.deps import get_state
+from control.os.core.state import ControlState
 
 router = APIRouter(tags=["health"])
 

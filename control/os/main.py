@@ -9,9 +9,9 @@ from contextlib import suppress
 import uvicorn
 from grpc_health.v1 import health_pb2
 
-from os.control.os.config import get_settings
-from os.control.os.grpc_server import create_grpc_server, set_health_status
-from os.control.os.http import app as http_app
+from control.os.config import get_settings
+from control.os.grpc_server import create_grpc_server, set_health_status
+from control.os.http import app as http_app
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +82,7 @@ async def _main_async() -> None:
 
 
 def main() -> None:
-    """Entry point used by ``python -m os.control.os.main``."""
+    """Entry point used by ``python -m control.os.main``."""
     asyncio.run(_main_async())
 
 

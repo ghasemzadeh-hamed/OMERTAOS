@@ -23,4 +23,4 @@ RUN pip install --upgrade pip setuptools wheel \
 
 EXPOSE 8000
 
-CMD ["python", "-m", "os.control.os.main"]
+CMD ["python", "-m", "control.os.main"]

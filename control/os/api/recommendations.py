@@ -5,10 +5,10 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from os.control.os.core.deps import get_state
-from os.control.os.core.state import ControlState
-from os.control.os.recommendations import FEATURE_LATENTBOX, sync_latentbox_catalog
-from os.control.os.schemas.recommendations import (
+from control.os.core.deps import get_state
+from control.os.core.state import ControlState
+from control.os.recommendations import FEATURE_LATENTBOX, sync_latentbox_catalog
+from control.os.schemas.recommendations import (
     ToolRecommendationResponse,
     ToolResource,
     ToolSyncResponse,

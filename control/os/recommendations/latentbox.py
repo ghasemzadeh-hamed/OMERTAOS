@@ -8,8 +8,8 @@ from typing import Iterable, List
 import yaml
 from pydantic import BaseModel, Field, ValidationError
 
-from os.control.os.core.logger import get_logger
-from os.control.os.recommendations.store import ToolResourceRecord, ToolResourceStore
+from control.os.core.logger import get_logger
+from control.os.recommendations.store import ToolResourceRecord, ToolResourceStore
 
 LOGGER = get_logger(__name__)
 FEATURE_LATENTBOX = os.getenv("FEATURE_LATENTBOX_RECOMMENDATIONS", "1") in {"1", "true", "TRUE"}

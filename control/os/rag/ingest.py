@@ -9,7 +9,7 @@ from typing import List, Sequence
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as rest
 
-from os.control.os.rag.qdrant_client import VECTOR_SIZE, ensure_collection
+from control.os.rag.qdrant_client import VECTOR_SIZE, ensure_collection
 
 
 def chunk_text(text: str, chunk_size: int = 600, overlap: int = 120) -> List[str]:

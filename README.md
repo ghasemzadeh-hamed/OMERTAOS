@@ -59,11 +59,15 @@ ai_registry]
 See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and [docs/DEV_GUIDE.md](docs/DEV_GUIDE.md).
 
 ## Quick Start
+Use the one-command bootstrap when possible:
+
 ```bash
 git clone <repo-url>
 cd OMERTAOS
-./install.sh --profile user --local
+./quick-install.sh --profile user --local
 ```
+
+For compatibility, `./install.sh --profile user --local` remains available.
 
 
 ## Self-Contained Linux Bootstrap
