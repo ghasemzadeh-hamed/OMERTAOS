@@ -3,11 +3,11 @@ set -euo pipefail
 MODE=${MODE:-native}
 CONTROL_BASE_URL=${CONTROL_BASE_URL:-http://localhost:8000}
 CONTROL_HEALTH_URL=${CONTROL_HEALTH_URL:-$CONTROL_BASE_URL/healthz}
-GATEWAY_HEALTH_URL=${GATEWAY_HEALTH_URL:-http://localhost:3000/health}
-CONSOLE_HEALTH_URL=${CONSOLE_HEALTH_URL:-http://localhost:3001/health}
+GATEWAY_HEALTH_URL=${GATEWAY_HEALTH_URL:-http://localhost:8080/healthz}
+CONSOLE_HEALTH_URL=${CONSOLE_HEALTH_URL:-http://localhost:3000/health}
 SMOKE_RETRIES=${SMOKE_RETRIES:-30}
 SMOKE_DELAY=${SMOKE_DELAY:-3}
-API_URL=${API_URL:-http://localhost:3000}
+API_URL=${API_URL:-http://localhost:8000}
 API_KEY=${API_KEY:-demo-key}
 
 check_http() {
