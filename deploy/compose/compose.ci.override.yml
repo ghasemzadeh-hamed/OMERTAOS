@@ -25,5 +25,4 @@ services:
 
 networks:
   aion:
-    driver: bridge
     internal: false
