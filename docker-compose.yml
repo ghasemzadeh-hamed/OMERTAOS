@@ -94,7 +94,7 @@ services:
   control:
     build:
       context: .
-      dockerfile: os/control/Dockerfile
+      dockerfile: control/Dockerfile
     env_file: dev.env
     environment:
       AION_CONTROL_DISABLE_SECRETS: ${AION_CONTROL_DISABLE_SECRETS:-1}
@@ -111,7 +111,7 @@ services:
       AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
       AION_VAULT_TOKEN: ${AION_VAULT_TOKEN:-}
       AION_ENV: ${AION_ENV:-dev}
-      PYTHONPATH: /srv/app:/srv/app/os
+      PYTHONPATH: /srv/app
     volumes:
       - ./policies:${AION_CONTROL_POLICIES_DIRECTORY:-/srv/app/policies}
     depends_on:
@@ -126,11 +126,11 @@ services:
     ports:
       - "8000:8000"
     healthcheck:
-      test: ["CMD", "python", "-m", "os.control.os.healthcheck"]
+      test: ["CMD", "python", "-m", "control.os.healthcheck"]
       interval: 5s
       timeout: 5s
       retries: 60
-    command: ["python", "-m", "os.control.os.main"]
+    command: ["python", "-m", "control.os.main"]
     networks: [aion]
 
   gateway:
