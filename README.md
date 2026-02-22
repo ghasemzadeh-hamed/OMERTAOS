@@ -1,5 +1,5 @@
 # OMERTAOS aion
- 
+
 OMERTAOS is an enterprise-grade distributed AI-agent platform that combines a FastAPI control plane, registry-driven model orchestration, Rust execution isolation, big-data pipelines, and a multi-tenant kernel runtime.
 
 ## Project Overview
