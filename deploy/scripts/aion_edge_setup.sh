@@ -129,7 +129,7 @@ SECURITY_HEADERS_TLS="${SECURITY_HEADERS_BASE}\n  ${HSTS}"
 
 if [[ "$MODE" == "domain" ]]; then
   if [[ "$ROUTING" == "subdomains" ]]; then
-    for entry in "console 3000" "api 8080" "control 8001"; do
+    for entry in "console 3000" "api 8080" "control 8000"; do
       sub=${entry%% *}
       port=${entry##* }
       VHOST_NAME="aion-${sub}.${DOMAIN//./-}"
@@ -183,8 +183,8 @@ CONF
   ProxyPass /api http://127.0.0.1:8080/api
   ProxyPassReverse /api http://127.0.0.1:8080/api
 
-  ProxyPass /control http://127.0.0.1:8001/
-  ProxyPassReverse /control http://127.0.0.1:8001/
+  ProxyPass /control http://127.0.0.1:8000/
+  ProxyPassReverse /control http://127.0.0.1:8000/
 
   ProxyPass / http://127.0.0.1:3000/
   ProxyPassReverse / http://127.0.0.1:3000/
