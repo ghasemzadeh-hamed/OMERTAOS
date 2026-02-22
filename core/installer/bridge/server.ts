@@ -2,6 +2,7 @@ import express from 'express';
 import { applyPartition, allowDiskMode, planPartition, probeHw } from './tasks/disk';
 import { applyDrivers } from './tasks/driver';
 import { applySecurity } from './tasks/security';
+import { bootstrapRuntime } from './tasks/runtime';
 
 const app = express();
 app.use(express.json());
@@ -39,6 +40,12 @@ app.post('/task', async (req, res) => {
         throw new Error('root-required');
       }
       return res.json(await applyDrivers());
+    }
+    if (task === 'bootstrap.runtime') {
+      if (!isRoot()) {
+        throw new Error('root-required');
+      }
+      return res.json(await bootstrapRuntime());
     }
     if (task === 'apply.security') {
       if (!isRoot()) {

@@ -13,6 +13,7 @@ from os.control.os.routes import (
     agent_router,
     config_router,
     profile_router,
+    setup_router,
     kernel_router,
     memory_router,
     models_router,
@@ -129,6 +130,7 @@ app.include_router(ai_chat_router)
 app.include_router(agent_router)
 app.include_router(config_router)
 app.include_router(profile_router)
+app.include_router(setup_router)
 app.include_router(kernel_router)
 app.include_router(memory_router)
 app.include_router(models_router)

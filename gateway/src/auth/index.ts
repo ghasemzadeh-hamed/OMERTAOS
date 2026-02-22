@@ -38,7 +38,7 @@ const isDevMode =
 
 const isDevAuthMode = gatewayConfig.environment === 'development' || isDevMode;
 
-const PUBLIC_SETUP_ROUTES = ['/v1/config/profile'];
+const PUBLIC_SETUP_ROUTES = ['/v1/config/profile', '/v1/setup/bootstrap'];
 
 const isPublicSetupRoute = (request: FastifyRequest): boolean => {
   const path = request.routerPath ?? request.routeOptions?.url ?? request.url;
