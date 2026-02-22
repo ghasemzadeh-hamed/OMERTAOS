@@ -161,7 +161,7 @@ docker compose logs -f gateway
 
 1. Generate an admin API key and append it to `.env`:
    ```bash
-   echo "AION_GATEWAY_API_KEYS=demo-key:admin|manager" >> .env
+   echo "AION_GATEWAY_API_KEYS=__GENERATED_API_KEY__:admin|manager" >> .env
    ```
 2. Create an agent token for UI flows:
    ```bash
@@ -194,7 +194,7 @@ Manual API check:
 
 ```bash
 curl -X POST http://localhost:3000/v1/tasks \
-  -H "X-API-Key: demo-key" \
+  -H "X-API-Key: <YOUR_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{"schemaVersion":"1.0","intent":"summarize","params":{"text":"Hello AION-OS!"}}'
 ```
@@ -202,7 +202,7 @@ curl -X POST http://localhost:3000/v1/tasks \
 Stream events for the task:
 
 ```bash
-curl -H "X-API-Key: demo-key" http://localhost:3000/v1/stream/<task_id>
+curl -H "X-API-Key: <YOUR_API_KEY>" http://localhost:3000/v1/stream/<TASK_ID>
 ```
 
 ---
