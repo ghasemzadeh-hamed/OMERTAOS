@@ -32,3 +32,5 @@ OMERTAOS is a scalable, modular operating system architecture designed for:
 ```bash
 git clone https://github.com/Hamedghz/OMERTAOS.git
 cd OMERTAOS
+
+<!-- newline enforced -->
