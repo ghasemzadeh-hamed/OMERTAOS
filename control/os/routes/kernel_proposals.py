@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 
-from os.kernel.runtime import get_runtime
+from kernel.runtime import get_runtime
 
 
 class ProposalRequest(BaseModel):

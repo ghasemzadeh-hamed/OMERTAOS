@@ -5,9 +5,9 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from os.control.os.core.deps import get_state
-from os.control.os.core.state import ControlState, DataSource
-from os.control.os.schemas.datasource import DataSourceCreate, DataSourceOut
+from control.os.core.deps import get_state
+from control.os.core.state import ControlState, DataSource
+from control.os.schemas.datasource import DataSourceCreate, DataSourceOut
 
 router = APIRouter(prefix="/api/datasources", tags=["datasources"])
 

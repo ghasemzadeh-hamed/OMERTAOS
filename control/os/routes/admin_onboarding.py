@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import yaml, os, secrets, subprocess
 
-from os.control.os.config_paths import resolve_config_path
+from control.os.config_paths import resolve_config_path
 
 router = APIRouter(prefix="/admin/onboarding", tags=["admin"])
 

@@ -7,10 +7,10 @@ import grpc
 from grpc import aio
 from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 
-from os.control.os.aion_grpc.aion.v1 import tasks_pb2, tasks_pb2_grpc
-from os.control.os.config import get_settings
-from os.control.os.models import TaskStatus
-from os.control.os.orchestrator import orchestrator
+from control.os.aion_grpc.aion.v1 import tasks_pb2, tasks_pb2_grpc
+from control.os.config import get_settings
+from control.os.models import TaskStatus
+from control.os.orchestrator import orchestrator
 
 logger = logging.getLogger(__name__)
 

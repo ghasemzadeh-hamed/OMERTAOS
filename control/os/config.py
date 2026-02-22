@@ -7,7 +7,7 @@ from typing import Any, Dict, Iterable, List
 from pydantic import AliasChoices, Field, PrivateAttr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from os.secret_store import (
+from secret_store import (
     SecretProvider,
     SecretProviderError,
     get_secret_provider,

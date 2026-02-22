@@ -10,7 +10,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Dict, Tuple
 
-ROOT_DIR = Path(__file__).resolve().parents[2]
+ROOT_DIR = Path(__file__).resolve().parents[1]
 PROFILE_FILE = ROOT_DIR / ".aion" / "profile.json"
 BOOTSTRAP_FILE = ROOT_DIR / ".aion" / "bootstrap.json"
 ENV_PATH = ROOT_DIR / ".env"
@@ -45,7 +45,16 @@ def set_bootstrap_state(state: Dict[str, Any]) -> Dict[str, Any]:
     return payload
 
 def _load_profile_module() -> ModuleType:
-    module_path = ROOT_DIR / "kernel-multitenant" / "profile_loader.py"
+    candidates = (
+        ROOT_DIR / "kernel" / "multitenant" / "profile_loader.py",
+        ROOT_DIR / "kernel-multitenant" / "profile_loader.py",
+    )
+
+    module_path = next((candidate for candidate in candidates if candidate.is_file()), None)
+    if module_path is None:
+        searched = ", ".join(str(candidate) for candidate in candidates)
+        raise FileNotFoundError(f"unable to locate profile loader; searched: {searched}")
+
     spec = importlib.util.spec_from_file_location("kernel_profile_loader", module_path)
     if spec is None or spec.loader is None:
         raise ImportError(f"unable to load profile loader from {module_path}")

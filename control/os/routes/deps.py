@@ -5,7 +5,7 @@ import os
 import clickhouse_connect
 import psycopg2
 
-from os.control.os.config import get_settings
+from control.os.config import get_settings
 
 
 def _resolve_postgres_dsn() -> str:

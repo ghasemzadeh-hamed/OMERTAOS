@@ -33,11 +33,11 @@ REGISTRY: dict[str, LazyModule] = {
     "cvxpy": LazyModule("cvxpy", "pip install .[ml-optim]"),
     "cvxpylayers": LazyModule("cvxpylayers", "pip install .[ml-optim]"),
     "stumpy": LazyModule(
-        "aion_control.plugins.entries.stumpy_entry",
+        "control.aion_control.plugins.entries.stumpy_entry",
         "pip install .[ml-timeseries]",
     ),
     "cleanlab": LazyModule(
-        "aion_control.plugins.entries.cleanlab_entry",
+        "control.aion_control.plugins.entries.cleanlab_entry",
         "pip install .[ml-explain]",
     ),
     "hypertools": LazyModule("hypertools", "pip install .[ml-graphviz]"),
@@ -52,7 +52,7 @@ REGISTRY: dict[str, LazyModule] = {
     "mitoinstaller": LazyModule("mitoinstaller", "pip install .[notebook-addons]"),
     "mito": LazyModule("mitosheet", "pip install .[notebook-addons]"),
     "nevergrad": LazyModule(
-        "aion_control.plugins.entries.nevergrad_entry",
+        "control.aion_control.plugins.entries.nevergrad_entry",
         "pip install .[ml-optim]",
     ),
 }

@@ -10,8 +10,8 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException, Request, status
 
 from config import get_bool, get_config, get_path
-from os.control.aion_profiles import get_profile
-from os.control.os.policy import policy_store
+from control.aion_profiles import get_profile
+from control.os.policy import policy_store
 
 router = APIRouter(prefix="/v1/seal", tags=["seal"])
 

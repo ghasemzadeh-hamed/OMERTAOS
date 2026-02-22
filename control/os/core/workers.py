@@ -4,8 +4,8 @@ from __future__ import annotations
 import asyncio
 from typing import Dict
 
-from os.control.os.core.logger import get_logger
-from os.control.os.core.state import ControlState, JobRecord
+from control.os.core.logger import get_logger
+from control.os.core.state import ControlState, JobRecord
 
 logger = get_logger(__name__)
 
