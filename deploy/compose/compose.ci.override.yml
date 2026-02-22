@@ -18,3 +18,5 @@ services:
         condition: service_started
       minio:
         condition: service_healthy
+    ports:
+      - "8000:8000"
