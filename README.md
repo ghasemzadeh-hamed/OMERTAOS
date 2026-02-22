@@ -1,116 +1,79 @@
-#OMERTA OS
+# OMERTAOS
 
-AI-Oriented Modular Operating System Infrastructure  
-Secure • Distributed • Agent-Driven • Scalable
+Modular AI-Oriented Operating System for Secure Distributed Agent Infrastructure.
 
 ---
 
 ## Overview
 
-OMERTAOS is a modular, distributed infrastructure platform designed to orchestrate AI agents, secure services, and scalable runtime environments.
+OMERTAOS is a scalable modular architecture designed for:
 
-The system separates responsibilities into isolated layers:
-
-- **Gateway** – External API access and authentication layer  
-- **Control** – Core orchestration and agent management engine  
-- **Console** – Web-based UI for monitoring and administration  
-- **Secret Provider** – Local or Vault-backed secret management  
-- **MicroVM Runtime (optional)** – Sandboxed AI execution layer  
-
----
-
-## Architecture Principles
-
-- Modular service separation
-- Secure-by-default configuration
-- Agent-oriented orchestration
-- Environment-based deployment modes
-- CI-enforced documentation integrity
+- AI agent orchestration
+- Distributed processing
+- Secure sandbox execution
+- Gateway Control Console separation
+- Pluggable secret providers
+- Optional TLS and mTLS enforcement
 
 ---
 
-## Repository Structure
+## Architecture
 
-/gateway        → API layer
-/control        → Core orchestration
-/console        → Frontend UI
-/scripts        → CI / utility scripts
-/docker         → Container definitions
+Core components:
+
+- Gateway
+- Control
+- Console
+- Secret Provider
+- Sandbox Runtime
+
+Flow:
+
+User -> Gateway -> Control -> Sandbox
 
 ---
 
 ## Quick Install
 
-### 1. Clone the Repository
-
+Clone the repository:
 
 git clone https://github.com/Hamedghz/OMERTAOS.git
 cd OMERTAOS
 
-2. Start Services
+Start services:
 
 docker compose up --build
 
-3. Access Services
+Access:
 
-Service	URL
-Console	http://localhost:3000
-Control	http://localhost:8000
-Gateway	http://localhost:8080
+Console  http://localhost:3000  
+Control  http://localhost:8000  
+Gateway  http://localhost:8080  
 
+---
 
-⸻
+## Environment Variables
 
-Environment Configuration
+SECRET_PROVIDER_MODE  
+VAULT_ENABLED  
+AION_TLS_REQUIRED  
+AION_TLS_REQUIRE_MTLS  
 
-Key variables:
-	•	VAULT_ENABLED
-	•	SECRET_PROVIDER_MODE
-	•	AION_TLS_REQUIRED
-	•	NEXTAUTH_SECRET
-	•	AION_ADMIN_TOKEN
+---
 
-Deployment modes:
-	•	Local (default)
-	•	Vault-backed secrets
-	•	TLS / mTLS secured
-
-⸻
-
-CI & Quality Enforcement
+## CI Enforcement
 
 This repository enforces:
-	•	Pre-commit formatting rules
-	•	End-of-file normalization
-	•	Documentation drift checks
-	•	YAML / JSON / TOML validation
 
-All commits must pass automated checks.
+- pre-commit hooks
+- documentation audit
+- yaml json toml validation
+- ascii sanitation
 
-⸻
+All commits must pass CI before merge.
 
-Security Model
-	•	Token-based admin authentication
-	•	Optional mTLS enforcement
-	•	Segmented service architecture
-	•	Isolated runtime execution layer
+---
 
-⸻
+## License
 
-Roadmap
-	•	MicroVM sandbox stabilization
-	•	Agent workflow engine expansion
-	•	Distributed cluster mode
-	•	Enterprise secret rotation support
-
-⸻
-
-
-License
-
-MIT License
-
-⸻
-
-Maintained by Hamed Ghasemzadeh.
-
+MIT
