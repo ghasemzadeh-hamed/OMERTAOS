@@ -35,7 +35,7 @@ export class SecretProvider {
     if (this.mode === 'local') {
       const devToken = takeEnvToken();
       if (devToken) {
-        this.localSecrets.set('secret/aionos/dev/admin-token', devToken);
+        this.localSecrets.set('secret/aion/dev/admin-token', devToken);
       }
       this.namespace = '';
       this.kvMount = DEFAULT_MOUNT;
@@ -164,7 +164,7 @@ export class SecretProvider {
         }
         return value;
       }
-      if (normalised === 'secret/aionos/dev/admin-token') {
+      if (normalised === 'secret/aion/dev/admin-token') {
         throw new SecretProviderError(
           "Dev admin token is not configured. Set AION_DEV_ADMIN_TOKEN or AION_ADMIN_TOKEN to continue setup.",
         );

@@ -1,7 +1,7 @@
-path "kv/data/aionos/db-main" {
+path "kv/data/aion/db-main" {
   capabilities = ["read"]
 }
 
-path "kv/data/aionos/minio" {
+path "kv/data/aion/minio" {
   capabilities = ["read"]
 }

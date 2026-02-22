@@ -7,8 +7,8 @@ Obtaining file:///workspace/OMERTAOS
   Getting requirements to build editable: finished with status 'done'
   Preparing editable metadata (pyproject.toml): started
   Preparing editable metadata (pyproject.toml): finished with status 'done'
-INFO: pip is looking at multiple versions of aionos-core to determine which version is compatible with other requirements. This could take a while.
+INFO: pip is looking at multiple versions of aion-core to determine which version is compatible with other requirements. This could take a while.
 
 [notice] A new release of pip is available: 25.3 -> 26.0.1
 [notice] To update, run: pip install --upgrade pip
-ERROR: Package 'aionos-core' requires a different Python: 3.14.0 not in '<3.13,>=3.11'
+ERROR: Package 'aion-core' requires a different Python: 3.14.0 not in '<3.13,>=3.11'

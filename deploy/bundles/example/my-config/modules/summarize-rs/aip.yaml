@@ -12,7 +12,7 @@ security:
   allow_fs_write:
     - ${AION_WORKDIR}/scratch/out
   signature:
-    cosign_pubkey: /etc/aionos/keys/cosign.pub
+    cosign_pubkey: /etc/aion/keys/cosign.pub
 runtime:
   entry:
     type: grpc

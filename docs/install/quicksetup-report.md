@@ -25,7 +25,7 @@ The legacy installers touched disparate components:
 
 - **Docker Compose stack** - `install.sh` handled `.env` creation, profile selection (user/pro/enterprise),
   telemetry toggles, and `docker compose up -d` with retries.
-- **Service configuration** - `config/aionos.config.yaml` was created only by the bash installer; other
+- **Service configuration** - `config/aion.config.yaml` was created only by the bash installer; other
   scripts left gaps.
 - **Telemetry** - Environment variables `AION_TELEMETRY_OPT_IN` and `AION_TELEMETRY_ENDPOINT` were set
   inconsistently across scripts.
@@ -45,7 +45,7 @@ The new QuickSetup scripts implement a unified workflow:
     `--branch` flags.
 - Copies `.env` from the repository template (`.env.example`, with fallbacks under `config/`) and
   normalizes profile/telemetry variables.
-- Persists `.aionos/profile.json` metadata, seeds `config/aionos.config.yaml` using the caller's
+- Persists `.aion/profile.json` metadata, seeds `config/aion.config.yaml` using the caller's
   chosen policy and volume directories, and ensures those paths exist on disk (configurable via
   `AION_POLICY_DIR`/`AION_VOLUME_ROOT`).
   - Invokes `tools/preflight.sh` when available, installs optional Ollama models, and starts the stack
@@ -61,7 +61,7 @@ The reusable modules introduced for QuickSetup are:
 
 - `scripts/lib/common.sh` - logging, command detection, path utilities, and boolean normalization.
 - `scripts/lib/env.sh` - `.env` templating, profile/telemetry propagation, and profile metadata export.
-- `scripts/lib/config.sh` - deterministic generation of `config/aionos.config.yaml` with standard ports
+- `scripts/lib/config.sh` - deterministic generation of `config/aion.config.yaml` with standard ports
   and directory references.
 - `scripts/lib/docker.sh` - Compose detection, retries, and command string rendering for summaries.
 - `scripts/lib/preflight.sh` - Opt-in execution of `tools/preflight.sh` with non-interactive handling.

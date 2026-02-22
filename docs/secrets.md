@@ -35,11 +35,11 @@ services. For example, the database secret should contain:
 
 ```json
 {
-  "username": "aionos",
+  "username": "aion",
   "password": "...",
   "host": "postgres",
   "port": 5432,
-  "database": "aionos"
+  "database": "aion"
 }
 ```
 
@@ -77,7 +77,7 @@ python scripts/bootstrap_vault_dev.py
 ```
 
 The script is idempotent and depends only on the Vault dev root token. Secrets are
-written under `secret/data/aionos/dev/*`, so services that read the default secret paths
+written under `secret/data/aion/dev/*`, so services that read the default secret paths
 work out of the box once Docker Compose finishes bringing up the stack.
 
 ### Development certificates when Vault is disabled
@@ -125,9 +125,9 @@ service to an AppRole and distribute only the role ID and wrapped secret ID at d
 To register or change backing databases or object stores update the relevant Vault
 secret(s) only:
 
-- Update `kv/data/aionos/db-main` with new connection details to move control-plane
+- Update `kv/data/aion/db-main` with new connection details to move control-plane
   storage to another PostgreSQL instance.
-- Update `kv/data/aionos/minio` when swapping MinIO for S3-compatible storage. The
+- Update `kv/data/aion/minio` when swapping MinIO for S3-compatible storage. The
   control service rebuilds its client on next access.
 - Rotate gateway API keys or JWT material by writing new data to their respective secrets.
 
@@ -138,7 +138,7 @@ underlying infrastructure changed (for example, hostname migrations).
 
 - Python services use `os.secret_store.SecretProvider` (backed by `hvac`) to read Vault
   secrets and construct connection strings at startup.
-- Node.js services consume `@aionos/secret-provider`, a lightweight fetch-based client
+- Node.js services consume `@aion/secret-provider`, a lightweight fetch-based client
   shared by the gateway and console.
 
 Both implementations honour the environment contract above and support local dev tokens

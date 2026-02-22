@@ -20,13 +20,13 @@ from pathlib import Path
 from typing import Dict
 
 VAULT_ADDR = os.environ.get("VAULT_ADDR", "http://127.0.0.1:8200").rstrip("/")
-ROOT_TOKEN = os.environ.get("VAULT_TOKEN") or os.environ.get("VAULT_DEV_ROOT_TOKEN_ID", "aionos-dev-root")
+ROOT_TOKEN = os.environ.get("VAULT_TOKEN") or os.environ.get("VAULT_DEV_ROOT_TOKEN_ID", "aion-dev-root")
 KV_MOUNT = os.environ.get("VAULT_KV_MOUNT", "secret").strip("/")
 WAIT_SECONDS = float(os.environ.get("VAULT_WAIT_SECONDS", "120"))
 DEV_CERT_DIR = Path(os.environ.get("AION_DEV_CERT_DIR", "config/certs/dev"))
 
 BASE_SECRETS: Dict[str, Dict[str, Dict[str, str]]] = {
-    f"v1/{KV_MOUNT}/data/aionos/dev/database": {
+    f"v1/{KV_MOUNT}/data/aion/dev/database": {
         "data": {
             "username": "aion",
             "password": "aion",
@@ -35,7 +35,7 @@ BASE_SECRETS: Dict[str, Dict[str, Dict[str, str]]] = {
             "database": "aion",
         }
     },
-    f"v1/{KV_MOUNT}/data/aionos/dev/minio": {
+    f"v1/{KV_MOUNT}/data/aion/dev/minio": {
         "data": {
             "endpoint": "http://minio:9000",
             "access_key": "minio",
@@ -44,10 +44,10 @@ BASE_SECRETS: Dict[str, Dict[str, Dict[str, str]]] = {
             "bucket": "aion-raw",
         }
     },
-    f"v1/{KV_MOUNT}/data/aionos/dev/admin-token": {
+    f"v1/{KV_MOUNT}/data/aion/dev/admin-token": {
         "data": {"token": "dev-admin-token"}
     },
-    f"v1/{KV_MOUNT}/data/aionos/dev/gateway-api-keys": {
+    f"v1/{KV_MOUNT}/data/aion/dev/gateway-api-keys": {
         "data": {"dev-key": "admin"}
     },
 }
@@ -84,7 +84,7 @@ def build_dev_secrets() -> Dict[str, Dict[str, Dict[str, str]]]:
         }
         if ca_cert:
             payload["ca_chain"] = [ca_cert.strip()]
-        secrets[f"v1/{KV_MOUNT}/data/aionos/dev/control-tls"] = {"data": payload}
+        secrets[f"v1/{KV_MOUNT}/data/aion/dev/control-tls"] = {"data": payload}
     else:
         _log("Skipping control TLS secret generation; development certificate missing")
 
@@ -95,12 +95,12 @@ def build_dev_secrets() -> Dict[str, Dict[str, Dict[str, str]]]:
         }
         if ca_cert:
             payload["ca_chain"] = [ca_cert.strip()]
-        secrets[f"v1/{KV_MOUNT}/data/aionos/dev/gateway-tls"] = {"data": payload}
+        secrets[f"v1/{KV_MOUNT}/data/aion/dev/gateway-tls"] = {"data": payload}
     else:
         _log("Skipping gateway TLS secret generation; development certificate missing")
 
     if ca_cert:
-        secrets[f"v1/{KV_MOUNT}/data/aionos/dev/mtls-ca"] = {
+        secrets[f"v1/{KV_MOUNT}/data/aion/dev/mtls-ca"] = {
             "data": {"certificate": ca_cert.strip()}
         }
     else:

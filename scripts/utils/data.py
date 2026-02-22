@@ -49,10 +49,10 @@ class SplitBundle:
 def load_data(*, allow_synthetic: bool = False, random_state: int = 42) -> Tuple[pd.DataFrame, pd.Series, DatasetMeta]:
     """Load the training dataset according to environment configuration."""
 
-    dataset_path = os.getenv("AIONOS_DATA_PATH")
-    target_column = os.getenv("AIONOS_TARGET_COLUMN")
-    task = os.getenv("AIONOS_TASK", "classification").lower()
-    group_column = os.getenv("AIONOS_GROUP_COLUMN")
+    dataset_path = os.getenv("AION_DATA_PATH")
+    target_column = os.getenv("AION_TARGET_COLUMN")
+    task = os.getenv("AION_TASK", "classification").lower()
+    group_column = os.getenv("AION_GROUP_COLUMN")
 
     if dataset_path and target_column:
         data = pd.read_csv(dataset_path)
@@ -82,8 +82,8 @@ def load_data(*, allow_synthetic: bool = False, random_state: int = 42) -> Tuple
 
     if not allow_synthetic:
         raise RuntimeError(
-            "Dataset configuration not provided. Set AIONOS_DATA_PATH and "
-            "AIONOS_TARGET_COLUMN environment variables or enable the synthetic "
+            "Dataset configuration not provided. Set AION_DATA_PATH and "
+            "AION_TARGET_COLUMN environment variables or enable the synthetic "
             "CI fallback."
         )
 

@@ -54,7 +54,7 @@ This guide centralizes user-facing and operational documentation for AION-OS, sp
   4) Validate health:
      - `systemctl status aion-*` (native) or `docker compose ps` (containerized) shows running services.
      - Gateway responds on `https://<fqdn>`; console sign-in completes via configured IdP (NextAuth/LDAP/OAuth).
-     - Logs from `/var/log/aionos-firstboot.log` confirm first-boot patching.
+     - Logs from `/var/log/aion-firstboot.log` confirm first-boot patching.
 - **Configuration & version management**
   - Pin compose files and overlays via Git tags/releases; prefer semantic tags for reproducible rollouts.
   - Use `config/` manifests and `profiles/` docs to align feature flags, LDAP/Kubernetes hooks, and hardening levels.
@@ -121,7 +121,7 @@ This guide centralizes user-facing and operational documentation for AION-OS, sp
   - Rotate credentials quarterly; disable stale accounts; audit login/logouts via gateway logs.
 - **Upgrades & maintenance**
   - Perform rolling updates via `docker compose pull && docker compose up -d` (or Kubernetes rolling deployments) in staging before prod.
-  - For native installs, use `./install.sh --update` to pull signed releases; confirm `/var/log/aionos-firstboot.log` for patches.
+  - For native installs, use `./install.sh --update` to pull signed releases; confirm `/var/log/aion-firstboot.log` for patches.
   - Keep kernels and model manifests aligned with registry versions; run smoke tests post-upgrade using scripts in `scripts/`.
 - **Logs & diagnostics**
   - Standard log format: JSON with timestamp, service/component, level, trace/correlation IDs, request/agent IDs.
@@ -151,7 +151,7 @@ This guide centralizes user-facing and operational documentation for AION-OS, sp
 | **Profile (user/pro/enterprise)** | Predefined install presets toggling features, ML tooling, and hardening. | Install/runtime |
 | **LatentBox** | Feature-flagged tool discovery/sync capability driven by `config/latentbox/tools.yaml`. | Feature flag |
 | **Policy bundle** | Set of enforcement rules applied to agents (auth, rate limits, tool access). | Security/control |
-| **First-boot log** | `/var/log/aionos-firstboot.log` capturing initial patching and service enablement. | Operations |
+| **First-boot log** | `/var/log/aion-firstboot.log` capturing initial patching and service enablement. | Operations |
 
 ---
 

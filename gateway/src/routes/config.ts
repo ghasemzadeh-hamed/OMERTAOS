@@ -76,7 +76,7 @@ export const registerConfigRoutes = (app: FastifyInstance) => {
     return proxyControl('GET', '/v1/config/status');
   });
 
-  // Profile selection is stored canonically inside control (backed by .aionos/profile.json).
+  // Profile selection is stored canonically inside control (backed by .aion/profile.json).
   // Public in dev/quickstart for setup bootstrap. Protected by JWT in production.
   app.get('/v1/config/profile', async (request) => {
     if (devBypassAuth) {

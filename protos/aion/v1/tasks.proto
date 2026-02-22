@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package aion.v1;
 
-option go_package = "github.com/aionos/proto/go/aion/v1";
+option go_package = "github.com/aion/proto/go/aion/v1";
 option java_multiple_files = true;
-option java_package = "com.aionos.proto.v1";
+option java_package = "com.aion.proto.v1";
 option csharp_namespace = "Aion.Proto.V1";
 
 message TaskRequest {

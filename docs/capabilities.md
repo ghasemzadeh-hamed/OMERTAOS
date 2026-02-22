@@ -5,7 +5,7 @@ This document maps the platform capabilities to their backend APIs, configuratio
 ## Architecture at a Glance
 
 - **Kernel + Registry**: Rust kernels in `kernel/` and `kernel-multitenant/` schedule tasks/agents for single- and multi-tenant modes.
-- **Control Plane (Python)**: Services in `aion/`, `os/control/`, and `aionos_control/` manage state, policy, memory, task routing, and persist canonical profile data.
+- **Control Plane (Python)**: Services in `aion/`, `os/control/`, and `aion_control/` manage state, policy, memory, task routing, and persist canonical profile data.
 - **Gateway (TypeScript/Fastify)**: API/Auth/Model proxy between Console and runtime backends. Exposes config/model/agent lifecycle routes and supports admin JWT/API key enforcement.
 - **Console (Next.js / Glass)**: UI that delivers setup wizard, onboarding, dashboards, agent catalog/my-agents, auth flows, and configuration tooling.
 - **AI Registry & Models**: `ai_registry/REGISTRY.yaml` and manifests under `models/` provide versioning and audit trail for models.
@@ -17,7 +17,7 @@ Each capability below is defined in the YAML registry and consumed by UI flows a
 
 ### Setup & Profiles
 - **APIs**: GET/POST `/v1/config/profile` (Gateway), `/api/setup/profile` (Console proxy).
-- **State**: Control persists `.aionos/profile.json`; `setupDone` flag drives routing.
+- **State**: Control persists `.aion/profile.json`; `setupDone` flag drives routing.
 - **Config**: `AION_ENV`, `AION_PROFILE`, `TENANCY_MODE`.
 - **UI**: `/setup` wizard with profile selection and completion redirect.
 - **RBAC/Tenancy**: Dev bootstrap can bypass JWT; supports single- and multi-tenant.

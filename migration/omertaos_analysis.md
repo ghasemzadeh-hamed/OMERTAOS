@@ -1,12 +1,12 @@
 # OMERTAOS Architectural Analysis (Phase 1)
 ## Detected System Components
 - **Agent runtime modules**: app/llm, process-analytics/predictive, process-analytics/prescriptive, os/kernel
-- **Control plane**: control, app/control, aion/control, aionos_control
+- **Control plane**: control, app/control, aion/control, aion_control
 - **Registry system**: ai_registry, services/aion-model-registry, os/control/models/registry.py
 - **MongoDB adapters**: services/aion-memory, aion/db
 - **Rust execution sandbox**: execution, modules
 - **BigData pipelines**: bigdata/pipelines, process-analytics
-- **CLI entrypoints**: cli/main.py, cli/aion/cli.py, aionos_core/cli.py
+- **CLI entrypoints**: cli/main.py, cli/aion/cli.py, aion_core/cli.py
 - **Kernel / multi-tenant logic**: os/kernel, kernel-multitenant
 - **Policy modules**: policies, os/kernel/policy_engine.py
 ## Graph & Risk Findings

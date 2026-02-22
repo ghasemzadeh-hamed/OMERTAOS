@@ -35,7 +35,7 @@
 ## Orphan directories
 - .claude
 - .github
-- aionos_core.egg-info
+- aion_core.egg-info
 - ci
 - config-schemas
 - explorer

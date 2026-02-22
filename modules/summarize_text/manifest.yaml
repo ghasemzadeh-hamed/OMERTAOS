@@ -4,11 +4,11 @@ metadata:
   description: Summarize text using simple heuristics
   authors:
     - name: aionOS Team
-      email: oss@aionos.dev
+      email: oss@aion.dev
   license: Apache-2.0
 signatures:
   cosign:
-    image: ghcr.io/aionos/modules/summarize_text:0.1.0
+    image: ghcr.io/aion/modules/summarize_text:0.1.0
     certificate: cosign.pub
 sbom: sbom.spdx.json
 runtime:

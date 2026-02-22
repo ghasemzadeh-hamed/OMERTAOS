@@ -10,7 +10,7 @@ const defaultDetector: Detector = () => {
   if (typeof navigator !== 'undefined' && navigator.userAgent.includes('Electron')) {
     return 'desktop';
   }
-  if (typeof window !== 'undefined' && (window as any).AIONOS_KIOSK === true) {
+  if (typeof window !== 'undefined' && (window as any).AION_KIOSK === true) {
     return 'kiosk';
   }
   return 'web';

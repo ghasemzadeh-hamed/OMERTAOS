@@ -32,7 +32,7 @@ export const createControlClient = () => {
     const rootCerts = tls.ca?.length ? Buffer.concat(tls.ca) : undefined;
     const secureCreds = credentials.createSsl(rootCerts, tls.key, tls.cert);
     const options = tls.requestClientCert
-      ? { 'grpc.ssl_target_name_override': process.env.AION_CONTROL_TLS_NAME || 'control.aionos.local' }
+      ? { 'grpc.ssl_target_name_override': process.env.AION_CONTROL_TLS_NAME || 'control.aion.local' }
       : undefined;
     return new loaded.aion.v1.AionTasks(controlGrpcEndpoint, secureCreds, options);
   }

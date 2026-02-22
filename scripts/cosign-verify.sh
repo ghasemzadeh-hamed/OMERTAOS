@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-IMAGE=${1:-ghcr.io/aionos/gateway:0.1.0}
+IMAGE=${1:-ghcr.io/aion/gateway:0.1.0}
 KEY_PATH=${COSIGN_PUBLIC_KEY:-cosign.pub}
 
 if ! command -v cosign >/dev/null 2>&1; then

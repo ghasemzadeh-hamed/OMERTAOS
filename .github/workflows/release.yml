@@ -55,19 +55,19 @@ jobs:
         run: git log -1 --pretty=fuller > CHANGELOG.txt
       - name: Build gateway image
         run: |
-          docker build -t ghcr.io/aionos/gateway:${GITHUB_REF_NAME} gateway
+          docker build -t ghcr.io/aion/gateway:${GITHUB_REF_NAME} gateway
       - name: Build control image
         run: |
-          docker build -t ghcr.io/aionos/control:${GITHUB_REF_NAME} os/control
+          docker build -t ghcr.io/aion/control:${GITHUB_REF_NAME} os/control
       - name: Cosign images
         env:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD || '' }}
         run: |
-          cosign sign --key cosign.key ghcr.io/aionos/gateway:${GITHUB_REF_NAME}
-          cosign sign --key cosign.key ghcr.io/aionos/control:${GITHUB_REF_NAME}
+          cosign sign --key cosign.key ghcr.io/aion/gateway:${GITHUB_REF_NAME}
+          cosign sign --key cosign.key ghcr.io/aion/control:${GITHUB_REF_NAME}
       - name: Publish ORAS modules
         run: |
-          oras push ghcr.io/aionos/modules/summarize_text:${GITHUB_REF_NAME} ./modules/summarize_text/manifest.yaml
+          oras push ghcr.io/aion/modules/summarize_text:${GITHUB_REF_NAME} ./modules/summarize_text/manifest.yaml
       - name: Upload release assets
         uses: softprops/action-gh-release@v1
         with:

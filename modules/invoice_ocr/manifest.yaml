@@ -4,11 +4,11 @@ metadata:
   description: Extract invoice metadata using OCR-friendly regex parsing
   authors:
     - name: aionOS Team
-      email: oss@aionos.dev
+      email: oss@aion.dev
   license: Apache-2.0
 signatures:
   cosign:
-    image: ghcr.io/aionos/modules/invoice_ocr:0.1.0
+    image: ghcr.io/aion/modules/invoice_ocr:0.1.0
     certificate: cosign.pub
 sbom: sbom.spdx.json
 runtime:

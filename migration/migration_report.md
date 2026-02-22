@@ -43,7 +43,7 @@
 ```
 8cf1e2e chore(architecture): introduce unified config & registry abstraction
 4bea677 Merge pull request #172 from Hamedghz/omertaos/implement-console-auth-and-database-setup-fixes-snodhp
-cac875b Merge branch 'AIONOS' into omertaos/implement-console-auth-and-database-setup-fixes-snodhp
+cac875b Merge branch 'AION' into omertaos/implement-console-auth-and-database-setup-fixes-snodhp
 eaab0ef Fix Redis set result handling in gateway
 af5781b Merge pull request #171 from Hamedghz/omertaos/implement-console-auth-and-database-setup-fixes
 
@@ -64,7 +64,7 @@ af5781b Merge pull request #171 from Hamedghz/omertaos/implement-console-auth-an
 - Kept migration dependency-safe: no destructive bulk moves performed automatically.
 
 ## Phase 4 (namespace distribution)
-- Relocated `aionos_core` implementation to `cli/aionos_core` with root compatibility wrappers retained at `aionos_core/*`.
-- Relocated `aionos_control` implementation to `control/aionos_control` with compatibility wrappers retained at `aionos_control/*` and `os/control/aionos_control/*`.
+- Relocated `aion_core` implementation to `cli/aion_core` with root compatibility wrappers retained at `aion_core/*`.
+- Relocated `aion_control` implementation to `control/aion_control` with compatibility wrappers retained at `aion_control/*` and `os/control/aion_control/*`.
 - Relocated `os/secret_store` implementation to `shared/secret_store` with compatibility wrappers retained at `os/secret_store/*`.
 - Relocated `os/systemd/omerta-claude-bootstrap.service` to `deploy/systemd/`.

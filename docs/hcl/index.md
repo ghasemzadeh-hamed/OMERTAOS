@@ -13,5 +13,5 @@ See [`nic.md`](nic.md) for NIC and Wi-Fi status.
 ## Reporting
 
 1. Collect `lspci -nn`, `lsblk`, and `dmesg` output.
-2. Attach `/var/log/aionos-installer.log` and `/var/log/aionos-firstboot.log`.
+2. Attach `/var/log/aion-installer.log` and `/var/log/aion-firstboot.log`.
 3. File an issue or submit the bundle to the hardware enablement email alias.

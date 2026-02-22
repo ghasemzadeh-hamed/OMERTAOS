@@ -1,3 +1,3 @@
-path "kv/data/aionos/admin-token" {
+path "kv/data/aion/admin-token" {
   capabilities = ["read"]
 }

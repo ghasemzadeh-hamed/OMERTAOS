@@ -1,4 +1,4 @@
-import { SecretProvider, SecretProviderError } from '@aionos/secret-provider';
+import { SecretProvider, SecretProviderError } from '@aion/secret-provider';
 
 export interface ConsoleSecrets {
   adminToken: string;

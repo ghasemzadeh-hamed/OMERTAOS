@@ -9,5 +9,5 @@
 ## Troubleshooting
 
 - Use `nvidia-smi` / `rocminfo` / `intel_gpu_top` to confirm runtime status.
-- Check `/var/log/aionos-firstboot.log` for install errors.
+- Check `/var/log/aion-firstboot.log` for install errors.
 - Secure Boot: sign DKMS modules when prompted to avoid boot failures.

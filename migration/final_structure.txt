@@ -35,10 +35,10 @@ aion/docker
 aion/ui
 aion/v1
 aion/worker
-aionos_control
-aionos_control/__pycache__
-aionos_core
-aionos_core.egg-info
+aion_control
+aion_control/__pycache__
+aion_core
+aion_core.egg-info
 app
 app/config
 app/control

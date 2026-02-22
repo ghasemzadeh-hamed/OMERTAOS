@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 export default function User() {
-  const [username, setUsername] = useState('aionos');
+  const [username, setUsername] = useState('aion');
   const [password, setPassword] = useState('');
 
   return (

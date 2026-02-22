@@ -1,6 +1,6 @@
 'use client';
 
-import { registerSteps, WizardRouter } from '@aionos/ui-core';
+import { registerSteps, WizardRouter } from '@aion/ui-core';
 
 import Finish from './steps/09-finish';
 import Install from './steps/08-install';

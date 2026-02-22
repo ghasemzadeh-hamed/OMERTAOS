@@ -1,5 +1,5 @@
 {
-  "name": "aionos-console",
+  "name": "aion-console",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -14,8 +14,8 @@
     "prisma:generate": "node ./scripts/run-prisma-generate.cjs"
   },
   "dependencies": {
-    "@aionos/secret-provider": "file:../shared/secret-provider-node",
-    "@aionos/ui-core": "file:../packages/ui-core",
+    "@aion/secret-provider": "file:../shared/secret-provider-node",
+    "@aion/ui-core": "file:../packages/ui-core",
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.1.4",
     "@hookform/resolvers": "^5.2.2",

@@ -1,7 +1,7 @@
 .PHONY: dev-control doctor bundle edge-setup test status logs restart start stop setup train train-ci guard model-all run-user run-pro run-ent claude-install claude-bootstrap claude-status
 
 PY ?= python3
-CLI=$(PY) -m aionos_core.cli
+CLI=$(PY) -m aion_core.cli
 
 dev-control:
 	cd control && PYTHONPATH=$(CURDIR):$(CURDIR)/os uvicorn os.control.main:app --reload --port 8001
@@ -18,26 +18,26 @@ edge-setup:
 test:
 	PYTHONPATH=$(CURDIR) pytest -q
 
-APP_DIR ?= /opt/aionos/OMERTAOS
+APP_DIR ?= /opt/aion/OMERTAOS
 
 status:
-	systemctl status aionos-control || true
-	systemctl status aionos-gateway || true
-	systemctl status aionos-console || true
+	systemctl status aion-control || true
+	systemctl status aion-gateway || true
+	systemctl status aion-console || true
 
 logs:
-	journalctl -u aionos-control -n 50 --no-pager
-	journalctl -u aionos-gateway -n 50 --no-pager
-	journalctl -u aionos-console -n 50 --no-pager
+	journalctl -u aion-control -n 50 --no-pager
+	journalctl -u aion-gateway -n 50 --no-pager
+	journalctl -u aion-console -n 50 --no-pager
 
 restart:
-	systemctl restart aionos-control aionos-gateway aionos-console
+	systemctl restart aion-control aion-gateway aion-console
 
 start:
-	systemctl start aionos-control aionos-gateway aionos-console
+	systemctl start aion-control aion-gateway aion-console
 
 stop:
-	systemctl stop aionos-control aionos-gateway aionos-console
+	systemctl stop aion-control aion-gateway aion-console
 
 setup:
         $(PY) -m pip install -U pip

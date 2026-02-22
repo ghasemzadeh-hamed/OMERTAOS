@@ -18,11 +18,11 @@ spec:
           image: postgres:15
           env:
             - name: POSTGRES_DB
-              value: aionos
+              value: aion
             - name: POSTGRES_USER
-              value: aionos
+              value: aion
             - name: POSTGRES_PASSWORD
-              value: aionos
+              value: aion
           ports:
             - containerPort: 5432
           volumeMounts:

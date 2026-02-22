@@ -49,7 +49,7 @@ def generate_ca() -> None:
             "-days",
             str(VALID_DAYS),
             "-subj",
-            "/CN=AIONOS Dev CA",
+            "/CN=AION Dev CA",
         ]
     )
 
@@ -82,11 +82,11 @@ def issue_server_certificate() -> None:
             "-out",
             str(csr),
             "-subj",
-            "/CN=control.dev.aionos",
+            "/CN=control.dev.aion",
         ]
     )
     ext_file = _write_ext_file(
-        "subjectAltName=DNS:control.dev.aionos,IP:127.0.0.1",
+        "subjectAltName=DNS:control.dev.aion,IP:127.0.0.1",
         "extendedKeyUsage=serverAuth",
         "keyUsage=digitalSignature,keyEncipherment",
         "basicConstraints=CA:false",
@@ -138,7 +138,7 @@ def issue_client_certificate() -> None:
             "-out",
             str(csr),
             "-subj",
-            "/CN=gateway.dev.aionos",
+            "/CN=gateway.dev.aion",
         ]
     )
     ext_file = _write_ext_file(

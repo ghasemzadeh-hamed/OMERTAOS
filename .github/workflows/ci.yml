@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [AIONOS, main]
+    branches: [AION, main]
   pull_request:
 
 jobs:
@@ -110,9 +110,9 @@ jobs:
       - name: Build console
         run: |
           set -euo pipefail
-          echo "### Building aionos-console image"
+          echo "### Building aion-console image"
           docker build \
-            -t aionos-console:ci \
+            -t aion-console:ci \
             -f console/Dockerfile \
             .
 

@@ -143,7 +143,7 @@ clone_or_update_repo() {
     run_as_app "git clone '$REPO' '$APP_DIR'"
   else
     echo "Repository already present; fetching latest changes"
-    run_as_app "cd '$APP_DIR' && git fetch --all --prune && git reset --hard origin/AIONOS"
+    run_as_app "cd '$APP_DIR' && git fetch --all --prune && git reset --hard origin/AION"
   fi
 
   sudo chown -R "$APP_USER":"$APP_GROUP" "$APP_DIR"
@@ -156,7 +156,7 @@ provision_python() {
     run_as_app "${python_bin} -m venv '$APP_DIR/.venv'"
   fi
 
-  echo "Installing Python dependencies (aionos-core[control])"
+  echo "Installing Python dependencies (aion-core[control])"
   run_as_app "cd '$APP_DIR' && source '$APP_DIR/.venv/bin/activate' && pip install --upgrade pip wheel setuptools && pip install '.[control]'"
 
   echo "Installing control package in editable mode"
@@ -375,7 +375,7 @@ configure_database() {
     existing_name=""
   fi
 
-  local db_user=${DB_USER:-${existing_user:-aionos}}
+  local db_user=${DB_USER:-${existing_user:-aion}}
   local db_pass=${DB_PASS:-${existing_pass:-password}}
   local db_name=${DB_NAME:-${existing_name:-omerta_db}}
   local db_port=${existing_port:-5432}

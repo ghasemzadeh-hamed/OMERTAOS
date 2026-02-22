@@ -44,19 +44,19 @@ apt-get install -y \
   nodejs npm
 
 # live session user
-id -u aionos >/dev/null 2>&1 || useradd -m -s /bin/bash aionos
-if ! getent group sudo | grep -q '\baionos\b'; then
-  adduser aionos sudo
+id -u aion >/dev/null 2>&1 || useradd -m -s /bin/bash aion
+if ! getent group sudo | grep -q '\baion\b'; then
+  adduser aion sudo
 fi
-if ! printf '%s\n' "aionos:password" | chpasswd 2>/dev/null; then
+if ! printf '%s\n' "aion:password" | chpasswd 2>/dev/null; then
   echo "warning: unable to update default password" >&2
 fi
 EOF_CHROOT
 
 # 3) Copy installer UI, system services, and first-boot assets into the chroot.
-sudo mkdir -p "$CHROOT/etc/calamares" "$CHROOT/usr/local/aionos-firstboot" "$CHROOT/etc/systemd/system"
+sudo mkdir -p "$CHROOT/etc/calamares" "$CHROOT/usr/local/aion-firstboot" "$CHROOT/etc/systemd/system"
 sudo rsync -a "$ROOT/installer-ui/" "$CHROOT/etc/calamares/"
-sudo rsync -a "$ROOT/firstboot/" "$CHROOT/usr/local/aionos-firstboot/"
+sudo rsync -a "$ROOT/firstboot/" "$CHROOT/usr/local/aion-firstboot/"
 sudo rsync -a "$ROOT/systemd/" "$CHROOT/etc/systemd/system/"
 
 # 4) Copy the repository itself so systemd units can run locally.
@@ -67,7 +67,7 @@ sudo rsync -a \
   --exclude '.github' \
   --exclude 'node_modules' \
   "$REPO_ROOT/" "$CHROOT/opt/omertaos/"
-# 5) Register the meta-package so first boot can call ``aionos``.
+# 5) Register the meta-package so first boot can call ``aion``.
 sudo chroot "$CHROOT" /bin/bash <<EOF_INSTALL
 set -e
 cd /opt/omertaos
@@ -97,7 +97,7 @@ menuentry "AION-OS Installer" {
 EOF_GRUB
 
 # 9) Build the hybrid ISO with grub-mkrescue.
-ISO_OUT="$ROOT/../aionos-installer.iso"
+ISO_OUT="$ROOT/../aion-installer.iso"
 grub-mkrescue -o "$ISO_OUT" "$ISO_TREE" --compress=xz
 
 echo "ISO built at: $ISO_OUT"

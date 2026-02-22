@@ -7,13 +7,13 @@ export function useRTL() {
     if (typeof window === 'undefined') {
       return false;
     }
-    return localStorage.getItem('aionos-rtl') === 'true';
+    return localStorage.getItem('aion-rtl') === 'true';
   });
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       document.body.dir = rtl ? 'rtl' : 'ltr';
-      localStorage.setItem('aionos-rtl', rtl ? 'true' : 'false');
+      localStorage.setItem('aion-rtl', rtl ? 'true' : 'false');
     }
   }, [rtl]);
 

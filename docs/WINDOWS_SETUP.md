@@ -43,7 +43,7 @@ The quicksetup script now:
 
 What the script does:
 - Creates `.env` from the repo templates if it does not already exist and preserves existing values.
-- Writes profile metadata to `.aionos/profile.json`.
+- Writes profile metadata to `.aion/profile.json`.
 - Detects Compose deterministically (docker compose v2 preferred, docker-compose fallback) and shows the exact command it runs.
 - Starts the Control (8000), Gateway (8080), and Console (3000) containers with compose and surfaces stderr on failure.
 - Prints generated admin tokens and credentials.

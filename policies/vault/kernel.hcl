@@ -1,3 +1,3 @@
-path "kv/data/aionos/minio" {
+path "kv/data/aion/minio" {
   capabilities = ["read"]
 }

@@ -15,7 +15,7 @@ run:
 
 lint:
 	ruff --fix .
-	mypy aionos_control || true
+	mypy aion_control || true
 
 test:
 	pytest -q

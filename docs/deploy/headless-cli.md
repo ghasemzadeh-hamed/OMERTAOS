@@ -22,8 +22,8 @@ sudo apt-get install -y postgresql redis
 
 ```bash
 sudo useradd -m -s /bin/bash aion || true
-sudo mkdir -p /opt/aionos /var/lib/aionos /var/log/aionos /etc/aionos/{config,keys}
-sudo chown -R aion:aion /opt/aionos /var/lib/aionos /var/log/aionos /etc/aionos
+sudo mkdir -p /opt/aion /var/lib/aion /var/log/aion /etc/aion/{config,keys}
+sudo chown -R aion:aion /opt/aion /var/lib/aion /var/log/aion /etc/aion
 ```
 
 ## 2)  CLI ( UI)
@@ -33,7 +33,7 @@ sudo chown -R aion:aion /opt/aionos /var/lib/aionos /var/log/aionos /etc/aionos
 ```bash
 curl -L "https://<artifact-host>/aion/latest/linux-x64/aion" -o /usr/local/bin/aion
 sudo chmod +x /usr/local/bin/aion
-#   CLI  :  virtualenv  /opt/aionos/cli
+#   CLI  :  virtualenv  /opt/aion/cli
 ```
 
 ```bash
@@ -117,12 +117,12 @@ After=network.target postgresql.service redis.service
 [Service]
 User=aion
 EnvironmentFile=/home/aion/.aion.env
-WorkingDirectory=/opt/aionos/control
+WorkingDirectory=/opt/aion/control
 ExecStart=/usr/bin/python3 -m uvicorn os.control.main:app --host 0.0.0.0 --port 8001 --workers 4
 Restart=always
 RestartSec=3
-StandardOutput=append:/var/log/aionos/control.log
-StandardError=append:/var/log/aionos/control.err
+StandardOutput=append:/var/log/aion/control.log
+StandardError=append:/var/log/aion/control.err
 
 [Install]
 WantedBy=multi-user.target
@@ -161,7 +161,7 @@ sudo -iu aion aion router policy-rollback --rev 17
 
 - Secrets      ENV  Secrets Manager  .
 - `aion apply`  idempotent      .
--    `/var/log/aionos`     `journalctl -u aion-* -f`  .
+-    `/var/log/aion`     `journalctl -u aion-* -f`  .
 -      CI  `aion apply` + `aion doctor`    .
 
 ## 10)

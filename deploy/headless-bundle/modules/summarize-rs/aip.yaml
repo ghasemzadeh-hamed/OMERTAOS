@@ -6,7 +6,7 @@ metadata:
 security:
   sandbox: process
   signature:
-    cosign_pubkey: /etc/aionos/keys/cosign.pub
+    cosign_pubkey: /etc/aion/keys/cosign.pub
 runtime:
   entry:
     type: grpc

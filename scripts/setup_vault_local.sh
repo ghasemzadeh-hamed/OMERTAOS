@@ -30,26 +30,26 @@ if ! vault secrets list -format=json | jq -e ".\"${SECRETS_MOUNT}/\"" >/dev/null
 fi
 
 echo "[setup_vault_local] Writing sample secrets" >&2
-vault kv put "${SECRETS_MOUNT}/aionos/db-main" \
-  username="aionos" \
-  password="aionos-dev" \
+vault kv put "${SECRETS_MOUNT}/aion/db-main" \
+  username="aion" \
+  password="aion-dev" \
   host="postgres" \
   port="5432" \
-  database="aionos"
+  database="aion"
 
-vault kv put "${SECRETS_MOUNT}/aionos/minio" \
+vault kv put "${SECRETS_MOUNT}/aion/minio" \
   endpoint="minio:9000" \
   access_key="minio" \
   secret_key="miniosecret" \
   bucket="aion-raw" \
   secure=false
 
-vault kv put "${SECRETS_MOUNT}/aionos/jwt" public_key="-----BEGIN PUBLIC KEY-----\nREPLACE_ME\n-----END PUBLIC KEY-----"
+vault kv put "${SECRETS_MOUNT}/aion/jwt" public_key="-----BEGIN PUBLIC KEY-----\nREPLACE_ME\n-----END PUBLIC KEY-----"
 
-vault kv put "${SECRETS_MOUNT}/aionos/gateway-api-keys" \
+vault kv put "${SECRETS_MOUNT}/aion/gateway-api-keys" \
   value="demo-key:admin|manager"
 
-vault kv put "${SECRETS_MOUNT}/aionos/admin-token" token="change-me"
+vault kv put "${SECRETS_MOUNT}/aion/admin-token" token="change-me"
 
 echo "[setup_vault_local] Installing policies" >&2
 for policy in control gateway console kernel; do

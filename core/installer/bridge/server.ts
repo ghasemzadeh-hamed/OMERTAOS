@@ -15,7 +15,7 @@ function isRoot() {
 }
 
 function allowInstall() {
-  return Boolean(process.env.AIONOS_ALLOW_INSTALL);
+  return Boolean(process.env.AION_ALLOW_INSTALL);
 }
 
 app.post('/task', async (req, res) => {
@@ -61,5 +61,5 @@ app.post('/task', async (req, res) => {
 
 app.listen(3030, () => {
   // eslint-disable-next-line no-console
-  console.log('AIONOS bridge :3030');
+  console.log('AION bridge :3030');
 });

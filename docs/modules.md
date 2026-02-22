@@ -26,7 +26,7 @@ intents:
 ## Signing and SBOM
 
 1. Generate an SBOM using Syft: `syft packages . -o spdx-json=sbom.spdx.json`.
-2. Sign the module artifact with Cosign: `cosign sign --key cosign.key ghcr.io/aionos/modules/summarize_text:1.2.0`.
+2. Sign the module artifact with Cosign: `cosign sign --key cosign.key ghcr.io/aion/modules/summarize_text:1.2.0`.
 3. Store the Cosign public key in secure storage and reference it during installations.
 
 ## Installation workflow
@@ -34,7 +34,7 @@ intents:
 Use `scripts/install_module.sh` to fetch and verify a module from an OCI registry:
 
 ```bash
-COSIGN_KEY=cosign.pub ./scripts/install_module.sh ghcr.io/aionos/modules/summarize_text:1.2.0 modules/summarize_text
+COSIGN_KEY=cosign.pub ./scripts/install_module.sh ghcr.io/aion/modules/summarize_text:1.2.0 modules/summarize_text
 ```
 
 The script performs an ORAS pull, verifies the signature, and places the manifest, SBOM, and binary artifacts under the destination folder. After installation, update `policies/modules.yml` to enable the module for routing decisions.
@@ -42,7 +42,7 @@ The script performs an ORAS pull, verifies the signature, and places the manifes
 To publish or update a module, run:
 
 ```bash
-COSIGN_KEY=cosign.key ./scripts/register_module.sh summarize_text modules/summarize_text ghcr.io/aionos/modules
+COSIGN_KEY=cosign.key ./scripts/register_module.sh summarize_text modules/summarize_text ghcr.io/aion/modules
 ```
 
 This command pushes the artifact and signs it with Cosign for downstream verification.

@@ -69,7 +69,7 @@ class ContextManager:
             "vector": vector,
             "payload": metadata,
         }
-        self._vector_client.upsert(collection="aionos-context", payload=payload)
+        self._vector_client.upsert(collection="aion-context", payload=payload)
 
 
 __all__ = ["ContextManager", "AgentContext", "VectorStoreClient"]

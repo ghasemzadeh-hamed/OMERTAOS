@@ -52,7 +52,7 @@ UNVERIFIED: ISO media and kiosk workflows depend on release artifacts not presen
    ```bash
    cd core/installer/bridge
    pnpm install
-   sudo AIONOS_ALLOW_INSTALL=1 pnpm start
+   sudo AION_ALLOW_INSTALL=1 pnpm start
    ```
 4. In another terminal, start the console wizard:
    ```bash
@@ -61,7 +61,7 @@ UNVERIFIED: ISO media and kiosk workflows depend on release artifacts not presen
    pnpm dev
    ```
 5. Browse to https://localhost:3000/wizard, accept the development certificate warning, and select **Native Install**.
-6. Confirm profile selection and disk actions only after reviewing the plan. Destructive steps require `AIONOS_ALLOW_INSTALL=1`.
+6. Confirm profile selection and disk actions only after reviewing the plan. Destructive steps require `AION_ALLOW_INSTALL=1`.
 7. Stop services and reboot when the wizard reports success.
 
 ## Windows services without Docker
@@ -71,7 +71,7 @@ UNVERIFIED: The native Windows service flow referenced by `scripts/install_win.p
 ## Docker (manual)
 
 1. Ensure Docker Engine 24+ and Docker Compose V2 are installed.
-2. Copy `dev.env` to `.env` and adjust credentials only if necessary (default Postgres: `aionos` / `password` / `omerta_db`).
+2. Copy `dev.env` to `.env` and adjust credentials only if necessary (default Postgres: `aion` / `password` / `omerta_db`).
 3. Start the stack explicitly:
    ```bash
    docker compose -f docker-compose.quickstart.yml up -d

@@ -10,7 +10,7 @@ ensure_config_file() {
   local policy_dir=${4:-./policies}
   local volume_root=${5:-./volumes}
   local config_dir="${root_dir}/config"
-  local config_file="${config_dir}/aionos.config.yaml"
+  local config_file="${config_dir}/aion.config.yaml"
 
   mkdir -p "${config_dir}"
 

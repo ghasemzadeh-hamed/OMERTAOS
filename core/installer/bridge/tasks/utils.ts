@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
 
-const LOG_PATH = '/var/log/aionos-installer.log';
+const LOG_PATH = '/var/log/aion-installer.log';
 
 function writeLog(line: string) {
   const timestamp = new Date().toISOString();

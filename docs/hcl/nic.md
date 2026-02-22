@@ -10,4 +10,4 @@
 
 - Run `ethtool -i <interface>` to confirm driver binding.
 - For Wi-Fi, ensure regulatory domain is set via `iw reg set`.
-- Firmware packages install during the driver task; check `/var/log/aionos-installer.log` for confirmation.
+- Firmware packages install during the driver task; check `/var/log/aion-installer.log` for confirmation.

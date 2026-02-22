@@ -33,11 +33,11 @@ F841 Local variable `catalog_cfg` is assigned to but never used
    |
 help: Remove assignment to unused variable `catalog_cfg`
 
-F403 `from os.control.aionos_control import *` used; unable to detect undefined names
- --> aionos_control/__init__.py:6:1
+F403 `from os.control.aion_control import *` used; unable to detect undefined names
+ --> aion_control/__init__.py:6:1
   |
-5 | import os.control.aionos_control as _impl
-6 | from os.control.aionos_control import *  # type: ignore[F401,F403]
+5 | import os.control.aion_control as _impl
+6 | from os.control.aion_control import *  # type: ignore[F401,F403]
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 7 |
 8 | __all__ = getattr(_impl, "__all__", [])
@@ -123,7 +123,7 @@ E712 Avoid equality comparisons to `False`; use `not _descriptor._USE_C_DESCRIPT
 22 | if _descriptor._USE_C_DESCRIPTORS == False:
    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 23 |   _globals['DESCRIPTOR']._options = None
-24 |   _globals['DESCRIPTOR']._serialized_options = b'\n\023com.aionos.proto.v1P\001Z\"github.com/aionos/proto/go/aion/v1\252\002\rAion.Pro…
+24 |   _globals['DESCRIPTOR']._serialized_options = b'\n\023com.aion.proto.v1P\001Z\"github.com/aion/proto/go/aion/v1\252\002\rAion.Pro…
    |
 help: Replace with `not _descriptor._USE_C_DESCRIPTORS`
 
@@ -267,7 +267,7 @@ F811 Redefinition of unused `status` from line 11
 11 | from fastapi import APIRouter, HTTPException, Request, status
    |                                                        ------ previous definition of `status` here
 12 |
-13 | from os.control.aionos_profiles import get_profile
+13 | from os.control.aion_profiles import get_profile
    |
 help: Remove definition: `status`
 
