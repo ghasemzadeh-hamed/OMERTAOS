@@ -6,11 +6,11 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from jsonschema import Draft7Validator, ValidationError
 
-from os.control.os.agent_catalog import AgentCatalog
-from os.control.os.core.deps import get_state
-from os.control.os.core.state import ControlState
-from os.control.os.core.tenancy import require_tenant_id
-from os.control.os.schemas.agent import (
+from control.os.agent_catalog import AgentCatalog
+from control.os.core.deps import get_state
+from control.os.core.state import ControlState
+from control.os.core.tenancy import require_tenant_id
+from control.os.schemas.agent import (
     AgentCatalogResponse,
     AgentInstanceCreate,
     AgentInstanceOut,

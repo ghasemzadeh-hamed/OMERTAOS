@@ -5,10 +5,10 @@ from typing import Any, Dict, List
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from os.kernel.ai_router import AIRouter, RouteContext
-from os.kernel.governance_hook import GovernanceHook
-from os.kernel.integration_layer import ControlClient, IntegrationLayer
-from os.kernel.policy_engine import PolicyEngine
+from kernel.ai_router import AIRouter, RouteContext
+from kernel.governance_hook import GovernanceHook
+from kernel.integration_layer import ControlClient, IntegrationLayer
+from kernel.policy_engine import PolicyEngine
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 

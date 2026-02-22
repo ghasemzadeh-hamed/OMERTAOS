@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from os.control.config_paths import resolve_config_path
-from os.control.ai_router import AIRouter
+from control.config_paths import resolve_config_path
+from control.ai_router import AIRouter
 
 
 def test_resolve_config_path_prefers_repo(monkeypatch: pytest.MonkeyPatch) -> None:

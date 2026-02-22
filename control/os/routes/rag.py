@@ -7,7 +7,7 @@ from typing import List
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
-from os.control.os.rag import (
+from control.os.rag import (
     chunk_text,
     collection_exists,
     ensure_collection,

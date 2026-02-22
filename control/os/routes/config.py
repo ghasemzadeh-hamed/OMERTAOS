@@ -10,7 +10,7 @@ from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException, Request, status
 
-from os.control.aion_profiles import get_profile
+from control.aion_profiles import get_profile
 
 router = APIRouter(prefix="/v1/config", tags=["config"])
 

@@ -3,8 +3,8 @@ from typing import Dict, List, Any
 
 import yaml
 
-from os.control.os.config_paths import resolve_config_path
-from os.control.os.llm_local import LocalLLM
+from control.os.config_paths import resolve_config_path
+from control.os.llm_local import LocalLLM
 
 
 class AIRouter:

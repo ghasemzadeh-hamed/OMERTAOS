@@ -7,7 +7,7 @@ import os
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
 
-from os.control.os.routes import (
+from control.os.routes import (
     admin_onboarding_router,
     ai_chat_router,
     agent_router,
@@ -21,7 +21,7 @@ from os.control.os.routes import (
     seal_router,
 )
 
-from os.control.os.api import (
+from control.os.api import (
     datasources_router,
     health_router,
     modules_router,
@@ -34,22 +34,22 @@ from os.control.os.api import (
     webhook_router,
     feature_catalog_router,
 )
-from os.control.os.api.files import router as files_router, data_router
-from os.control.os.api.config import router as config_center_router, network_router
-from os.control.os.api.metrics import router as metrics_router
-from os.control.os.api.services import router as services_router
-from os.control.os.api.logs import router as logs_router
-from os.control.os.api.auth_admin import router as auth_router
-from os.control.os.api.models import router as models_admin_router
-from os.control.os.api.datasets import router as datasets_router
-from os.control.os.api.packages import router as packages_router
-from os.control.os.api.backup import router as backup_router
-from os.control.os.api.update import router as update_router
-from os.control.os.api.provisioner import router as provisioner_router
-from os.control.aion_profiles import get_profile
-from os.control.os.core.deps import get_state
-from os.control.os.core.tenancy import tenancy_middleware
-from os.control.os.core.workers import worker_loop
+from control.os.api.files import router as files_router, data_router
+from control.os.api.config import router as config_center_router, network_router
+from control.os.api.metrics import router as metrics_router
+from control.os.api.services import router as services_router
+from control.os.api.logs import router as logs_router
+from control.os.api.auth_admin import router as auth_router
+from control.os.api.models import router as models_admin_router
+from control.os.api.datasets import router as datasets_router
+from control.os.api.packages import router as packages_router
+from control.os.api.backup import router as backup_router
+from control.os.api.update import router as update_router
+from control.os.api.provisioner import router as provisioner_router
+from control.aion_profiles import get_profile
+from control.os.core.deps import get_state
+from control.os.core.tenancy import tenancy_middleware
+from control.os.core.workers import worker_loop
 
 try:  # pragma: no cover - optional plugin bundle
     from aion_control.routes import router as plugins_router

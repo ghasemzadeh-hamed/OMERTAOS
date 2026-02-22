@@ -9,9 +9,9 @@ import time
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-from os.control.os.agent_catalog.store import AgentRegistry
-from os.control.os.core.logger import get_logger
-from os.control.os.recommendations import FEATURE_LATENTBOX, ToolResourceStore, load_latentbox_catalog
+from control.os.agent_catalog.store import AgentRegistry
+from control.os.core.logger import get_logger
+from control.os.recommendations import FEATURE_LATENTBOX, ToolResourceStore, load_latentbox_catalog
 
 logger = get_logger(__name__)
 

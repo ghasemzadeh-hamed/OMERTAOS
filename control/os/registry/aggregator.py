@@ -10,7 +10,7 @@ import httpx
 import yaml
 
 from config import get_config
-from os.control.os.core.logger import get_logger
+from control.os.core.logger import get_logger
 
 LOGGER = get_logger(__name__)
 
