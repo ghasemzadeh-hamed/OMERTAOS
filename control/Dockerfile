@@ -14,7 +14,7 @@ COPY control ./control
 COPY config ./config
 COPY kernel ./kernel
 COPY secret_store ./secret_store
-COPY ai_registry ./ai_registry
+#COPY ai_registry ./ai_registry
 COPY policies ./policies
 
 RUN pip install --upgrade pip setuptools wheel \
