@@ -46,4 +46,4 @@ if ($adminToken) {
   Invoke-WebRequest -Uri "$GatewayUrl/healthz/auth" -Headers @{ 'x-aion-admin-token' = $adminToken } -UseBasicParsing -TimeoutSec 10 | Out-Null
 }
 
-Write-Host 'Smoke test completed'
+Write-Host 'Smoke OK'
