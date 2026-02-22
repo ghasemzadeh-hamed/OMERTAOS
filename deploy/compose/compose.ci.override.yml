@@ -1,5 +1,6 @@
 # Compose overrides used exclusively in CI to relax health requirements
 # for services that can take longer to report healthy states.
+
 services:
   qdrant:
     healthcheck:
@@ -8,6 +9,7 @@ services:
       timeout: 5s
       retries: 1
       start_period: 1s
+
   control:
     depends_on:
       postgres:
@@ -20,3 +22,8 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
+
+networks:
+  aion:
+    driver: bridge
+    internal: false
