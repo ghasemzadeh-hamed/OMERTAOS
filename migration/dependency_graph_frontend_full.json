@@ -126,38 +126,22 @@
       "test:watch"
     ]
   },
-  "shared/secret-provider-node/package.json": {
-    "name": "@aionos/secret-provider",
-    "dependencies": [],
-    "devDependencies": [],
-    "scripts": []
-  },
-  "core/installer/package.json": {
-    "name": "aionos-installer-core",
+  "integrations/windows-agentic-bridge/bridge-ui/package.json": {
+    "name": "omertaos-bridge-ui",
     "dependencies": [
-      "yaml",
-      "zod"
+      "react",
+      "react-dom"
     ],
-    "devDependencies": [],
-    "scripts": []
-  },
-  "core/installer/bridge/package.json": {
-    "name": "aionos-installer-bridge",
-    "dependencies": [
-      "express",
-      "yaml"
+    "devDependencies": [
+      "@types/react",
+      "@types/react-dom",
+      "typescript",
+      "vite"
     ],
-    "devDependencies": [],
-    "scripts": []
-  },
-  "core/desktop-shell/electron/package.json": {
-    "name": "aionos-desktop",
-    "dependencies": [
-      "electron"
-    ],
-    "devDependencies": [],
     "scripts": [
-      "start"
+      "build",
+      "dev",
+      "preview"
     ]
   },
   "integrations/windows-agentic-bridge/bridge-server/package.json": {
@@ -185,23 +169,50 @@
       "test"
     ]
   },
-  "integrations/windows-agentic-bridge/bridge-ui/package.json": {
-    "name": "omertaos-bridge-ui",
+  "packages/ui-core/package.json": {
+    "name": "@aionos/ui-core",
     "dependencies": [
+      "@types/react",
+      "@types/react-dom",
       "react",
       "react-dom"
     ],
-    "devDependencies": [
-      "@types/react",
-      "@types/react-dom",
-      "typescript",
-      "vite"
+    "devDependencies": [],
+    "scripts": []
+  },
+  "core/installer/package.json": {
+    "name": "aionos-installer-core",
+    "dependencies": [
+      "yaml",
+      "zod"
     ],
+    "devDependencies": [],
+    "scripts": []
+  },
+  "core/desktop-shell/electron/package.json": {
+    "name": "aionos-desktop",
+    "dependencies": [
+      "electron"
+    ],
+    "devDependencies": [],
     "scripts": [
-      "build",
-      "dev",
-      "preview"
+      "start"
     ]
+  },
+  "core/installer/bridge/package.json": {
+    "name": "aionos-installer-bridge",
+    "dependencies": [
+      "express",
+      "yaml"
+    ],
+    "devDependencies": [],
+    "scripts": []
+  },
+  "shared/secret-provider-node/package.json": {
+    "name": "@aionos/secret-provider",
+    "dependencies": [],
+    "devDependencies": [],
+    "scripts": []
   },
   "kernel-multitenant/shared/gateway/package.json": {
     "name": "omertaos-gateway",
@@ -221,16 +232,5 @@
       "dev",
       "start"
     ]
-  },
-  "packages/ui-core/package.json": {
-    "name": "@aionos/ui-core",
-    "dependencies": [
-      "@types/react",
-      "@types/react-dom",
-      "react",
-      "react-dom"
-    ],
-    "devDependencies": [],
-    "scripts": []
   }
 }

@@ -376,11 +376,6 @@ def write_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
-def _safe_module_label(name: str) -> str:
-    """Return a markdown-safe module label to reduce secret-scanner false positives."""
-    return name.replace("api", "api_mod")
-
-
 def main() -> None:
     MIGRATION_DIR.mkdir(parents=True, exist_ok=True)
     files = _iter_files()
@@ -468,7 +463,7 @@ def main() -> None:
     ]
     for row in metrics["python"]["top_centrality"]:
         report.append(
-            f"- module={_safe_module_label(row['module'])}; centrality={row['centrality']} (in={row['fan_in']}, out={row['fan_out']})"
+            f"- {row['module']}: centrality={row['centrality']} (in={row['fan_in']}, out={row['fan_out']})"
         )
 
     report += [

@@ -16,16 +16,16 @@
 - Cross-layer violations: 0
 
 ## Top 10 Centrality (Python)
-- module=os; centrality=58 (in=58, out=0)
-- module=os.control.os.http; centrality=25 (in=5, out=20)
-- module=os.control.os.core.state; centrality=17 (in=14, out=3)
-- module=os.control.os.api_mod.security; centrality=15 (in=14, out=1)
-- module=process-analytics.api_mod.context; centrality=13 (in=0, out=13)
-- module=os.control.os.config; centrality=12 (in=10, out=2)
-- module=os.control.os.api_mod; centrality=12 (in=3, out=9)
-- module=os.control.os.core.deps; centrality=12 (in=11, out=1)
-- module=os.control.os.routes; centrality=11 (in=1, out=10)
-- module=config; centrality=8 (in=7, out=1)
+- os: centrality=58 (in=58, out=0)
+- os.control.os.http: centrality=25 (in=5, out=20)
+- os.control.os.core.state: centrality=17 (in=14, out=3)
+- os.control.os.api.security: centrality=15 (in=14, out=1)
+- process-analytics.api.context: centrality=13 (in=0, out=13)
+- os.control.os.config: centrality=12 (in=10, out=2)
+- os.control.os.core.deps: centrality=12 (in=11, out=1)
+- os.control.os.api: centrality=12 (in=3, out=9)
+- os.control.os.routes: centrality=11 (in=1, out=10)
+- config: centrality=8 (in=7, out=1)
 
 ## Smells
 - Env scattered access points: 318

@@ -3,19 +3,40 @@
     "os"
   ],
   "conftest": [],
-  "cli": [],
+  "explorer.aion_explorer": [],
+  "kernel-multitenant.profile_loader": [],
+  "aion": [],
+  "app": [],
+  "config": [
+    "os"
+  ],
+  "scripts.bootstrap_vault_dev": [
+    "os"
+  ],
+  "scripts.generate_dev_certs": [],
+  "scripts.train_eval": [
+    "os",
+    "scripts.metrics",
+    "scripts.utils.data",
+    "scripts.utils.features",
+    "scripts.utils.models"
+  ],
+  "scripts.guard_generalization": [],
+  "scripts.metrics": [],
   "cli.main": [],
+  "cli.install": [],
   "cli.aion_pkg": [
     "os.control.os.api"
   ],
-  "cli.install": [],
-  "cli.policy": [],
+  "cli.backup": [],
+  "cli": [],
   "cli.status": [],
   "cli.personal": [
     "os.kernel"
   ],
   "cli.claude": [],
-  "cli.backup": [],
+  "cli.policy": [],
+  "registry": [],
   "control.run_uvicorn": [
     "os",
     "os.control.main"
@@ -28,44 +49,31 @@
   "control.context_manager": [
     "os"
   ],
-  "explorer.aion_explorer": [],
+  "tools.sanitize_ascii": [],
+  "tools.check_non_ascii": [],
+  "tools.translate_docs_to_fa": [],
+  "tools.preflight": [],
+  "tools.registry_validate": [],
   "aionos_core": [
     "cli.aionos_core"
   ],
   "aionos_core.cli": [
     "cli.aionos_core.cli"
   ],
-  "scripts.generate_dev_certs": [],
-  "scripts.train_eval": [
-    "os",
-    "scripts.metrics",
-    "scripts.utils.data",
-    "scripts.utils.features",
-    "scripts.utils.models"
-  ],
-  "scripts.bootstrap_vault_dev": [
-    "os"
-  ],
-  "scripts.guard_generalization": [],
-  "scripts.metrics": [],
-  "config": [
-    "os"
-  ],
-  "kernel-multitenant.profile_loader": [],
-  "tools.registry_validate": [],
-  "tools.preflight": [],
-  "tools.check_non_ascii": [],
-  "tools.sanitize_ascii": [],
-  "tools.translate_docs_to_fa": [],
-  "app": [],
-  "aion": [],
   "os": [],
-  "registry": [],
+  "aionos_control.main": [
+    "control.aionos_control.main"
+  ],
+  "aionos_control": [
+    "control.aionos_control"
+  ],
+  "tests.test_agent_catalog_api": [
+    "os",
+    "os.control.os.agent_catalog",
+    "os.control.os.http"
+  ],
   "tests.test_policy_state": [
     "os.control.os.core.state"
-  ],
-  "tests.test_cli_bundle": [
-    "aion"
   ],
   "tests.test_stream_control": [
     "os.control.os.aion_grpc.aion.v1",
@@ -78,6 +86,9 @@
     "os.control.os.http",
     "os.control.os.recommendations"
   ],
+  "tests.test_cli_bundle": [
+    "aion"
+  ],
   "tests.test_api_webhooks": [
     "os",
     "os.control.main",
@@ -86,75 +97,94 @@
     "os.control.os.core.state"
   ],
   "tests.conftest": [],
-  "tests.test_agent_catalog_api": [
-    "os",
-    "os.control.os.agent_catalog",
-    "os.control.os.http"
+  "process-analytics.conformance.conformance_checker": [],
+  "process-analytics.conformance": [],
+  "process-analytics.querying": [],
+  "process-analytics.querying.pql_engine": [],
+  "process-analytics.querying.sql_adapter": [],
+  "process-analytics.predictive.anomaly_detector_dbscan": [],
+  "process-analytics.predictive.time_predictor": [],
+  "process-analytics.predictive.outcome_predictor": [],
+  "process-analytics.predictive": [],
+  "process-analytics.core": [],
+  "process-analytics.core.utils": [],
+  "process-analytics.core.models": [],
+  "process-analytics.performance.performance_analyzer": [],
+  "process-analytics.performance": [],
+  "process-analytics.api": [],
+  "process-analytics.api.context": [
+    "process-analytics.conformance.conformance_checker",
+    "process-analytics.core.utils",
+    "process-analytics.discovery.discovery_engine",
+    "process-analytics.ingestion.event_ingestor",
+    "process-analytics.orchestrator.adapters_omertaos",
+    "process-analytics.orchestrator.self_evolving_controller",
+    "process-analytics.performance.performance_analyzer",
+    "process-analytics.predictive.anomaly_detector_dbscan",
+    "process-analytics.predictive.outcome_predictor",
+    "process-analytics.predictive.time_predictor",
+    "process-analytics.prescriptive.decision_engine",
+    "process-analytics.prescriptive.optimizer_ga",
+    "process-analytics.prescriptive.rl_agent"
   ],
-  "aionos_control": [
-    "control.aionos_control"
+  "process-analytics.api.server": [
+    "process-analytics.api.routers"
   ],
-  "aionos_control.main": [
-    "control.aionos_control.main"
+  "process-analytics.prescriptive.rl_agent": [],
+  "process-analytics.prescriptive.decision_engine": [],
+  "process-analytics.prescriptive": [],
+  "process-analytics.prescriptive.optimizer_ga": [],
+  "process-analytics.ingestion": [],
+  "process-analytics.ingestion.event_ingestor": [
+    "process-analytics.core.utils"
   ],
-  "shared.secret_store": [],
-  "shared.secret_store.provider": [
-    "os"
-  ],
-  "tests.cli.test_cli": [
-    "cli"
-  ],
-  "tests.control.test_queue": [
-    "control.task_queue"
-  ],
-  "tests.control.test_config_cors": [
-    "os.control.os.config"
+  "process-analytics.ingestion.normalizer": [],
+  "process-analytics.discovery": [],
+  "process-analytics.discovery.discovery_engine": [],
+  "process-analytics.orchestrator": [],
+  "process-analytics.orchestrator.adapters_omertaos": [],
+  "process-analytics.orchestrator.self_evolving_controller": [],
+  "process-analytics.orchestrator.actions": [],
+  "process-analytics.api.routers": [],
+  "process-analytics.api.routers.analytics": [],
+  "process-analytics.api.routers.decisions": [],
+  "process-analytics.api.routers.events": [],
+  "tests.kernel.test_policy_engine": [
+    "os.kernel.policy_engine"
   ],
   "tests.kernel.test_scheduler": [
     "os.kernel.scheduler"
   ],
-  "tests.kernel.test_policy_engine": [
-    "os.kernel.policy_engine"
+  "tests.cli.test_cli": [
+    "cli"
   ],
-  "core.installer": [
-    "app.shared"
+  "tests.control.test_config_cors": [
+    "os.control.os.config"
   ],
-  "os.control.aionos_profiles": [
-    "os"
-  ],
-  "os.control": [],
-  "os.control.config_paths": [],
-  "os.control.main": [
-    "os.control.os.http"
-  ],
-  "os.control.http": [
-    "os.control.os.http"
-  ],
-  "os.control.ai_router": [],
-  "os.control.policy": [],
-  "os.control.config": [],
-  "os.control.orchestrator": [],
-  "os.control.router_engine": [],
-  "os.control.llm_local": [],
-  "os.control.grpc_server": [],
-  "os.kernel.integration_layer": [
-    "os"
-  ],
-  "os.kernel": [
-    "os"
+  "tests.control.test_queue": [
+    "control.task_queue"
   ],
   "os.kernel.ai_router": [
     "os.kernel.governance_hook",
     "os.kernel.integration_layer",
     "os.kernel.policy_engine"
   ],
+  "os.kernel.scheduler": [],
+  "os.kernel.governance_hook": [],
+  "os.kernel.policy_engine": [],
+  "os.kernel.integration_layer": [
+    "os"
+  ],
+  "os.kernel": [
+    "os"
+  ],
+  "os.kernel.devserver": [],
   "os.kernel.personal_mode": [
     "os.kernel.ai_router",
     "os.kernel.governance_hook",
     "os.kernel.integration_layer",
     "os.kernel.policy_engine"
   ],
-  "os.kernel.policy_engine": [],
   "os.kernel.runtime": [
     "os.kernel.kapply.actuator",
     "os.kernel.kmon.telemetry",
@@ -162,85 +192,66 @@
     "os.kernel.safekeeper.manager",
     "os.kernel.safekeeper.policy"
   ],
-  "os.kernel.scheduler": [],
-  "os.kernel.governance_hook": [],
-  "os.kernel.devserver": [],
-  "os.secret_store": [
-    "shared.secret_store"
+  "os.control.llm_local": [],
+  "os.control.main": [
+    "os.control.os.http"
   ],
+  "os.control.http": [
+    "os.control.os.http"
+  ],
+  "os.control.ai_router": [],
+  "os.control.config": [],
+  "os.control.config_paths": [],
+  "os.control": [],
+  "os.control.orchestrator": [],
+  "os.control.aionos_profiles": [
+    "os"
+  ],
+  "os.control.router_engine": [],
+  "os.control.policy": [],
+  "os.control.grpc_server": [],
   "os.secret_store.provider": [
     "shared.secret_store.provider"
   ],
-  "os.kernel.netd": [],
-  "os.kernel.netd.dataplane": [
-    "os.kernel.kbrain.proposal"
+  "os.secret_store": [
+    "shared.secret_store"
   ],
-  "os.kernel.kmon": [],
-  "os.kernel.kmon.telemetry": [
-    "os.kernel.kbrain.proposal"
-  ],
-  "os.kernel.kapply": [],
-  "os.kernel.kapply.actuator": [
-    "os.kernel.kbrain.proposal"
-  ],
-  "os.kernel.osci.linux_kernel_entry": [
-    "os.kernel.integration_layer",
-    "os.kernel.personal_mode"
-  ],
-  "os.kernel.osci.windows_kernel_entry": [
-    "os.kernel.integration_layer",
-    "os.kernel.personal_mode"
-  ],
-  "os.kernel.safekeeper": [],
-  "os.kernel.safekeeper.policy": [
-    "os.kernel.kbrain.proposal"
-  ],
-  "os.kernel.safekeeper.manager": [
-    "os.kernel.kapply.actuator",
-    "os.kernel.kbrain.proposal",
-    "os.kernel.kmon.telemetry",
-    "os.kernel.netd.dataplane",
-    "os.kernel.safekeeper.policy"
-  ],
-  "os.kernel.kbrain": [],
-  "os.kernel.kbrain.proposal": [],
+  "os.control.schemas.provider": [],
+  "os.control.schemas.module": [],
+  "os.control.schemas.webhook": [],
+  "os.control.schemas": [],
+  "os.control.schemas.router_policy": [],
+  "os.control.schemas.datasource": [],
+  "os.control.db": [],
+  "os.control.db.retention_mongo": [],
+  "os.control.core.state": [],
+  "os.control.core": [],
+  "os.control.core.deps": [],
+  "os.control.core.workers": [],
+  "os.control.core.tenancy": [],
+  "os.control.core.logger": [],
   "os.control.models": [
     "os.control"
   ],
   "os.control.models.registry": [],
+  "os.control.api.providers": [],
+  "os.control.api.webhooks": [],
+  "os.control.api.modules": [],
+  "os.control.api": [],
+  "os.control.api.health": [],
+  "os.control.api.datasources": [],
+  "os.control.api.router": [],
+  "os.control.routes.agent": [],
   "os.control.routes": [],
+  "os.control.routes.deps": [],
   "os.control.routes.memory": [],
+  "os.control.routes.ingest_excel": [],
+  "os.control.routes.kernel_proposals": [],
   "os.control.routes.admin_onboarding": [],
+  "os.control.routes.rag": [],
   "os.control.routes.ai_chat": [],
   "os.control.routes.models": [],
-  "os.control.routes.kernel_proposals": [],
-  "os.control.routes.ingest_excel": [],
-  "os.control.routes.rag": [],
-  "os.control.routes.agent": [],
-  "os.control.routes.deps": [],
-  "os.control.rag": [],
-  "os.control.rag.qdrant_client": [],
-  "os.control.rag.ingest": [],
-  "os.control.vector": [],
-  "os.control.vector.qdrant_client": [],
-  "os.control.db": [],
-  "os.control.db.retention_mongo": [],
-  "os.control.aion_grpc": [],
-  "os.control.api": [],
-  "os.control.api.modules": [],
-  "os.control.api.providers": [],
-  "os.control.api.health": [],
-  "os.control.api.router": [],
-  "os.control.api.datasources": [],
-  "os.control.api.webhooks": [],
-  "os.control.schemas": [],
-  "os.control.schemas.router_policy": [],
-  "os.control.schemas.webhook": [],
-  "os.control.schemas.provider": [],
-  "os.control.schemas.datasource": [],
-  "os.control.schemas.module": [],
-  "os.control.os": [],
-  "os.control.os.config_paths": [
+  "os.control.os.llm_local": [
     "os"
   ],
   "os.control.os.main": [
@@ -274,13 +285,14 @@
     "os.control.os.config_paths",
     "os.control.os.llm_local"
   ],
-  "os.control.os.policy": [
-    "os.control.os.config"
-  ],
   "os.control.os.config": [
     "os",
     "os.secret_store"
   ],
+  "os.control.os.config_paths": [
+    "os"
+  ],
+  "os.control.os": [],
   "os.control.os.orchestrator": [
     "app.control.router",
     "os.control.os.models",
@@ -292,8 +304,8 @@
     "os.control.os.models",
     "os.control.os.policy"
   ],
-  "os.control.os.llm_local": [
-    "os"
+  "os.control.os.policy": [
+    "os.control.os.config"
   ],
   "os.control.os.healthcheck": [
     "config"
@@ -304,22 +316,200 @@
     "os.control.os.models",
     "os.control.os.orchestrator"
   ],
-  "os.control.core": [],
-  "os.control.core.workers": [],
-  "os.control.core.tenancy": [],
-  "os.control.core.state": [],
-  "os.control.core.logger": [],
-  "os.control.core.deps": [],
-  "os.control.aionos_control": [
-    "control.aionos_control"
-  ],
   "os.control.aionos_control.main": [
     "control.aionos_control.main"
   ],
+  "os.control.aionos_control": [
+    "control.aionos_control"
+  ],
+  "os.control.rag": [],
+  "os.control.rag.ingest": [],
+  "os.control.rag.qdrant_client": [],
+  "os.control.vector": [],
+  "os.control.vector.qdrant_client": [],
+  "os.control.aion_grpc": [],
+  "os.control.aion_grpc.aion": [],
+  "os.control.aion_grpc.aion.v1.tasks_pb2": [],
+  "os.control.aion_grpc.aion.v1": [],
+  "os.control.aion_grpc.aion.v1.tasks_pb2_grpc": [],
+  "os.control.os.agent_catalog": [
+    "os.control.os"
+  ],
+  "os.control.os.agent_catalog.catalog": [
+    "os",
+    "os.control.os.core.logger",
+    "os.control.os.schemas.agent"
+  ],
+  "os.control.os.agent_catalog.store": [],
+  "os.control.os.schemas.provider": [],
+  "os.control.os.schemas.module": [],
+  "os.control.os.schemas.agent": [],
+  "os.control.os.schemas.webhook": [],
+  "os.control.os.schemas": [
+    "os.control.os.schemas.agent",
+    "os.control.os.schemas.datasource",
+    "os.control.os.schemas.module",
+    "os.control.os.schemas.provider",
+    "os.control.os.schemas.recommendations",
+    "os.control.os.schemas.router_policy",
+    "os.control.os.schemas.webhook"
+  ],
+  "os.control.os.schemas.router_policy": [],
+  "os.control.os.schemas.recommendations": [],
+  "os.control.os.schemas.datasource": [],
+  "os.control.os.db.retention_mongo": [],
+  "os.control.os.registry.aggregator": [
+    "config",
+    "os.control.os.core.logger"
+  ],
+  "os.control.os.registry": [
+    "os.control.os"
+  ],
+  "os.control.os.core.state": [
+    "os.control.os.agent_catalog.store",
+    "os.control.os.core.logger",
+    "os.control.os.recommendations"
+  ],
+  "os.control.os.core": [
+    "os.control.os.core.state",
+    "os.control.os.core.workers"
+  ],
+  "os.control.os.core.deps": [
+    "os.control.os.core.state"
+  ],
+  "os.control.os.core.workers": [
+    "os.control.os.core.logger",
+    "os.control.os.core.state"
+  ],
+  "os.control.os.core.tenancy": [
+    "os"
+  ],
+  "os.control.os.core.logger": [],
   "os.control.os.models": [],
   "os.control.os.models.registry": [
     "os",
     "os.control.os.config"
+  ],
+  "os.control.os.api.providers": [
+    "os.control.os.core.deps",
+    "os.control.os.core.state",
+    "os.control.os.schemas.provider"
+  ],
+  "os.control.os.api.provisioner": [
+    "os"
+  ],
+  "os.control.os.api.packages": [
+    "os",
+    "os.control.os.api.security"
+  ],
+  "os.control.os.api.backup": [
+    "os",
+    "os.control.os.api.security"
+  ],
+  "os.control.os.api.logs": [
+    "os",
+    "os.control.os.api.security"
+  ],
+  "os.control.os.api.webhooks": [
+    "os",
+    "os.control.os.core.deps",
+    "os.control.os.core.state",
+    "os.control.os.schemas.webhook"
+  ],
+  "os.control.os.api.config": [
+    "os",
+    "os.control.os.api.security"
+  ],
+  "os.control.os.api.modules": [
+    "os.control.os.core.deps",
+    "os.control.os.core.state",
+    "os.control.os.schemas.module"
+  ],
+  "os.control.os.api": [
+    "os.control.os.api.agent_catalog",
+    "os.control.os.api.datasources",
+    "os.control.os.api.health",
+    "os.control.os.api.modules",
+    "os.control.os.api.providers",
+    "os.control.os.api.recommendations",
+    "os.control.os.api.registry",
+    "os.control.os.api.router",
+    "os.control.os.api.webhooks"
+  ],
+  "os.control.os.api.health": [
+    "os.control.os.core.deps",
+    "os.control.os.core.state"
+  ],
+  "os.control.os.api.recommendations": [
+    "os.control.os.api.security",
+    "os.control.os.core.deps",
+    "os.control.os.core.state",
+    "os.control.os.recommendations",
+    "os.control.os.schemas.recommendations"
+  ],
+  "os.control.os.api.auth_admin": [
+    "os",
+    "os.control.os.api.security"
+  ],
+  "os.control.os.api.datasets": [
+    "os",
+    "os.control.os.api.security"
+  ],
+  "os.control.os.api.datasources": [
+    "os.control.os.core.deps",
+    "os.control.os.core.state",
+    "os.control.os.schemas.datasource"
+  ],
+  "os.control.os.api.files": [
+    "os",
+    "os.control.os.api.security"
+  ],
+  "os.control.os.api.security": [
+    "os"
+  ],
+  "os.control.os.api.services": [
+    "config",
+    "os.control.os.api.metrics",
+    "os.control.os.api.security"
+  ],
+  "os.control.os.api.update": [
+    "os",
+    "os.control.os.api.security"
+  ],
+  "os.control.os.api.metrics": [
+    "os",
+    "os.control.os.api.security",
+    "os.control.os.core.deps",
+    "os.control.os.core.state"
+  ],
+  "os.control.os.api.registry": [
+    "os.control.os.api.security",
+    "os.control.os.registry"
+  ],
+  "os.control.os.api.models": [
+    "config",
+    "os.control.os.api.security",
+    "registry"
+  ],
+  "os.control.os.api.router": [
+    "os.control.os.core.deps",
+    "os.control.os.core.state",
+    "os.control.os.schemas.router_policy"
+  ],
+  "os.control.os.api.agent_catalog": [
+    "os.control.os.agent_catalog",
+    "os.control.os.api.security",
+    "os.control.os.core.deps",
+    "os.control.os.core.state",
+    "os.control.os.core.tenancy",
+    "os.control.os.schemas.agent"
+  ],
+  "os.control.os.routes.config": [
+    "os",
+    "os.control.aionos_profiles"
+  ],
+  "os.control.os.routes.agent": [
+    "os"
   ],
   "os.control.os.routes": [
     "os.control.os.routes.admin_onboarding",
@@ -333,15 +523,32 @@
     "os.control.os.routes.rag",
     "os.control.os.routes.seal"
   ],
-  "os.control.os.routes.profile": [
-    "os.control.aionos_profiles"
+  "os.control.os.routes.deps": [
+    "os",
+    "os.control.os.config"
   ],
   "os.control.os.routes.memory": [
     "os.control.os.config"
   ],
+  "os.control.os.routes.ingest_excel": [
+    "os",
+    "os.control.os.config",
+    "os.control.os.routes.deps"
+  ],
+  "os.control.os.routes.kernel_proposals": [
+    "os.kernel.runtime"
+  ],
+  "os.control.os.routes.seal": [
+    "config",
+    "os.control.aionos_profiles",
+    "os.control.os.policy"
+  ],
   "os.control.os.routes.admin_onboarding": [
     "os",
     "os.control.os.config_paths"
+  ],
+  "os.control.os.routes.rag": [
+    "os.control.os.rag"
   ],
   "os.control.os.routes.ai_chat": [
     "os.kernel.ai_router",
@@ -349,249 +556,77 @@
     "os.kernel.integration_layer",
     "os.kernel.policy_engine"
   ],
+  "os.control.os.routes.profile": [
+    "os.control.aionos_profiles"
+  ],
   "os.control.os.routes.models": [
     "os.control.os.config",
     "os.control.os.models.registry"
   ],
-  "os.control.os.routes.seal": [
-    "config",
-    "os.control.aionos_profiles",
-    "os.control.os.policy"
-  ],
-  "os.control.os.routes.config": [
-    "os",
-    "os.control.aionos_profiles"
-  ],
-  "os.control.os.routes.kernel_proposals": [
-    "os.kernel.runtime"
-  ],
-  "os.control.os.routes.ingest_excel": [
-    "os",
-    "os.control.os.config",
-    "os.control.os.routes.deps"
-  ],
-  "os.control.os.routes.rag": [
-    "os.control.os.rag"
-  ],
-  "os.control.os.routes.agent": [
-    "os"
-  ],
-  "os.control.os.routes.deps": [
-    "os",
-    "os.control.os.config"
-  ],
   "os.control.os.recommendations": [
     "os.control.os"
   ],
-  "os.control.os.recommendations.store": [],
   "os.control.os.recommendations.latentbox": [
     "os",
     "os.control.os.core.logger",
     "os.control.os.recommendations.store"
   ],
+  "os.control.os.recommendations.store": [],
   "os.control.os.rag": [
     "os.control.os.rag.ingest",
+    "os.control.os.rag.qdrant_client"
+  ],
+  "os.control.os.rag.ingest": [
     "os.control.os.rag.qdrant_client"
   ],
   "os.control.os.rag.qdrant_client": [
     "os"
   ],
-  "os.control.os.rag.ingest": [
-    "os.control.os.rag.qdrant_client"
-  ],
   "os.control.os.vector.qdrant_client": [],
-  "os.control.os.db.retention_mongo": [],
   "os.control.os.aion_grpc": [],
-  "os.control.os.api": [
-    "os.control.os.api.agent_catalog",
-    "os.control.os.api.datasources",
-    "os.control.os.api.health",
-    "os.control.os.api.modules",
-    "os.control.os.api.providers",
-    "os.control.os.api.recommendations",
-    "os.control.os.api.registry",
-    "os.control.os.api.router",
-    "os.control.os.api.webhooks"
-  ],
-  "os.control.os.api.files": [
-    "os",
-    "os.control.os.api.security"
-  ],
-  "os.control.os.api.update": [
-    "os",
-    "os.control.os.api.security"
-  ],
-  "os.control.os.api.logs": [
-    "os",
-    "os.control.os.api.security"
-  ],
-  "os.control.os.api.packages": [
-    "os",
-    "os.control.os.api.security"
-  ],
-  "os.control.os.api.modules": [
-    "os.control.os.core.deps",
-    "os.control.os.core.state",
-    "os.control.os.schemas.module"
-  ],
-  "os.control.os.api.recommendations": [
-    "os.control.os.api.security",
-    "os.control.os.core.deps",
-    "os.control.os.core.state",
-    "os.control.os.recommendations",
-    "os.control.os.schemas.recommendations"
-  ],
-  "os.control.os.api.agent_catalog": [
-    "os.control.os.agent_catalog",
-    "os.control.os.api.security",
-    "os.control.os.core.deps",
-    "os.control.os.core.state",
-    "os.control.os.core.tenancy",
-    "os.control.os.schemas.agent"
-  ],
-  "os.control.os.api.providers": [
-    "os.control.os.core.deps",
-    "os.control.os.core.state",
-    "os.control.os.schemas.provider"
-  ],
-  "os.control.os.api.models": [
-    "config",
-    "os.control.os.api.security",
-    "registry"
-  ],
-  "os.control.os.api.config": [
-    "os",
-    "os.control.os.api.security"
-  ],
-  "os.control.os.api.registry": [
-    "os.control.os.api.security",
-    "os.control.os.registry"
-  ],
-  "os.control.os.api.services": [
-    "config",
-    "os.control.os.api.metrics",
-    "os.control.os.api.security"
-  ],
-  "os.control.os.api.health": [
-    "os.control.os.core.deps",
-    "os.control.os.core.state"
-  ],
-  "os.control.os.api.auth_admin": [
-    "os",
-    "os.control.os.api.security"
-  ],
-  "os.control.os.api.backup": [
-    "os",
-    "os.control.os.api.security"
-  ],
-  "os.control.os.api.router": [
-    "os.control.os.core.deps",
-    "os.control.os.core.state",
-    "os.control.os.schemas.router_policy"
-  ],
-  "os.control.os.api.datasources": [
-    "os.control.os.core.deps",
-    "os.control.os.core.state",
-    "os.control.os.schemas.datasource"
-  ],
-  "os.control.os.api.metrics": [
-    "os",
-    "os.control.os.api.security",
-    "os.control.os.core.deps",
-    "os.control.os.core.state"
-  ],
-  "os.control.os.api.security": [
-    "os"
-  ],
-  "os.control.os.api.datasets": [
-    "os",
-    "os.control.os.api.security"
-  ],
-  "os.control.os.api.provisioner": [
-    "os"
-  ],
-  "os.control.os.api.webhooks": [
-    "os",
-    "os.control.os.core.deps",
-    "os.control.os.core.state",
-    "os.control.os.schemas.webhook"
-  ],
-  "os.control.os.schemas": [
-    "os.control.os.schemas.agent",
-    "os.control.os.schemas.datasource",
-    "os.control.os.schemas.module",
-    "os.control.os.schemas.provider",
-    "os.control.os.schemas.recommendations",
-    "os.control.os.schemas.router_policy",
-    "os.control.os.schemas.webhook"
-  ],
-  "os.control.os.schemas.recommendations": [],
-  "os.control.os.schemas.router_policy": [],
-  "os.control.os.schemas.webhook": [],
-  "os.control.os.schemas.provider": [],
-  "os.control.os.schemas.datasource": [],
-  "os.control.os.schemas.module": [],
-  "os.control.os.schemas.agent": [],
-  "os.control.os.agent_catalog": [
-    "os.control.os"
-  ],
-  "os.control.os.agent_catalog.store": [],
-  "os.control.os.agent_catalog.catalog": [
-    "os",
-    "os.control.os.core.logger",
-    "os.control.os.schemas.agent"
-  ],
-  "os.control.os.registry": [
-    "os.control.os"
-  ],
-  "os.control.os.registry.aggregator": [
-    "config",
-    "os.control.os.core.logger"
-  ],
-  "os.control.os.core": [
-    "os.control.os.core.state",
-    "os.control.os.core.workers"
-  ],
-  "os.control.os.core.workers": [
-    "os.control.os.core.logger",
-    "os.control.os.core.state"
-  ],
-  "os.control.os.core.tenancy": [
-    "os"
-  ],
-  "os.control.os.core.state": [
-    "os.control.os.agent_catalog.store",
-    "os.control.os.core.logger",
-    "os.control.os.recommendations"
-  ],
-  "os.control.os.core.logger": [],
-  "os.control.os.core.deps": [
-    "os.control.os.core.state"
-  ],
   "os.control.os.aion_grpc.aion": [],
-  "os.control.os.aion_grpc.aion.v1": [],
   "os.control.os.aion_grpc.aion.v1.tasks_pb2": [],
+  "os.control.os.aion_grpc.aion.v1": [],
   "os.control.os.aion_grpc.aion.v1.tasks_pb2_grpc": [
     "aion.v1"
   ],
-  "os.control.aion_grpc.aion": [],
-  "os.control.aion_grpc.aion.v1": [],
-  "os.control.aion_grpc.aion.v1.tasks_pb2": [],
-  "os.control.aion_grpc.aion.v1.tasks_pb2_grpc": [],
-  "services.aion-model-registry.main": [
-    "services.aion-model-registry.config",
-    "services.aion-model-registry.registry",
-    "services.aion-model-registry.schemas"
+  "os.kernel.netd": [],
+  "os.kernel.netd.dataplane": [
+    "os.kernel.kbrain.proposal"
   ],
-  "services.aion-model-registry.config": [
-    "os"
+  "os.kernel.kbrain.proposal": [],
+  "os.kernel.kbrain": [],
+  "os.kernel.kmon.telemetry": [
+    "os.kernel.kbrain.proposal"
   ],
-  "services.aion-model-registry.registry": [],
-  "services.aion-model-registry.schemas": [],
+  "os.kernel.kmon": [],
+  "os.kernel.safekeeper.manager": [
+    "os.kernel.kapply.actuator",
+    "os.kernel.kbrain.proposal",
+    "os.kernel.kmon.telemetry",
+    "os.kernel.netd.dataplane",
+    "os.kernel.safekeeper.policy"
+  ],
+  "os.kernel.safekeeper": [],
+  "os.kernel.safekeeper.policy": [
+    "os.kernel.kbrain.proposal"
+  ],
+  "os.kernel.kapply.actuator": [
+    "os.kernel.kbrain.proposal"
+  ],
+  "os.kernel.kapply": [],
+  "os.kernel.osci.windows_kernel_entry": [
+    "os.kernel.integration_layer",
+    "os.kernel.personal_mode"
+  ],
+  "os.kernel.osci.linux_kernel_entry": [
+    "os.kernel.integration_layer",
+    "os.kernel.personal_mode"
+  ],
   "services.aion-memory.main": [
     "services.aion-memory.database"
   ],
-  "services.aion-memory.models": [],
+  "services.aion-memory.schemas": [],
   "services.aion-memory.config": [
     "os"
   ],
@@ -599,14 +634,24 @@
     "services.aion-memory.config",
     "services.aion-memory.models"
   ],
-  "services.aion-memory.schemas": [],
+  "services.aion-memory.models": [],
+  "services.aion-model-registry.main": [
+    "services.aion-model-registry.config",
+    "services.aion-model-registry.registry",
+    "services.aion-model-registry.schemas"
+  ],
+  "services.aion-model-registry.schemas": [],
+  "services.aion-model-registry.config": [
+    "os"
+  ],
+  "services.aion-model-registry.registry": [],
   "services.aion-seal-adapter.main": [
     "services.aion-seal-adapter.trainer"
   ],
-  "services.aion-seal-adapter.dataset_builder": [
-    "services.aion-seal-adapter.config"
-  ],
   "services.aion-seal-adapter.evaluator": [
+    "os"
+  ],
+  "services.aion-seal-adapter.config": [
     "os"
   ],
   "services.aion-seal-adapter.trainer": [
@@ -614,58 +659,141 @@
     "services.aion-seal-adapter.dataset_builder",
     "services.aion-seal-adapter.evaluator"
   ],
-  "services.aion-seal-adapter.config": [
+  "services.aion-seal-adapter.dataset_builder": [
+    "services.aion-seal-adapter.config"
+  ],
+  "bigdata.pipelines.streaming.task_latency_monitor": [],
+  "bigdata.pipelines.streaming.router_decision_stream": [],
+  "bigdata.pipelines.batch.airflow.dags.weekly_model_train": [],
+  "bigdata.pipelines.batch.airflow.dags.daily_feature_build": [],
+  "bigdata.pipelines.batch.airflow.dags.scripts.load_minio": [],
+  "bigdata.pipelines.batch.airflow.dags.scripts.extract_clickhouse": [],
+  "bigdata.pipelines.batch.airflow.dags.scripts.train_model": [],
+  "bigdata.pipelines.batch.airflow.dags.scripts.upload_model": [],
+  "bigdata.pipelines.batch.airflow.dags.scripts.transform_features": [],
+  "tools.repo_audit.doc_truth_check": [],
+  "tools.repo_audit.architecture_standardizer": [],
+  "tools.repo_audit.inventory": [],
+  "control.aionos_control.main": [
+    "control.aionos_control.routes"
+  ],
+  "control.aionos_control": [],
+  "control.tests.test_health": [
+    "os.control.main"
+  ],
+  "control.tests.test_plugins_api": [
+    "aionos_control.main"
+  ],
+  "control.tests.test_memory_routes": [
     "os"
   ],
-  "aion.v1": [],
-  "aion.v1.tasks_pb2": [
-    "os.control.os.aion_grpc.aion.v1.tasks_pb2"
+  "control.tests.test_model_registry": [
+    "os.control.models"
   ],
-  "aion.v1.tasks_pb2_grpc": [
-    "os.control.os.aion_grpc.aion.v1.tasks_pb2_grpc"
+  "control.tests.test_config_paths": [
+    "os.control.ai_router",
+    "os.control.config_paths"
   ],
-  "aion.worker": [],
-  "aion.worker.catalog_sync": [
-    "config"
+  "control.tests.test_kernel_proposals": [
+    "os.control.routes.kernel_proposals",
+    "os.kernel.runtime"
   ],
-  "aion.control": [],
-  "aion.control.secrets_vault": [
+  "control.tests.conftest": [],
+  "control.aionos_control.plugins": [
+    "control.aionos_control"
+  ],
+  "control.aionos_control.plugins.registry": [],
+  "control.aionos_control.routes.schemas": [],
+  "control.aionos_control.routes.plugins": [
+    "control.aionos_control.plugins.registry",
+    "control.aionos_control.routes.schemas"
+  ],
+  "control.aionos_control.routes": [
+    "control.aionos_control.plugins"
+  ],
+  "control.aionos_control.plugins.entries.nevergrad_entry": [],
+  "control.aionos_control.plugins.entries": [],
+  "control.aionos_control.plugins.entries.cleanlab_entry": [],
+  "control.aionos_control.plugins.entries.stumpy_entry": [],
+  "core.installer": [
+    "app.shared"
+  ],
+  "shared.secret_store.provider": [
     "os"
   ],
-  "aion.control.install_runner": [
+  "shared.secret_store": [],
+  "cli.aion": [
+    "cli"
+  ],
+  "cli.aion.cli": [],
+  "cli.aionos_core": [],
+  "cli.aionos_core.cli": [
+    "core.installer",
+    "explorer.aion_explorer"
+  ],
+  "cli.aion.v1": [],
+  "cli.aion.services.schemas": [],
+  "cli.aion.services.doctor": [],
+  "cli.aion.services": [],
+  "cli.aion.services.tui": [],
+  "cli.aion.services.bundle": [
+    "cli.aion.services.schemas"
+  ],
+  "cli.aion.services.auth": [],
+  "cli.aion.services.quickstart": [],
+  "cli.aion.commands.local": [],
+  "cli.aion.commands.sync": [],
+  "cli.aion.commands.doctor": [
+    "cli.aion.services.doctor"
+  ],
+  "cli.aion.commands.init": [
+    "cli.aion.services.quickstart"
+  ],
+  "cli.aion.commands": [],
+  "cli.aion.commands.tui": [
+    "cli.aion.services.tui"
+  ],
+  "cli.aion.commands.auth": [
+    "cli.aion.services.auth"
+  ],
+  "cli.aion.commands.apply": [
+    "cli.aion.services.bundle"
+  ],
+  "console.tui": [],
+  "console.tui.api": [],
+  "console.tui.web_server": [
+    "console.tui.api"
+  ],
+  "console.tui.explorer": [
+    "console.tui.api",
+    "console.tui.registry_loader"
+  ],
+  "console.tui.registry_loader": [],
+  "scripts.utils.features": [],
+  "scripts.utils.models": [],
+  "scripts.utils.data": [
     "os"
   ],
-  "aion.control.catalog_api": [
-    "aion.control.install_runner",
-    "aion.control.schemas",
-    "aion.control.secrets_vault",
-    "config"
-  ],
-  "aion.control.schemas": [],
-  "app.control": [],
-  "app.control.router": [
-    "app.control.handlers"
-  ],
-  "app.utils": [],
-  "app.utils.json_utils": [],
-  "app.utils.context": [],
+  "ai_registry.scripts.install_service": [],
+  "ai_registry.scripts.install_model": [],
+  "ai_registry.scripts.update_catalog": [],
+  "app.llm": [],
+  "app.llm.client": [],
   "app.config": [],
   "app.config.profiles": [
     "os"
   ],
-  "app.kernel": [],
   "app.kernel.main": [
     "app.kernel.dev_qwen_coder_kernel",
     "os"
   ],
+  "app.kernel": [],
   "app.kernel.dev_qwen_coder_kernel": [
     "app.config.profiles",
     "app.llm.client",
     "app.utils.context",
     "app.utils.json_utils"
   ],
-  "app.llm": [],
-  "app.llm.client": [],
   "app.shared": [
     "app"
   ],
@@ -673,19 +801,13 @@
     "app.shared.configuration"
   ],
   "app.shared.configuration": [],
-  "app.kernel.engines.ollama": [
-    "os"
+  "app.control": [],
+  "app.control.router": [
+    "app.control.handlers"
   ],
-  "app.kernel.engines": [
-    "app.kernel"
-  ],
-  "app.kernel.engines.local_phi": [],
-  "app.kernel.engines.openai": [
-    "os"
-  ],
-  "app.kernel.engines.vllm": [
-    "os"
-  ],
+  "app.utils": [],
+  "app.utils.context": [],
+  "app.utils.json_utils": [],
   "app.control.handlers": [
     "app.control.handlers.agent_chat"
   ],
@@ -694,73 +816,91 @@
     "app.kernel.engines",
     "os"
   ],
-  "app.control.tools": [
-    "app.control"
-  ],
-  "app.control.tools.rag_tool": [
-    "os"
-  ],
-  "app.control.tools.shell_tool": [],
-  "app.control.tools.http_tool": [],
-  "app.control.tools.file_tool": [],
-  "app.control.api.files": [
-    "os.control.os.api.files"
-  ],
-  "app.control.api.update": [
-    "os.control.os.api.update"
-  ],
-  "app.control.api.logs": [
-    "os.control.os.api.logs"
-  ],
   "app.control.api.packages": [
     "os.control.os.api.packages"
-  ],
-  "app.control.api.models": [
-    "os.control.os.api.models"
-  ],
-  "app.control.api.config": [
-    "os.control.os.api.config"
-  ],
-  "app.control.api.services": [
-    "os.control.os.api.services"
-  ],
-  "app.control.api.auth_admin": [
-    "os.control.os.api.auth_admin"
   ],
   "app.control.api.backup": [
     "os.control.os.api.backup"
   ],
-  "app.control.api.metrics": [
-    "os.control.os.api.metrics"
+  "app.control.api.logs": [
+    "os.control.os.api.logs"
+  ],
+  "app.control.api.config": [
+    "os.control.os.api.config"
+  ],
+  "app.control.api.auth_admin": [
+    "os.control.os.api.auth_admin"
   ],
   "app.control.api.datasets": [
     "os.control.os.api.datasets"
   ],
-  "tools.repo_audit.architecture_standardizer": [],
-  "tools.repo_audit.inventory": [],
-  "tools.repo_audit.doc_truth_check": [],
+  "app.control.api.files": [
+    "os.control.os.api.files"
+  ],
+  "app.control.api.services": [
+    "os.control.os.api.services"
+  ],
+  "app.control.api.update": [
+    "os.control.os.api.update"
+  ],
+  "app.control.api.metrics": [
+    "os.control.os.api.metrics"
+  ],
+  "app.control.api.models": [
+    "os.control.os.api.models"
+  ],
+  "app.control.tools": [
+    "app.control"
+  ],
+  "app.control.tools.file_tool": [],
+  "app.control.tools.http_tool": [],
+  "app.control.tools.rag_tool": [
+    "os"
+  ],
+  "app.control.tools.shell_tool": [],
+  "app.kernel.engines.vllm": [
+    "os"
+  ],
+  "app.kernel.engines": [
+    "app.kernel"
+  ],
+  "app.kernel.engines.ollama": [
+    "os"
+  ],
+  "app.kernel.engines.openai": [
+    "os"
+  ],
+  "app.kernel.engines.local_phi": [],
+  "aion.worker": [],
+  "aion.worker.catalog_sync": [
+    "config"
+  ],
+  "aion.control.schemas": [],
+  "aion.control.install_runner": [
+    "os"
+  ],
+  "aion.control": [],
+  "aion.control.catalog_api": [
+    "aion.control.install_runner",
+    "aion.control.schemas",
+    "aion.control.secrets_vault",
+    "config"
+  ],
+  "aion.control.secrets_vault": [
+    "os"
+  ],
+  "aion.v1.tasks_pb2": [
+    "os.control.os.aion_grpc.aion.v1.tasks_pb2"
+  ],
+  "aion.v1": [],
+  "aion.v1.tasks_pb2_grpc": [
+    "os.control.os.aion_grpc.aion.v1.tasks_pb2_grpc"
+  ],
   "kernel-multitenant.registry.indexer": [
     "os"
   ],
   "kernel-multitenant.shared.control": [],
   "kernel-multitenant.shared.workers.trainer": [],
-  "kernel-multitenant.shared.control.seal": [],
-  "kernel-multitenant.shared.control.seal.main": [
-    "kernel-multitenant.shared.control.core.profiles",
-    "kernel-multitenant.shared.control.core.router",
-    "kernel-multitenant.shared.control.seal.orchestrator",
-    "os"
-  ],
-  "kernel-multitenant.shared.control.seal.inner_loop": [],
-  "kernel-multitenant.shared.control.seal.safety": [],
-  "kernel-multitenant.shared.control.seal.orchestrator": [
-    "kernel-multitenant.shared.control.seal.evaluate",
-    "kernel-multitenant.shared.control.seal.inner_loop",
-    "kernel-multitenant.shared.control.seal.safety",
-    "kernel-multitenant.shared.control.seal.self_edit"
-  ],
-  "kernel-multitenant.shared.control.seal.evaluate": [],
-  "kernel-multitenant.shared.control.seal.self_edit": [],
   "kernel-multitenant.shared.control.core": [],
   "kernel-multitenant.shared.control.core.chatops": [
     "kernel-multitenant.shared.control.core.profiles",
@@ -772,161 +912,21 @@
     "os"
   ],
   "kernel-multitenant.shared.control.core.router": [],
-  "ai_registry.scripts.update_catalog": [],
-  "ai_registry.scripts.install_model": [],
-  "ai_registry.scripts.install_service": [],
-  "scripts.utils.models": [],
-  "scripts.utils.data": [
+  "kernel-multitenant.shared.control.seal.main": [
+    "kernel-multitenant.shared.control.core.profiles",
+    "kernel-multitenant.shared.control.core.router",
+    "kernel-multitenant.shared.control.seal.orchestrator",
     "os"
   ],
-  "scripts.utils.features": [],
-  "console.tui": [],
-  "console.tui.explorer": [
-    "console.tui.api",
-    "console.tui.registry_loader"
+  "kernel-multitenant.shared.control.seal.self_edit": [],
+  "kernel-multitenant.shared.control.seal.evaluate": [],
+  "kernel-multitenant.shared.control.seal": [],
+  "kernel-multitenant.shared.control.seal.orchestrator": [
+    "kernel-multitenant.shared.control.seal.evaluate",
+    "kernel-multitenant.shared.control.seal.inner_loop",
+    "kernel-multitenant.shared.control.seal.safety",
+    "kernel-multitenant.shared.control.seal.self_edit"
   ],
-  "console.tui.web_server": [
-    "console.tui.api"
-  ],
-  "console.tui.registry_loader": [],
-  "console.tui.api": [],
-  "process-analytics.prescriptive": [],
-  "process-analytics.prescriptive.decision_engine": [],
-  "process-analytics.prescriptive.rl_agent": [],
-  "process-analytics.prescriptive.optimizer_ga": [],
-  "process-analytics.predictive": [],
-  "process-analytics.predictive.outcome_predictor": [],
-  "process-analytics.predictive.time_predictor": [],
-  "process-analytics.predictive.anomaly_detector_dbscan": [],
-  "process-analytics.querying": [],
-  "process-analytics.querying.pql_engine": [],
-  "process-analytics.querying.sql_adapter": [],
-  "process-analytics.conformance": [],
-  "process-analytics.conformance.conformance_checker": [],
-  "process-analytics.orchestrator": [],
-  "process-analytics.orchestrator.adapters_omertaos": [],
-  "process-analytics.orchestrator.self_evolving_controller": [],
-  "process-analytics.orchestrator.actions": [],
-  "process-analytics.performance": [],
-  "process-analytics.performance.performance_analyzer": [],
-  "process-analytics.api": [],
-  "process-analytics.api.context": [
-    "process-analytics.conformance.conformance_checker",
-    "process-analytics.core.utils",
-    "process-analytics.discovery.discovery_engine",
-    "process-analytics.ingestion.event_ingestor",
-    "process-analytics.orchestrator.adapters_omertaos",
-    "process-analytics.orchestrator.self_evolving_controller",
-    "process-analytics.performance.performance_analyzer",
-    "process-analytics.predictive.anomaly_detector_dbscan",
-    "process-analytics.predictive.outcome_predictor",
-    "process-analytics.predictive.time_predictor",
-    "process-analytics.prescriptive.decision_engine",
-    "process-analytics.prescriptive.optimizer_ga",
-    "process-analytics.prescriptive.rl_agent"
-  ],
-  "process-analytics.api.server": [
-    "process-analytics.api.routers"
-  ],
-  "process-analytics.core": [],
-  "process-analytics.core.models": [],
-  "process-analytics.core.utils": [],
-  "process-analytics.ingestion": [],
-  "process-analytics.ingestion.normalizer": [],
-  "process-analytics.ingestion.event_ingestor": [
-    "process-analytics.core.utils"
-  ],
-  "process-analytics.discovery": [],
-  "process-analytics.discovery.discovery_engine": [],
-  "process-analytics.api.routers": [],
-  "process-analytics.api.routers.decisions": [],
-  "process-analytics.api.routers.events": [],
-  "process-analytics.api.routers.analytics": [],
-  "control.tests.test_kernel_proposals": [
-    "os.control.routes.kernel_proposals",
-    "os.kernel.runtime"
-  ],
-  "control.tests.test_model_registry": [
-    "os.control.models"
-  ],
-  "control.tests.test_memory_routes": [
-    "os"
-  ],
-  "control.tests.conftest": [],
-  "control.tests.test_plugins_api": [
-    "aionos_control.main"
-  ],
-  "control.tests.test_config_paths": [
-    "os.control.ai_router",
-    "os.control.config_paths"
-  ],
-  "control.tests.test_health": [
-    "os.control.main"
-  ],
-  "control.aionos_control": [],
-  "control.aionos_control.main": [
-    "control.aionos_control.routes"
-  ],
-  "control.aionos_control.routes": [
-    "control.aionos_control.plugins"
-  ],
-  "control.aionos_control.routes.plugins": [
-    "control.aionos_control.plugins.registry",
-    "control.aionos_control.routes.schemas"
-  ],
-  "control.aionos_control.routes.schemas": [],
-  "control.aionos_control.plugins": [
-    "control.aionos_control"
-  ],
-  "control.aionos_control.plugins.registry": [],
-  "control.aionos_control.plugins.entries": [],
-  "control.aionos_control.plugins.entries.nevergrad_entry": [],
-  "control.aionos_control.plugins.entries.stumpy_entry": [],
-  "control.aionos_control.plugins.entries.cleanlab_entry": [],
-  "bigdata.pipelines.streaming.task_latency_monitor": [],
-  "bigdata.pipelines.streaming.router_decision_stream": [],
-  "bigdata.pipelines.batch.airflow.dags.weekly_model_train": [],
-  "bigdata.pipelines.batch.airflow.dags.daily_feature_build": [],
-  "bigdata.pipelines.batch.airflow.dags.scripts.extract_clickhouse": [],
-  "bigdata.pipelines.batch.airflow.dags.scripts.load_minio": [],
-  "bigdata.pipelines.batch.airflow.dags.scripts.train_model": [],
-  "bigdata.pipelines.batch.airflow.dags.scripts.upload_model": [],
-  "bigdata.pipelines.batch.airflow.dags.scripts.transform_features": [],
-  "cli.aionos_core": [],
-  "cli.aionos_core.cli": [
-    "core.installer",
-    "explorer.aion_explorer"
-  ],
-  "cli.aion": [
-    "cli"
-  ],
-  "cli.aion.cli": [],
-  "cli.aion.v1": [],
-  "cli.aion.commands": [],
-  "cli.aion.commands.auth": [
-    "cli.aion.services.auth"
-  ],
-  "cli.aion.commands.apply": [
-    "cli.aion.services.bundle"
-  ],
-  "cli.aion.commands.doctor": [
-    "cli.aion.services.doctor"
-  ],
-  "cli.aion.commands.local": [],
-  "cli.aion.commands.init": [
-    "cli.aion.services.quickstart"
-  ],
-  "cli.aion.commands.sync": [],
-  "cli.aion.commands.tui": [
-    "cli.aion.services.tui"
-  ],
-  "cli.aion.services": [],
-  "cli.aion.services.auth": [],
-  "cli.aion.services.bundle": [
-    "cli.aion.services.schemas"
-  ],
-  "cli.aion.services.doctor": [],
-  "cli.aion.services.quickstart": [],
-  "cli.aion.services.schemas": [],
-  "cli.aion.services.tui": []
+  "kernel-multitenant.shared.control.seal.safety": [],
+  "kernel-multitenant.shared.control.seal.inner_loop": []
 }

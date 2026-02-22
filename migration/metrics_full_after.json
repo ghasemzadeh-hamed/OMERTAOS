@@ -43,15 +43,15 @@
         "centrality": 12
       },
       {
-        "module": "os.control.os.api",
-        "fan_in": 3,
-        "fan_out": 9,
-        "centrality": 12
-      },
-      {
         "module": "os.control.os.core.deps",
         "fan_in": 11,
         "fan_out": 1,
+        "centrality": 12
+      },
+      {
+        "module": "os.control.os.api",
+        "fan_in": 3,
+        "fan_out": 9,
         "centrality": 12
       },
       {

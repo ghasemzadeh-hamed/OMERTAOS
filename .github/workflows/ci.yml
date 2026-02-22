@@ -16,11 +16,7 @@ jobs:
       VAULT_ADDR: 'http://127.0.0.1:8200'
       VAULT_AUTH_METHOD: 'token'
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN || vars.VAULT_TOKEN || '' }}
-      AION_GATEWAY_API_KEYS: demo-key:admin|manager
-      AION_GATEWAY_ADMIN_TOKEN: demo-admin-token
-      AION_ADMIN_TOKEN: demo-admin-token
       NEXTAUTH_URL: 'http://localhost:3000'
-      NEXTAUTH_SECRET: 'dev-secret-change-me'
       NEXT_PUBLIC_GATEWAY_URL: 'http://gateway:3000'
       NEXT_PUBLIC_CONTROL_URL: 'http://control:8000'
       SECRET_PROVIDER_MODE: 'local'
@@ -31,6 +27,22 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Generate ephemeral CI secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          API_KEY="ci-$(openssl rand -hex 12)"
+          ADMIN_TOKEN="ci-$(openssl rand -hex 16)"
+          NEXTAUTH_SECRET="ci-$(openssl rand -hex 24)"
+          VAULT_DEV_TOKEN="ci-vault-$(openssl rand -hex 12)"
+          {
+            echo "AION_GATEWAY_API_KEYS=${API_KEY}:admin|manager"
+            echo "AION_GATEWAY_ADMIN_TOKEN=${ADMIN_TOKEN}"
+            echo "AION_ADMIN_TOKEN=${ADMIN_TOKEN}"
+            echo "NEXTAUTH_SECRET=${NEXTAUTH_SECRET}"
+            echo "CI_VAULT_DEV_TOKEN=${VAULT_DEV_TOKEN}"
+          } >> "$GITHUB_ENV"
 
       - name: Run gitleaks
         uses: gitleaks/gitleaks-action@v2
@@ -170,8 +182,8 @@ jobs:
         if: env.VAULT_ENABLED == 'true'
         env:
           VAULT_ADDR: http://127.0.0.1:8200
-          VAULT_DEV_ROOT_TOKEN_ID: aionos-dev-root
-          VAULT_TOKEN: aionos-dev-root
+          VAULT_DEV_ROOT_TOKEN_ID: ${{ env.CI_VAULT_DEV_TOKEN }}
+          VAULT_TOKEN: ${{ env.CI_VAULT_DEV_TOKEN }}
         run: python scripts/bootstrap_vault_dev.py
 
       - name: Compose up application services
