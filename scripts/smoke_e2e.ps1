@@ -37,7 +37,6 @@ function Wait-ForService {
   throw "$Name did not become ready"
 }
 
-
 Wait-ForService -Name 'control' -Url "$ControlUrl/healthz"
 Wait-ForService -Name 'gateway' -Url "$GatewayUrl/healthz"
 Wait-ForService -Name 'console' -Url "$ConsoleUrl/healthz"
