@@ -32,11 +32,9 @@ wait_for() {
 }
 
 # Authoritative health endpoints
-
 wait_for "control" "$CONTROL_BASE_URL/healthz"
 wait_for "gateway" "$GATEWAY_BASE_URL/healthz"
 wait_for "console" "$CONSOLE_BASE_URL/healthz"
-
 
 # Best-effort admin health (should not fail the smoke)
 if [[ -n "${ADMIN_TOKEN}" ]]; then
