@@ -1,8 +1,7 @@
-"""Compatibility package re-exporting control plugins from :mod:`os.control.aionos_control`."""
+"""Compatibility package re-exporting control plugins from :mod:`control.aionos_control`."""
 
 from __future__ import annotations
 
-import os.control.aionos_control as _impl
-from os.control.aionos_control import *  # type: ignore[F401,F403]
+from control.aionos_control import app
 
-__all__ = getattr(_impl, "__all__", [])
+__all__ = ["app"]

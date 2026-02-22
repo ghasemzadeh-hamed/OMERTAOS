@@ -3,32 +3,31 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
 import time
-from pathlib import Path
 from typing import Any, Dict
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Request, status
 
+from config import get_bool, get_config, get_path
 from os.control.aionos_profiles import get_profile
 from os.control.os.policy import policy_store
 
 router = APIRouter(prefix="/v1/seal", tags=["seal"])
 
 _JOBS: Dict[str, Dict[str, Any]] = {}
-_REGISTRY_ROOT = Path(os.getenv("AION_REGISTRY_DIR", "ai_registry")) / "storage" / "experiments"
-_SEAL_CONFIG_DIR = Path(os.getenv("SEAL_CONFIG_DIR", "configs"))
+_REGISTRY_ROOT = get_path("AION_REGISTRY_DIR", "ai_registry") / "storage" / "experiments"
+_SEAL_CONFIG_DIR = get_path("SEAL_CONFIG_DIR", "configs")
 _LOCK = asyncio.Lock()
 
 
 def _seal_enabled() -> bool:
     profile_name, _ = get_profile()
-    return os.getenv("FEATURE_SEAL") == "1" or profile_name == "enterprise-vip"
+    return get_bool("FEATURE_SEAL") or profile_name == "enterprise-vip"
 
 
 def _require_admin(request: Request) -> None:
-    expected = os.getenv("AION_ADMIN_TOKEN") or os.getenv("AUTH_TOKEN")
+    expected = get_config("AION_ADMIN_TOKEN") or get_config("AUTH_TOKEN")
     if not expected:
         return
     header = request.headers.get("authorization", "")

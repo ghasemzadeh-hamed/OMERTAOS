@@ -529,7 +529,7 @@ Write-Info "Selected profile: $Profile"
 
 if (-not $ComposeFile) {
     if ($Local) {
-        $ComposeFile = 'docker-compose.local.yml'
+        $ComposeFile = 'deploy/compose/docker-compose.local.yml'
     } else {
         $ComposeFile = 'docker-compose.yml'
     }

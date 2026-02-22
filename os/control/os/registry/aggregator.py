@@ -1,7 +1,6 @@
 """Backend aggregator for AI registry providers and manifests."""
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -10,6 +9,7 @@ from typing import Any, Optional, Tuple
 import httpx
 import yaml
 
+from config import get_config
 from os.control.os.core.logger import get_logger
 
 LOGGER = get_logger(__name__)
@@ -92,7 +92,7 @@ class RegistryAggregator:
     """Aggregate registry manifests with runtime provider checks."""
 
     def __init__(self, root: Path | None = None) -> None:
-        base = Path(root) if root else Path(os.getenv("AION_REGISTRY_DIR", "ai_registry"))
+        base = Path(root) if root else Path(get_config("AION_REGISTRY_DIR", "ai_registry"))
         self._root = base.resolve()
         self._index_path = self._root / "REGISTRY.yaml"
 
@@ -215,7 +215,7 @@ class RegistryAggregator:
                 manifests_with_source = [dict(model, source="manifest") for model in manifests]
                 available.extend(manifests_with_source)
         elif context.requires_api_key:
-            api_key = os.getenv(env_var or "") if env_var else None
+            api_key = get_config(env_var or "") if env_var else None
             if not api_key:
                 enabled = False
                 error = f"{env_var or context.name.upper() + '_API_KEY'} not configured"
@@ -249,8 +249,8 @@ class RegistryAggregator:
 
     async def _fetch_ollama_catalog(self) -> Tuple[list[dict[str, Any]], Optional[str]]:
         base_url = (
-            os.getenv("OLLAMA_API_BASE")
-            or os.getenv("OLLAMA_HOST")
+            get_config("OLLAMA_API_BASE")
+            or get_config("OLLAMA_HOST")
             or "http://127.0.0.1:11434"
         ).rstrip("/")
         endpoint = f"{base_url}/api/tags"

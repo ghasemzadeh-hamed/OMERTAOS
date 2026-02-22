@@ -35,8 +35,8 @@
 
 ## Manual follow-up tasks
 1. Resolve detected circular imports and re-run migration gate.
-2. Incrementally migrate remaining env/config access to `omertaos.config`.
-3. Replace legacy raw registry reads with `omertaos.registry` across runtime modules.
+2. Incrementally migrate remaining env/config access to `config`.
+3. Replace legacy raw registry reads with `registry` across runtime modules.
 4. Stabilize test/lint/typecheck baselines before path relocation.
 
 ## Recent log
@@ -48,3 +48,23 @@ eaab0ef Fix Redis set result handling in gateway
 af5781b Merge pull request #171 from Hamedghz/omertaos/implement-console-auth-and-database-setup-fixes
 
 ```
+
+## Phase 3 (full standardization analysis)
+- Added automated architecture analyzer: `tools/repo_audit/architecture_standardizer.py`.
+- Generated multi-language dependency artifacts:
+  - `migration/repo_inventory_full.json`
+  - `migration/dependency_graph_python_full.json`
+  - `migration/dependency_graph_rust_full.json`
+  - `migration/dependency_graph_frontend_full.json`
+  - `migration/cross_layer_violations_full.json`
+  - `migration/metrics_full_after.json`
+  - `migration/migration_plan_derived.json`
+  - `migration/standardization_report.md`
+- Confirmed setup-file relocation remains compatible (root wrappers + deploy canonical paths).
+- Kept migration dependency-safe: no destructive bulk moves performed automatically.
+
+## Phase 4 (namespace distribution)
+- Relocated `aionos_core` implementation to `cli/aionos_core` with root compatibility wrappers retained at `aionos_core/*`.
+- Relocated `aionos_control` implementation to `control/aionos_control` with compatibility wrappers retained at `aionos_control/*` and `os/control/aionos_control/*`.
+- Relocated `os/secret_store` implementation to `shared/secret_store` with compatibility wrappers retained at `os/secret_store/*`.
+- Relocated `os/systemd/omerta-claude-bootstrap.service` to `deploy/systemd/`.

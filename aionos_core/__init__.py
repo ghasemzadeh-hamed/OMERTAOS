@@ -1,7 +1,7 @@
-"""AION-OS core meta-package exposing shared CLI utilities."""
+"""Compatibility package for relocated :mod:`cli.aionos_core`."""
 
 from __future__ import annotations
 
-__all__ = ["__version__"]
+from cli.aionos_core import __version__
 
-__version__ = "0.2.0"
+__all__ = ["__version__"]

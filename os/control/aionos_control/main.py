@@ -1,19 +1,7 @@
-"""FastAPI application exposing plugin registry endpoints."""
-from fastapi import FastAPI
+"""Compatibility wrapper for relocated :mod:`control.aionos_control.main`."""
 
-from .routes import plugins
+from __future__ import annotations
 
-app = FastAPI(title="AION-OS Control")
-app.include_router(plugins.router)
+from control.aionos_control.main import app
 
-
-@app.get("/healthz")
-def healthz() -> dict[str, str]:
-    """Health probe endpoint for readiness checks."""
-    return {"status": "ok"}
-
-
-@app.get("/health")
-def health() -> dict[str, str]:
-    """Liveness probe alias for healthz."""
-    return {"status": "ok"}
+__all__ = ["app"]

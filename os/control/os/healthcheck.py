@@ -9,13 +9,13 @@ container becomes healthy as soon as one of the interfaces is ready.
 from __future__ import annotations
 
 import asyncio
-import os
 import sys
 from typing import Final
 
 import grpc
 import httpx
 from grpc_health.v1 import health_pb2, health_pb2_grpc
+from config import get_config, get_float
 
 _DEFAULT_HTTP_URL: Final[str] = "http://localhost:8000/healthz"
 _DEFAULT_GRPC_TARGET: Final[str] = "localhost:50051"
@@ -39,9 +39,9 @@ async def _check_grpc(target: str, timeout: float) -> bool:
 
 
 async def _probe() -> int:
-    timeout = float(os.getenv("AION_CONTROL_HEALTH_TIMEOUT", _DEFAULT_TIMEOUT))
-    http_url = os.getenv("AION_CONTROL_HEALTH_URL", _DEFAULT_HTTP_URL)
-    grpc_target = os.getenv("AION_CONTROL_GRPC", _DEFAULT_GRPC_TARGET)
+    timeout = get_float("AION_CONTROL_HEALTH_TIMEOUT", _DEFAULT_TIMEOUT)
+    http_url = get_config("AION_CONTROL_HEALTH_URL", _DEFAULT_HTTP_URL)
+    grpc_target = get_config("AION_CONTROL_GRPC", _DEFAULT_GRPC_TARGET)
 
     try:
         if await _check_http(http_url, timeout):
