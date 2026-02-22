@@ -1,7 +1,7 @@
 """Tests for the plugin registry FastAPI endpoints."""
 from fastapi.testclient import TestClient
 
-from aion_control.main import app
+from control.aion_control.main import app
 
 client = TestClient(app)
 
