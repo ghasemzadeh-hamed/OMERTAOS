@@ -1,4 +1,4 @@
-#OMERTA OS
+OMERTAOS
 
 AI-Oriented Modular Operating System Infrastructure  
 Secure • Distributed • Agent-Driven • Scalable
