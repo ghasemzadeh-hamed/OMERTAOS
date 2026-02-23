@@ -37,9 +37,9 @@ docker compose up --build
 
 Access:
 
-Console  http://localhost:3000  
-Control  http://localhost:8000  
-Gateway  http://localhost:8080  
+Gateway  http://localhost:8080
+Console  http://localhost:3000
+Control  http://localhost:8000
 
 ---
 
