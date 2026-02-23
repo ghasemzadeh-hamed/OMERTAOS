@@ -22,6 +22,27 @@
 - [CONTRIBUTING](CONTRIBUTING.md)
 - [WINDOWS_SETUP](WINDOWS_SETUP.md)
 
+---
+
+## Quick Install
+
+Clone the repository:
+
+git clone https://github.com/Hamedghz/OMERTAOS.git
+cd OMERTAOS
+
+Start services:
+
+docker compose up --build
+
+Access:
+
+Console  http://localhost:3000  
+Control  http://localhost:8000  
+Gateway  http://localhost:8080  
+
+---
+
 ## Migration/Standardization Artifacts
 - [../STRUCTURE.md](../STRUCTURE.md) canonical top-level layout
 - [../migration/standardization_report.md](../migration/standardization_report.md)
