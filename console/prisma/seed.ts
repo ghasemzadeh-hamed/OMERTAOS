@@ -1,7 +1,22 @@
 import bcrypt from 'bcrypt';
-import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient({ log: ['warn', 'error'] });
+type PrismaClientLike = {
+  $connect: () => Promise<void>;
+  $disconnect: () => Promise<void>;
+  user?: {
+    upsert?: (args: Record<string, any>) => Promise<any>;
+  };
+};
+
+const prismaModule = require('@prisma/client') as {
+  PrismaClient?: new (options?: { log?: string[] }) => PrismaClientLike;
+};
+
+if (!prismaModule.PrismaClient) {
+  throw new Error('Prisma client is missing PrismaClient export. Run prisma generate.');
+}
+
+const prisma = new prismaModule.PrismaClient({ log: ['warn', 'error'] });
 
 async function main() {
   const skipSeed = (process.env.SKIP_CONSOLE_SEED || '').toLowerCase();

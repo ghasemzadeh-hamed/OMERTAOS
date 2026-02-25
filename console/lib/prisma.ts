@@ -1,10 +1,28 @@
-import { PrismaClient } from '@prisma/client';
-
 import { getDatabaseDiagnostics, requirePostgresUrl } from './databaseInfo';
+
+type PrismaClientCtor = new (options?: { log?: string[] }) => PrismaClientLike;
+type PrismaClientLike = {
+  $disconnect: () => Promise<void>;
+  $queryRaw: (...args: unknown[]) => Promise<any>;
+  [key: string]: any;
+};
+
+let prismaModule: { PrismaClient?: PrismaClientCtor } = {};
+try {
+  prismaModule = require('@prisma/client') as { PrismaClient?: PrismaClientCtor };
+} catch (error) {
+  // eslint-disable-next-line no-console
+  console.warn('[console] Prisma package not fully generated; running with database client disabled.', error);
+}
+
+const PrismaClient = prismaModule.PrismaClient;
 
 const isDockerEnv = process.env.AION_DOCKER === '1' || process.env.DOCKER === 'true';
 const isProdEnv = process.env.NODE_ENV === 'production';
-const enforceDatabaseUrl = isDockerEnv || isProdEnv;
+const isNextBuild =
+  process.env.NEXT_PHASE === 'phase-production-build' ||
+  process.env.npm_lifecycle_event === 'build';
+const enforceDatabaseUrl = (isDockerEnv || isProdEnv) && !isNextBuild;
 
 const databaseUrl = process.env.DATABASE_URL;
 requirePostgresUrl(databaseUrl, enforceDatabaseUrl);
@@ -16,7 +34,7 @@ console.info(
 );
 
 type GlobalWithPrisma = typeof globalThis & {
-  prisma?: PrismaClient | null;
+  prisma?: PrismaClientLike | null;
 };
 
 const prismaEnabledEnv = process.env.AION_ENABLE_PRISMA;
@@ -25,8 +43,8 @@ const prismaEnabled =
   prismaEnabledEnv === '1' ||
   prismaEnabledEnv.toLowerCase?.() === 'true';
 
-const createPrismaClient = (): PrismaClient | null => {
-  if (!prismaEnabled) {
+const createPrismaClient = (): PrismaClientLike | null => {
+  if (!prismaEnabled || !PrismaClient) {
     return null;
   }
 
@@ -44,7 +62,7 @@ const createPrismaClient = (): PrismaClient | null => {
 const globalForPrisma = globalThis as GlobalWithPrisma;
 const prismaInstance = globalForPrisma.prisma ?? createPrismaClient();
 
-export const prisma: PrismaClient =
+export const prisma: PrismaClientLike =
   prismaInstance ??
   (new Proxy(
     {},
@@ -56,7 +74,7 @@ export const prisma: PrismaClient =
         return () => Promise.reject(new Error('Prisma client is disabled'));
       },
     },
-  ) as PrismaClient);
+  ) as PrismaClientLike);
 
 if (process.env.NODE_ENV !== 'production' && prismaInstance) {
   globalForPrisma.prisma = prismaInstance;

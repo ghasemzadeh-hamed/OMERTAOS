@@ -44,20 +44,24 @@ Start services:
 
 docker compose up --build
 
+Or run the helper installer script:
+
+./quick-install.sh
+
 Access:
 
-Console  http://localhost:3000  
-Control  http://localhost:8000  
-Gateway  http://localhost:8080  
+Console  http://localhost:3000
+Control  http://localhost:8000
+Gateway  http://localhost:8080
 
 ---
 
 ## Environment Variables
 
-SECRET_PROVIDER_MODE  
-VAULT_ENABLED  
-AION_TLS_REQUIRED  
-AION_TLS_REQUIRE_MTLS  
+SECRET_PROVIDER_MODE
+VAULT_ENABLED
+AION_TLS_REQUIRED
+AION_TLS_REQUIRE_MTLS
 
 ---
 
