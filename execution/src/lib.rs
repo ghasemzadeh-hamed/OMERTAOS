@@ -1,15 +1,16 @@
-pub mod sandbox_runner {
-    include!("../sandbox_runner.rs");
-}
+pub mod contracts;
+pub mod observability;
+pub mod registry_service;
+pub mod runtime;
 
-pub mod agent_registry {
-    include!("../agent_registry.rs");
-}
+#[path = "../agent_optimizer.rs"]
+pub mod agent_optimizer;
 
-pub mod agent_optimizer {
-    include!("../agent_optimizer.rs");
-}
+#[path = "../resource_controller.rs"]
+pub mod resource_controller;
 
-pub mod resource_controller {
-    include!("../resource_controller.rs");
-}
+#[path = "../agent_registry.rs"]
+pub mod agent_registry;
+
+#[path = "../sandbox_runner.rs"]
+pub mod sandbox_runner;
