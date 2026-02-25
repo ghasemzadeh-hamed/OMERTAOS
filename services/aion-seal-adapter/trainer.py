@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import time
 from pathlib import Path
 from typing import Any, Dict
@@ -10,6 +11,9 @@ import requests
 from .config import settings
 from .dataset_builder import build_sft_dataset, fetch_self_edits
 from .evaluator import evaluate_model
+from .registry_client import HTTPModelRegistryClient, ModelRegistryPort
+
+logger = logging.getLogger(__name__)
 
 
 def finetune_lora(dataset: list[dict], suffix: str) -> str:
@@ -30,47 +34,17 @@ def finetune_lora(dataset: list[dict], suffix: str) -> str:
     return str(model_dir)
 
 
-def get_best_score() -> float:
-    try:
-        response = requests.get(f"{settings.REGISTRY_URL}/models", timeout=10)
-        response.raise_for_status()
-        models = response.json()
-        if not isinstance(models, list):
-            return 0.0
-        best = 0.0
-        for model in models:
-            score = float(model.get("score", 0.0))
-            if score > best:
-                best = score
-        return best
-    except Exception:
-        return 0.0
+def run_seal_iteration(registry: ModelRegistryPort | None = None) -> Dict[str, Any]:
+    registry_client = registry or HTTPModelRegistryClient()
 
-
-def register_if_better(model_path: str, score: float) -> bool:
-    best = get_best_score()
-    if score < best + settings.IMPROVEMENT_THRESHOLD:
-        return False
-
-    payload: Dict[str, Any] = {
-        "name": Path(model_path).name,
-        "parent": settings.BASE_MODEL_NAME,
-        "path": model_path,
-        "score": score,
-        "metadata": {"source": "seal-adapter"},
-    }
-    response = requests.post(f"{settings.REGISTRY_URL}/models", json=payload, timeout=10)
-    response.raise_for_status()
-    return True
-
-
-def run_seal_iteration() -> Dict[str, Any]:
     edits = fetch_self_edits()
     if not edits:
+        logger.info("seal_iteration_skipped", extra={"reason": "no_edits"})
         return {"status": "no_edits"}
 
     dataset = build_sft_dataset(edits)
     if not dataset:
+        logger.info("seal_iteration_skipped", extra={"reason": "no_dataset"})
         return {"status": "no_dataset"}
 
     suffix = str(int(time.time()))
@@ -78,8 +52,9 @@ def run_seal_iteration() -> Dict[str, Any]:
     score = evaluate_model(model_path)
     registered = False
     try:
-        registered = register_if_better(model_path, score)
+        registered = registry_client.register_if_better(model_path, score)
     except requests.HTTPError as exc:  # propagate meaningful message while still returning status
+        logger.warning("seal_registry_error", extra={"model_path": model_path, "error": str(exc)})
         return {
             "status": "registry_error",
             "model_path": model_path,
@@ -87,8 +62,10 @@ def run_seal_iteration() -> Dict[str, Any]:
             "detail": str(exc),
         }
 
+    status = "registered" if registered else "discarded"
+    logger.info("seal_iteration_completed", extra={"status": status, "model_path": model_path, "score": score})
     return {
-        "status": "registered" if registered else "discarded",
+        "status": status,
         "model_path": model_path,
         "score": score,
     }
