@@ -44,6 +44,10 @@ Start services:
 
 docker compose up --build
 
+Or run the helper installer script:
+
+./quick-install.sh
+
 Access:
 
 Console  http://localhost:3000  
