@@ -72,4 +72,3 @@ Migration target:
 
 - `execution/src/observability.rs` initializes structured tracing.
 - Service-level tracing should include task id, agent id, policy decision, and isolation mode.
-
