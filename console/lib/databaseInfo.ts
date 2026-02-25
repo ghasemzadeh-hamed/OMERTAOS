@@ -57,7 +57,7 @@ export const requirePostgresUrl = (databaseUrl: string | undefined, enforced: bo
     if (enforced) {
       throw new Error('[console] DATABASE_URL is required when running in docker/production.');
     }
-    throw new Error('[console] DATABASE_URL must be set to a Postgres DSN.');
+    return;
   }
 
   const diagnostics = getDatabaseDiagnostics(databaseUrl, enforced);
