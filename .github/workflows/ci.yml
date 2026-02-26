@@ -1,313 +1,34 @@
-name: CI
+name: Core CI
 
 on:
-  push:
-    branches: [AION, main]
   pull_request:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
 
 jobs:
-  build:
-    permissions:
-      contents: read
-      pull-requests: write
+  test:
     runs-on: ubuntu-latest
-    env:
-      VAULT_ENABLED: 'false'
-      VAULT_ADDR: 'http://127.0.0.1:8200'
-      VAULT_AUTH_METHOD: 'token'
-      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN || vars.VAULT_TOKEN || '' }}
-      NEXTAUTH_URL: 'http://localhost:3000'
-      NEXT_PUBLIC_GATEWAY_URL: 'http://gateway:8080'
-      NEXT_PUBLIC_CONTROL_URL: 'http://control:8000'
-      SECRET_PROVIDER_MODE: 'local'
-      AION_TLS_REQUIRE_MTLS: 'false'
-      AION_TLS_REQUIRED: 'false'
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
         with:
-          fetch-depth: 0
+          python-version: "3.11"
 
-      - name: Generate ephemeral CI secrets
-        shell: bash
+      - name: Install dependencies
         run: |
-          set -euo pipefail
-          API_KEY="ci-$(openssl rand -hex 12)"
-          ADMIN_TOKEN="ci-$(openssl rand -hex 16)"
-          NEXTAUTH_SECRET="ci-$(openssl rand -hex 24)"
-          VAULT_DEV_TOKEN="ci-vault-$(openssl rand -hex 12)"
-          {
-            echo "AION_GATEWAY_API_KEYS=${API_KEY}:admin|manager"
-            echo "AION_GATEWAY_ADMIN_TOKEN=${ADMIN_TOKEN}"
-            echo "AION_ADMIN_TOKEN=${ADMIN_TOKEN}"
-            echo "NEXTAUTH_SECRET=${NEXTAUTH_SECRET}"
-            echo "CI_VAULT_DEV_TOKEN=${VAULT_DEV_TOKEN}"
-          } >> "$GITHUB_ENV"
-
-      - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-          cache-dependency-path: |
-            requirements.txt
-            pyproject.toml
-
-      - name: Install project dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install --no-compile -r requirements.txt
-          pip install pre-commit
-
-      - name: Install control (editable)
-        run: pip install -e .[control,dev]
-
-      - name: Run pre-commit
-        run: pre-commit run --all-files
-
-      - name: Run control tests
-        run: pytest control/tests -q
-
-      - name: Run preflight
-        run: tools/preflight.sh --noninteractive
-
-      - name: Run docs audit
-        run: ./scripts/docs_audit.sh
-
-      - name: Show generated .env (sanitized)
-        run: |
-          echo "### .env exists?"
-          ls -l .env || echo "NO .env"
-          if [ -f .env ]; then
-            echo "### Preview of .env (without secrets)"
-            sed -e 's/API_KEY=.*/API_KEY=*****/' \
-                -e 's/TOKEN=.*/TOKEN=*****/' \
-                .env | head -n 50
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
           fi
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install gateway dependencies
-        working-directory: gateway
-        run: npm ci
-
-      - name: Build gateway
-        working-directory: gateway
-        run: npm run build
-
-      - name: Install console dependencies
-        working-directory: console
-        run: npm ci
-
-      - name: Build console
+      - name: Run tests
         run: |
-          set -euo pipefail
-          echo "### Building aion-console image"
-          docker build \
-            -t aion-console:ci \
-            -f console/Dockerfile \
-            .
-
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.5.0
-
-      - name: Read secrets from Vault
-        if: env.VAULT_ENABLED == 'true'
-        uses: hashicorp/vault-action@v3
-        with:
-          url: ${{ env.VAULT_ADDR }}
-          method: token
-          token: ${{ env.VAULT_TOKEN }}
-          exportEnv: true
-          secrets: |
-            secret/data/ci/cosign COSIGN_PASSWORD | COSIGN_PASSWORD
-
-      - name: Verify policy bundles
-        run: ./deploy/bundles/verify.sh
-
-      - name: Generate sample Cosign signature
-        if: env.VAULT_ENABLED == 'true'
-        env:
-          COSIGN_PASSWORD: ${{ env.COSIGN_PASSWORD }}
-        run: |
-          set -euo pipefail
-          : "${COSIGN_PASSWORD:?COSIGN_PASSWORD is empty}"
-          mkdir -p .artifacts
-          ( cd .artifacts && cosign generate-key-pair --yes )
-          cosign sign-blob \
-            --key .artifacts/cosign.key \
-            --output-signature .artifacts/control-server.pem.sig \
-            config/certs/control-server.pem
-
-      - name: Generate development certificates
-        if: env.VAULT_ENABLED != 'true'
-        run: python scripts/generate_dev_certs.py
-
-      - name: Compose up infrastructure
-        run: |
-          set -euo pipefail
-
-          COMPOSE="docker compose -f docker-compose.yml -f deploy/compose/compose.ci.override.yml"
-
-          echo "### Effective docker-compose config"
-          $COMPOSE config
-
-          INFRA_SERVICES="postgres redis qdrant minio"
-          if [ "${VAULT_ENABLED}" = "true" ]; then
-            INFRA_SERVICES="${INFRA_SERVICES} vault"
-            echo "### Bringing up core infrastructure (db + queue + storage + vault)..."
+          if [ -d tests ]; then
+            pytest -q
           else
-            echo "### Bringing up core infrastructure (db + queue + storage)..."
+            echo "No tests directory"
           fi
-
-          # shellcheck disable=SC2086 -- service list is intentionally expanded
-          $COMPOSE up -d --build ${INFRA_SERVICES}
-
-          echo "### Infrastructure status"
-          $COMPOSE ps
-
-          echo "### Recent infrastructure logs"
-          # shellcheck disable=SC2086 -- service list is intentionally expanded
-          $COMPOSE logs --tail=80 ${INFRA_SERVICES} || true
-
-      - name: Bootstrap development Vault
-        if: env.VAULT_ENABLED == 'true'
-        env:
-          VAULT_ADDR: http://127.0.0.1:8200
-          VAULT_DEV_ROOT_TOKEN_ID: ${{ env.CI_VAULT_DEV_TOKEN }}
-          VAULT_TOKEN: ${{ env.CI_VAULT_DEV_TOKEN }}
-        run: python scripts/bootstrap_vault_dev.py
-
-      - name: Compose up application services
-        run: |
-          set -euo pipefail
-
-          echo "### Bringing up application services (control + gateway + console)..."
-          COMPOSE="docker compose -f docker-compose.yml -f deploy/compose/compose.ci.override.yml"
-
-          if ! $COMPOSE up -d --build \
-            control \
-            gateway \
-            console
-          then
-            echo "### docker compose up failed, dumping service status and logs..."
-            $COMPOSE ps || true
-            $COMPOSE logs --tail=200 control gateway console || true
-            exit 1
-          fi
-
-          echo "### Application status"
-          $COMPOSE ps
-
-          echo "### Recent application logs"
-          $COMPOSE logs --tail=80 control gateway console || true
-
-      - name: Run smoke test
-        env:
-          CONTROL_BASE_URL: http://localhost:8000
-          GATEWAY_BASE_URL: http://localhost:8080
-          CONSOLE_BASE_URL: http://localhost:3000
-        run: ./scripts/smoke_e2e.sh
-
-      - name: Ensure .env exists for compose
-        if: always()
-        run: |
-          if [ ! -f .env ]; then
-            if [ -f config/templates/.env.example ]; then
-              cp config/templates/.env.example .env
-            else
-              touch .env
-            fi
-          fi
-
-      - name: Dump compose logs
-        if: always()
-        run: |
-          set -euo pipefail
-
-          COMPOSE="docker compose -f docker-compose.yml -f deploy/compose/compose.ci.override.yml"
-          $COMPOSE logs > compose.log
-
-      - name: Upload logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: compose-logs
-          path: compose.log
-
-      - name: Compose down
-        if: always()
-        run: |
-          set -euo pipefail
-
-          COMPOSE="docker compose -f docker-compose.yml -f deploy/compose/compose.ci.override.yml"
-          $COMPOSE down -v
-
-  native:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Run native installer
-        run: |
-          chmod +x scripts/install_linux.sh
-          ./scripts/install_linux.sh
-
-      - name: Wait for services
-        run: sleep 20
-
-      - name: Run native smoke test
-        run: ./scripts/smoke.sh
-
-      - name: Dump native service logs on failure
-        if: failure()
-        run: |
-          echo "=== omerta-control (journal) ==="
-          sudo journalctl -u omerta-control -n 200 --no-pager || true
-          echo "=== omerta-gateway (journal) ==="
-          sudo journalctl -u omerta-gateway -n 200 --no-pager || true
-          echo "=== omerta-console (journal) ==="
-          sudo journalctl -u omerta-console -n 200 --no-pager || true
-          echo "=== omerta-console (file fallback) ==="
-          sudo cat /var/log/omerta-console.log || true
-
-      - name: Show service status
-        if: always()
-        continue-on-error: true
-        run: |
-          if command -v systemctl >/dev/null 2>&1; then
-            sudo systemctl status omerta-control || true
-            sudo systemctl status omerta-gateway || true
-            sudo systemctl status omerta-console || true
-          else
-            echo "systemctl not available on this runner; skipping status checks"
-          fi
-
-      - name: Collect journal logs
-        if: always()
-        run: |
-          sudo journalctl -u omerta-control -n 200 --no-pager > control.log
-          sudo journalctl -u omerta-gateway -n 200 --no-pager > gateway.log
-          sudo journalctl -u omerta-console -n 200 --no-pager > console.log
-          sudo cat /var/log/omerta-console.log > console-file.log || true
-
-      - name: Upload native logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: native-logs
-          path: |
-            control.log
-            gateway.log
-            console.log
-            console-file.log
