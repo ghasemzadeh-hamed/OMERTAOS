@@ -212,4 +212,3 @@ This document is a target-state contract. Existing modules can be migrated gradu
 ## Runtime Daemon Integration
 
 OS-level resource isolation and command execution are implemented in `runtime-daemon/` and invoked via `control_plane/runtime_client.py` using `shared/proto/runtime.proto`.
-

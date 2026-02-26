@@ -19,4 +19,3 @@ Rust modules in `execution/` provide a constrained execution substrate for agent
 ## Sandbox Ownership
 
 Sandbox enforcement is owned by `runtime-daemon/src/sandbox/*` and called from Python through `control_plane/runtime_client.py`.
-

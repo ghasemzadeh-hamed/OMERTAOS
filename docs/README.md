@@ -64,4 +64,3 @@ OMERTAOS uses a hybrid control/runtime architecture:
 - Rust runtime daemon for OS-level isolation and command execution.
 
 Runtime IPC: `shared/proto/runtime.proto`.
-

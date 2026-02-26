@@ -40,4 +40,3 @@ Typical required categories:
 ## Runtime Daemon
 
 Deploy and supervise `runtime-daemon` alongside control services; default bind `127.0.0.1:50051`.
-

@@ -78,4 +78,3 @@ Execution boundary:
 - Python orchestrates.
 - Rust runtime daemon enforces isolation and process sandbox.
 - IPC over gRPC using `shared/proto/runtime.proto`.
-

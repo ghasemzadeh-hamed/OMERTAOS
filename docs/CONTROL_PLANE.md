@@ -24,4 +24,3 @@ The control plane exposes health, models, datasets, metrics, services, packages,
 ## Control Plane Scope
 
 Control plane remains Python-only for API/policy/orchestration concerns and delegates execution/isolation to runtime daemon.
-
