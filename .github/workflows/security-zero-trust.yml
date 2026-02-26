@@ -1,0 +1,25 @@
+name: Zero Trust Security
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  zero-trust:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check forbidden patterns
+        run: |
+          if grep -R "eval(" .; then
+            echo "Forbidden eval detected"
+            exit 1
+          fi
+
+      - name: Validate file structure
+        run: |
+          test -d kernel || exit 1
+          test -d sandbox || exit 1
+          test -d control || exit 1
