@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package runtime;
+
+service RuntimeService {
+  rpc StartAgent(StartAgentRequest) returns (StartAgentResponse);
+  rpc StopAgent(StopAgentRequest) returns (StopAgentResponse);
+  rpc AllocateResources(ResourceRequest) returns (ResourceResponse);
+  rpc ExecuteCommand(CommandRequest) returns (CommandResponse);
+  rpc QueryMetrics(MetricsRequest) returns (MetricsResponse);
+}
+
+message ExecutionContext {
+  string agent_id = 1;
+  string tenant_id = 2;
+  uint32 cpu_cores = 3;
+  uint64 memory_mb = 4;
+  bool gpu_enabled = 5;
+  repeated string capabilities = 6;
+}
+
+message StartAgentRequest {
+  ExecutionContext context = 1;
+  string image = 2;
+  repeated string argv = 3;
+}
+
+message StartAgentResponse {
+  bool ok = 1;
+  string message = 2;
+  int64 pid = 3;
+}
+
+message StopAgentRequest {
+  string agent_id = 1;
+  string tenant_id = 2;
+}
+
+message StopAgentResponse {
+  bool ok = 1;
+  string message = 2;
+}
+
+message ResourceRequest {
+  ExecutionContext context = 1;
+  string profile = 2;
+}
+
+message ResourceResponse {
+  bool ok = 1;
+  string message = 2;
+}
+
+message CommandRequest {
+  ExecutionContext context = 1;
+  repeated string argv = 2;
+}
+
+message CommandResponse {
+  bool ok = 1;
+  string stdout = 2;
+  string stderr = 3;
+  int32 code = 4;
+}
+
+message MetricsRequest {
+  string tenant_id = 1;
+}
+
+message MetricsResponse {
+  bool ok = 1;
+  string json = 2;
+}

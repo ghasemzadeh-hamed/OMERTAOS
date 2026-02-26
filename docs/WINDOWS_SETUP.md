@@ -1,5 +1,8 @@
 # Windows Setup for OMERTAOS
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 This guide aligns the Windows experience with the Linux quicksetup while preserving the container topology (Control, Gateway, Console).
 
 ## Prerequisites

@@ -7,9 +7,10 @@ import uuid
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from .governance_hook import GovernanceHook
-from .integration_layer import IntegrationLayer
-from .policy_engine import PolicyEngine, PolicyResult
+from kernel.governance_hook import GovernanceHook
+from kernel.integration_layer import IntegrationLayer
+from kernel.policy_engine import PolicyEngine, PolicyResult
+from kernel.multitenant.execution_context import ExecutionContext
 
 
 @dataclass
@@ -21,6 +22,7 @@ class RouteContext:
     channel: str
     metadata: Dict[str, Any]
     jwt_claims: Optional[Dict[str, Any]] = None
+    execution_context: Optional[ExecutionContext] = None
 
 
 @dataclass
@@ -65,6 +67,8 @@ class AIRouter:
 
     def route(self, intent: str, payload: Dict[str, Any], context: RouteContext) -> RouteDecision:
         """Route an intent while enforcing policy and governance checks."""
+        if context.execution_context is None:
+            raise ValueError("execution_context is required")
         policy_result = self._policy_engine.evaluate(intent=intent, context=context.metadata)
         audit_id = str(uuid.uuid4())
         if not policy_result.allowed:
@@ -77,7 +81,7 @@ class AIRouter:
                 status="denied",
                 intent=intent,
                 confidence=0.0,
-                target_queue="",  # no queue when denied
+                target_queue="",
                 selected_agents=[],
                 reason=policy_result.reason,
             )
@@ -138,4 +142,4 @@ class AIRouter:
         return "standard"
 
 
-__all__ = ["AIRouter", "RouteContext", "RouteDecision"]
+__all__ = ["AIRouter", "RouteContext", "RouteDecision", "LLMHeuristic"]

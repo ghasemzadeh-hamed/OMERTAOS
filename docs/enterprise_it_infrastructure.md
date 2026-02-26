@@ -1,5 +1,8 @@
 # Enterprise IT & Infrastructure Review
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## 1. Asset Inventory
 - Maintain a CMDB-backed inventory with lifecycle states (planned, active, maintenance, standby, decommissioned) and ownership mapped to platform, network, or security teams.
 - Representative assets:

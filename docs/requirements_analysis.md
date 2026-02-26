@@ -1,5 +1,8 @@
 # OMERTAOS Requirements Analysis
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## 1. Functional Requirements
 | ID | Description | Actors | Acceptance Criteria |
 | -- | ----------- | ------ | ------------------- |

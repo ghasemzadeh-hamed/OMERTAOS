@@ -1,5 +1,8 @@
 # UI Registry
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 The Local Web Dashboard (Next.js console) and the native TUI consume a single registry stored under `packages/ui-core/registry`. Navigation, dashboard widgets, and endpoint references are declared once and rendered by both UIs.
 
 ## Files

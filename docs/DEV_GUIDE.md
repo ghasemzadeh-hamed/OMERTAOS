@@ -1,5 +1,8 @@
 # DEV_GUIDE
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Local Development
 1. Clone repository
 2. Configure environment files

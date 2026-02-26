@@ -1,5 +1,8 @@
 # Release process
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Versioning
 
 - Follow semantic versioning (`MAJOR.MINOR.PATCH`).

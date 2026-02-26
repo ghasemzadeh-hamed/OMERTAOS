@@ -1,5 +1,8 @@
 # Native services and smoke tests
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 This repository ships three native systemd units that the GitHub Actions `native` job installs via `scripts/install_linux.sh`:
 
 | Service | Working directory | Entrypoint | Port | Health endpoints | Logs |

@@ -1,5 +1,8 @@
 # Architecture
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ```mermaid
 flowchart LR
   Client -->|REST/WS/gRPC| Gateway

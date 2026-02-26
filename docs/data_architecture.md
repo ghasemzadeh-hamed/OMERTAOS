@@ -1,5 +1,8 @@
 # Data Architecture & Database Design
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## 1. Entity-Relationship Diagram (Logical)
 - Primary system of record is PostgreSQL for multi-tenant control-plane state; Redis is used for ephemeral caches and queues, Qdrant for vectors, MinIO/S3 for artifacts, and Kafka for events/telemetry.
 - Tenancy is enforced on all relational entities through `tenant_id` foreign keys and row-level filters.

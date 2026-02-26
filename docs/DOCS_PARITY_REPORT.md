@@ -1,5 +1,8 @@
 # Docs Parity Report
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Summary
 
 - Ports claimed in code: 21

@@ -1,5 +1,8 @@
 # Quick start
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 This guide keeps each deployment path concise and aligned with the current compose and installer scripts.
 
 ## Containerized quick start
@@ -78,3 +81,8 @@ UNVERIFIED: The native Windows service flow referenced by `scripts/install_win.p
    ```
 4. Access the console at http://localhost:3000 and confirm gateway health at http://localhost:8080/healthz.
 5. Tear down with `docker compose -f docker-compose.quickstart.yml down`.
+
+## Runtime Daemon First
+
+Start runtime daemon before running command/sandbox-driven workflows.
+

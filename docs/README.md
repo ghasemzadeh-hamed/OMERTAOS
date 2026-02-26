@@ -1,5 +1,8 @@
 # Documentation Index
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Architecture and Design
 - [ARCHITECTURE](ARCHITECTURE.md)
 - [SYSTEM_DESIGN](SYSTEM_DESIGN.md)
@@ -53,3 +56,12 @@ Control  http://localhost:8000
 - `aion_core` implementation lives under `cli/aion_core` (root wrapper preserved).
 - `aion_control` implementation lives under `control/aion_control` (legacy import shims preserved).
 - `shared/secret_store` is canonical; `os/secret_store` remains as compatibility shim.
+
+## Runtime Model
+
+OMERTAOS uses a hybrid control/runtime architecture:
+- Python control plane for orchestration and governance.
+- Rust runtime daemon for OS-level isolation and command execution.
+
+Runtime IPC: `shared/proto/runtime.proto`.
+

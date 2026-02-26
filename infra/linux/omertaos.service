@@ -1,0 +1,18 @@
+[Unit]
+Description=OMERTAOS Agent Runtime
+After=network.target
+
+[Service]
+Type=simple
+User=omertaos
+Group=omertaos
+ExecStart=/opt/omertaos/bin/start.sh
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

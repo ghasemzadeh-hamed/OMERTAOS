@@ -1,5 +1,8 @@
 # API_REFERENCE
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Authentication
 Authentication requirements vary by route group (admin/devops/user/service tokens). Review middleware and route dependencies in control API modules.
 

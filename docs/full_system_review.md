@@ -1,5 +1,8 @@
 # Full-System Review
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## 1. Vision & Scope
 - **Vision:** Deliver a hybrid operating system (AION-OS) that unifies kernels, control plane, gateway, and console so enterprises can orchestrate AI agents and ML workloads consistently across bare metal, VMs, WSL, and containers.
 - **Business value:** Accelerates AI agent deployment with reproducible registries, policy-aware governance, and turnkey installers while reducing operational friction and compliance risk.

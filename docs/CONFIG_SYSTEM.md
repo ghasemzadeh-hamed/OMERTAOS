@@ -1,5 +1,8 @@
 # CONFIG_SYSTEM
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Unified Configuration API
 The architecture standard is a unified config loader surface:
 - `load_env()`

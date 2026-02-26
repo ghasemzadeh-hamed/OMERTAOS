@@ -1,5 +1,8 @@
 # Event Streams
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Kafka Topics
 
 | Topic                   | Key         | Schema                                       | Description                                    |

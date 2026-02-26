@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from control.config_paths import resolve_config_path
-from control.ai_router import AIRouter
+from kernel.router.ai_router import AIRouter
 
 
 def test_resolve_config_path_prefers_repo(monkeypatch: pytest.MonkeyPatch) -> None:

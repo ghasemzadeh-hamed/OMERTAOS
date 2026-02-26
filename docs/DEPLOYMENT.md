@@ -1,5 +1,8 @@
 # DEPLOYMENT
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Docker Build
 Use repository Dockerfiles and deployment scripts in `deploy/` and service subdirectories.
 
@@ -33,3 +36,8 @@ Typical required categories:
 - horizontal scale: stateless control/gateway replicas
 - worker pools by workload class
 - separate big-data compute from control-plane runtime nodes
+
+## Runtime Daemon
+
+Deploy and supervise `runtime-daemon` alongside control services; default bind `127.0.0.1:50051`.
+

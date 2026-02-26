@@ -1,5 +1,8 @@
 # Manual Setup Guide
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 This guide walks through configuring AION-OS without the helper scripts. It covers prerequisites, configuration, container orchestration, and optional overlays so you can deploy the stack on any development or staging machine.
 
 ---

@@ -1,5 +1,8 @@
 # AION-OS Auxiliary Tools
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 The auxiliary tool suite adds operational controls to the Control plane and Console. Each tool is optional and can be enabled/disabled via environment variables.
 
 ## Control plane APIs

@@ -5,10 +5,11 @@ from typing import Any, Dict, List
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from kernel.ai_router import AIRouter, RouteContext
+from kernel.router.ai_router import AIRouter, RouteContext
 from kernel.governance_hook import GovernanceHook
 from kernel.integration_layer import ControlClient, IntegrationLayer
 from kernel.policy_engine import PolicyEngine
+from kernel.multitenant.execution_context import ExecutionContext
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
@@ -49,6 +50,7 @@ def chat(body: ChatReq) -> Dict[str, Any]:
             session_id="api-session",
             channel="http",
             metadata={"roles": ["api"], "risk_score": 0.0},
+            execution_context=ExecutionContext(tenant_id="default", capabilities={"route"}, resource_limits={"cpu":"1"}, policy_scope="api"),
         )
         intent = str(body.task.get("intent", "chat"))
         decision = router_engine.route(intent, {"messages": messages, "task": body.task}, context)

@@ -1,5 +1,8 @@
 # Native Installation Guide
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 This document describes how to install and operate **OMERTAOS/AION-OS** without Docker. It covers
 Linux (Ubuntu/Debian) and Windows 11 environments and explains how to run the system as managed
 services.

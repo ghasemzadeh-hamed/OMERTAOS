@@ -1,5 +1,8 @@
 # Troubleshooting
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Wizard cannot reach the bridge
 
 - Confirm the bridge is running (`pnpm start` in `core/installer/bridge`).
