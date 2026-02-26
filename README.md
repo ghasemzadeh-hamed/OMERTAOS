@@ -4,6 +4,20 @@ Hybrid Agent Operating System:
 - Python Control Plane (AI orchestration, governance, APIs)
 - Rust Runtime Daemon (OS isolation, sandboxed execution, command/runtime boundary)
 
+## Quick Install
+
+```bash
+git clone https://github.com/Hamedghz/OMERTAOS.git
+cd OMERTAOS
+./quick-install.sh
+```
+
+Alternative local development startup:
+
+```bash
+docker compose -f docker-compose.local.yml up -d
+```
+
 ## Runtime Boundary
 
 Python must delegate OS-level execution to runtime daemon via runtime client:
