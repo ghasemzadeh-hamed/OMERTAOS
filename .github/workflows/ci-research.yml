@@ -1,0 +1,31 @@
+name: Research OS
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "policies/**"
+      - "scripts/**"
+
+jobs:
+  research-validation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install -U pip
+          pip install -r requirements.txt
+
+      - name: Train (CI mode)
+        run: |
+          python scripts/train_eval.py --config policies/training.yaml --ci
+
+      - name: Guard Generalization
+        run: |
+          python scripts/guard_generalization.py
