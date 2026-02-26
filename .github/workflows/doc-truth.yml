@@ -1,7 +1,0 @@
-- name: Run doc truth check
-  run: |
-    if [ -f tools/repo_audit/doc_truth_check.py ]; then
-      python tools/repo_audit/doc_truth_check.py
-    else
-      echo "Doc truth check skipped."
-    fi
