@@ -1,9 +1,0 @@
-dashboard_title: Task Health
-position:
-  CHART-task-status:
-    type: CHART
-    meta:
-      chartId: 3
-      sliceName: "Task Status"
-      height: 50
-      width: 12

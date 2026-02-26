@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: aion
+      POSTGRES_USER: aion
+      POSTGRES_PASSWORD: aion
+    volumes:
+      - ./var/db:/var/lib/postgresql/data
+
+  control:
+    build:
+      context: ../..
+      dockerfile: aion/control/Dockerfile
+    environment:
+      - DB_URL=postgresql+psycopg://aion:aion@db/aion
+      - AION_VAULT_PROVIDER=${AION_VAULT_PROVIDER:-file}
+      - AION_VAULT_KEY=${AION_VAULT_KEY:?set_me}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: aion/worker/Dockerfile
+    environment:
+      - AION_CONTROL_API=http://control:8000
+    depends_on:
+      - control
+
+  vault:
+    image: hashicorp/vault:1.16
+    command: server -dev -dev-listen-address=0.0.0.0:8200
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: root
+    ports:
+      - "8200:8200"

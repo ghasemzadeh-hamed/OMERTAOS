@@ -1,5 +1,0 @@
-profile: professional
-inherits: enterprise/base
-status: draft
-notes:
-  - "Initial scaffold for professional kernel profile during structure consolidation."

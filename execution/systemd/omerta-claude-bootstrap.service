@@ -1,0 +1,12 @@
+[Unit]
+Description=OMERTAOS Claude marketplace bootstrap
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/aion/OMERTAOS
+ExecStart=/opt/aion/OMERTAOS/scripts/claude/bootstrap-marketplace.sh
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: aion-gateway
+spec:
+  selector:
+    matchLabels:
+      app: aion-gateway
+  endpoints:
+    - port: http
+      interval: 30s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: aion-kernel
+spec:
+  selector:
+    matchLabels:
+      app: aion-kernel
+  podMetricsEndpoints:
+    - port: metrics
+      interval: 15s

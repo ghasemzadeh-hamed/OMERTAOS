@@ -1,3 +1,0 @@
-[workspace]
-members = ["summarize_text", "invoice_ocr", "host"]
-resolver = "2"

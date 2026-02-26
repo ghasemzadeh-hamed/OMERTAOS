@@ -1,0 +1,1 @@
+../../deploy/scripts/aion_edge_setup.sh

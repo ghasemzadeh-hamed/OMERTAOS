@@ -1,0 +1,13 @@
+[Unit]
+Description=AION Gateway API
+After=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/aion/aion.env
+ExecStart=/usr/bin/env node /opt/aion/gateway/dist/server.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

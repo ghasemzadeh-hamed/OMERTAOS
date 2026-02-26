@@ -1,0 +1,27 @@
+apiVersion: aip/v1
+kind: Module
+metadata:
+  name: ocr-py
+  version: 1.1.0
+security:
+  sandbox: container
+runtime:
+  entry:
+    type: http
+    addr: 127.0.0.1:7022
+    healthcheck: /readyz
+io:
+  input:
+    type: multipart
+    schema:
+      image:
+        type: file
+        format: image
+  output:
+    type: json
+    schema:
+      text:
+        type: string
+observability:
+  timeout_ms: 120000
+  log_level: warn

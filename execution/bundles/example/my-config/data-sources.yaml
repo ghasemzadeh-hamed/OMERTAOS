@@ -1,0 +1,11 @@
+sources:
+  - name: postgres-main
+    kind: postgres
+    dsn: ${POSTGRES_URL}
+    readonly: true
+  - name: minio-bucket
+    kind: s3
+    endpoint: http://127.0.0.1:9000
+    access_key: ${MINIO_ACCESS_KEY}
+    secret_key: ${MINIO_SECRET_KEY}
+    bucket: company-docs

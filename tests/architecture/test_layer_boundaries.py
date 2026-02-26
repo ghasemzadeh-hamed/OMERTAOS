@@ -6,55 +6,34 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def _python_files(root: Path) -> list[Path]:
-    if not root.exists():
-        return []
-    return [p for p in root.rglob("*.py") if "__pycache__" not in p.parts]
+def _py_files(path: Path) -> list[Path]:
+    return [p for p in path.rglob("*.py") if "__pycache__" not in p.parts] if path.exists() else []
 
 
-def _imports(path: Path) -> list[str]:
+def _imports(path: Path) -> set[str]:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    imported: list[str] = []
+    mods: set[str] = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
-            imported.extend(alias.name for alias in node.names)
+            mods.update(alias.name for alias in node.names)
         elif isinstance(node, ast.ImportFrom) and node.module:
-            imported.append(node.module)
-    return imported
+            mods.add(node.module)
+    return mods
 
 
-def _assert_no_imports(files: list[Path], forbidden_prefixes: tuple[str, ...], reason: str) -> None:
+def test_domain_has_no_service_or_gateway_imports() -> None:
     violations: list[str] = []
-    for path in files:
-        rel = path.relative_to(REPO_ROOT)
-        for module in _imports(path):
-            if module.startswith(forbidden_prefixes):
-                violations.append(f"{rel}: {module}")
-    assert not violations, f"{reason}\n" + "\n".join(sorted(violations))
+    for p in _py_files(REPO_ROOT / "domain"):
+        for mod in _imports(p):
+            if mod.startswith(("control_plane.services", "gateway", "control-plane.services")):
+                violations.append(f"{p.relative_to(REPO_ROOT)} -> {mod}")
+    assert not violations, "domain imported forbidden transport modules:\n" + "\n".join(sorted(violations))
 
 
-def test_kernel_does_not_import_control_runtime() -> None:
-    files = _python_files(REPO_ROOT / "kernel")
-    _assert_no_imports(
-        files,
-        forbidden_prefixes=("control", "control.os"),
-        reason="kernel must not import control runtime modules",
-    )
-
-
-def test_data_does_not_import_kernel() -> None:
-    files = _python_files(REPO_ROOT / "data")
-    _assert_no_imports(
-        files,
-        forbidden_prefixes=("kernel",),
-        reason="data plane must not import kernel modules",
-    )
-
-
-def test_services_does_not_import_kernel() -> None:
-    files = _python_files(REPO_ROOT / "services")
-    _assert_no_imports(
-        files,
-        forbidden_prefixes=("kernel",),
-        reason="services must not import kernel modules",
-    )
+def test_gateway_has_no_database_imports() -> None:
+    violations: list[str] = []
+    for p in _py_files(REPO_ROOT / "gateway"):
+        for mod in _imports(p):
+            if mod.startswith(("database", "sqlalchemy", "psycopg2", "motor", "redis")):
+                violations.append(f"{p.relative_to(REPO_ROOT)} -> {mod}")
+    assert not violations, "gateway imported database modules:\n" + "\n".join(sorted(violations))
