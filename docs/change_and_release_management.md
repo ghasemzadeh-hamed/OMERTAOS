@@ -1,5 +1,8 @@
 # Change & Release Management
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## 1. Release Notes / Changelog
 - **Template**
   - **Release ID/Date:** YYYY-MM-DD, version tag (e.g., v1.4.0).

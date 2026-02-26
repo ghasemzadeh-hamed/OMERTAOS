@@ -1,5 +1,8 @@
 # AGENT_RUNTIME
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Lifecycle
 1. Register agent profile
 2. Resolve registry/model metadata

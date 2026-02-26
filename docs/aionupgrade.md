@@ -1,5 +1,8 @@
 # &#x1f680; AION-OS Upgrade Master Plan (v2.0)
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 &#x647;&#x62f;&#x641;: &#x627;&#x631;&#x62a;&#x642;&#x627;&#x6cc; AION-OS &#x627;&#x632; &#x646;&#x633;&#x62e;&#x647;&#x654; &#x641;&#x639;&#x644;&#x6cc; (Enterprise OS) &#x628;&#x647; &#x646;&#x633;&#x62e;&#x647;&#x654; &#x62a;&#x631;&#x6a9;&#x6cc;&#x628;&#x6cc; Enterprise + Personal AI OS &#x62a;&#x627; &#x647;&#x645; &#x627;&#x632; AIOS (&#x62f;&#x631; &#x633;&#x637;&#x62d; Kernel &#x648; Self-Structuring) &#x648; &#x647;&#x645; &#x627;&#x632; OpenDAN (&#x62f;&#x631; &#x633;&#x637;&#x62d; UX &#x648; &#x634;&#x62e;&#x635;&#x6cc;&#x200c;&#x633;&#x627;&#x632;&#x6cc;) &#x67e;&#x6cc;&#x634;&#x6cc; &#x628;&#x6af;&#x6cc;&#x631;&#x62f;.
 
 &#x2e3b;

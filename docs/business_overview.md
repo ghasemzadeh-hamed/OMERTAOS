@@ -1,5 +1,8 @@
 # OMERTAOS Business Overview
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Vision and Purpose
 - Deliver a unified operating environment for autonomous AI agents with consistent orchestration, governance, and observability.
 - Reduce operational friction by providing reproducible registries, installer profiles, and authenticated consoles.

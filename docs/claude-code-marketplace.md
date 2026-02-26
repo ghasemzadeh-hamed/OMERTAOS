@@ -1,5 +1,8 @@
 # Claude Code marketplace integration for OMERTAOS
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 This guide adds first-class support for Claude Code and the wshobson/agents plugin marketplace on Debian-based hosts.
 
 ## Prerequisites

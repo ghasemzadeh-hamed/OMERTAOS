@@ -1,5 +1,8 @@
 # Operations & Support Review
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## 1. Runbook / SOP for Day-to-Day Operations
 
 ### SOP: Start/Stop Core Services

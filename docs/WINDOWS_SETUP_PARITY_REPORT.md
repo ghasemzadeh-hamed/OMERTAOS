@@ -1,5 +1,8 @@
 # Windows Setup Parity Report
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Step 0 - Install entry points
 - scripts/quicksetup.sh: Linux container quickstart for Control/Gateway/Console via docker compose.
 - scripts/quicksetup.ps1: Windows PowerShell quickstart for the same compose stack.

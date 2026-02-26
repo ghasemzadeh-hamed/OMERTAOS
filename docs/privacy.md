@@ -1,5 +1,8 @@
 # Privacy and telemetry
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 AION-OS ships without telemetry by default. Administrators must explicitly opt in via the installer prompts, the Glass console wizard, or the `AION_TELEMETRY_OPT_IN` environment variable before any metrics are emitted.
 
 ## Data collected (opt-in only)

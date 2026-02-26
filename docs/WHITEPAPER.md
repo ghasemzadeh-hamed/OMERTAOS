@@ -1,5 +1,8 @@
 # WHITEPAPER
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Abstract
 OMERTAOS proposes a distributed AI-agent operating architecture that couples deterministic orchestration, policy-constrained autonomy, and execution isolation with data-intensive analytics.
 

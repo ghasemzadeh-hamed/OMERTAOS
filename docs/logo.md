@@ -1,5 +1,8 @@
 # aionOS Brand Mark
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ![aionOS logomark](assets/aion-os-logo.svg)
 
 ## Usage Guidelines

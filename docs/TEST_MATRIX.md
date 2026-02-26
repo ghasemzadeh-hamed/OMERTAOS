@@ -1,5 +1,8 @@
 # UI Redirect Test Matrix
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Local Web Console
 
 | State | Expected Path |

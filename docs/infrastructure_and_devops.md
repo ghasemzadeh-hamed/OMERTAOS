@@ -1,5 +1,8 @@
 # Infrastructure & DevOps Review
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## 1. Infrastructure Diagram
 - **Deployment model:** Hybrid-friendly - supports on-premises (bare metal/VM) and cloud (Kubernetes/managed DB/object storage) with identical compose overlays.
 - **Textual diagram (suitable for drawing):**

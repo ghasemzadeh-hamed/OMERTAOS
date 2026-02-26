@@ -1,5 +1,8 @@
 # User & Team Documentation
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 This guide centralizes user-facing and operational documentation for AION-OS, spanning installation, quickstart, UI usage, administration, FAQs, and glossary terminology. It complements existing deep dives in `docs/install`, `docs/quickstart.md`, and `docs/operations_and_support.md`.
 
 ## 1. Installation Guide

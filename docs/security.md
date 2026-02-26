@@ -1,5 +1,8 @@
 # Security Overview
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## RBAC and ABAC
 
 - Roles: `admin`, `manager`, `user`

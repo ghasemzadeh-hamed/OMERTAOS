@@ -1,5 +1,8 @@
 # QA, Testing, and Security Review
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## 1. Test Strategy
 - **Unit Tests**
   - **Purpose:** Validate business logic, helper utilities, and policy/routing rules in isolation (Python, TypeScript, Go components as applicable).

@@ -1,5 +1,8 @@
 #  Agent-OS AI Registry (Dynamic Self-Updating Repository)
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 **Version:** v1.0.0
 **License:** MIT
 **Language:** English

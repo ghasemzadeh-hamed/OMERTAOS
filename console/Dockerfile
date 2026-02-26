@@ -45,7 +45,6 @@ ENV DATABASE_URL=${PRISMA_DATABASE_URL}
 RUN pnpm prisma generate
 RUN pnpm build
 RUN pnpm exec tsc --project scripts/tsconfig.json
-RUN pnpm prune --prod
 
 # Stage 3: runtime image
 FROM node:20-alpine AS runner

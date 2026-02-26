@@ -1,5 +1,8 @@
 # Secret management
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 AION-OS centralises credentials and sensitive configuration in HashiCorp Vault. Every
 service reads secrets at runtime via the shared secret provider libraries so that
 application code and configuration files never contain long-lived tokens, passwords or

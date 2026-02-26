@@ -1,5 +1,8 @@
 # REGISTRY_SYSTEM
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Canonical Metadata Source
 Registry artifacts define:
 - model descriptors

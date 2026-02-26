@@ -1,5 +1,8 @@
 # ARCHITECTURE
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Layered Architecture
 ```mermaid
 flowchart TB
@@ -68,3 +71,10 @@ flowchart TB
 - CLI consumes stable control/core interfaces only.
 - Agents never directly parse raw registry files.
 - Execution is isolated to `/execution` runtime contracts.
+
+## Hybrid Architecture Baseline
+
+Execution boundary:
+- Python orchestrates.
+- Rust runtime daemon enforces isolation and process sandbox.
+- IPC over gRPC using `shared/proto/runtime.proto`.

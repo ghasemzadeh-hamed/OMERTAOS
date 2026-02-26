@@ -1,83 +1,41 @@
 # OMERTAOS
 
-Modular AI-Oriented Operating System for Secure Distributed Agent Infrastructure.
-
----
-
-## Overview
-
-OMERTAOS is a scalable modular architecture designed for:
-
-- AI agent orchestration
-- Distributed processing
-- Secure sandbox execution
-- Gateway Control Console separation
-- Pluggable secret providers
-- Optional TLS and mTLS enforcement
-
----
-
-## Architecture
-
-Core components:
-
-- Gateway
-- Control
-- Console
-- Secret Provider
-- Sandbox Runtime
-
-Flow:
-
-User -> Gateway -> Control -> Sandbox
-
----
+Hybrid Agent Operating System:
+- Python Control Plane (AI orchestration, governance, APIs)
+- Rust Runtime Daemon (OS isolation, sandboxed execution, command/runtime boundary)
 
 ## Quick Install
 
-Clone the repository:
-
+```bash
 git clone https://github.com/Hamedghz/OMERTAOS.git
 cd OMERTAOS
-
-Start services:
-
-docker compose up --build
-
-Or run the helper installer script:
-
 ./quick-install.sh
+```
 
-Access:
+Alternative local development startup:
 
-Console  http://localhost:3000
-Control  http://localhost:8000
-Gateway  http://localhost:8080
+```bash
+docker compose -f docker-compose.local.yml up -d
+```
 
----
+## Runtime Boundary
 
-## Environment Variables
+Python must delegate OS-level execution to runtime daemon via runtime client:
+- `control_plane/runtime_client.py`
+- gRPC contract: `shared/proto/runtime.proto`
+- Rust daemon: `runtime-daemon/`
 
-SECRET_PROVIDER_MODE
-VAULT_ENABLED
-AION_TLS_REQUIRED
-AION_TLS_REQUIRE_MTLS
+## Key Planes
 
----
+- `kernel/` orchestration/router/runtime integration
+- `control/` policies/governance/apis
+- `data/` rag/vector/adapters
+- `services/` service surfaces
+- `shared/` contracts/events/observability/event_bus
 
-## CI Enforcement
+## Local Endpoints
 
-This repository enforces:
-
-- pre-commit hooks
-- documentation audit
-- yaml json toml validation
-- ascii sanitation
-
-All commits must pass CI before merge.
-
----
-
-## License
-
-MIT
+- Console: `http://localhost:3000`
+- Control: `http://localhost:8000`
+- Gateway: `http://localhost:8080`
+- Runtime daemon (gRPC default): `127.0.0.1:50051`

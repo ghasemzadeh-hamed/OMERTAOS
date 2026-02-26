@@ -1,19 +1,8 @@
-name: pro
-services:
-  gateway: true
-  control: true
-  console: true
-features:
-  mlflow:
-    enabled: true
-  jupyter:
-    enabled: true
-  docker:
-    enabled: true
-  k8s:
-    enabled: false
-  ldap:
-    enabled: false
-security:
-  hardening:
-    level: standard
+profile: professional
+cpu_quota: 1.0
+memory_mb: 2048
+gpu_enabled: true
+multi_agent: true
+cluster_enabled: false
+bigdata_enabled: false
+database: postgresql

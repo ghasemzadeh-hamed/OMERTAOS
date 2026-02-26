@@ -1,5 +1,8 @@
 # Runbook
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Bootstrapping
 
 1. Provision infrastructure (Kubernetes cluster with GPU and CPU pools).

@@ -1,5 +1,8 @@
 # Module Packaging and Installation
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Overview
 
 aionOS modules are distributed as OCI artifacts signed with Cosign and accompanied by SBOM metadata. Each module includes a manifest (`manifest.yaml`) that describes runtime characteristics, intents, resource policies, and security boundaries.

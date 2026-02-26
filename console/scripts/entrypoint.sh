@@ -9,7 +9,7 @@ fi
 PRISMA_BIN="./node_modules/.bin/prisma"
 
 echo "[console] Applying database migrations..."
-node "$PRISMA_BIN" migrate deploy
+"$PRISMA_BIN" migrate deploy
 
 echo "[console] Bootstrapping console admin user..."
 node ./scripts/dist/bootstrap-admin.js

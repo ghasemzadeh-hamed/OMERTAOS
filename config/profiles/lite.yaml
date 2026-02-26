@@ -1,0 +1,8 @@
+profile: lite
+cpu_quota: 0.5
+memory_mb: 512
+gpu_enabled: false
+multi_agent: false
+cluster_enabled: false
+bigdata_enabled: false
+database: sqlite

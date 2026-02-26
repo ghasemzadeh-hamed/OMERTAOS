@@ -1,5 +1,8 @@
 # OmertaOS Console - Power User UI (Agents, Runs, Tools, Policies, OS Chat)
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## One-Page PRD (ASCII)
 
 **Title**

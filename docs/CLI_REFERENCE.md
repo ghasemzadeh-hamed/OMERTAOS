@@ -1,5 +1,8 @@
 # CLI_REFERENCE
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 ## Command Structure
 Primary entrypoint: `python -m cli.main` (or project wrapper script).
 

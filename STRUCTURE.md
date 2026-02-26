@@ -1,27 +1,15 @@
 # OMERTAOS Canonical Structure
 
-Canonical top-level architecture:
-
-- `core`
-- `agents`
-- `control`
-- `registry`
-- `config`
-- `schemas`
-- `execution`
-- `db`
-- `bigdata`
-- `cli`
-- `console`
 - `kernel`
-- `policies`
+- `control`
+- `data`
+- `services`
+- `interface`
 - `shared`
-- `deploy`
-- `tests`
-- `tools`
+- `infra`
+- `runtime-daemon`
 
 Notes:
-- Runtime modules should migrate toward these canonical roots using dependency-safe phases.
-- Backward compatibility shims/wrappers are acceptable during transition windows.
-
-- Legacy `os/*` modules are being distributed into `control`, `kernel`, `shared`, and `deploy` with compatibility shims.
+- OS-level execution/isolation/sandbox responsibilities live in `runtime-daemon`.
+- Python layers call runtime daemon through `control_plane/runtime_client.py`.
+- gRPC IPC contract lives in `shared/proto/runtime.proto`.

@@ -5,10 +5,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Optional
 
-from .ai_router import AIRouter, RouteContext, RouteDecision
+from .router.ai_router import AIRouter, RouteContext, RouteDecision
 from .governance_hook import GovernanceHook
 from .integration_layer import IntegrationLayer
 from .policy_engine import PolicyEngine
+from .multitenant.execution_context import ExecutionContext
 
 
 @dataclass
@@ -45,6 +46,7 @@ class PersonalKernel:
                 "mode": "personal",
                 "sla": "standard",
             },
+            execution_context=ExecutionContext(tenant_id=user_id, capabilities={"route"}, resource_limits={"cpu":"1"}, policy_scope="personal"),
         )
         return self._router.route(intent=intent, payload=payload, context=context)
 

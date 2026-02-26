@@ -1,5 +1,8 @@
 # CI smoke and health checks
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 This repository now relies on two primary smoke test flows:
 
 - **Docker-based E2E** (`scripts/smoke_e2e.sh`): runs against the docker-compose stack using the `CONTROL_BASE_URL`, `GATEWAY_BASE_URL`, and `CONSOLE_BASE_URL` variables (defaults: `http://localhost:8000`, `http://localhost:8080`, `http://localhost:3000`). It requires the `/healthz` endpoints on control, gateway, and console to return 200. Admin and UI probes are best-effort and emit warnings only.

@@ -1,5 +1,8 @@
 # Capabilities Index (UI + Docs Source of Truth)
 
+> Runtime alignment: Python control-plane delegates OS-level execution/isolation/sandbox to Rust `runtime-daemon` over gRPC (`shared/proto/runtime.proto`).
+
+
 This document maps the platform capabilities to their backend APIs, configuration, and UI surface. It is backed by [`config/capabilities.yaml`](../config/capabilities.yaml) as the single source of truth for Console and documentation alignment.
 
 ## Architecture at a Glance
