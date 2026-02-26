@@ -1,0 +1,51 @@
+diff a/tests/architecture/test_target_structure.py b/tests/architecture/test_target_structure.py	(rejected hunks)
+@@ -1,17 +1,41 @@
+ from __future__ import annotations
+ 
+ from pathlib import Path
+ 
+-
+ REPO_ROOT = Path(__file__).resolve().parents[2]
+ 
+ 
+-def test_target_architecture_contract_modules_exist() -> None:
++def test_required_top_level_directories_exist() -> None:
++    required = {
++        "rust-runtime",
++        "control-plane",
++        "domain",
++        "orchestration",
++        "execution",
++        "gateway",
++        "registry",
++        "database",
++        "policies",
++        "observability",
++        "schemas",
++        "agents",
++        "models",
++        "algorithms",
++        "ui",
++        "config",
++        "tests",
++    }
++    existing = {p.name for p in REPO_ROOT.iterdir() if p.is_dir() and not p.name.startswith(".")}
++    missing = sorted(required - existing)
++    assert not missing, f"missing required top-level directories: {missing}"
++
++
++def test_rust_runtime_segmented_layout() -> None:
+     expected = [
+-        REPO_ROOT / "kernel" / "router" / "ai_router.py",
+-        REPO_ROOT / "data" / "rag" / "pipeline.py",
+-        REPO_ROOT / "data" / "vector" / "qdrant_client.py",
+-        REPO_ROOT / "shared" / "contracts" / "rag_contract.py",
++        "rust-runtime/kernel-adapter",
++        "rust-runtime/sandbox",
++        "rust-runtime/terminal-bridge",
++        "rust-runtime/resource-isolation",
+     ]
+-    missing = [str(path.relative_to(REPO_ROOT)) for path in expected if not path.exists()]
+-    assert not missing, f"missing target architecture modules: {missing}"
++    missing = [p for p in expected if not (REPO_ROOT / p).exists()]
++    assert not missing, f"missing rust runtime segmented components: {missing}"

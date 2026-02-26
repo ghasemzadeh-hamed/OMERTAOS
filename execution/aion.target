@@ -1,0 +1,7 @@
+[Unit]
+Description=AION Stack Target
+Requires=aion-gateway.service aion-control.service aion-console.service
+After=network.target
+
+[Install]
+WantedBy=multi-user.target

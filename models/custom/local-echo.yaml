@@ -1,0 +1,22 @@
+kind: model
+name: local-echo
+provider: custom
+version: "1.0.0"
+release_date: "2024-01-15"
+modality:
+  - text
+license: community
+access: local
+description: >-
+  Lightweight reference model that echoes prompts for testing local control plane workflows.
+download:
+  url: "file:///opt/agentos/models/local-echo.tar.gz"
+  method: local
+integrity:
+  sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+resources:
+  vram_gb: 1
+  context_tokens: 8192
+configurable: false
+compat:
+  agent_api: ">=1.0"

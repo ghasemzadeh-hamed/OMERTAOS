@@ -1,0 +1,11 @@
+id: kimi-k2-thinking-local
+display_name: Kimi K2 Thinking (Local, INT4)
+provider: openai-compatible
+base_url: ${K2_LOCAL_BASE_URL}
+api_key_env: ""
+model: ${K2_LOCAL_THINKING_MODEL}
+max_input_tokens: 128000
+max_output_tokens: 8192
+supports_tools: true
+tier: enterprise
+enabled: false

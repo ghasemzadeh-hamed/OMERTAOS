@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Data Sources",
+  "type": "object",
+  "properties": {
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "kind"],
+        "properties": {
+          "name": {"type": "string"},
+          "kind": {"type": "string"},
+          "dsn": {"type": "string"},
+          "endpoint": {"type": "string"},
+          "bucket": {"type": "string"},
+          "access_key": {"type": "string"},
+          "secret_key": {"type": "string"},
+          "readonly": {"type": "boolean"}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

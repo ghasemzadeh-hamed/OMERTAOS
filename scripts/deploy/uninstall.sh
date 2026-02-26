@@ -1,1 +1,0 @@
-../../deploy/scripts/uninstall.sh

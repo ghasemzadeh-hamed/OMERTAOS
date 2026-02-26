@@ -1,0 +1,63 @@
+diff a/tests/architecture/test_subprocess_boundaries.py b/tests/architecture/test_subprocess_boundaries.py	(rejected hunks)
+@@ -1,47 +1,30 @@
+ from __future__ import annotations
+ 
+ import ast
+ from pathlib import Path
+ 
+ REPO_ROOT = Path(__file__).resolve().parents[2]
+-ALLOWED = {
+-    Path("kernel/sandbox/container_executor.py"),
+-    Path("kernel/kernel_adapter/linux_adapter.py"),
+-}
+-
+-LEGACY_ALLOWED = {
+-    Path("control/install_runner.py"),
+-    Path("control/os/api/provisioner.py"),
+-    Path("control/os/api/services.py"),
+-    Path("control/os/api/update.py"),
+-    Path("control/os/routes/admin_onboarding.py"),
+-    Path("control/os/routes/models.py"),
+-    Path("control/tools/shell_tool.py"),
+-}
+ 
+ 
+ def _py_files() -> list[Path]:
+-    roots = ["kernel", "control", "data", "services", "execution", "domain", "interface", "shared"]
++    roots = [REPO_ROOT / "control-plane", REPO_ROOT / "domain", REPO_ROOT / "orchestration", REPO_ROOT / "database"]
+     out: list[Path] = []
+-    for root in roots:
+-        p = REPO_ROOT / root
+-        if p.exists():
+-            out.extend([f for f in p.rglob("*.py") if "__pycache__" not in f.parts])
++    for r in roots:
++        if r.exists():
++            out.extend([p for p in r.rglob("*.py") if "__pycache__" not in p.parts])
+     return out
+ 
+ 
+-def test_subprocess_usage_limited_to_adapter_and_sandbox() -> None:
++def test_subprocess_only_allowed_in_runtime_client() -> None:
+     violations: list[str] = []
+-    for path in _py_files():
+-        rel = path.relative_to(REPO_ROOT)
+-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
++    for p in _py_files():
++        tree = ast.parse(p.read_text(encoding="utf-8"), filename=str(p))
+         has_subprocess = False
+-        for node in ast.walk(tree):
+-            if isinstance(node, ast.Import):
+-                if any(alias.name == "subprocess" for alias in node.names):
+-                    has_subprocess = True
+-            if isinstance(node, ast.ImportFrom) and node.module == "subprocess":
++        for n in ast.walk(tree):
++            if isinstance(n, ast.Import) and any(a.name == "subprocess" for a in n.names):
++                has_subprocess = True
++            if isinstance(n, ast.ImportFrom) and n.module == "subprocess":
+                 has_subprocess = True
+-        if has_subprocess and rel not in ALLOWED and rel not in LEGACY_ALLOWED:
+-            violations.append(str(rel))
+-    assert not violations, "subprocess imports outside sandbox/adapter: " + ", ".join(sorted(violations))
++        if has_subprocess and "runtime_client" not in p.parts:
++            violations.append(str(p.relative_to(REPO_ROOT)))
++    assert not violations, "subprocess usage found outside runtime_client: " + ", ".join(sorted(violations))

@@ -1,0 +1,28 @@
+kind: model
+name: gemini-2.5-pro
+provider: google-deepmind
+version: "2.5.0"
+release_date: "2025-07-14"
+modality:
+  - text
+  - image
+  - code
+license: proprietary
+access: api_key
+description: >-
+  Multi-modal reasoning model with 1M-token context and advanced plug-in support.
+download:
+  url: "https://ai.google.dev/models/gemini-2.5-pro"
+  method: api
+  install_script: "scripts/install_model.py --model gemini-2.5-pro"
+integrity:
+  sha256: "e3b0c44298fc1..."
+  signature: "minisign:XYZ..."
+resources:
+  vram_gb: 16
+  context_tokens: 1048576
+configurable: true
+compat:
+  agent_api: ">=1.2"
+auto_update: true
+admin_approval_required: true

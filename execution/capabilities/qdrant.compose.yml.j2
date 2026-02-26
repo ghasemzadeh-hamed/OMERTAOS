@@ -1,0 +1,13 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    restart: unless-stopped
+    ports:
+      - "{{QDRANT_PORT}}:6333"
+    volumes:
+      - "{{QDRANT_VOLUME}}:/qdrant/storage"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:6333/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
