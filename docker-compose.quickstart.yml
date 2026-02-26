@@ -48,7 +48,7 @@ services:
   control:
     build:
       context: .
-      dockerfile: os/control/Dockerfile
+      dockerfile: control/Dockerfile
     env_file: .env
     environment:
       AION_DOCKER: "1"
