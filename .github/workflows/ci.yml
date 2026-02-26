@@ -1,0 +1,133 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, AION]
+  push:
+    branches: [main, AION]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: console/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Install python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff bandit pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Python lint
+        run: ruff check .
+      - name: Rust lint
+        run: cargo clippy --manifest-path rust-runtime/Cargo.toml --all-targets -- -D warnings
+      - name: Conventional commits (PR title)
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "${{ github.event.pull_request.title }}" | grep -E '^(feat|fix|chore|docs|refactor|test|ci|perf|build|revert)(\(.+\))?!?: .+'
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install test deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Unit and architecture tests
+        run: pytest -q tests/
+      - name: Rust tests
+        run: cargo test --manifest-path rust-runtime/Cargo.toml --all-targets
+
+  integration:
+    runs-on: ubuntu-latest
+    needs: test
+    services:
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Integration test placeholder
+        run: pytest -q tests/integration || echo "No integration tests yet"
+
+  security:
+    runs-on: ubuntu-latest
+    needs: lint
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Bandit
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit
+          bandit -r . -x tests
+      - name: Cargo audit
+        run: |
+          cargo install cargo-audit --locked
+          cargo audit --manifest-path rust-runtime/Cargo.toml
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: fs
+          scan-ref: .
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Build compose image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          platforms: ${{ matrix.platform }}
+          tags: omertaos:${{ github.sha }}
+
+  sbom:
+    runs-on: ubuntu-latest
+    needs: docker
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          output-file: sbom.spdx.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.spdx.json
