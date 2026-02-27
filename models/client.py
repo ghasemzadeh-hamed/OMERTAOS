@@ -38,7 +38,7 @@ def call_llm_via_api(
         "temperature": temperature,
     }
 
-    response = requests.post(endpoint, json=payload, headers=headers, timeout=timeout_ms / 1000)
+    response = requests.post(endpoint, json=payload, headers=headers, timeout=timeout_ms / 1000)  # nosec B113
     response.raise_for_status()
     data = response.json()
     return data["choices"][0]["message"]["content"]
