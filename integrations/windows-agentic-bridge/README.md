@@ -1,33 +1,31 @@
-# OMERTAOS Windows Agentic Bridge
+# Windows Agentic Bridge
 
-This subsystem packages a WSL-hosted MCP server that proxies OMERTAOS capabilities to Windows Agentic and other MCP-aware hosts via ODR.
+The Windows Agentic Bridge connects Windows agent hosts to OMERTAOS without exposing internal Control or Runtime interfaces. `bridge-server/` is a TypeScript MCP server, normally hosted in WSL and launched by Windows/ODR; `bridge-ui/` is a Vite/React local administration UI for connection status, configuration, tool exposure and logs.
 
-## Contents
-- [`bridge-server/`](./bridge-server/): TypeScript MCP server running inside WSL and exposing MCP tools over stdio
-- [`bridge-ui/`](./bridge-ui/): Vite/React UI for configuration, tool exposure, and health/status
-- [`manifests/`](./manifests/omertaos-wsl.mcp.json): ODR manifest for launching the bridge via `wsl.exe`
-- [`scripts/`](./scripts/): Helper scripts for registration and health checks
-- [`docs/`](./docs/README.md): Detailed architecture, setup, and security guides
-
-## Quick start (WSL)
-1. Install Node.js 20+ and pnpm/npm.
-2. Copy `.env.example` to `.env` inside `bridge-server/` and update OMERTA endpoints.
-3. Build the bridge server: `cd bridge-server && npm install && npm run build`.
-4. Launch the bridge: `node dist/index.js`.
-5. Start the UI: `cd bridge-ui && npm install && npm run dev -- --host`.
-
-## Register with ODR (Windows)
-Use `scripts/register-odr.ps1` from PowerShell:
-```powershell
-cd integrations/windows-agentic-bridge
-./scripts/register-odr.ps1 -ManifestPath "C:\path\to\omertaos-wsl.mcp.json"
+```mermaid
+flowchart LR
+  H[Windows agent host] -->|MCP stdio| B[bridge-server in WSL]
+  UI[bridge-ui] -->|localhost admin API| B
+  B -->|HTTPS + token| G[OMERTAOS Gateway]
+  G --> C[Control Plane] --> R[Runtime Daemon]
 ```
 
-For detailed instructions see `docs/SETUP_WINDOWS_AGENTIC.md` and `docs/SETUP_WSL.md`.
+MCP tools translate validated calls such as task submission, task status, agent listing and health into Gateway API operations. The pipeline is host tool call → MCP schema validation → local authorization/tool allowlist → Gateway authentication → OMERTAOS policy and execution → bounded result mapping. Long-running work returns task identity and is polled/streamed; it does not block stdio indefinitely.
 
-## خلاصه پلان اجرایی (FA)
-1) **OMERTA روی WSL**: Docker Desktop + WSL2، کلون `OMERTAOS` و اجرای `./install.sh --profile user` یا compose dev.
-2) **سلامت اولیه**: `curl http://localhost:3000/healthz` و `curl http://localhost:8000/healthz`.
-3) **ساخت پل MCP در WSL**: تعریف حداقل ابزارها (`run_task`، `list_agents`، `get_health`) با `OMERTA_GATEWAY_URL` و توکن dev.
-4) **Manifest و ODR روی ویندوز**: تنظیم JSON با `wsl.exe`، اجرای `odr.exe mcp add ...` و بررسی `odr.exe mcp list`.
-5) **Agent Host نمونه (اختیاری)**: یک Agent ساده با Microsoft Agent Framework که `omerta_run_task` و `omerta_list_agents` را مصرف می‌کند.
+The bridge executes no arbitrary local Windows operation by default. Any local tool is independently allowlisted, schema-constrained, user/host authorized, time-limited, and audited. Bind UI/admin endpoints to loopback, protect them with a local credential, restrict the ODR manifest and configuration file ACLs, store tokens outside manifests/logs, verify WSL command paths, pin dependencies, and never forward Control/Runtime ports. OMERTAOS policy remains authoritative.
+
+Local execution uses the bridge process identity and a minimal environment. Subprocess tools require fixed executables/arguments or strict structured translation; shell-string interpolation is prohibited. Cancellation must terminate descendants and output must be size-limited.
+
+Structured logs include timestamp, level, bridge/tool version, invocation/correlation ID, tool name, duration and outcome while redacting tokens, prompts and sensitive arguments. Health covers MCP transport, configuration validity and Gateway reachability. Metrics should cover calls, errors, latency, active work and reconnects.
+
+## Setup
+
+```bash
+cd integrations/windows-agentic-bridge/bridge-server
+npm install
+cp .env.example .env
+npm run build
+node dist/index.js
+```
+
+Build/start `bridge-ui/` with its package scripts. Register `manifests/omertaos-wsl.mcp.json` using `scripts/register-odr.ps1`. Detailed WSL, Windows and security procedures are under `docs/`.

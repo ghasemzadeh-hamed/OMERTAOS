@@ -132,6 +132,33 @@ class SecretProvider:
             return materialised
         raise SecretProviderError(f"Unexpected payload type for secret '{path}'")
 
+    def set_secret(self, path: str, payload: Mapping[str, Any]) -> None:
+        """Store *payload* at *path* in the configured KV-v2 mount."""
+
+        mount_point, secret_path = self._split_mount_and_path(path)
+        try:
+            self._client.secrets.kv.v2.create_or_update_secret(
+                path=secret_path,
+                secret=dict(payload),
+                mount_point=mount_point,
+            )
+        except Exception as exc:  # pragma: no cover - surface hvac errors
+            raise SecretProviderError(f"Failed to write secret '{path}': {exc}") from exc
+
+    def delete_secret(self, path: str) -> None:
+        """Delete the latest secret metadata and versions for *path*."""
+
+        mount_point, secret_path = self._split_mount_and_path(path)
+        try:
+            self._client.secrets.kv.v2.delete_metadata_and_all_versions(
+                path=secret_path,
+                mount_point=mount_point,
+            )
+        except hvac.exceptions.InvalidPath:
+            return
+        except Exception as exc:  # pragma: no cover - surface hvac errors
+            raise SecretProviderError(f"Failed to delete secret '{path}': {exc}") from exc
+
     # ------------------------------------------------------------------
     def _split_mount_and_path(self, path: str) -> Tuple[str, str]:
         cleaned = path.strip().strip("/")

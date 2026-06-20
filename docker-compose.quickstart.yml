@@ -45,26 +45,36 @@ services:
     ports: []
     volumes:
       - minio-data:/data
+  proxy-router:
+    image: teddysun/xray:latest
+    profiles: ["proxy"]
+    restart: unless-stopped
+    volumes:
+      - ./deploy/proxy/xray/config.json:/etc/xray/config.json:ro
+    ports: []
   control:
     build:
       context: .
       dockerfile: control/Dockerfile
-    env_file: .env
     environment:
       AION_DOCKER: "1"
-      AION_CONTROL_POSTGRES_DSN: ${AION_CONTROL_POSTGRES_DSN}
-      AION_CONTROL_MONGO_DSN: ${AION_CONTROL_MONGO_DSN}
-      AION_CONTROL_REDIS_URL: ${AION_CONTROL_REDIS_URL}
-      AION_CONTROL_QDRANT_URL: ${AION_CONTROL_QDRANT_URL}
-      AION_CONTROL_MINIO_ENDPOINT: ${AION_CONTROL_MINIO_ENDPOINT}
-      AION_CONTROL_MINIO_ACCESS_KEY: ${AION_CONTROL_MINIO_ACCESS_KEY}
-      AION_CONTROL_MINIO_SECRET_KEY: ${AION_CONTROL_MINIO_SECRET_KEY}
-      AION_CONTROL_MINIO_BUCKET: ${AION_CONTROL_MINIO_BUCKET}
-      AION_CONTROL_MINIO_SECURE: ${AION_CONTROL_MINIO_SECURE}
-      AION_CONTROL_MODELS_DIRECTORY: ${AION_CONTROL_MODELS_DIRECTORY}
-      AION_CONTROL_POLICIES_DIRECTORY: ${AION_CONTROL_POLICIES_DIRECTORY}
-      TENANCY_MODE: ${TENANCY_MODE}
+      AION_CONTROL_POSTGRES_DSN: ${AION_CONTROL_POSTGRES_DSN:-postgresql://aion:password@postgres:5432/omerta_db}
+      AION_CONTROL_MONGO_DSN: ${AION_CONTROL_MONGO_DSN:-mongodb://mongo:27017/omerta}
+      AION_CONTROL_REDIS_URL: ${AION_CONTROL_REDIS_URL:-redis://redis:6379/0}
+      AION_CONTROL_QDRANT_URL: ${AION_CONTROL_QDRANT_URL:-http://qdrant:6333}
+      AION_CONTROL_MINIO_ENDPOINT: ${AION_CONTROL_MINIO_ENDPOINT:-minio:9000}
+      AION_CONTROL_MINIO_ACCESS_KEY: ${AION_CONTROL_MINIO_ACCESS_KEY:-minio}
+      AION_CONTROL_MINIO_SECRET_KEY: ${AION_CONTROL_MINIO_SECRET_KEY:-miniosecret}
+      AION_CONTROL_MINIO_BUCKET: ${AION_CONTROL_MINIO_BUCKET:-omerta}
+      AION_CONTROL_MINIO_SECURE: ${AION_CONTROL_MINIO_SECURE:-false}
+      AION_CONTROL_MODELS_DIRECTORY: ${AION_CONTROL_MODELS_DIRECTORY:-/app/registry/models}
+      AION_CONTROL_POLICIES_DIRECTORY: ${AION_CONTROL_POLICIES_DIRECTORY:-/app/policies}
+      TENANCY_MODE: ${TENANCY_MODE:-single}
       AION_ENV: ${AION_ENV:-dev}
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      ALL_PROXY: ${ALL_PROXY:-}
+      NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,control,gateway,console,redis,postgres,qdrant,minio,mongo}
     depends_on:
       - postgres
       - redis
@@ -72,50 +82,83 @@ services:
       - minio
     ports:
       - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
     restart: unless-stopped
   gateway:
     build:
       context: .
       dockerfile: gateway/Dockerfile
-    env_file: .env
     environment:
-      NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080
+      CONTROL_URL: http://control:8000
       SECRET_PROVIDER_MODE: local
       AION_GATEWAY_ADMIN_TOKEN: ${AION_GATEWAY_ADMIN_TOKEN:-dev-admin-token}
       AION_ENV: dev
       AION_AUTH_MODE: disabled
       AION_DOCKER: "1"
+      AION_GATEWAY_PORT: 8080
+      AION_GATEWAY_HOST: 0.0.0.0
+      AION_CONTROL_BASE_URL: http://control:8000
+      AION_CONTROL_API_PREFIX: /v1
+      AION_CONTROL_GRPC: control:50051
+      AION_REDIS_URL: redis://redis:6379/0
+      AION_CORS_ORIGINS: http://localhost:3000
+      AION_SELF_EVOLVING_ENABLED: "false"
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      ALL_PROXY: ${ALL_PROXY:-}
+      NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,control,gateway,console,redis,postgres,qdrant,minio,mongo}
     depends_on:
       control:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_healthy
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
     restart: unless-stopped
   console:
     build:
       context: .
       dockerfile: console/Dockerfile
-    env_file: .env
     environment:
       AION_DOCKER: "1"
       DOCKER: "true"
       NEXTAUTH_URL: http://localhost:3000
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-quickstart-nextauth-secret}
       NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080
       GATEWAY_URL: http://gateway:8080
       AION_GATEWAY_URL: http://gateway:8080
+      NEXT_PUBLIC_CONTROL_URL: http://localhost:8000
+      CONTROL_URL: http://control:8000
       SECRET_PROVIDER_MODE: local
       AION_DEV_ADMIN_TOKEN: ${AION_DEV_ADMIN_TOKEN:-dev-admin-token}
       AION_ADMIN_TOKEN: ${AION_ADMIN_TOKEN:-dev-admin-token}
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://aion:password@postgres:5432/omerta_db?schema=public}
       PORT: 3000
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      ALL_PROXY: ${ALL_PROXY:-}
+      NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,control,gateway,console,redis,postgres,qdrant,minio,mongo}
     depends_on:
       gateway:
-        condition: service_started
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     ports:
       - "3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
     restart: unless-stopped
 
 volumes:
@@ -125,4 +168,5 @@ volumes:
 
 networks:
   default:
-    internal: true
+    name: omerta-net
+    driver: bridge

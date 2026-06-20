@@ -91,6 +91,15 @@ services:
     volumes:
       - minio-data:/data
 
+  proxy-router:
+    image: teddysun/xray:latest
+    profiles: ["proxy"]
+    restart: unless-stopped
+    volumes:
+      - ./deploy/proxy/xray/config.json:/etc/xray/config.json:ro
+    ports: []
+    networks: [aion]
+
   control:
     build:
       context: .
@@ -100,6 +109,7 @@ services:
       AION_CONTROL_DISABLE_SECRETS: ${AION_CONTROL_DISABLE_SECRETS:-1}
       AION_CONTROL_API_PREFIX: ${AION_CONTROL_API_PREFIX:-/api}
       AION_CONTROL_REDIS_URL: ${AION_CONTROL_REDIS_URL:-redis://redis:6379/0}
+      AION_CONTROL_POSTGRES_DSN: ${AION_CONTROL_POSTGRES_DSN:-postgresql://aion:password@postgres:5432/omerta_db}
       AION_CONTROL_MONGO_DSN: ${AION_CONTROL_MONGO_DSN:-mongodb://mongo:27017/aion?retryWrites=true&w=majority}
       AION_CONTROL_QDRANT_URL: ${AION_CONTROL_QDRANT_URL:-http://qdrant:6333}
       AION_CONTROL_MODELS_DIRECTORY: ${AION_CONTROL_MODELS_DIRECTORY:-/srv/app/models}
@@ -111,6 +121,10 @@ services:
       AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
       AION_VAULT_TOKEN: ${AION_VAULT_TOKEN:-}
       AION_ENV: ${AION_ENV:-dev}
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      ALL_PROXY: ${ALL_PROXY:-}
+      NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,control,gateway,console,redis,postgres,qdrant,minio,vault}
       PYTHONPATH: /srv/app
     volumes:
       - ./policies:${AION_CONTROL_POLICIES_DIRECTORY:-/srv/app/policies}
@@ -159,6 +173,10 @@ services:
       AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
       AION_VAULT_TOKEN: ${AION_VAULT_TOKEN:-}
       AION_ENV: ${AION_ENV:-dev}
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      ALL_PROXY: ${ALL_PROXY:-}
+      NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,control,gateway,console,redis,postgres,qdrant,minio,vault}
     depends_on:
       postgres:
         condition: service_healthy
@@ -200,6 +218,10 @@ services:
       AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
       AION_VAULT_TOKEN: ${AION_VAULT_TOKEN:-}
       AION_ENV: ${AION_ENV:-dev}
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      ALL_PROXY: ${ALL_PROXY:-}
+      NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,control,gateway,console,redis,postgres,qdrant,minio,vault}
     depends_on:
       gateway:
         condition: service_started

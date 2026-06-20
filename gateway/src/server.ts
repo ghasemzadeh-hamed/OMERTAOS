@@ -29,6 +29,7 @@ import { registerSealRoutes } from './routes/seal.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerClaudeRoutes } from './routes/claude.js';
 import { registerSetupRoutes } from './routes/setup.js';
+import { registerNetworkRoutes } from './routes/network.js';
 import {
   buildDevKernelPayload,
   callDevKernel,
@@ -442,6 +443,7 @@ app.register(async (instance) => {
 
 registerConfigRoutes(app);
 registerSealRoutes(app);
+registerNetworkRoutes(app);
 
 app.setErrorHandler((error, request, reply) => {
   request.log.error({ err: error }, 'Unhandled gateway error');

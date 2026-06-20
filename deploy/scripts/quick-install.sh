@@ -89,6 +89,10 @@ set_env "AION_DOCKER" "1"
 set_env "AION_GATEWAY_PORT" "8080"
 set_env "CONSOLE_PORT" "3000"
 set_env "NEXTAUTH_URL" "http://localhost:3000"
+set_env "CONTROL_URL" "http://control:8000"
+set_env "GATEWAY_URL" "http://gateway:8080"
+set_env "AION_GATEWAY_URL" "http://gateway:8080"
+set_env "CONSOLE_URL" "http://localhost:3000"
 set_env "NEXT_PUBLIC_GATEWAY_URL" "http://localhost:8080"
 
 check_port() {

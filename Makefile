@@ -1,4 +1,4 @@
-.PHONY: dev-control doctor bundle edge-setup test status logs restart start stop setup train train-ci guard model-all run-user run-pro run-ent claude-install claude-bootstrap claude-status
+.PHONY: dev-control doctor bundle edge-setup test status logs restart start stop setup train train-ci guard model-all run-user run-pro run-ent claude-install claude-bootstrap claude-status desktop-dev desktop-build
 
 PY ?= python3
 CLI=$(PY) -m aion_core.cli
@@ -105,3 +105,9 @@ claude-bootstrap:
 
 claude-status:
 	bash scripts/claude/status.sh
+
+desktop-dev:
+	cd desktop-shell && npm run tauri:dev
+
+desktop-build:
+	cd desktop-shell && npm run tauri:build

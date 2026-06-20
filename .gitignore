@@ -45,3 +45,4 @@ config/certs/dev/.generated
 config/keys/
 .env.bak.*
 compose.log
+migration/logs/

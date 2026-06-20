@@ -1,0 +1,10 @@
+:root {
+  --aion-surface: #ffffff;
+  --aion-text: #0f172a;
+  --aion-muted: #64748b;
+}
+
+.aion-wizard {
+  background: #f8fafc;
+  color: var(--aion-text);
+}

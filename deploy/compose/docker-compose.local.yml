@@ -1,28 +1,11 @@
-version: "3.9"
-
 services:
   vault:
     image: hashicorp/vault:1.16
     environment:
-      VAULT_LOCAL_CONFIG: |
-        {
-          "disable_mlock": true,
-          "ui": true,
-          "listener": [
-            {
-              "tcp": {
-                "address": "0.0.0.0:8200",
-                "tls_disable": 1
-              }
-            }
-          ],
-          "storage": {
-            "raft": {
-              "path": "/vault/data"
-            }
-          }
-        }
-    command: vault server -config=/vault/config/local.json
+      VAULT_DEV_ROOT_TOKEN_ID: ${AION_VAULT_TOKEN:-dev-root-token}
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    command: server -dev
+    profiles: ["vault"]
     cap_add:
       - IPC_LOCK
     ports:
@@ -98,48 +81,49 @@ services:
     networks:
       - aion-local
 
-  kernel:
-    build:
-      context: .
-      dockerfile: kernel/Dockerfile
-    command: ["uvicorn", "os.kernel.devserver:app", "--host", "0.0.0.0", "--port", "8010"]
-    environment:
-      AION_KERNEL_PERSIST_PATH: /data
-      REDIS_URL: redis://redis:6379/5
-      QDRANT_URL: http://qdrant:6333
-      MINIO_URL: http://minio:9000
-    volumes:
-      - kernel-data:/data
-    depends_on:
-      redis:
-        condition: service_healthy
-      qdrant:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
+  mongo:
+    image: mongo:7
     ports:
-      - "8010:8010"
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - aion-local
+
+  proxy-router:
+    image: teddysun/xray:latest
+    profiles: ["proxy"]
+    restart: unless-stopped
+    volumes:
+      - ./deploy/proxy/xray/config.json:/etc/xray/config.json:ro
+    ports: []
     networks:
       - aion-local
 
   control:
-    build: ./control
+    build:
+      context: .
+      dockerfile: control/Dockerfile
     environment:
-      AION_CONTROL_API_PREFIX: /api
+      AION_DOCKER: "1"
+      AION_CONTROL_DISABLE_SECRETS: "1"
+      AION_CONTROL_POSTGRES_DSN: postgresql://aion:aion@postgres:5432/aion
+      AION_CONTROL_MONGO_DSN: mongodb://mongo:27017/aion
       AION_CONTROL_REDIS_URL: redis://redis:6379/0
       AION_CONTROL_QDRANT_URL: http://qdrant:6333
-      AION_CONTROL_MODELS_DIRECTORY: /app/models
+      AION_CONTROL_MINIO_ENDPOINT: minio:9000
+      AION_CONTROL_MINIO_ACCESS_KEY: minio
+      AION_CONTROL_MINIO_SECRET_KEY: miniosecret
+      AION_CONTROL_MINIO_BUCKET: aion-raw
+      AION_CONTROL_MINIO_SECURE: "false"
+      AION_CONTROL_MODELS_DIRECTORY: /app/registry/models
       AION_CONTROL_POLICIES_DIRECTORY: /app/policies
       TENANCY_MODE: single
-      AION_DB_SECRET_PATH: secret/aion/dev/db-main
-      AION_MINIO_SECRET_PATH: secret/aion/dev/minio
-      AION_CONTROL_TLS_SECRET_PATH: secret/aion/dev/control-tls
-      AION_CONTROL_TLS_CLIENT_CA_SECRET_PATH: secret/aion/dev/mtls-ca
-      AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
-      AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
-      AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
       AION_ENV: ${AION_ENV:-dev}
-      PYTHONPATH: /srv/app:/srv/app/os
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      ALL_PROXY: ${ALL_PROXY:-}
+      NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,control,gateway,console,redis,postgres,mongo,qdrant,minio}
     volumes:
       - ./policies:/app/policies
     depends_on:
@@ -150,87 +134,109 @@ services:
       qdrant:
         condition: service_started
       minio:
-        condition: service_healthy
-      kernel:
         condition: service_started
-      vault:
-        condition: service_healthy
-    command: ["python", "-m", "os.control.os.main"]
+      mongo:
+        condition: service_started
     ports:
       - "8000:8000"
-      - "50051:50051"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
     networks:
       - aion-local
 
   gateway:
-    build: ./gateway
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
     environment:
-      AION_GATEWAY_PORT: 3000
+      AION_GATEWAY_PORT: 8080
       AION_GATEWAY_HOST: 0.0.0.0
-      AION_CONTROL_GRPC: http://control:50051
-      AION_CONTROL_BASE: http://control:8000
-      AION_REDIS_URL: redis://redis:6379/1
+      AION_CONTROL_GRPC: control:50051
+      AION_CONTROL_BASE_URL: http://control:8000
+      AION_CONTROL_API_PREFIX: /v1
+      AION_REDIS_URL: redis://redis:6379/0
+      AION_GATEWAY_ADMIN_TOKEN: ${AION_GATEWAY_ADMIN_TOKEN:-dev-admin-token}
+      AION_AUTH_MODE: disabled
+      SECRET_PROVIDER_MODE: local
+      AION_SELF_EVOLVING_ENABLED: "false"
       AION_RATE_LIMIT_MAX: "1000"
       AION_RATE_LIMIT_PER_IP: "true"
       AION_RATE_LIMIT_WINDOW: "60"
       AION_IDEMPOTENCY_TTL: "600"
       AION_TLS_REQUIRE_MTLS: "false"
       AION_TLS_REQUIRED: "false"
-      AION_KERNEL_URL: http://kernel:8010
-      AION_GATEWAY_API_KEYS_SECRET_PATH: secret/aion/dev/gateway-api-keys
-      AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH: secret/aion/dev/admin-token
-      AION_ADMIN_TOKEN_SECRET_PATH: secret/aion/dev/admin-token
-      AION_TLS_SECRET_PATH: secret/aion/dev/gateway-tls
-      AION_TLS_CLIENT_CA_SECRET_PATH: secret/aion/dev/mtls-ca
-      AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
-      AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
-      AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
+      AION_DEV_KERNEL_ENABLED: "false"
       AION_ENV: ${AION_ENV:-dev}
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      ALL_PROXY: ${ALL_PROXY:-}
+      NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,control,gateway,console,redis,postgres,mongo,qdrant,minio}
     depends_on:
       control:
         condition: service_healthy
       redis:
         condition: service_healthy
-      vault:
-        condition: service_healthy
     ports:
-      - "3000:3000"
+      - "8080:8080"
     volumes:
       - ./protos:/protos:ro
     networks:
       - aion-local
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
 
   console:
-    build: ./console
+    build:
+      context: .
+      dockerfile: console/Dockerfile
     environment:
-      NEXTAUTH_URL: http://localhost:3001
+      AION_DOCKER: "1"
+      DOCKER: "true"
+      NEXTAUTH_URL: http://localhost:3000
       NEXTAUTH_SECRET: development-secret
-      NEXT_PUBLIC_GATEWAY_URL: http://localhost:3000
-      NEXT_PUBLIC_KERNEL_URL: http://localhost:8010
-      PORT: ${CONSOLE_PORT:-3001}
-      AION_GATEWAY_ADMIN_TOKEN_SECRET_PATH: secret/aion/dev/admin-token
-      AION_ADMIN_TOKEN_SECRET_PATH: secret/aion/dev/admin-token
-      AION_VAULT_ADDR: ${AION_VAULT_ADDR:-http://vault:8200}
-      AION_VAULT_KV_MOUNT: ${AION_VAULT_KV_MOUNT:-secret}
-      AION_VAULT_TOKEN: ${AION_VAULT_TOKEN}
+      NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080
+      GATEWAY_URL: http://gateway:8080
+      AION_GATEWAY_URL: http://gateway:8080
+      NEXT_PUBLIC_CONTROL_URL: http://localhost:8000
+      CONTROL_URL: http://control:8000
+      DATABASE_URL: postgresql://aion:aion@postgres:5432/aion?schema=public
+      SECRET_PROVIDER_MODE: local
+      AION_DEV_ADMIN_TOKEN: ${AION_DEV_ADMIN_TOKEN:-dev-admin-token}
+      AION_ADMIN_TOKEN: ${AION_ADMIN_TOKEN:-dev-admin-token}
+      PORT: 3000
       AION_ENV: ${AION_ENV:-dev}
+      HTTP_PROXY: ${HTTP_PROXY:-}
+      HTTPS_PROXY: ${HTTPS_PROXY:-}
+      ALL_PROXY: ${ALL_PROXY:-}
+      NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,control,gateway,console,redis,postgres,mongo,qdrant,minio}
     depends_on:
       gateway:
         condition: service_healthy
-      vault:
+      postgres:
         condition: service_healthy
     ports:
-      - "3001:${CONSOLE_PORT:-3001}"
+      - "3000:3000"
     networks:
       - aion-local
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
 
 volumes:
+  mongo-data:
   minio-data:
   qdrant-data:
-  kernel-data:
   vault-data:
 
 networks:
-  aion:
+  aion-local:
     driver: bridge
     internal: false

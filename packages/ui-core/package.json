@@ -1,0 +1,21 @@
+{
+  "name": "@aion/ui-core",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.tsx",
+  "types": "src/index.tsx",
+  "exports": {
+    ".": "./src/index.tsx",
+    "./theme/tokens.css": "./theme/tokens.css",
+    "./src/bootstrap": "./src/bootstrap.ts",
+    "./src/registry": "./src/registry.ts"
+  },
+  "peerDependencies": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.11",
+    "@types/react-dom": "18.3.0"
+  }
+}
