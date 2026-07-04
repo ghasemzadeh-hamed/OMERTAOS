@@ -1,108 +1,79 @@
+<p align="center">
+  <img src="https://img.shields.io/badge/OMERTAOS-AION-6D5DFB?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Type-Hybrid%20Agent%20OS-4B5563?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Architecture-Agentic%20OS-7C3AED?style=for-the-badge" />
+</p>
+
+<p align="center">
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
+  </a>
+  <img src="https://img.shields.io/badge/aion--core-v0.2.0-indigo" />
+  <img src="https://img.shields.io/badge/console-v0.1.0-black" />
+  <img src="https://img.shields.io/badge/gateway-v0.1.0-gray" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11--3.12-3776AB?logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/Control-FastAPI-009688?logo=fastapi&logoColor=white" />
+  <img src="https://img.shields.io/badge/Runtime-Rust%20Daemon-000000?logo=rust&logoColor=white" />
+  <img src="https://img.shields.io/badge/Console-Next.js%2014-000000?logo=nextdotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/Gateway-Fastify-000000?logo=fastify&logoColor=white" />
+  <img src="https://img.shields.io/badge/Quickstart-Docker%20Compose-2496ED?logo=docker&logoColor=white" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/stars/Hamedghz/OMERTAOS?style=social" />
+  <img src="https://img.shields.io/github/forks/Hamedghz/OMERTAOS?style=social" />
+  <img src="https://img.shields.io/github/issues/Hamedghz/OMERTAOS" />
+  <img src="https://img.shields.io/github/issues-pr/Hamedghz/OMERTAOS" />
+  <img src="https://img.shields.io/github/last-commit/Hamedghz/OMERTAOS/AION" />
+</p>
+
+<p align="center">
+  <a href="https://github.com/Hamedghz/OMERTAOS/actions/workflows/release.yml">
+    <img src="https://github.com/Hamedghz/OMERTAOS/actions/workflows/release.yml/badge.svg" />
+  </a>
+</p>
+
 # OMERTAOS
 
-OMERTAOS is a distributed AI operating system that separates user interaction, admission control, orchestration, and privileged execution. The architecture is layered for enforceable trust boundaries and event-driven for durable state propagation.
+Hybrid Agent Operating System:
+- Python Control Plane (AI orchestration, governance, APIs)
+- Rust Runtime Daemon (OS isolation, sandboxed execution, command/runtime boundary)
 
-## Architecture
-
-```mermaid
-flowchart LR
-  U[Console\nNext.js] -->|HTTPS / WS| G[Gateway\nFastify]
-  G -->|gRPC| C[Control Plane\nPython]
-  C -->|gRPC + capability grant| R[Runtime Daemon\nRust]
-  C <--> E[(Redis Streams / Kafka)]
-  C --> P[(Postgres)]
-  C --> M[(MongoDB)]
-  C --> Q[(Qdrant)]
-  C --> O[(MinIO)]
-  C --> REG[Agent + Model Registry]
-  G & C & R --> POL[Policy enforcement]
-```
-
-The synchronous request path is **Console → Gateway → Control Plane → Runtime Daemon**. The Gateway authenticates and validates requests; the Control Plane plans work, selects agents and models, evaluates policy, and issues a bounded execution grant; the Runtime Daemon enforces that grant inside an isolated sandbox. Lifecycle, audit, and telemetry events are emitted to Redis Streams by default or Kafka at larger scale. Clients observe progress over SSE or WebSocket rather than holding the execution RPC open.
-
-## Agent and model execution
-
-1. The Gateway assigns a correlation ID, authenticates the principal, enforces RBAC and rate limits, and submits a normalized task over gRPC.
-2. The Control Plane persists the task, resolves an eligible agent by declared skills, version, health, tenant, and required capabilities, then produces a plan.
-3. The policy engine evaluates principal, task, agent, resources, and environment. A denial terminates the task; a modification narrows the plan or capabilities.
-4. Model routing filters registry entries by modality, context size, residency, policy, availability, and tool support, then scores cost, latency, quality, and load. Fallbacks remain within the allowed set.
-5. The scheduler sends a job and signed, time-bounded capability grant to the Runtime Daemon. A worker creates the sandbox, executes commands/tools, streams audit records, and returns structured output.
-6. The Control Plane aggregates results, stores artifacts in MinIO and metadata in the appropriate store, and publishes the terminal event.
-
-## Repository map
-
-| Path | Authority |
-|---|---|
-| `console/` | Next.js operator and user interface |
-| `gateway/` | External API boundary and streaming transport |
-| `control/` | Python orchestration and control APIs |
-| `runtime-daemon/` | Rust execution and isolation boundary |
-| `data/` | Database adapters, retrieval, and persistence contracts |
-| `registry/` | Agent/model registry APIs and metadata |
-| `policies/` | Authorization and capability policy definitions |
-| `schemas/` | Versioned wire and event contracts |
-| `shared/` | Generated clients and cross-language primitives |
-| `deploy/` | Deployment manifests and operational scripts |
-
-See [STRUCTURE.md](STRUCTURE.md) for ownership and migration rules and [ARCHITECTURE.md](ARCHITECTURE.md) for the detailed design.
-
-## Quick start
-
-Requirements: Docker Engine with Compose v2, 8 GB available RAM, and free ports 3000, 8000, and 8080.
+## Quick Install
 
 ```bash
-cp .env.example .env
-docker compose -f docker-compose.quickstart.yml up --build -d
-docker compose -f docker-compose.quickstart.yml ps
+git clone https://github.com/Hamedghz/OMERTAOS.git
+cd OMERTAOS
+./quick-install.sh
 ```
 
-Open `http://localhost:3000`. Quickstart credentials and tokens are development-only; replace every default before exposing a service. Stop with:
+Alternative local development startup:
 
 ```bash
-docker compose -f docker-compose.quickstart.yml down
+docker compose -f docker-compose.local.yml up -d
 ```
 
-### Desktop Shell
+## Runtime Boundary
 
-The optional Tauri Desktop Shell adds an OS-like native surface without replacing the Web Console or joining the Quickstart service graph. See [Desktop Shell](docs/desktop-shell.md) for prerequisites and run commands.
+Python must delegate OS-level execution to runtime daemon via runtime client:
+- `control_plane/runtime_client.py`
+- gRPC contract: `shared/proto/runtime.proto`
+- Rust daemon: `runtime-daemon/`
 
-## Configuration
+## Key Planes
 
-| Group | Representative variables | Purpose |
-|---|---|---|
-| Service endpoints | `AION_CONTROL_GRPC`, `AION_CONTROL_BASE_URL`, `NEXT_PUBLIC_GATEWAY_URL` | Internal service discovery and browser API URL |
-| Gateway | `AION_GATEWAY_HOST`, `AION_GATEWAY_PORT`, `AION_REDIS_URL`, `AION_RATE_LIMIT_MAX`, `AION_IDEMPOTENCY_TTL` | Listener, cache, quotas, and replay control |
-| Authentication | `AION_JWT_PUBLIC_KEY`, `AION_GATEWAY_API_KEYS`, `AION_GATEWAY_ADMIN_TOKEN` | Development credentials and JWT verification |
-| TLS | `AION_TLS_REQUIRED`, `AION_TLS_REQUIRE_MTLS`, `AION_TLS_*_PEM` | Transport policy and certificate material |
-| Control | `AION_CONTROL_*_DSN`, `TENANCY_MODE`, `AION_CONTROL_MODELS_DIRECTORY`, `AION_CONTROL_POLICIES_DIRECTORY` | Persistence, tenancy, and configuration roots |
-| Objects/vectors | `AION_CONTROL_MINIO_*`, `AION_CONTROL_QDRANT_URL` | Artifact and embedding storage |
-| Models | `ORCH_*`, `CODER_*`, provider-specific keys/endpoints | Model routing inputs |
-| Telemetry | `AION_OTEL_ENABLED`, `AION_TELEMETRY_ENDPOINT`, `AION_METRICS_ENABLED` | Traces, metrics, and logs |
+- `kernel/` orchestration/router/runtime integration
+- `control/` policies/governance/apis
+- `data/` rag/vector/adapters
+- `services/` service surfaces
+- `shared/` contracts/events/observability/event_bus
 
-Use `.env.example` as the inventory. Store production secrets in an external secret provider; do not commit `.env`.
+## Local Endpoints
 
-## Ports
-
-| Port | Service | Exposure |
-|---:|---|---|
-| 3000 | Console HTTP | Host in quickstart |
-| 8080 | Gateway HTTP, SSE, WebSocket | Host in quickstart |
-| 8000 | Control Plane HTTP/health | Host in quickstart; restrict in production |
-| 50051 | Control/runtime gRPC contracts | Internal network by default |
-| 5432 | Postgres | Internal |
-| 27017 | MongoDB | Internal |
-| 6379 | Redis / Streams | Internal |
-| 6333/6334 | Qdrant HTTP/gRPC | Internal |
-| 9000/9001 | MinIO API/console | Internal |
-| 4317/4318 | OpenTelemetry gRPC/HTTP | Internal when enabled |
-
-## Security model
-
-RBAC answers which API operations a principal may request. Policy evaluation adds tenant, resource, data-classification, network, model, and environment context. Capability-based access control then converts an allowed plan into least-privilege, short-lived grants enforced by the Runtime Daemon. The Gateway is the only public API; Console-to-Control and direct database access are prohibited. Production deployments require TLS, signed identity, non-default secrets, network policies, immutable audit events, sandbox resource limits, and explicit outbound-network capabilities.
-
-## Documentation
-
-- [Gateway](gateway/README.md) · [Control Plane](control/README.md) · [Runtime](runtime-daemon/README.md)
-- [Data](data/README.md) · [Registry](registry/README.md) · [Policies](policies/README.md) · [Schemas](schemas/README.md)
-- [Deployment](deploy/README.md) · [Tests](tests/README.md) · [Windows bridge](integrations/windows-agentic-bridge/README.md)
-- [Desktop Shell](docs/desktop-shell.md)
+- Console: `http://localhost:3000`
+- Control: `http://localhost:8000`
+- Gateway: `http://localhost:8080`
+- Runtime daemon (gRPC default): `127.0.0.1:50051`
