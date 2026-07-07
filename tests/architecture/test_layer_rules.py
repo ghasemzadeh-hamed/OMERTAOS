@@ -6,13 +6,12 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 LAYERS = [
-    "ui",
+    "console",
     "gateway",
-    "control-plane",
+    "control",
     "domain",
     "orchestration",
-    "execution",
-    "database",
+    "data",
     "observability",
     "policies",
 ]
@@ -35,7 +34,7 @@ def _imports(path: Path) -> set[str]:
 
 def test_no_runtime_logic_inside_python_layers() -> None:
     violations: list[str] = []
-    checked = ["domain", "orchestration", "control-plane", "gateway", "database"]
+    checked = ["domain", "orchestration", "control", "gateway", "data"]
     for layer in checked:
         for p in _py_files(REPO_ROOT / layer):
             for mod in _imports(p):
@@ -44,13 +43,13 @@ def test_no_runtime_logic_inside_python_layers() -> None:
     assert not violations, "python layers include OS-level logic imports:\n" + "\n".join(sorted(violations))
 
 
-def test_control_plane_runtime_access_via_runtime_client_only() -> None:
+def test_control_runtime_access_via_runtime_client_only() -> None:
     forbidden = ("subprocess", "os.system")
     violations: list[str] = []
-    for p in _py_files(REPO_ROOT / "control-plane"):
-        if "runtime_client" in p.parts:
+    for p in _py_files(REPO_ROOT / "control"):
+        if "runtime" in p.parts or "runtime_client" in p.name:
             continue
         source = p.read_text(encoding="utf-8")
         if any(x in source for x in forbidden):
             violations.append(str(p.relative_to(REPO_ROOT)))
-    assert not violations, "control-plane bypassed runtime_client boundary: " + ", ".join(sorted(violations))
+    assert not violations, "control bypassed runtime client boundary: " + ", ".join(sorted(violations))

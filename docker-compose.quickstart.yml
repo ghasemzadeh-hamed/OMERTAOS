@@ -52,6 +52,22 @@ services:
     volumes:
       - ./deploy/proxy/xray/config.json:/etc/xray/config.json:ro
     ports: []
+  runtime:
+    build:
+      context: .
+      dockerfile: runtime-daemon/Dockerfile
+    environment:
+      AION_RUNTIME_BIND_ADDR: 0.0.0.0:50051
+      OMERTA_PROFILE: ${OMERTA_PROFILE:-lite}
+      RUST_LOG: ${RUST_LOG:-info}
+    ports:
+      - "127.0.0.1:50051:50051"
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/runtime-daemon", "--healthcheck"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
   control:
     build:
       context: .
@@ -76,14 +92,20 @@ services:
       ALL_PROXY: ${ALL_PROXY:-}
       NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,control,gateway,console,redis,postgres,qdrant,minio,mongo}
     depends_on:
-      - postgres
-      - redis
-      - qdrant
-      - minio
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      minio:
+        condition: service_started
+      runtime:
+        condition: service_healthy
     ports:
       - "8000:8000"
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
       interval: 5s
       timeout: 3s
       retries: 30

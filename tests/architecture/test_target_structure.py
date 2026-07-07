@@ -7,22 +7,18 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 def test_required_top_level_directories_exist() -> None:
     required = {
-        "rust-runtime",
-        "control-plane",
-        "domain",
-        "orchestration",
-        "execution",
+        "console",
         "gateway",
+        "control",
+        "runtime-daemon",
         "registry",
-        "database",
+        "data",
         "policies",
         "observability",
         "schemas",
-        "agents",
-        "models",
-        "algorithms",
-        "ui",
-        "config",
+        "shared",
+        "deploy",
+        "integrations",
         "tests",
     }
     existing = {p.name for p in REPO_ROOT.iterdir() if p.is_dir() and not p.name.startswith(".")}
@@ -30,12 +26,15 @@ def test_required_top_level_directories_exist() -> None:
     assert not missing, f"missing required top-level directories: {missing}"
 
 
-def test_rust_runtime_segmented_layout() -> None:
+def test_canonical_runtime_security_layout() -> None:
     expected = [
-        "rust-runtime/kernel-adapter",
-        "rust-runtime/sandbox",
-        "rust-runtime/terminal-bridge",
-        "rust-runtime/resource-isolation",
+        "runtime-daemon/Cargo.toml",
+        "runtime-daemon/src/server.rs",
+        "runtime-daemon/src/security/capability.rs",
+        "runtime-daemon/src/sandbox/namespace.rs",
+        "runtime-daemon/src/sandbox/seccomp.rs",
+        "runtime-daemon/src/isolation/cpu.rs",
+        "runtime-daemon/src/isolation/memory.rs",
     ]
     missing = [p for p in expected if not (REPO_ROOT / p).exists()]
     assert not missing, f"missing rust runtime segmented components: {missing}"

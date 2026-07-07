@@ -1,15 +1,19 @@
+"""Canonical Python exports for version 1 API schemas."""
 
-"""Compatibility shim for ``control.os.schemas.__init__``."""
-from __future__ import annotations
+from schemas.v1.datasource import DataSourceCreate, DataSourceOut
+from schemas.v1.module import ModuleManifest, ModuleOut
+from schemas.v1.provider import ProviderCreate, ProviderOut
+from schemas.v1.router_policy import RouterPolicyDocument, RouterPolicyResponse
+from schemas.v1.webhook import WebhookEnvelope
 
-from importlib import import_module as _import_module
-
-_target = _import_module('control.os.schemas.__init__')
-_globals = globals()
-for _name in getattr(_target, '__all__', [n for n in dir(_target) if not n.startswith('_')]):
-    _globals[_name] = getattr(_target, _name)
-__all__ = getattr(_target, '__all__', [n for n in _globals if not n.startswith('_')])
-if hasattr(_target, '__path__'):
-    __path__ = _target.__path__  # type: ignore[assignment]
-if hasattr(_target, '__spec__'):
-    __spec__ = _target.__spec__
+__all__ = [
+    "DataSourceCreate",
+    "DataSourceOut",
+    "ModuleManifest",
+    "ModuleOut",
+    "ProviderCreate",
+    "ProviderOut",
+    "RouterPolicyDocument",
+    "RouterPolicyResponse",
+    "WebhookEnvelope",
+]

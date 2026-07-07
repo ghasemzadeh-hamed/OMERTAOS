@@ -1,5 +1,10 @@
 # OMERTAOS (AIONOS) Structural Audit and Production Refactor Plan
 
+> Historical plan. Its recommendation to make `control-plane/` and
+> `rust-runtime/` canonical is superseded by
+> `docs/adr/0001-canonical-aion-ownership.md`. It remains as audit history and
+> must not be used as the current implementation contract.
+
 ## 1) Structural Violation Report
 
 ### Critical findings

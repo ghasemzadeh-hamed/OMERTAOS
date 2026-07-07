@@ -6,7 +6,7 @@ OMERTAOS provides two local Compose entry points. `docker-compose.quickstart.yml
 
 - Docker Desktop on Windows/macOS, or Docker Engine with Compose v2 on Linux
 - At least 8 GB of available memory
-- Free host ports 3000, 8000, and 8080 for quickstart
+- Free host ports 3000, 8000, 8080, and loopback-only 50051 for quickstart
 - For the extended local stack, also free ports 5432, 6379, 27017, 6333, 9000, and 9001
 
 Confirm that the Docker daemon is running before starting:
@@ -48,6 +48,11 @@ Expected host ports:
 | Console | `http://localhost:3000` |
 | Control | `http://localhost:8000` |
 | Gateway | `http://localhost:8080` |
+| Runtime gRPC | `127.0.0.1:50051` |
+
+Runtime readiness is checked from inside its container before Control starts.
+Control readiness uses Python's standard-library HTTP client, so its image does
+not install an extra system curl package solely for health checks.
 
 Check health with:
 
@@ -75,7 +80,7 @@ Vault is optional and starts only when explicitly selected:
 docker compose -f docker-compose.local.yml --profile vault up -d
 ```
 
-The historical `kernel/` service is disabled because that directory and Dockerfile are not present. The current `runtime-daemon/` remains separate and is not required by either local stack until its container contract is ready.
+The historical `kernel/` service is disabled because that directory and Dockerfile are not present. The canonical `runtime-daemon/` runs as the `runtime` service and exposes its gRPC endpoint on loopback port 50051 for local development.
 
 ## Common errors
 
@@ -89,11 +94,11 @@ Recreate `.env` from `dev.env`. `docker compose ... config` shows the resolved v
 
 ### Port already in use
 
-Stop the process or older Compose project using 3000, 8000, or 8080. Use `docker compose -f docker-compose.quickstart.yml down` to stop an earlier OMERTAOS stack.
+Stop the process or older Compose project using 3000, 8000, 8080, or 50051. Use `docker compose -f docker-compose.quickstart.yml down` to stop an earlier OMERTAOS stack.
 
 ### Kernel path not found
 
-Use `docker-compose.quickstart.yml` or `docker-compose.local.yml`; these two entry points do not reference `kernel/`. Kernel/runtime integration is intentionally optional.
+Use `docker-compose.quickstart.yml` or `docker-compose.local.yml`; these entry points do not reference the removed `kernel/` path. The primary quickstart includes the canonical Rust runtime.
 
 ### Gateway cannot reach Control
 

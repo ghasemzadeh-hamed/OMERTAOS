@@ -21,4 +21,10 @@ cargo build --manifest-path runtime-daemon/Cargo.toml --release
 cargo test --manifest-path runtime-daemon/Cargo.toml
 ```
 
+The local quickstart builds the daemon as the `runtime` service and binds gRPC to
+`127.0.0.1:50051`. Containers reach it at `runtime:50051`. Override
+`AION_RUNTIME_BIND_ADDR` only when running the binary outside Compose.
+The container healthcheck uses `runtime-daemon --healthcheck` to verify that the
+configured gRPC listener accepts connections before dependent services start.
+
 Expose the gRPC listener only on the internal service network and require mTLS in production.

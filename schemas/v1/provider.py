@@ -1,15 +1,24 @@
-
-"""Compatibility shim for ``control.os.schemas.provider``."""
+"""Versioned provider API schemas."""
 from __future__ import annotations
 
-from importlib import import_module as _import_module
+from typing import List, Optional
 
-_target = _import_module('control.os.schemas.provider')
-_globals = globals()
-for _name in getattr(_target, '__all__', [n for n in dir(_target) if not n.startswith('_')]):
-    _globals[_name] = getattr(_target, _name)
-__all__ = getattr(_target, '__all__', [n for n in _globals if not n.startswith('_')])
-if hasattr(_target, '__path__'):
-    __path__ = _target.__path__  # type: ignore[assignment]
-if hasattr(_target, '__spec__'):
-    __spec__ = _target.__spec__
+from pydantic import BaseModel, ConfigDict, HttpUrl, constr
+
+
+class ProviderBase(BaseModel):
+    name: constr(strip_whitespace=True, min_length=1)
+    kind: constr(strip_whitespace=True, min_length=1)
+    base_url: HttpUrl
+    models: List[str]
+    api_key: Optional[str] = None
+
+
+class ProviderCreate(ProviderBase):
+    pass
+
+
+class ProviderOut(ProviderBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    enabled: bool = True

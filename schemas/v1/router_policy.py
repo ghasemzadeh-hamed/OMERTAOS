@@ -1,15 +1,27 @@
-
-"""Compatibility shim for ``control.os.schemas.router_policy``."""
+"""Versioned model-router policy schemas."""
 from __future__ import annotations
 
-from importlib import import_module as _import_module
+from typing import Dict, List
 
-_target = _import_module('control.os.schemas.router_policy')
-_globals = globals()
-for _name in getattr(_target, '__all__', [n for n in dir(_target) if not n.startswith('_')]):
-    _globals[_name] = getattr(_target, _name)
-__all__ = getattr(_target, '__all__', [n for n in _globals if not n.startswith('_')])
-if hasattr(_target, '__path__'):
-    __path__ = _target.__path__  # type: ignore[assignment]
-if hasattr(_target, '__spec__'):
-    __spec__ = _target.__spec__
+from pydantic import BaseModel
+
+
+class RouterPolicyDocument(BaseModel):
+    version: str = "0.0.0"
+    default: str
+    rules: list
+    budgets: Dict[str, object] | None = None
+
+
+class RouterPolicyHistory(BaseModel):
+    revision: int
+    checksum: str
+    version: str
+    applied_at: float
+
+
+class RouterPolicyResponse(BaseModel):
+    revision: int
+    document: RouterPolicyDocument
+    checksum: str
+    history: List[RouterPolicyHistory] | None = None

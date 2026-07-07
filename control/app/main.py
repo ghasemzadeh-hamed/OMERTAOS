@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from control.app.network.routes import router as network_proxy_router
+from control.models.registry import get_model_registry
 
 app = FastAPI(title="OMERTAOS Control Plane", version="0.1.0")
 app.include_router(network_proxy_router)
@@ -35,3 +36,11 @@ async def task_status(task_id: str) -> dict[str, object]:
         "result": {},
         "error": None,
     }
+
+
+@app.get("/models")
+@app.get("/v1/models")
+async def list_models() -> list[dict[str, object]]:
+    """Return normalized metadata from the canonical model-profile directory."""
+
+    return get_model_registry().list_models()

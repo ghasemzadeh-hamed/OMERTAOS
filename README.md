@@ -59,17 +59,29 @@ docker compose -f docker-compose.local.yml up -d
 ## Runtime Boundary
 
 Python must delegate OS-level execution to runtime daemon via runtime client:
-- `control_plane/runtime_client.py`
+- target canonical client: `control/runtime/`
 - gRPC contract: `shared/proto/runtime.proto`
 - Rust daemon: `runtime-daemon/`
 
-## Key Planes
+## Canonical Planes
 
-- `kernel/` orchestration/router/runtime integration
-- `control/` policies/governance/apis
-- `data/` rag/vector/adapters
-- `services/` service surfaces
-- `shared/` contracts/events/observability/event_bus
+- `control/` orchestration, scheduling, governance and APIs
+- `runtime-daemon/` privileged execution and sandbox enforcement
+- `data/` persistence, RAG, memory and adapters
+- `registry/` agent, model and prompt metadata
+- `policies/` policy definitions and evaluator interfaces
+- `schemas/` source contracts; `shared/` generated clients and stable primitives
+
+The former Python `kernel/`, `control-plane/`, `rust-runtime/`, `database/`, `db/`,
+root `models/`, and deployment copies are migration-era paths. Do not add new
+feature behavior to them.
+
+## Redesign and recovery
+
+- [Capability audit](docs/aion-capability-audit.md)
+- [Canonical design](docs/architecture/aion-canonical-design.md)
+- [Capability recovery plan](docs/migration/aion-capability-recovery.md)
+- [ADR 0001: canonical ownership](docs/adr/0001-canonical-aion-ownership.md)
 
 ## Local Endpoints
 

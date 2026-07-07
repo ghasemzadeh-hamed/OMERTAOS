@@ -5,13 +5,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir \
+RUN pip install --no-cache-dir \
         "fastapi>=0.115" \
         "uvicorn[standard]>=0.30" \
         "httpx>=0.27" \
+        "pyyaml>=6.0" \
         "sqlalchemy>=2.0" \
         "psycopg2-binary>=2.9"
 
