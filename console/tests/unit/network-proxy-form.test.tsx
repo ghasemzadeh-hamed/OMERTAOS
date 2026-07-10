@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 
-import { validateProxyForm } from '../../app/tools/network/page';
+import { validateProxyForm } from '../../lib/network/proxyValidation';
 
 const baseForm = {
   name: 'Provider proxy',
@@ -41,4 +41,5 @@ describe('network proxy form validation', () => {
     expect(validateProxyForm(form as any, false)).toBe('VLESS UUID is required');
   });
 });
+
 

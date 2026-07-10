@@ -1,5 +1,5 @@
 # Stage 1: install dependencies with pnpm
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 
 WORKDIR /workspace
 
@@ -16,10 +16,10 @@ WORKDIR /workspace/console
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Stage 2: build (Next.js + Prisma generate)
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /workspace
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.23.0 --activate
 
 # Reuse installed dependencies from deps stage
 COPY --from=deps /workspace/console/node_modules ./console/node_modules
@@ -47,7 +47,7 @@ RUN pnpm build
 RUN pnpm exec tsc --project scripts/tsconfig.json
 
 # Stage 3: runtime image
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 ENV NODE_ENV=production

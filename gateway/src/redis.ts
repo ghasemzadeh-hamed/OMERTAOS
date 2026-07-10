@@ -1,5 +1,5 @@
-import dns from 'node:dns/promises';
-import Redis from 'ioredis';
+﻿import dns from 'node:dns/promises';
+import { Redis } from 'ioredis';
 import { gatewayConfig } from './config.js';
 
 const redisHostFromEnv = process.env.AION_REDIS_HOST || 'redis';
@@ -144,3 +144,5 @@ export const withRateLimitCounter = async (
 export const closeRedis = async () => {
   await redis.quit();
 };
+
+

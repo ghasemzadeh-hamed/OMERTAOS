@@ -1,5 +1,6 @@
-'use client';
+﻿'use client';
 
+import { validateProxyForm, type ProxyFormState, type ProxyProfile } from "@/lib/network/proxyValidation";
 import { CheckCircle2, FlaskConical, Pencil, Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -16,42 +17,6 @@ const SECRET_FIELDS = ['uuid', 'password', 'private_key', 'public_key', 'short_i
 type ProxyType = (typeof PROXY_TYPES)[number];
 type ProxyScope = (typeof SCOPES)[number];
 type SecretField = (typeof SECRET_FIELDS)[number];
-
-export type ProxyProfile = {
-  id: number;
-  name: string;
-  type: ProxyType;
-  enabled: boolean;
-  scope: ProxyScope;
-  host?: string | null;
-  port?: number | null;
-  transport?: string | null;
-  security?: string | null;
-  sni?: string | null;
-  flow?: string | null;
-  path?: string | null;
-  fallback_direct: boolean;
-  health_check_url?: string | null;
-  is_default: boolean;
-  has_secrets: boolean;
-};
-
-type ProxyFormState = {
-  name: string;
-  type: ProxyType;
-  enabled: boolean;
-  scope: ProxyScope;
-  host: string;
-  port: string;
-  transport: string;
-  security: string;
-  sni: string;
-  flow: string;
-  path: string;
-  fallback_direct: boolean;
-  health_check_url: string;
-  secrets: Record<SecretField, string>;
-};
 
 const emptyForm: ProxyFormState = {
   name: '',
@@ -75,26 +40,6 @@ const emptyForm: ProxyFormState = {
     short_id: '',
   },
 };
-
-export function validateProxyForm(form: ProxyFormState, hasExistingSecrets = false): string | null {
-  if (!form.name.trim()) {
-    return 'Profile name is required';
-  }
-  if (form.type !== 'direct') {
-    if (!form.host.trim()) {
-      return 'Host is required for proxy profiles';
-    }
-    const port = Number(form.port);
-    if (!Number.isInteger(port) || port < 1 || port > 65535) {
-      return 'Port must be between 1 and 65535';
-    }
-  }
-  if (form.type === 'vless' && !form.secrets.uuid.trim() && !hasExistingSecrets) {
-    return 'VLESS UUID is required';
-  }
-  return null;
-}
-
 const formFromProfile = (profile: ProxyProfile): ProxyFormState => ({
   ...emptyForm,
   name: profile.name,
@@ -386,3 +331,8 @@ export default function NetworkConfigPage() {
     </div>
   );
 }
+
+
+
+
+

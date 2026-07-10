@@ -1,3 +1,4 @@
+﻿import type { FastifyPluginCallback } from 'fastify';
 import Fastify, { FastifyRequest } from 'fastify';
 import compress from '@fastify/compress';
 import helmet from '@fastify/helmet';
@@ -48,7 +49,7 @@ const app = Fastify({
 app.register(helmet, { global: true });
 app.register(compress);
 app.register(websocket);
-app.register(fastifySsePlugin);
+app.register(fastifySsePlugin as unknown as FastifyPluginCallback);
 const corsOriginSetting =
   gatewayConfig.corsOrigins.length === 1 && gatewayConfig.corsOrigins[0] === '*'
     ? true
@@ -494,3 +495,5 @@ if (shouldAutostart()) {
 export type GatewayServer = typeof app;
 
 export default app;
+
+
