@@ -53,7 +53,7 @@ is attempted exactly once and is recorded as `complete`, `failed`, or `blocked`.
 | Phase | Name | Status |
 |---:|---|---|
 | 2 | CAPO contract and scaffold | complete |
-| 3 | Native OS and data installers | pending |
+| 3 | Native OS and data installers | complete |
 | 4 | Application installers and selective reconstruction | pending |
 | 5 | Native service lifecycle | pending |
 | 6 | Dual-path validation and recovery | pending |
@@ -92,3 +92,48 @@ is attempted exactly once and is recorded as `complete`, `failed`, or `blocked`.
 - Limitations: native Linux/systemd behavior is intentionally unverified until
   later phases and a provided Linux SSD host
 - Next phase: native OS and data installers
+
+## Phase 3 — Native OS and data installers
+
+- Status: complete
+- Started: 2026-07-12 00:01 Asia/Tehran
+- Finished: 2026-07-12 00:04 Asia/Tehran
+- Changed files:
+  - `deploy/CAPO/scripts/install-os-packages.sh`
+  - `deploy/CAPO/scripts/install-data-services.sh`
+  - `deploy/CAPO/scripts/README.md`
+  - `deploy/CAPO/CAPO.env.example`
+  - `deploy/CAPO/README.md`
+  - `docs/capo/native-os-data-installers.md`
+  - `deploy/CAPO/PHASE_STATUS.md`
+- Database objects: on a future Linux execution, one configured PostgreSQL login
+  role and database are created only when absent; this Windows run created none
+- API/UI impact: none
+- Permission/security impact: the OS installer can create the dedicated non-root
+  `omertaos` account and restricted state/configuration directories on Linux;
+  application auth and permissions are unchanged
+- Validation:
+  - Phase 3 PowerShell static contract assertions: passed (the first invocation
+    had an over-escaped test literal; the corrected unchanged assertion passed)
+  - `python -m pytest tests/architecture -q`: `14 passed in 0.67s`
+  - `git diff --check`: passed (Git reported only expected Windows checkout
+    LF-to-CRLF warnings for tracked text files)
+  - local Bash/shellcheck validation: skipped; WSL Bash was unavailable and no
+    pre-existing Docker Bash image was available; no package/image was installed
+- Coverage: not generated; application runtime code was not changed
+- Risk: medium (reviewed scripts perform package, account, service, and database
+  setup when explicitly executed on a supported Linux host)
+- Security: dry-run/help and OS checks included; PostgreSQL identifiers are
+  restricted and values use psql quoting; existing role passwords/data are
+  preserved; optional stores default disabled; no real secrets stored
+- Migration: no application schema migration or seeding; existing PostgreSQL
+  objects are preserved and database-owner mismatch fails for review
+- Rollback: stop/disable native PostgreSQL and Redis if appropriate; revert the
+  phase commit; do not delete created accounts, directories, roles, databases,
+  or data without separate backup evidence and explicit approval
+- Commit: the commit containing this phase record; resolve with
+  `git log -1 -- deploy/CAPO/PHASE_STATUS.md`
+- Limitations: installers were statically reviewed only on Windows; native
+  Debian/Ubuntu execution and systemd/database acceptance remain pending on the
+  intended Linux SSD host
+- Next phase: application installers
