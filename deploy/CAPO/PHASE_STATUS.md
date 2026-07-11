@@ -52,9 +52,43 @@ is attempted exactly once and is recorded as `complete`, `failed`, or `blocked`.
 
 | Phase | Name | Status |
 |---:|---|---|
-| 2 | CAPO contract and scaffold | pending |
+| 2 | CAPO contract and scaffold | complete |
 | 3 | Native OS and data installers | pending |
 | 4 | Application installers and selective reconstruction | pending |
 | 5 | Native service lifecycle | pending |
 | 6 | Dual-path validation and recovery | pending |
 | 7 | Final review and handoff | pending |
+
+## Phase 2 — CAPO contract and scaffold
+
+- Status: complete
+- Started: 2026-07-11 21:09 Asia/Tehran
+- Finished: 2026-07-11 21:09 Asia/Tehran
+- Changed files:
+  - `deploy/CAPO/README.md`
+  - `deploy/CAPO/CAPO.env.example`
+  - `deploy/CAPO/scripts/README.md`
+  - `deploy/CAPO/systemd/README.md`
+  - `deploy/CAPO/tests/README.md`
+  - `deploy/CAPO/PHASE_STATUS.md`
+- Database objects: none
+- API/UI impact: none; canonical ports and flow are documented only
+- Permission/security impact: documents a future dedicated non-root `omertaos`
+  account; no permission or auth implementation changed
+- Validation:
+  - Phase 2 PowerShell contract assertions: passed after making the three
+    optional-service flag names explicit in the README
+  - `python -m pytest tests/architecture -q`: `14 passed in 0.75s`
+  - `git diff --check`: passed (Git reported only the existing Windows checkout
+    LF-to-CRLF warning for this status file)
+- Coverage: not generated; Phase 2 changes configuration examples and Markdown
+- Risk: low (additive deployment contract and non-secret example only)
+- Security: placeholder secrets only; optional stores default disabled; no native
+  commands executed on Windows
+- Migration: none; no existing path, data, service, or configuration moved
+- Rollback: revert the single Phase 2 commit; runtime behavior is unchanged
+- Commit: the commit containing this phase record; resolve with
+  `git log -1 -- deploy/CAPO/PHASE_STATUS.md`
+- Limitations: native Linux/systemd behavior is intentionally unverified until
+  later phases and a provided Linux SSD host
+- Next phase: native OS and data installers
