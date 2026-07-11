@@ -146,6 +146,21 @@ services:
       timeout: 3s
       retries: 30
     restart: unless-stopped
+  install:
+    image: omertaos-console
+    environment:
+      DATABASE_URL: postgresql://aion:password@postgres:5432/omerta_db?schema=public
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: quickstart-nextauth-secret
+      CONTROL_URL: http://control:8000
+      GATEWAY_URL: http://gateway:8080
+      AION_CONTROL_BASE_URL: http://control:8000
+      AION_GATEWAY_URL: http://gateway:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    entrypoint: ["sh", "./scripts/install.sh"]
   console:
     build:
       context: .
@@ -170,10 +185,12 @@ services:
       ALL_PROXY: ${ALL_PROXY:-}
       NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,control,gateway,console,redis,postgres,qdrant,minio,mongo}
     depends_on:
-      gateway:
-        condition: service_healthy
       postgres:
         condition: service_healthy
+      gateway:
+        condition: service_healthy
+      install:
+        condition: service_completed_successfully
     ports:
       - "3000:3000"
     healthcheck:
