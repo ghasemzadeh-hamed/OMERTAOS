@@ -54,7 +54,7 @@ is attempted exactly once and is recorded as `complete`, `failed`, or `blocked`.
 |---:|---|---|
 | 2 | CAPO contract and scaffold | complete |
 | 3 | Native OS and data installers | complete |
-| 4 | Application installers and selective reconstruction | pending |
+| 4 | Application installers and selective reconstruction | complete |
 | 5 | Native service lifecycle | pending |
 | 6 | Dual-path validation and recovery | pending |
 | 7 | Final review and handoff | pending |
@@ -137,3 +137,55 @@ is attempted exactly once and is recorded as `complete`, `failed`, or `blocked`.
   Debian/Ubuntu execution and systemd/database acceptance remain pending on the
   intended Linux SSD host
 - Next phase: application installers
+
+## Phase 4 — Application installers
+
+- Status: complete
+- Started: 2026-07-12 02:05 Asia/Tehran
+- Finished: 2026-07-12 02:11 Asia/Tehran
+- Changed files:
+  - `deploy/CAPO/scripts/install-python-control.sh`
+  - `deploy/CAPO/scripts/install-node-services.sh`
+  - `deploy/CAPO/scripts/install-rust-runtime.sh`
+  - `deploy/CAPO/scripts/README.md`
+  - `deploy/CAPO/README.md`
+  - `docs/capo/application-installers.md`
+  - `deploy/CAPO/PHASE_STATUS.md`
+- Database objects: none; installers do not perform schema operations
+- API/UI impact: none; canonical build and entrypoint contracts are consumed
+  without changing application sources or public behavior
+- Permission/security impact: no auth or permission changes; scripts do not read
+  or print secrets and do not start services
+- Validation:
+  - Git Bash `bash -n`, `--help`, and Phase 4 static safety assertions: passed
+    for all three installers
+  - `python -c` import of `control.app.main:app`: passed
+  - `npm run build --prefix gateway`: passed
+  - `npm run build --prefix console`: passed with existing warnings about an
+    ungenerated Prisma client, missing database URL, stale browser mapping data,
+    and a dynamic server route; Next completed all 70 static pages
+  - `cargo metadata --manifest-path runtime-daemon/Cargo.toml --no-deps
+    --format-version 1`: passed
+  - `cargo build --manifest-path runtime-daemon/Cargo.toml --release`: blocked
+    by repeated inability to connect to `index.crates.io:443`; stopped after
+    retries rather than changing network or installing dependencies
+  - `python -m pytest tests/architecture -q`: `14 passed in 0.64s`
+  - `git diff --check`: passed with expected Windows LF-to-CRLF warnings
+- Coverage: not generated; Phase 4 changes deployment scripts/documentation and
+  does not change application runtime code
+- Risk: medium (scripts install/build native application artifacts when an
+  operator executes them on Linux)
+- Security: dedicated paths and canonical entrypoints retained; no secrets,
+  service starts, unsupported Runtime flags, destructive commands, or blanket
+  `|| true` were introduced
+- Migration: additive installers only; no source, data, API, schema, legacy path,
+  or Docker Quickstart migration
+- Rollback: revert the single Phase 4 commit and rebuild generated application
+  artifacts from the prior commit; preserve persistent data and configuration
+- Commit: the commit containing this phase record; resolve with
+  `git log -1 -- deploy/CAPO/PHASE_STATUS.md`
+- Limitations: Gateway and Runtime currently have no committed lockfiles; Gateway
+  reports and uses `npm install`, while Runtime uses locked Cargo mode only if a
+  lockfile exists. Native Linux and full Runtime build verification remain
+  pending on the intended Linux SSD host with registry access.
+- Next phase: native service lifecycle
