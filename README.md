@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/OMERTAOS-AION-6D5DFB?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/OMERTAOS-CAPI-6D5DFB?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Type-Hybrid%20Agent%20OS-4B5563?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Architecture-Agentic%20OS-7C3AED?style=for-the-badge" />
 </p>
@@ -8,7 +8,7 @@
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
   </a>
-  <img src="https://img.shields.io/badge/aion--core-v0.2.0-indigo" />
+  <img src="https://img.shields.io/badge/CAPO--core-v0.2.0-indigo" />
   <img src="https://img.shields.io/badge/console-v0.1.0-black" />
   <img src="https://img.shields.io/badge/gateway-v0.1.0-gray" />
 </p>
@@ -27,7 +27,7 @@
   <img src="https://img.shields.io/github/forks/Hamedghz/OMERTAOS?style=social" />
   <img src="https://img.shields.io/github/issues/Hamedghz/OMERTAOS" />
   <img src="https://img.shields.io/github/issues-pr/Hamedghz/OMERTAOS" />
-  <img src="https://img.shields.io/github/last-commit/Hamedghz/OMERTAOS/AION" />
+  <img src="https://img.shields.io/github/last-commit/Hamedghz/OMERTAOS/CAPO" />
 </p>
 
 <p align="center">
@@ -78,10 +78,10 @@ feature behavior to them.
 
 ## Redesign and recovery
 
-- [Capability audit](docs/aion-capability-audit.md)
-- [Canonical design](docs/architecture/aion-canonical-design.md)
-- [Capability recovery plan](docs/migration/aion-capability-recovery.md)
-- [ADR 0001: canonical ownership](docs/adr/0001-canonical-aion-ownership.md)
+- [Capability audit](docs/CAPO-capability-audit.md)
+- [Canonical design](docs/architecture/CAPO-canonical-design.md)
+- [Capability recovery plan](docs/migration/CAPO-capability-recovery.md)
+- [ADR 0001: canonical ownership](docs/adr/0001-canonical-CAPO-ownership.md)
 
 ## Local Endpoints
 
