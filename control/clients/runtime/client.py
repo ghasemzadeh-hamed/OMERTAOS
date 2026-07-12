@@ -21,8 +21,14 @@ class RuntimeEnvelope:
             raise ValueError("tenant_id is required")
         if not self.agent_id.strip():
             raise ValueError("agent_id is required")
-        if not self.argv or any(not value for value in self.argv):
+        normalized_argv = tuple(self.argv)
+        if not normalized_argv or any(not value for value in normalized_argv):
             raise ValueError("argv must contain non-empty arguments")
+        object.__setattr__(self, "argv", normalized_argv)
+
+
+class RuntimeExecutor(Protocol):
+    async def execute(self, envelope: RuntimeEnvelope) -> dict[str, object]: ...
 
 
 class RuntimeTransport(Protocol):

@@ -49,3 +49,18 @@ def test_canonical_runtime_exposes_one_shared_run_function() -> None:
 
     assert "pub async fn run()" in library
     assert "runtime_daemon::run().await" in binary
+
+
+def test_execution_runtime_contract_is_compatibility_only() -> None:
+    source = _read("execution/runtime_contract.py")
+
+    assert "from control.clients.runtime import RuntimeEnvelope, RuntimeExecutor" in source
+    assert "RuntimeCommand = RuntimeEnvelope" in source
+    assert "class RuntimeCommand" not in source
+    assert "subprocess" not in source
+
+    python_sources = sorted(
+        path.relative_to(REPO_ROOT).as_posix()
+        for path in (REPO_ROOT / "execution").rglob("*.py")
+    )
+    assert python_sources == ["execution/runtime_contract.py"]

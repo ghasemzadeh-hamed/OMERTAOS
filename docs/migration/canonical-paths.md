@@ -47,7 +47,10 @@ It defines ownership; it does not authorize deletion or combine migration phases
 - S2.3 merged safe unique behavior into `runtime-daemon/`, made the legacy crate
   delegate to the canonical library, and changed incomplete sandbox operations
   from synthetic success to fail-closed errors. Root retirement remains S5.
-- S2.4 Runtime content under `execution/` remains pending.
+- S2.4 classified all 121 `execution/` paths. Its only Runtime source,
+  `runtime_contract.py`, now re-exports the canonical Control Runtime contract;
+  the other 120 deployment, bundle, observability and integration assets remain
+  protected for S3/S4.
 
 ## Source-of-truth subpaths
 

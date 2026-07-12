@@ -47,6 +47,12 @@ def test_runtime_envelope_requires_identity_and_command() -> None:
         RuntimeEnvelope(tenant_id="tenant-1", agent_id="agent-1", argv=())
 
 
+def test_runtime_envelope_normalizes_legacy_argument_lists() -> None:
+    envelope = RuntimeEnvelope(tenant_id="tenant-1", agent_id="agent-1", argv=["echo", "ok"])
+
+    assert envelope.argv == ("echo", "ok")
+
+
 @pytest.mark.asyncio
 async def test_runtime_client_fails_closed_without_transport() -> None:
     client = RuntimeDaemonClient(endpoint="runtime:50051")
@@ -80,3 +86,9 @@ async def test_runtime_client_enforces_timeout() -> None:
 
     with pytest.raises(TimeoutError):
         await client.execute(RuntimeEnvelope("tenant-1", "agent-1", ("sleep",)))
+
+
+def test_execution_contract_exports_canonical_types() -> None:
+    from execution.runtime_contract import RuntimeCommand
+
+    assert RuntimeCommand is RuntimeEnvelope

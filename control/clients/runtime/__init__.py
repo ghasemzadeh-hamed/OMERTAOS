@@ -1,6 +1,7 @@
 from .client import (
     RuntimeDaemonClient,
     RuntimeEnvelope,
+    RuntimeExecutor,
     RuntimeTransport,
     RuntimeTransportUnavailable,
 )
@@ -8,6 +9,7 @@ from .client import (
 __all__ = [
     "RuntimeDaemonClient",
     "RuntimeEnvelope",
+    "RuntimeExecutor",
     "RuntimeTransport",
     "RuntimeTransportUnavailable",
 ]

@@ -1,15 +1,7 @@
-from __future__ import annotations
+"""Compatibility exports for the canonical Control-to-Runtime contract."""
 
-from dataclasses import dataclass
-from typing import Protocol
+from control.clients.runtime import RuntimeEnvelope, RuntimeExecutor
 
+RuntimeCommand = RuntimeEnvelope
 
-@dataclass(frozen=True, slots=True)
-class RuntimeCommand:
-    tenant_id: str
-    agent_id: str
-    argv: list[str]
-
-
-class RuntimeExecutor(Protocol):
-    async def execute(self, command: RuntimeCommand) -> dict[str, object]: ...
+__all__ = ["RuntimeCommand", "RuntimeExecutor"]
