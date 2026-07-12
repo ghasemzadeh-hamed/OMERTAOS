@@ -25,6 +25,12 @@ installs `runtime-daemon` without starting it or probing unsupported CLI flags.
 Phase 5 adds `setup-systemd.sh`, `first-boot.sh`, `run-all.sh`, and
 `stop-all.sh`. They preserve `/etc/omertaos/omertaos.env`, provide help and
 dry-run modes, and never execute systemd on the Windows automation host.
+
+Phase 6 adds the read-only `smoke-test.sh` for independent Native and Quickstart
+checks, plus `rollback.sh`. Rollback stops and disables only the CAPO target;
+it preserves source, configuration, accounts, databases, and persistent data.
+See `../../../docs/capo/validation-recovery.md` for the acceptance matrix and
+troubleshooting workflow.
 `first-boot.sh` leaves services stopped unless the operator supplies `--start`.
 
 Every script follows the safety and idempotency contract in the parent README.

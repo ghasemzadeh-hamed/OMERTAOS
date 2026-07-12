@@ -86,6 +86,9 @@ their rollback/security notes are documented in
 and limitations are documented in `../../docs/capo/application-installers.md`.
 Systemd ordering, first-boot, start/stop usage, security, and rollback are in
 `../../docs/capo/service-lifecycle.md`.
+Dual-path smoke validation, non-destructive rollback, troubleshooting, and the
+remaining acceptance limitations are in
+`../../docs/capo/validation-recovery.md`.
 
 See `PHASE_STATUS.md` for durable progress and
 `../../docs/capo/repository-audit.md` for the audited entrypoints and legacy

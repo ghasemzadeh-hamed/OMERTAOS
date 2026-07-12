@@ -56,7 +56,7 @@ is attempted exactly once and is recorded as `complete`, `failed`, or `blocked`.
 | 3 | Native OS and data installers | complete |
 | 4 | Application installers and selective reconstruction | complete |
 | 5 | Native service lifecycle | complete |
-| 6 | Dual-path validation and recovery | pending |
+| 6 | Dual-path validation and recovery | complete |
 | 7 | Final review and handoff | pending |
 
 ## Phase 2 — CAPO contract and scaffold
@@ -237,3 +237,48 @@ is attempted exactly once and is recorded as `complete`, `failed`, or `blocked`.
 - Limitations: systemd and native Linux path/ownership behavior were statically
   reviewed only and remain pending on the intended Linux SSD host
 - Next phase: dual-path validation and recovery
+
+## Phase 6 — Dual-path validation and recovery
+
+- Status: complete
+- Started: 2026-07-12 09:36 Asia/Tehran
+- Finished: 2026-07-12 09:42 Asia/Tehran
+- Changed files:
+  - `deploy/CAPO/scripts/smoke-test.sh`
+  - `deploy/CAPO/scripts/rollback.sh`
+  - `deploy/CAPO/tests/contract-tests.ps1`
+  - `deploy/CAPO/{README.md,scripts/README.md,tests/README.md}`
+  - `docs/capo/validation-recovery.md`
+  - `deploy/CAPO/PHASE_STATUS.md`
+- Database objects: none; validation and rollback do not modify databases or
+  persistent data
+- API/UI impact: none; existing health endpoints and canonical ports are only
+  consumed by read-only checks
+- Permission/security impact: no application permission changes; rollback may
+  stop/disable only the aggregate CAPO systemd target on an explicitly selected
+  Linux host and preserves configuration, accounts, source, and state
+- Validation:
+  - Git Bash `bash -n` and `--help`: passed for smoke and rollback scripts
+  - Phase 6 PowerShell contract tests: passed for environment keys, ports,
+    systemd hardening, rollback preservation, and forbidden commands
+  - both Quickstart and Local Compose configuration rendering: passed
+  - `python -m pytest tests/architecture -q`: `14 passed in 0.65s`
+  - `git diff --check`: passed with expected Windows LF-to-CRLF warnings
+  - running Quickstart smoke: skipped because the local Docker daemon did not
+    respond; the stack was not started or mutated
+  - Native smoke: pending on the intended Debian/Ubuntu SSD systemd host
+- Coverage: not generated; application runtime code was not changed
+- Risk: medium (read-only probes and an operator-invoked native lifecycle
+  rollback script were added)
+- Security: no secret values, destructive commands, data deletion, auth bypass,
+  unsupported Runtime flags, or Docker dependency in Native readiness added
+- Migration: none; Native and Quickstart remain independent and all legacy
+  recovery inputs remain in place
+- Rollback: run `rollback.sh --dry-run`, then `rollback.sh` if approved; revert
+  the Phase 6 commit separately and preserve all persistent volumes/state
+- Commit: the commit containing this phase record; resolve with
+  `git log -1 -- deploy/CAPO/PHASE_STATUS.md`
+- Limitations: configuration/static validation is complete, but native Linux
+  and running Quickstart acceptance remain explicitly pending; permanent path
+  retirement remains blocked
+- Next phase: final review, acceptance report, and PR-ready handoff
