@@ -41,8 +41,10 @@ It defines ownership; it does not authorize deletion or combine migration phases
 - S2.1 migrated the five `control-plane/` stubs into canonical Control clients,
   health routing and transport facades. Legacy files are compatibility exports
   only; the root remains protected until S5.
-- S2.2 `orchestration/`, S2.3 `rust-runtime/`, and S2.4 Runtime content under
-  `execution/` are not part of S2.1 and remain pending.
+- S2.2 migrated the DAG and scheduler prototypes into
+  `control/orchestration/`. The two legacy files are compatibility exports only;
+  root retirement remains gated on S5.
+- S2.3 `rust-runtime/` and S2.4 Runtime content under `execution/` remain pending.
 
 ## Source-of-truth subpaths
 

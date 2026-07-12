@@ -1,22 +1,5 @@
-from __future__ import annotations
+"""Compatibility exports; new code imports from control.orchestration.scheduler."""
 
-from dataclasses import dataclass
+from control.orchestration.scheduler import ResourceRequest, Scheduler, TaskSpec
 
-
-@dataclass(frozen=True, slots=True)
-class ResourceRequest:
-    cpu_millis: int
-    memory_mb: int
-    gpu: bool
-
-
-@dataclass(frozen=True, slots=True)
-class TaskSpec:
-    task_id: str
-    tenant_id: str
-    request: ResourceRequest
-
-
-class Scheduler:
-    async def schedule(self, tasks: list[TaskSpec]) -> list[TaskSpec]:
-        return sorted(tasks, key=lambda t: (not t.request.gpu, t.request.cpu_millis, t.request.memory_mb))
+__all__ = ["ResourceRequest", "Scheduler", "TaskSpec"]
