@@ -28,10 +28,41 @@ flowchart TB
   end
   UI -->|HTTPS| GW -->|gRPC| ORCH -->|gRPC| RD
   ORCH --> PG & MG & RE & QD & MI
-  GW --> RE
+  GW -. ephemeral rate-limit/idempotency .-> RE
 ```
 
 The UI owns presentation and never holds infrastructure credentials. The Gateway is the external trust boundary: it authenticates, authorizes coarse API actions, validates schemas, limits traffic, assigns request identity, and translates HTTP streams. The Control Plane owns durable task state and all decisions. The Rust Runtime owns privileged side effects and sandbox enforcement. The Data Layer exposes typed adapters; databases are not shared implementation APIs.
+
+## Enforced dependency contract
+
+```text
+Browser / Console server
+        |
+        v
+Gateway public HTTP/stream API
+        |
+        v
+Control versioned HTTP/gRPC API
+        |
+        v
+Runtime Daemon versioned gRPC API
+```
+
+- Console does not resolve Control or Runtime endpoints and never imports their
+  clients. Console health and administration requests also pass through Gateway.
+- Gateway does not import `data/`, `database/`, `db/`, ORM clients or domain
+  repositories. Redis is limited to ephemeral admission concerns such as rate
+  limiting and idempotency; it is not a domain system of record.
+- Control owns planning and durable transitions but uses `data/` interfaces for
+  persistence. It cannot import or invoke subprocess/shell/host-execution APIs.
+- Runtime receives an authorized, bounded execution request and performs all
+  process, filesystem, network, sandbox and resource side effects.
+- Versioned source contracts are authored only in `schemas/v1/`; generated
+  clients are consumed from `shared/generated/`.
+
+Architecture CI has two duties. The no-new-legacy-import checks protect the
+contract immediately. The migration-completion gate deliberately fails while
+legacy roots or bypass endpoints remain and must not be waived to make CI green.
 
 ## Protocols
 

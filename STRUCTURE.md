@@ -64,3 +64,29 @@ The current tree contains migration-era alternatives. New work uses the canonica
 | `ui/` | `console/` or `packages/ui-core/` | Product UI belongs to Console; reusable UI primitives to the package |
 
 Deletion requires import/caller migration, compatibility tests, and an upgrade note. Architecture tests in `tests/architecture/` should reject new imports into legacy roots.
+
+## Additional canonical owners
+
+| Directory | Responsibility | Source of truth |
+|---|---|---|
+| `packages/` | Reusable UI primitives and agent SDK | Versioned package interfaces; no product pages |
+| `scripts/` | Repository maintenance | Thin maintenance commands; no independent deployment logic |
+| `docs/` | Decisions and operator/developer guidance | Accepted ADRs and current architecture contracts |
+
+Gateway may use Redis only for rate limiting, idempotency and ephemeral
+coordination; it must not access domain persistence or own database schemas.
+Control must not spawn processes or perform host-side effects. Only a versioned
+Runtime client crosses that boundary.
+
+## Migration freeze
+
+The precise path mapping and retirement gates are defined in
+`docs/migration/canonical-paths.md`. Until the corresponding migration phase
+passes, legacy roots are read-only migration inputs: fixes needed to preserve an
+existing recovery path require explicit review, while new capabilities are
+forbidden. An `UNKNOWN` item from the S0 inventory cannot be moved or deleted.
+
+The Structure migration gate is intentionally failing at S1 because legacy
+roots and a direct Console-to-Control health path still exist. This is recorded
+debt, not permission to weaken or skip the gate. S2 through S5 remove violations;
+S6 proves the final topology.
