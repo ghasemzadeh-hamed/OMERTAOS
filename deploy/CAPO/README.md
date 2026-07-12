@@ -89,6 +89,8 @@ Systemd ordering, first-boot, start/stop usage, security, and rollback are in
 Dual-path smoke validation, non-destructive rollback, troubleshooting, and the
 remaining acceptance limitations are in
 `../../docs/capo/validation-recovery.md`.
+The final evidence, pending gates, and PR-ready handoff are in
+`../../docs/capo/acceptance-report.md` and `../../docs/capo/PR_DESCRIPTION.md`.
 
 See `PHASE_STATUS.md` for durable progress and
 `../../docs/capo/repository-audit.md` for the audited entrypoints and legacy

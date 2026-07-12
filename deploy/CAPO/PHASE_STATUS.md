@@ -57,7 +57,7 @@ is attempted exactly once and is recorded as `complete`, `failed`, or `blocked`.
 | 4 | Application installers and selective reconstruction | complete |
 | 5 | Native service lifecycle | complete |
 | 6 | Dual-path validation and recovery | complete |
-| 7 | Final review and handoff | pending |
+| 7 | Final review and handoff | complete |
 
 ## Phase 2 — CAPO contract and scaffold
 
@@ -282,3 +282,44 @@ is attempted exactly once and is recorded as `complete`, `failed`, or `blocked`.
   and running Quickstart acceptance remain explicitly pending; permanent path
   retirement remains blocked
 - Next phase: final review, acceptance report, and PR-ready handoff
+
+## Phase 7 — Final review and handoff
+
+- Status: complete
+- Started: 2026-07-12 09:45 Asia/Tehran
+- Finished: 2026-07-12 10:00 Asia/Tehran
+- Changed files:
+  - `docs/capo/acceptance-report.md`
+  - `docs/capo/PR_DESCRIPTION.md`
+  - `deploy/CAPO/README.md`
+  - `deploy/CAPO/PHASE_STATUS.md`
+- Database objects: none
+- API/UI impact: none; final review and handoff documentation only
+- Permission/security impact: none; existing CAPO security controls were
+  reviewed and recorded without changing application authorization
+- Validation:
+  - backup SHA-256 and complete Git bundle verification: passed
+  - Bash syntax/help and Phase 6 CAPO contracts: passed
+  - Quickstart and Local Compose configuration rendering: passed
+  - `python -m pytest tests/architecture -q`: `14 passed in 0.95s`
+  - Control import, Gateway build, Console production build, and Runtime Cargo
+    metadata: passed; Console retained documented local warnings
+  - Runtime release build: blocked by inability to reach `index.crates.io:443`
+  - full Python regression: blocked during collection by 11 legacy imports for
+    removed `os.control`, `os.kernel`, `aion`, and CLI paths
+  - Native smoke: pending on the intended Linux SSD host
+  - running Quickstart smoke: pending because the Docker daemon did not respond
+- Coverage: not generated; no application runtime code changed
+- Risk: low for Phase 7; overall CAPO operator scripts remain medium risk and
+  require human review before Linux or production execution
+- Security: no secrets, destructive commands, data deletion, auth changes,
+  public API changes, merge, push, or deployment
+- Migration: none; all changes remain additive
+- Rollback: revert the Phase 7 commit to remove only the final handoff records;
+  use the documented non-destructive CAPO rollback for native service lifecycle
+- Commit: the commit containing this phase record; resolve with
+  `git log -1 -- deploy/CAPO/PHASE_STATUS.md`
+- Acceptance: conditional for human review only; Native and running Quickstart
+  gates remain pending and permanent legacy-path retirement remains blocked
+- Automation: all seven phases attempted; no further CAPO phase is scheduled by
+  this ledger
