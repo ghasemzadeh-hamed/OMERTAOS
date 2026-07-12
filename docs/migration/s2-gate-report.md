@@ -6,6 +6,21 @@ Branch: `capo-structure`
 
 Status: **not passed — blocked at Runtime dependency resolution**
 
+## Retry history
+
+### Retry 1 — 2026-07-12
+
+The operator-approved Gate retry started from clean commit `653306bf`. Running
+`cargo test --manifest-path runtime-daemon/Cargo.toml --all-targets` with bounded
+network timeout/retries again failed to connect to `index.crates.io:443` for
+multiple dependency requests. Compilation did not start, no test binary was
+created, and the process was stopped after the repeated external-network failure.
+
+Because the first unmet Gate condition was unchanged and no source changed, the
+already-passing Control, Gateway and Console builds were not repeated in this
+retry. The Gate remains not passed; this retry is not evidence of a Runtime
+source failure.
+
 ## Gate requirement
 
 All four canonical services must build:
