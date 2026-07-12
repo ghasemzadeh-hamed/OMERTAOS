@@ -1,0 +1,24 @@
+[Unit]
+Description=OMERTAOS Console
+Requires=omertaos-gateway.service
+After=network-online.target omertaos-gateway.service
+Wants=network-online.target
+PartOf=omertaos.target
+StartLimitIntervalSec=60s
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=omertaos
+Group=omertaos
+EnvironmentFile=/etc/omertaos/omertaos.env
+Environment=PORT=3000
+WorkingDirectory=/opt/omertaos/OMERTAOS/console
+ExecStart=/usr/bin/corepack pnpm start
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=omertaos.target

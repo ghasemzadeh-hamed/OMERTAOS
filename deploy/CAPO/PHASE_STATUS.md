@@ -55,7 +55,7 @@ is attempted exactly once and is recorded as `complete`, `failed`, or `blocked`.
 | 2 | CAPO contract and scaffold | complete |
 | 3 | Native OS and data installers | complete |
 | 4 | Application installers and selective reconstruction | complete |
-| 5 | Native service lifecycle | pending |
+| 5 | Native service lifecycle | complete |
 | 6 | Dual-path validation and recovery | pending |
 | 7 | Final review and handoff | pending |
 
@@ -189,3 +189,51 @@ is attempted exactly once and is recorded as `complete`, `failed`, or `blocked`.
   lockfile exists. Native Linux and full Runtime build verification remain
   pending on the intended Linux SSD host with registry access.
 - Next phase: native service lifecycle
+
+## Phase 5 — Native service lifecycle
+
+- Status: complete
+- Started: 2026-07-12 07:09 Asia/Tehran
+- Finished: 2026-07-12 07:13 Asia/Tehran
+- Changed files:
+  - `deploy/CAPO/systemd/omertaos-{runtime,control,gateway,console}.service`
+  - `deploy/CAPO/systemd/omertaos.target`
+  - `deploy/CAPO/scripts/{setup-systemd,first-boot,run-all,stop-all}.sh`
+  - `deploy/CAPO/systemd/README.md`
+  - `deploy/CAPO/scripts/README.md`
+  - `deploy/CAPO/README.md`
+  - `docs/capo/service-lifecycle.md`
+  - `deploy/CAPO/PHASE_STATUS.md`
+- Database objects: none; units consume the existing PostgreSQL and Redis
+  services without changing schemas, roles, databases, or persistent data
+- API/UI impact: none; canonical commands and ports are consumed without
+  changing application sources or public behavior
+- Permission/security impact: services run as the existing non-root `omertaos`
+  account with `NoNewPrivileges`, private temporary directories, and the
+  operator-owned `/etc/omertaos/omertaos.env`; application auth is unchanged
+- Validation:
+  - Git Bash `bash -n` and `--help`: passed for all four lifecycle scripts
+  - Phase 5 PowerShell static assertions: passed for five systemd assets,
+    lifecycle commands, canonical ports, ordering, restart bounds, Runtime CLI
+    safety, and forbidden destructive commands
+  - initial syntax-test launcher selected the broken Windows WSL Bash shim and
+    failed before reading a script; rerun explicitly with Git Bash passed
+  - `python -m pytest tests/architecture -q`: `14 passed in 0.64s`
+  - `git diff --check`: passed with expected Windows LF-to-CRLF warnings
+- Coverage: not generated; Phase 5 changes deployment assets and documentation,
+  not application runtime code
+- Risk: medium (reviewed units and scripts control native Linux service
+  lifecycle when explicitly installed and run by an operator)
+- Security: no real secrets, destructive commands, unsupported Runtime flags,
+  blanket `|| true`, auth changes, or root application services were added;
+  configuration remains outside Git
+- Migration: additive native service definitions only; no source, data, schema,
+  public API, legacy path, or Docker Quickstart migration
+- Rollback: stop and disable `omertaos.target`, restore prior unit definitions if
+  any, run `systemctl daemon-reload`, and revert this phase commit; preserve the
+  environment file, account, database, and persistent state
+- Commit: the commit containing this phase record; resolve with
+  `git log -1 -- deploy/CAPO/PHASE_STATUS.md`
+- Limitations: systemd and native Linux path/ownership behavior were statically
+  reviewed only and remain pending on the intended Linux SSD host
+- Next phase: dual-path validation and recovery

@@ -83,8 +83,9 @@ file, install OS/data dependencies, install application components, install the
 systemd units, then run first-boot and smoke validation. Phase 3 installers and
 their rollback/security notes are documented in
 `../../docs/capo/native-os-data-installers.md`. Application build/install usage
-and limitations are documented in `../../docs/capo/application-installers.md`;
-later lifecycle steps remain contracts until their owning phases land.
+and limitations are documented in `../../docs/capo/application-installers.md`.
+Systemd ordering, first-boot, start/stop usage, security, and rollback are in
+`../../docs/capo/service-lifecycle.md`.
 
 See `PHASE_STATUS.md` for durable progress and
 `../../docs/capo/repository-audit.md` for the audited entrypoints and legacy

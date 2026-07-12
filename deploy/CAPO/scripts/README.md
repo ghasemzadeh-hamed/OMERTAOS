@@ -22,5 +22,10 @@ The Rust installer uses `cargo build --locked --release` when a lockfile exists,
 reports the repository's current missing-lockfile limitation otherwise, and
 installs `runtime-daemon` without starting it or probing unsupported CLI flags.
 
+Phase 5 adds `setup-systemd.sh`, `first-boot.sh`, `run-all.sh`, and
+`stop-all.sh`. They preserve `/etc/omertaos/omertaos.env`, provide help and
+dry-run modes, and never execute systemd on the Windows automation host.
+`first-boot.sh` leaves services stopped unless the operator supplies `--start`.
+
 Every script follows the safety and idempotency contract in the parent README.
 Linux-native commands must not be executed on the Windows automation host.

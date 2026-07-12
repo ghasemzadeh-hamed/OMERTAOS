@@ -1,0 +1,7 @@
+[Unit]
+Description=OMERTAOS native service stack
+Requires=omertaos-runtime.service omertaos-control.service omertaos-gateway.service omertaos-console.service
+After=omertaos-runtime.service omertaos-control.service omertaos-gateway.service omertaos-console.service
+
+[Install]
+WantedBy=multi-user.target
