@@ -44,7 +44,10 @@ It defines ownership; it does not authorize deletion or combine migration phases
 - S2.2 migrated the DAG and scheduler prototypes into
   `control/orchestration/`. The two legacy files are compatibility exports only;
   root retirement remains gated on S5.
-- S2.3 `rust-runtime/` and S2.4 Runtime content under `execution/` remain pending.
+- S2.3 merged safe unique behavior into `runtime-daemon/`, made the legacy crate
+  delegate to the canonical library, and changed incomplete sandbox operations
+  from synthetic success to fail-closed errors. Root retirement remains S5.
+- S2.4 Runtime content under `execution/` remains pending.
 
 ## Source-of-truth subpaths
 

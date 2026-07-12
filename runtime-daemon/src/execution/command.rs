@@ -1,6 +1,9 @@
 use anyhow::Result;
 
-use crate::sandbox::{mount::isolate_mounts, namespace::setup_namespaces, process::spawn_isolated, seccomp::apply_seccomp};
+use crate::sandbox::{
+    mount::isolate_mounts, namespace::setup_namespaces, process::spawn_isolated,
+    seccomp::apply_seccomp,
+};
 
 pub fn execute_command(argv: &[String]) -> Result<(i32, String, String)> {
     if argv.is_empty() {

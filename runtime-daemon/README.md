@@ -28,3 +28,14 @@ The container healthcheck uses `runtime-daemon --healthcheck` to verify that the
 configured gRPC listener accepts connections before dependent services start.
 
 Expose the gRPC listener only on the internal service network and require mTLS in production.
+
+## Current execution gate
+
+The canonical server, capability checks and health endpoint are available, but
+the Linux namespace, mount, seccomp and isolated-process backends are not yet
+implemented. Execution therefore fails closed instead of returning a synthetic
+PID or command success. Do not treat gRPC readiness as sandbox acceptance.
+
+The legacy `rust-runtime` package is a compatibility binary that delegates to
+this crate. It contains no independent daemon entrypoint. Permanent removal of
+that wrapper remains gated on Structure S5 and Native/Quickstart acceptance.

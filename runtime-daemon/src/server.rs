@@ -3,6 +3,7 @@ use std::sync::Arc;
 use anyhow::Result;
 use tonic::{Request, Response, Status};
 
+use crate::audit::log_runtime_event;
 use crate::config::RuntimeConfig;
 use crate::execution::{agent_runner::run_agent, command::execute_command};
 use crate::observability::metrics::query_metrics;
@@ -27,7 +28,9 @@ impl TryFrom<pb::ExecutionContext> for ExecutionContextModel {
 
     fn try_from(value: pb::ExecutionContext) -> std::result::Result<Self, Self::Error> {
         if value.agent_id.is_empty() || value.tenant_id.is_empty() {
-            return Err(Status::invalid_argument("agent_id and tenant_id are required"));
+            return Err(Status::invalid_argument(
+                "agent_id and tenant_id are required",
+            ));
         }
         Ok(Self {
             agent_id: value.agent_id,
@@ -47,7 +50,9 @@ pub struct RuntimeServiceImpl {
 
 impl RuntimeServiceImpl {
     pub fn new(config: RuntimeConfig) -> Self {
-        Self { config: Arc::new(config) }
+        Self {
+            config: Arc::new(config),
+        }
     }
 
     pub fn service(self) -> pb::runtime_service_server::RuntimeServiceServer<Self> {
@@ -67,6 +72,7 @@ impl pb::runtime_service_server::RuntimeService for RuntimeServiceImpl {
             .ok_or_else(|| Status::invalid_argument("context is required"))?
             .try_into()?;
         validate_capabilities(&ctx, &["agent.start"]).map_err(map_error)?;
+        log_runtime_event("agent.start", &ctx.tenant_id, &ctx.agent_id, "authorized");
         let pid = run_agent(&ctx, &self.config.profile, &req.argv).map_err(map_error)?;
         Ok(Response::new(pb::StartAgentResponse {
             ok: true,
@@ -98,6 +104,12 @@ impl pb::runtime_service_server::RuntimeService for RuntimeServiceImpl {
             return Err(Status::invalid_argument("profile mismatch"));
         }
         validate_capabilities(&ctx, &["resource.allocate"]).map_err(map_error)?;
+        log_runtime_event(
+            "resource.allocate",
+            &ctx.tenant_id,
+            &ctx.agent_id,
+            "authorized",
+        );
         Ok(Response::new(pb::ResourceResponse {
             ok: true,
             message: "allocated".into(),
@@ -114,6 +126,12 @@ impl pb::runtime_service_server::RuntimeService for RuntimeServiceImpl {
             .ok_or_else(|| Status::invalid_argument("context is required"))?
             .try_into()?;
         validate_capabilities(&ctx, &["terminal.execute"]).map_err(map_error)?;
+        log_runtime_event(
+            "terminal.execute",
+            &ctx.tenant_id,
+            &ctx.agent_id,
+            "authorized",
+        );
         let (code, stdout, stderr) = execute_command(&req.argv).map_err(map_error)?;
         Ok(Response::new(pb::CommandResponse {
             ok: code == 0,
