@@ -51,6 +51,9 @@ It defines ownership; it does not authorize deletion or combine migration phases
   `runtime_contract.py`, now re-exports the canonical Control Runtime contract;
   the other 120 deployment, bundle, observability and integration assets remain
   protected for S3/S4.
+- Gate S2 was executed after S2.4. Control, Gateway and Console passed their
+  build checks; Runtime Cargo test/build remains unproven because crates.io was
+  unreachable. See `docs/migration/s2-gate-report.md`. S2 is not accepted yet.
 
 ## Source-of-truth subpaths
 
