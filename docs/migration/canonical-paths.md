@@ -36,6 +36,14 @@ It defines ownership; it does not authorize deletion or combine migration phases
 | `docker/`, `infra/`, deployment content in `execution/` | `deploy/` | `MERGE` | S4 Native and Quickstart configuration/smoke pass |
 | `ui` | `console/`, `packages/ui-core/` | `SPLIT` | Console build and package consumers pass |
 
+### S2 progress
+
+- S2.1 migrated the five `control-plane/` stubs into canonical Control clients,
+  health routing and transport facades. Legacy files are compatibility exports
+  only; the root remains protected until S5.
+- S2.2 `orchestration/`, S2.3 `rust-runtime/`, and S2.4 Runtime content under
+  `execution/` are not part of S2.1 and remain pending.
+
 ## Source-of-truth subpaths
 
 ```text

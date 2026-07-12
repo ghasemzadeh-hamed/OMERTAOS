@@ -38,7 +38,10 @@ def test_no_runtime_logic_inside_python_layers() -> None:
     for layer in checked:
         for p in _py_files(REPO_ROOT / layer):
             for mod in _imports(p):
-                if mod.startswith(("ctypes", "fcntl", "pwd", "grp")):
+                if any(
+                    mod == forbidden or mod.startswith(f"{forbidden}.")
+                    for forbidden in ("ctypes", "fcntl", "pwd", "grp")
+                ):
                     violations.append(f"{p.relative_to(REPO_ROOT)} -> {mod}")
     assert not violations, "python layers include OS-level logic imports:\n" + "\n".join(sorted(violations))
 

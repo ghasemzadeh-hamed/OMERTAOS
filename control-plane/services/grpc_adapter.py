@@ -1,10 +1,5 @@
-from __future__ import annotations
+"""Compatibility export; new code imports from control.transports.grpc."""
 
-from dataclasses import dataclass
+from control.transports.grpc import GrpcAdapter, GrpcTransportUnavailable
 
-@dataclass(slots=True)
-class GrpcAdapter:
-    endpoint: str
-
-    async def serve(self) -> None:
-        return None
+__all__ = ["GrpcAdapter", "GrpcTransportUnavailable"]

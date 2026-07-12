@@ -25,6 +25,7 @@ coverage/
 artifacts/
 .artifacts/
 .secrets-out/
+.aion/
 
 # Private keys
 *.key

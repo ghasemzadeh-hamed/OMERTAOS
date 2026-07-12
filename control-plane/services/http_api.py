@@ -1,9 +1,5 @@
-from __future__ import annotations
+"""Compatibility export; new code imports from control.app.health."""
 
-from fastapi import APIRouter
+from control.app.health import health, health_payload, router
 
-router = APIRouter(prefix="/v1")
-
-@router.get("/health")
-async def health() -> dict[str, str]:
-    return {"status": "ok"}
+__all__ = ["health", "health_payload", "router"]

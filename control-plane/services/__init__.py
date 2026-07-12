@@ -1,1 +1,1 @@
-"""Transport adapters for control-plane (FastAPI/gRPC/REST)."""
+"""Compatibility exports for canonical Control transport adapters."""

@@ -2,23 +2,13 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
+from control.app.health import router as health_router
 from control.app.network.routes import router as network_proxy_router
 from control.models.registry import get_model_registry
 
 app = FastAPI(title="OMERTAOS Control Plane", version="0.1.0")
+app.include_router(health_router)
 app.include_router(network_proxy_router)
-
-
-def health_payload() -> dict[str, str]:
-    return {"status": "ok", "service": "control"}
-
-
-@app.get("/health")
-@app.get("/healthz")
-@app.get("/v1/health")
-@app.get("/v1/healthz")
-async def health() -> dict[str, str]:
-    return health_payload()
 
 
 @app.get("/v1/tasks/{task_id}")
