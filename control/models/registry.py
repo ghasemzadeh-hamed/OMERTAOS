@@ -9,6 +9,33 @@ from typing import Any
 
 import yaml
 
+_FORBIDDEN_SECRET_KEYS = {
+    "accesskey",
+    "apikey",
+    "password",
+    "secret",
+    "secretkey",
+    "token",
+}
+
+
+def _find_embedded_secret(value: object, path: str = "profile") -> str | None:
+    if isinstance(value, dict):
+        for key, nested in value.items():
+            normalized = str(key).lower().replace("_", "").replace("-", "")
+            nested_path = f"{path}.{key}"
+            if normalized in _FORBIDDEN_SECRET_KEYS and nested is not None and nested != "":
+                return nested_path
+            found = _find_embedded_secret(nested, nested_path)
+            if found:
+                return found
+    elif isinstance(value, list):
+        for index, nested in enumerate(value):
+            found = _find_embedded_secret(nested, f"{path}[{index}]")
+            if found:
+                return found
+    return None
+
 
 @dataclass(frozen=True, slots=True)
 class ModelProfile:
@@ -47,6 +74,9 @@ class ModelRegistry:
                 payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
                 if not isinstance(payload, dict):
                     raise ValueError(f"model profile must be a mapping: {path}")
+                embedded_secret = _find_embedded_secret(payload)
+                if embedded_secret:
+                    raise ValueError(f"model profile must reference secrets, not embed {embedded_secret}: {path}")
                 name = payload.get("name") or payload.get("id")
                 version = payload.get("version") or "legacy"
                 missing = [key for key, value in (("name/id", name), ("provider", payload.get("provider"))) if not value]

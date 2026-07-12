@@ -86,7 +86,9 @@ deploy/kubernetes/             Kubernetes assets after Native/Docker parity
 - S3.1 consolidated Data implementations and shared interfaces under `data/`.
   `database/` and `db/` contain compatibility exports/placeholders only; root
   retirement remains S5.
-- S3.2 through S3.7 remain pending.
+- S3.2 confirmed all 11 model profiles match `registry/models`, split the Control
+  client from provider HTTP transport, and made root `models/` compatibility-only.
+- S3.3 through S3.7 remain pending.
 - S3.1 proceeded on explicit operator instruction while Gate S2 remained blocked
   by Cargo registry access; this does not mark S2 accepted.
 

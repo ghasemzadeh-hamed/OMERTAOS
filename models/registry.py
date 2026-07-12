@@ -1,4 +1,5 @@
-"""Legacy import bridge to the canonical Control model registry reader."""
+"""Legacy exports; new code imports from control.models.registry."""
 
-from control.models.registry import *  # noqa: F401,F403
-from control.models.registry import __all__
+from control.models.registry import ModelProfile, ModelRegistry, default_models_directory, get_model_registry
+
+__all__ = ["ModelProfile", "ModelRegistry", "default_models_directory", "get_model_registry"]
