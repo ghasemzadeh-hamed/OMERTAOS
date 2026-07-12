@@ -88,7 +88,10 @@ deploy/kubernetes/             Kubernetes assets after Native/Docker parity
   retirement remains S5.
 - S3.2 confirmed all 11 model profiles match `registry/models`, split the Control
   client from provider HTTP transport, and made root `models/` compatibility-only.
-- S3.3 through S3.7 remain pending.
+- S3.3 classified the sole root `agents/__init__.py` as compatibility-only. No
+  behavior existed to split; canonical ownership rules are recorded in
+  `docs/migration/agents-split.md` without speculative placeholder modules.
+- S3.4 through S3.7 remain pending.
 - S3.1 proceeded on explicit operator instruction while Gate S2 remained blocked
   by Cargo registry access; this does not mark S2 accepted.
 
