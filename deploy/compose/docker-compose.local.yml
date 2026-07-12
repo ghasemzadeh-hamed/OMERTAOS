@@ -182,7 +182,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./protos:/protos:ro
+      - ./schemas/v1/protos:/protos:ro
     networks:
       - aion-local
     healthcheck:

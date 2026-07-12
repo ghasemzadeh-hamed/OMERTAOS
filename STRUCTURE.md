@@ -57,7 +57,7 @@ The current tree contains migration-era alternatives. New work uses the canonica
 | `rust-runtime/`, execution code under `execution/` | `runtime-daemon/` | Migrate unique code; do not add new runtime behavior to legacy paths |
 | `control-plane/`, orchestration in `kernel/` or `orchestration/` | `control/` | Move behavior behind Control interfaces |
 | root `models/` | `registry/models/` | Registry owns model metadata; retain compatibility reads only during migration |
-| `protos/`, `shared/proto/` | `schemas/v1/protos/` | Edit canonical `.proto` once; regenerate bindings into `shared/` |
+| legacy protobuf aliases | `schemas/v1/protos/` | Edit canonical `.proto` once; regenerate bindings into `shared/generated/` |
 | duplicate `schemas/v1` and root schema copies | versioned `schemas/v1/` | Root aliases are temporary and must not diverge |
 | `database/`, `db/` | `data/` | Consolidate adapters; deployment state remains in `deploy/` |
 | duplicated deployment material under `execution/` or `docker/` | `deploy/` | Compose/manifests/scripts have one maintained copy |

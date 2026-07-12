@@ -196,7 +196,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./protos:/protos:ro
+      - ./schemas/v1/protos:/protos:ro
     networks:
       - aion-local
 

@@ -60,7 +60,7 @@ docker compose -f docker-compose.local.yml up -d
 
 Python must delegate OS-level execution to runtime daemon via runtime client:
 - target canonical client: `control/runtime/`
-- gRPC contract: `shared/proto/runtime.proto`
+- gRPC contracts: `schemas/v1/protos/`
 - Rust daemon: `runtime-daemon/`
 
 ## Canonical Planes

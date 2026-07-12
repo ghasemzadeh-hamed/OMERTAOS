@@ -13,7 +13,7 @@ FROM node:22-alpine AS builder
 WORKDIR /workspace
 COPY --from=deps /workspace/gateway/node_modules ./gateway/node_modules
 COPY gateway ./gateway
-COPY schemas/protos ./protos
+COPY schemas/v1/protos ./protos
 COPY shared/secret-provider-node ./shared/secret-provider-node
 
 WORKDIR /workspace/gateway

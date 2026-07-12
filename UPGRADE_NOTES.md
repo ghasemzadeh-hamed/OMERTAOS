@@ -14,5 +14,5 @@ Current architecture uses:
 ### Required components
 
 - `runtime-daemon` binary/service
-- `shared/proto/runtime.proto` contract compatibility
+- canonical `schemas/v1/protos/runtime.proto` contract compatibility
 - `control_plane/runtime_client.py` configured endpoint

@@ -1,14 +1,10 @@
 import { credentials, loadPackageDefinition } from '@grpc/grpc-js';
 import { loadSync } from '@grpc/proto-loader';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { loadTlsArtifacts } from '../config/tls.js';
 import { gatewayConfig } from '../config.js';
+import { resolveProtoPath } from '../protoPath.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const protoPath = path.resolve(__dirname, '../../../protos/aion/v1/tasks.proto');
+const protoPath = resolveProtoPath('aion/v1/tasks.proto');
 
 const packageDefinition = loadSync(protoPath, {
   longs: String,

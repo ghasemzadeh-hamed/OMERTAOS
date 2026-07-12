@@ -5,6 +5,9 @@ fn main() {
     tonic_build::configure()
         .build_server(true)
         .build_client(true)
-        .compile_protos(&["../shared/proto/runtime.proto"], &["../shared/proto"])
+        .compile_protos(
+            &["../schemas/v1/protos/runtime.proto"],
+            &["../schemas/v1/protos"],
+        )
         .expect("failed to compile runtime proto");
 }

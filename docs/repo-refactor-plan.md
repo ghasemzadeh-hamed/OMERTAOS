@@ -14,7 +14,7 @@
 - `registry/models/` is the canonical model registry.
 - `registry/agents/` is the canonical agent registry.
 - `deploy/` is the canonical deployment and infrastructure folder.
-- `schemas/protos` remains the active protobuf tree until generated-code consumers are reconciled.
+- `schemas/v1/protos` is the active protobuf source tree; compatibility copies remain read-only until S5.
 
 ## Phase 1: Quickstart Stabilization
 
@@ -36,7 +36,7 @@
   - `models/` and `registry/models/`
   - `agents/` and `registry/agents/`
   - `deploy/`, `execution/`, `infra/`, `docker/`, and `core/systemd/`
-  - `schemas/protos` and `schemas/v1/protos`
+  - legacy protobuf compatibility tree and `schemas/v1/protos`
 - For each duplicate root, record:
   - imports and runtime references
   - Docker, CI, and script references
