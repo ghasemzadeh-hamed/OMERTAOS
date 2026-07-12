@@ -81,6 +81,15 @@ deploy/kubernetes/             Kubernetes assets after Native/Docker parity
 6. S5 deletion still requires human review, recovery evidence and green Native
    plus Quickstart acceptance. A passing path search alone is insufficient.
 
+### S3 progress
+
+- S3.1 consolidated Data implementations and shared interfaces under `data/`.
+  `database/` and `db/` contain compatibility exports/placeholders only; root
+  retirement remains S5.
+- S3.2 through S3.7 remain pending.
+- S3.1 proceeded on explicit operator instruction while Gate S2 remained blocked
+  by Cargo registry access; this does not mark S2 accepted.
+
 ## Rollback
 
 S1 changes only contracts and architecture checks. Revert its commit to roll

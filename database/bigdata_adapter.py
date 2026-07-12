@@ -1,8 +1,5 @@
-from __future__ import annotations
+"""Legacy export; new code imports from data.adapters."""
 
-from typing import Any, Protocol
+from data.adapters.bigdata_adapter import BigDataConnector
 
-
-class BigDataConnector(Protocol):
-    def submit_job(self, payload: dict[str, Any]) -> str:
-        ...
+__all__ = ["BigDataConnector"]

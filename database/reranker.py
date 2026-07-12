@@ -1,8 +1,5 @@
-"""Simple reranking helpers for RAG."""
-from __future__ import annotations
+"""Legacy export; new code imports from data.rag."""
 
-
-def rerank_by_score(documents: list[dict[str, object]]) -> list[dict[str, object]]:
-    return sorted(documents, key=lambda item: float(item.get("score") or 0.0), reverse=True)
+from data.rag.reranker import rerank_by_score
 
 __all__ = ["rerank_by_score"]

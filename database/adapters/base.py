@@ -1,8 +1,5 @@
-from __future__ import annotations
+"""Legacy export for the canonical asynchronous adapter interface."""
 
-from typing import Protocol, Any
+from data.interfaces import AsyncDatabaseAdapter as DatabaseAdapter
 
-
-class DatabaseAdapter(Protocol):
-    async def fetch_one(self, query: str, params: dict[str, Any] | None = None) -> dict[str, Any] | None: ...
-    async def execute(self, query: str, params: dict[str, Any] | None = None) -> int: ...
+__all__ = ["DatabaseAdapter"]

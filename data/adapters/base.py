@@ -1,8 +1,5 @@
-from __future__ import annotations
+"""Compatibility import for the canonical Data adapter interface."""
 
-from typing import Any, Protocol
+from data.interfaces.adapter import DatabaseAdapter
 
-
-class DatabaseAdapter(Protocol):
-    def execute(self, query: str, params: dict[str, Any] | None = None) -> Any:
-        ...
+__all__ = ["DatabaseAdapter"]

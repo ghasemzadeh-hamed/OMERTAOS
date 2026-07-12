@@ -1,4 +1,5 @@
-"""Legacy bridge to the canonical data-layer retention helper."""
+"""Legacy exports; new code imports from data.retention_mongo."""
 
-from data.retention_mongo import *  # noqa: F401,F403
-from data.retention_mongo import __all__
+from data.retention_mongo import CollectionLike, ensure_ttl
+
+__all__ = ["CollectionLike", "ensure_ttl"]

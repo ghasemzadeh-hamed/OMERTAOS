@@ -1,8 +1,5 @@
-from __future__ import annotations
+"""Legacy export; new code imports from data.interfaces."""
 
-from typing import Any, Protocol
+from data.interfaces import DatabaseAdapter
 
-
-class DatabaseAdapter(Protocol):
-    def execute(self, query: str, params: dict[str, Any] | None = None) -> Any:
-        ...
+__all__ = ["DatabaseAdapter"]

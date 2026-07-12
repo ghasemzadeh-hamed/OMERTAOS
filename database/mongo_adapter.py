@@ -1,11 +1,5 @@
-from __future__ import annotations
+"""Legacy export; new code imports from data.adapters."""
 
-from typing import Any
+from data.adapters.mongo_adapter import MongoAdapter
 
-
-class MongoAdapter:
-    def __init__(self, uri: str) -> None:
-        self._uri = uri
-
-    def execute(self, query: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
-        return {"uri": self._uri, "query": query, "params": params or {}}
+__all__ = ["MongoAdapter"]

@@ -12,6 +12,10 @@ The Data Layer provides typed, tenant-aware persistence and retrieval interfaces
 
 Adapters implement domain ports such as `TaskRepository`, `DocumentRepository`, `Cache`, `VectorIndex`, `ObjectStore`, and `EventLog`. A unified unit-of-work coordinates only operations supported by one transactional boundary; it does not claim distributed ACID across databases.
 
+Shared adapter, repository, unit-of-work and health contracts live in
+`data/interfaces/`. `database/` and `db/` are compatibility-only migration
+surfaces; new imports and implementations must use `data/`.
+
 The RAG pipeline authorizes ingestion, normalizes and classifies content, chunks it, generates versioned embeddings, stores source objects in MinIO, writes metadata in Postgres, and upserts vectors plus tenant/ACL filters in Qdrant. Query uses the matching embedding model, mandatory filters, top-k retrieval, optional reranking, source hydration, and provenance emission.
 
 All calls require tenant and actor/service context. Raw database clients stay inside adapters. Parameterized operations, encryption, retention labels, least-privilege service accounts, redacted telemetry, and explicit consistency requirements are mandatory. Cross-store updates use outbox/saga and reconciliation, not best-effort dual writes.

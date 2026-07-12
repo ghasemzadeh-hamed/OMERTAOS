@@ -4,7 +4,7 @@ export async function isSetupComplete(): Promise<boolean> {
   try {
     return await ensureSetupState();
   } catch (error) {
-    console.error('[console] Failed to determine setup status from database', error);
+    console.error('[console] Failed to determine setup status from persistence layer', error);
     return false;
   }
 }

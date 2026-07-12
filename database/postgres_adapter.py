@@ -1,11 +1,5 @@
-from __future__ import annotations
+"""Legacy export; new code imports from data.adapters."""
 
-from typing import Any
+from data.adapters.postgres_adapter import PostgresAdapter
 
-
-class PostgresAdapter:
-    def __init__(self, dsn: str) -> None:
-        self._dsn = dsn
-
-    def execute(self, query: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
-        return {"dsn": self._dsn, "query": query, "params": params or {}}
+__all__ = ["PostgresAdapter"]

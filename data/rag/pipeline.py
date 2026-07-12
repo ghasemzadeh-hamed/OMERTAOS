@@ -5,7 +5,7 @@ from qdrant_client import QdrantClient
 
 from data.rag.reranker import rerank_by_score
 from data.rag.retriever import search_documents
-from shared.contracts.rag_contract import Document, RAGEngine
+from data.interfaces.rag import Document, RAGEngine
 
 
 class SimpleRAGPipeline(RAGEngine):

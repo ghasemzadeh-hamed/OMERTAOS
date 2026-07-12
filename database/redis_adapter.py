@@ -1,11 +1,5 @@
-from __future__ import annotations
+"""Legacy export; new code imports from data.adapters."""
 
-from typing import Any
+from data.adapters.redis_adapter import RedisAdapter
 
-
-class RedisAdapter:
-    def __init__(self, url: str) -> None:
-        self._url = url
-
-    def execute(self, query: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
-        return {"url": self._url, "command": query, "params": params or {}}
+__all__ = ["RedisAdapter"]
