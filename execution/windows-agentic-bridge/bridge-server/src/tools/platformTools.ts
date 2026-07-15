@@ -1,8 +1,8 @@
-import { Tool } from '@microsoft/ai-mcp-sdk';
 import { OmertaClient } from '../omertaClient.js';
 import { getAgentInput, runTaskInput, taskStatusInput } from '../mcp/schemas.js';
+import { BridgeTool } from '../mcp/types.js';
 
-export function platformTools(client: OmertaClient): Tool[] {
+export function platformTools(client: OmertaClient): BridgeTool[] {
   return [
     {
       name: 'omerta.list_agents',
@@ -61,7 +61,7 @@ export function platformTools(client: OmertaClient): Tool[] {
     },
     {
       name: 'omerta.get_health',
-      description: 'Check gateway and control plane health',
+      description: 'Check Gateway and its reported downstream health',
       inputSchema: { type: 'object', properties: {} },
       async run() {
         return client.getHealth();

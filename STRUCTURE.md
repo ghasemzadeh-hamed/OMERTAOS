@@ -60,6 +60,9 @@ The current tree contains migration-era alternatives. New work uses the canonica
 | legacy protobuf aliases | `schemas/v1/protos/` | Edit canonical `.proto` once; regenerate bindings into `shared/generated/` |
 | duplicate `schemas/v1` and root schema copies | versioned `schemas/v1/` | Root aliases are temporary and must not diverge |
 | `database/`, `db/` | `data/` | Consolidate adapters; deployment state remains in `deploy/` |
+| root `eventbus/` | `schemas/v1/events/`, `control/ports/`, `integrations/eventbus/` | Contracts, ports and transport adapters have separate owners; retain compatibility exports until S5 |
+| root `observability/`, `shared/event_bus/` | `shared/telemetry/`, `integrations/observability/`, `deploy/observability/` | Stable primitives, exporters and deployment assets have separate owners; retain wrappers until retirement gates pass |
+| `execution/windows-agentic-bridge/` | `integrations/windows-agentic-bridge/` | Integrations owns the external bridge; keep the execution mirror synchronized and read-only until S5 acceptance permits retirement |
 | duplicated deployment material under `execution/` or `docker/` | `deploy/` | Compose/manifests/scripts have one maintained copy |
 | `ui/` | `console/` or `packages/ui-core/` | Product UI belongs to Console; reusable UI primitives to the package |
 

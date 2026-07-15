@@ -17,7 +17,6 @@ COPY control ./control
 COPY schemas ./schemas
 COPY registry/models ./registry/models
 COPY policies ./policies
-COPY observability ./observability
 COPY shared ./shared
 
 EXPOSE 8000 50051

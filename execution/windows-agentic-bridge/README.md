@@ -1,5 +1,10 @@
 # OMERTAOS Windows Agentic Bridge
 
+> Compatibility mirror only. The canonical implementation, setup instructions
+> and operator entrypoints are under `integrations/windows-agentic-bridge/`.
+> Do not develop or run this `execution/` copy; it remains only for rollback and
+> S5 retirement evidence.
+
 This subsystem packages a WSL-hosted MCP server that proxies OMERTAOS capabilities to Windows Agentic and other MCP-aware hosts via ODR.
 
 ## Contents

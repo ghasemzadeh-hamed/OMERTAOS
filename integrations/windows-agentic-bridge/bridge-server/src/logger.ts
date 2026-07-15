@@ -10,11 +10,11 @@ export class Logger {
   constructor(private level: LogLevel = 'info') {}
 
   debug(message: string, meta: Record<string, unknown> = {}) {
-    if (shouldLog('debug', this.level)) console.log(JSON.stringify({ level: 'debug', message, ...meta }));
+    if (shouldLog('debug', this.level)) console.error(JSON.stringify({ level: 'debug', message, ...meta }));
   }
 
   info(message: string, meta: Record<string, unknown> = {}) {
-    if (shouldLog('info', this.level)) console.log(JSON.stringify({ level: 'info', message, ...meta }));
+    if (shouldLog('info', this.level)) console.error(JSON.stringify({ level: 'info', message, ...meta }));
   }
 
   warn(message: string, meta: Record<string, unknown> = {}) {

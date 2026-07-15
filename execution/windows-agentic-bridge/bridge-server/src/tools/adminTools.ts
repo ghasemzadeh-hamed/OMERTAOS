@@ -1,7 +1,7 @@
-import { Tool } from '@microsoft/ai-mcp-sdk';
 import { OmertaClient } from '../omertaClient.js';
+import { BridgeTool } from '../mcp/types.js';
 
-export function adminTools(client: OmertaClient): Tool[] {
+export function adminTools(client: OmertaClient): BridgeTool[] {
   return [
     {
       name: 'omerta.restart_component',

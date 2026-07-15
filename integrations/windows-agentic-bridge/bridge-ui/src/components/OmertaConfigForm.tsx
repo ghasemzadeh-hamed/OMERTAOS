@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 
 const OmertaConfigForm: React.FC = () => {
-  const [gatewayUrl, setGatewayUrl] = useState('http://localhost:3000');
-  const [controlUrl, setControlUrl] = useState('http://localhost:8000');
+  const [gatewayUrl, setGatewayUrl] = useState('http://localhost:8080');
   const [token, setToken] = useState('');
   const [message, setMessage] = useState('Not saved');
 
@@ -12,10 +11,6 @@ const OmertaConfigForm: React.FC = () => {
       <label style={{ display: 'block', marginBottom: '0.5rem' }}>
         Gateway URL
         <input value={gatewayUrl} onChange={(e) => setGatewayUrl(e.target.value)} style={{ width: '100%', marginTop: 4 }} />
-      </label>
-      <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-        Control URL
-        <input value={controlUrl} onChange={(e) => setControlUrl(e.target.value)} style={{ width: '100%', marginTop: 4 }} />
       </label>
       <label style={{ display: 'block', marginBottom: '0.5rem' }}>
         Admin Token
@@ -34,7 +29,7 @@ const OmertaConfigForm: React.FC = () => {
           Save
         </button>
         <button
-          onClick={() => setMessage(`Tested ${gatewayUrl} / ${controlUrl}`)}
+          onClick={() => setMessage(`Tested Gateway ${gatewayUrl}`)}
           style={{ padding: '0.5rem 1rem', borderRadius: 6, border: '1px solid #111', cursor: 'pointer', background: '#e5e7eb' }}
         >
           Test connection

@@ -8,7 +8,8 @@ describe('loadConfig', () => {
 
   it('returns defaults', () => {
     const cfg = loadConfig({ OMERTA_ADMIN_TOKEN: 't' } as any);
-    expect(cfg.gatewayUrl).toContain('http://localhost');
+    expect(cfg.gatewayUrl).toBe('http://localhost:8080');
     expect(cfg.adminToken).toBe('t');
+    expect(cfg).not.toHaveProperty('controlUrl');
   });
 });

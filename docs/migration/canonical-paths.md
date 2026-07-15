@@ -95,7 +95,25 @@ deploy/kubernetes/             Kubernetes assets after Native/Docker parity
   recovered Python bindings to `shared/generated/python/`, and updated active
   Gateway/Runtime/deployment consumers. Fresh regeneration remains blocked by
   the unavailable compiler toolchain.
-- S3.5 through S3.7 remain pending.
+- S3.5 split Event Bus ownership across `schemas/v1/events/`,
+  `control/ports/event_bus.py` and `integrations/eventbus/`. Root `eventbus/`
+  now contains identity-preserving compatibility exports only; durable Kafka
+  delivery remains an explicitly unwired future capability.
+- S3.6 split transport-neutral audit/telemetry primitives into
+  `shared/telemetry/`, exporter boundaries into `integrations/observability/`
+  and retained deployment ownership under `deploy/observability/`. Root
+  `observability/` and `shared/event_bus/` now contain compatibility exports
+  only; execution deployment copies remain protected for S4.
+- S3.7 compared the initial 39 Windows Bridge files, confirmed no unique legacy asset,
+  made `integrations/windows-agentic-bridge/` the sole active entrypoint and
+  removed the Bridge-to-Control bypass. The `execution/` mirror remains
+  protected and source-identical; dependency/toolchain repairs brought both
+  trees to 41 files. Windows/WSL acceptance is pending.
+- Gate S3 was executed after repairing and validating the Bridge Node toolchain.
+  Python, Gateway, Bridge, Compose and Runtime static checks passed, while the
+  literal `control-plane` and `rust-runtime` searches remained nonzero because
+  protected compatibility roots and non-migration historical evidence still
+  exist. See `docs/migration/s3-gate-report.md`; Gate S3 is not accepted.
 - S3.1 proceeded on explicit operator instruction while Gate S2 remained blocked
   by Cargo registry access; this does not mark S2 accepted.
 

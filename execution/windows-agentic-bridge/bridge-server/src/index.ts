@@ -1,3 +1,4 @@
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { loadConfig } from './config.js';
 import { Logger } from './logger.js';
 import { OmertaClient } from './omertaClient.js';
@@ -10,7 +11,7 @@ async function main() {
 
   const server = buildServer(client, logger);
   logger.info('Starting OMERTA MCP bridge');
-  await server.serve();
+  await server.connect(new StdioServerTransport());
 }
 
 main().catch((err) => {

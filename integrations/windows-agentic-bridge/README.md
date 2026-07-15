@@ -1,5 +1,9 @@
 # Windows Agentic Bridge
 
+Canonical owner: `integrations/windows-agentic-bridge/`. The matching tree under
+`execution/` is a protected compatibility mirror until S5 and must not be used
+for new development or operator commands.
+
 The Windows Agentic Bridge connects Windows agent hosts to OMERTAOS without exposing internal Control or Runtime interfaces. `bridge-server/` is a TypeScript MCP server, normally hosted in WSL and launched by Windows/ODR; `bridge-ui/` is a Vite/React local administration UI for connection status, configuration, tool exposure and logs.
 
 ```mermaid

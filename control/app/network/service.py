@@ -4,13 +4,12 @@ import json
 import os
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Iterable
 
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
-from observability.audit import emit_audit
 from shared.secret_store.provider import SecretProviderError, get_secret_provider
+from shared.telemetry.audit import emit_audit
 
 from .healthcheck import test_profile
 from .models import ProxyProfile

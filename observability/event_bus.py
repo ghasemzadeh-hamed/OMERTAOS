@@ -1,7 +1,5 @@
-from __future__ import annotations
+"""Compatibility export for the canonical telemetry exporter contract."""
 
-from typing import Protocol
+from integrations.observability.exporter import TelemetryExporter as EventBus
 
-
-class EventBus(Protocol):
-    async def publish(self, topic: str, payload: dict[str, object]) -> None: ...
+__all__ = ["EventBus"]

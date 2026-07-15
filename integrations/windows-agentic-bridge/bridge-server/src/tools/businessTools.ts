@@ -1,7 +1,7 @@
-import { Tool } from '@microsoft/ai-mcp-sdk';
 import { OmertaClient } from '../omertaClient.js';
+import { BridgeTool } from '../mcp/types.js';
 
-export function businessTools(client: OmertaClient): Tool[] {
+export function businessTools(client: OmertaClient): BridgeTool[] {
   return [
     {
       name: 'omerta.run_agent_intent',
