@@ -90,7 +90,7 @@ services:
     depends_on:
       - zookeeper
   zookeeper:
-    image: bitnami/zookeeper:3.9.1
+    image: soldevelo/zookeeper:3.9.5
     environment:
       ALLOW_ANONYMOUS_LOGIN: "yes"
     ports:
