@@ -4,7 +4,7 @@ PY ?= python3
 CLI=$(PY) -m aion_core.cli
 
 dev-control:
-	cd control && PYTHONPATH=$(CURDIR):$(CURDIR)/os uvicorn os.control.main:app --reload --port 8001
+	PYTHONPATH=$(CURDIR) uvicorn control.app.main:app --reload --port 8000
 
 doctor:
 	bash scripts/doctor.sh
@@ -13,7 +13,7 @@ bundle:
 	@tar czf deploy/bundles/example.tgz -C deploy/bundles/example .
 
 edge-setup:
-	sudo deploy/scripts/aion_edge_setup.sh
+	sudo deploy/native/scripts/aion-edge-setup.sh
 
 test:
 	PYTHONPATH=$(CURDIR) pytest -q
@@ -21,23 +21,23 @@ test:
 APP_DIR ?= /opt/aion/OMERTAOS
 
 status:
-	systemctl status aion-control || true
-	systemctl status aion-gateway || true
-	systemctl status aion-console || true
+	systemctl status omertaos-control || true
+	systemctl status omertaos-gateway || true
+	systemctl status omertaos-console || true
 
 logs:
-	journalctl -u aion-control -n 50 --no-pager
-	journalctl -u aion-gateway -n 50 --no-pager
-	journalctl -u aion-console -n 50 --no-pager
+	journalctl -u omertaos-control -n 50 --no-pager
+	journalctl -u omertaos-gateway -n 50 --no-pager
+	journalctl -u omertaos-console -n 50 --no-pager
 
 restart:
-	systemctl restart aion-control aion-gateway aion-console
+	systemctl restart omertaos-control omertaos-gateway omertaos-console
 
 start:
-	systemctl start aion-control aion-gateway aion-console
+	systemctl start omertaos-control omertaos-gateway omertaos-console
 
 stop:
-	systemctl stop aion-control aion-gateway aion-console
+	systemctl stop omertaos-control omertaos-gateway omertaos-console
 
 setup:
 	$(PY) -m pip install -U pip
@@ -55,13 +55,13 @@ guard:
 model-all: setup train guard
 
 run-user:
-	AION_PROFILE=user docker compose -f docker-compose.yml up -d
+	AION_PROFILE=user docker compose --project-directory . -f deploy/docker/compose/full.yml up -d
 
 run-pro:
-	AION_PROFILE=professional docker compose -f docker-compose.yml up -d
+	AION_PROFILE=professional docker compose --project-directory . -f deploy/docker/compose/full.yml up -d
 
 run-ent:
-	AION_PROFILE=enterprise-vip FEATURE_SEAL=1 docker compose -f docker-compose.yml up -d
+	AION_PROFILE=enterprise-vip FEATURE_SEAL=1 docker compose --project-directory . -f deploy/docker/compose/full.yml up -d
 
 # Developer quality gates
 install-deps:
@@ -79,20 +79,20 @@ verify:
 	ci/verify.sh
 
 structure-audit:
-	$(PY) tools/repo_audit/check_structure_consistency.py
+	$(PY) scripts/check_structure_consistency.py
 
 # Docker Compose helpers for the quickstart stack
 compose-up:
-	docker compose -f docker-compose.quickstart.yml up --build -d
+	docker compose --project-directory . -f deploy/docker/compose/quickstart.yml up --build -d
 
 compose-down:
-	docker compose -f docker-compose.quickstart.yml down
+	docker compose --project-directory . -f deploy/docker/compose/quickstart.yml down
 
 compose-clean:
-	docker compose -f docker-compose.quickstart.yml down -v --remove-orphans
+	docker compose --project-directory . -f deploy/docker/compose/quickstart.yml down -v --remove-orphans
 
 build-image:
-	docker compose -f docker-compose.quickstart.yml build
+	docker compose --project-directory . -f deploy/docker/compose/quickstart.yml build
 
 bootstrap:
 	./quick-install.sh
@@ -107,7 +107,7 @@ claude-status:
 	bash scripts/claude/status.sh
 
 desktop-dev:
-	cd desktop-shell && npm run tauri:dev
+	cd console/desktop-shell && npm run tauri:dev
 
 desktop-build:
-	cd desktop-shell && npm run tauri:build
+	cd console/desktop-shell && npm run tauri:build

@@ -54,17 +54,17 @@ The current tree contains migration-era alternatives. New work uses the canonica
 
 | Legacy path | Canonical destination | Rule |
 |---|---|---|
-| `rust-runtime/`, execution code under `execution/` | `runtime-daemon/` | Migrate unique code; do not add new runtime behavior to legacy paths |
-| `control-plane/`, orchestration in `kernel/` or `orchestration/` | `control/` | Move behavior behind Control interfaces |
-| root `models/` | `registry/models/` | Registry owns model metadata; retain compatibility reads only during migration |
+| former Runtime and Execution roots | `runtime-daemon/` | Retired in S5 after unique code migration |
+| former Control and orchestration roots | `control/` | Retired in S5 after caller migration |
+| former root model registry | `registry/models/` | Retired in S5; Registry owns model metadata |
 | legacy protobuf aliases | `schemas/v1/protos/` | Edit canonical `.proto` once; regenerate bindings into `shared/generated/` |
 | duplicate `schemas/v1` and root schema copies | versioned `schemas/v1/` | Root aliases are temporary and must not diverge |
-| `database/`, `db/` | `data/` | Consolidate adapters; deployment state remains in `deploy/` |
-| root `eventbus/` | `schemas/v1/events/`, `control/ports/`, `integrations/eventbus/` | Contracts, ports and transport adapters have separate owners; retain compatibility exports until S5 |
-| root `observability/`, `shared/event_bus/` | `shared/telemetry/`, `integrations/observability/`, `deploy/observability/` | Stable primitives, exporters and deployment assets have separate owners; retain wrappers until retirement gates pass |
-| `execution/windows-agentic-bridge/` | `integrations/windows-agentic-bridge/` | Integrations owns the external bridge; keep the execution mirror synchronized and read-only until S5 acceptance permits retirement |
-| duplicated deployment material under `execution/` or `docker/` | `deploy/` | Compose/manifests/scripts have one maintained copy |
-| `ui/` | `console/` or `packages/ui-core/` | Product UI belongs to Console; reusable UI primitives to the package |
+| former data adapter roots | `data/` | Retired in S5 after adapter consolidation |
+| former root Event Bus | `schemas/v1/events/`, `control/ports/`, `integrations/eventbus/` | Retired in S5; contracts, ports and adapters have separate owners |
+| former root observability wrappers | `shared/telemetry/`, `integrations/observability/`, `deploy/observability/` | Retired in S5 |
+| former Windows Bridge mirror | `integrations/windows-agentic-bridge/` | Retired in S5; Integrations is the sole owner |
+| former duplicated deployment material | `deploy/` | Retired in S5; Compose, manifests and scripts have one maintained copy |
+| former root UI alias | `console/` or `packages/ui-core/` | Retired in S5 |
 
 Deletion requires import/caller migration, compatibility tests, and an upgrade note. Architecture tests in `tests/architecture/` should reject new imports into legacy roots.
 

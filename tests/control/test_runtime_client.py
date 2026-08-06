@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from importlib import import_module
 
 import pytest
 
@@ -88,7 +89,6 @@ async def test_runtime_client_enforces_timeout() -> None:
         await client.execute(RuntimeEnvelope("tenant-1", "agent-1", ("sleep",)))
 
 
-def test_execution_contract_exports_canonical_types() -> None:
-    from execution.runtime_contract import RuntimeCommand
-
-    assert RuntimeCommand is RuntimeEnvelope
+def test_execution_contract_is_retired() -> None:
+    with pytest.raises(ModuleNotFoundError):
+        import_module("execution.runtime_contract")

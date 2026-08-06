@@ -4,25 +4,52 @@ from __future__ import annotations
 import ast
 import hashlib
 import json
+import os
 from collections import defaultdict
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+MIGRATION_EVIDENCE = REPO_ROOT / "docs" / "migration" / "evidence"
 SCAN_DIRS = [
-    "agents",
-    "control-plane",
-    "domain",
-    "execution",
+    "console",
     "gateway",
+    "control",
+    "runtime-daemon",
+    "data",
     "registry",
-    "database",
-    "rust-runtime",
+    "policies",
     "schemas",
-    "services",
-    "core",
+    "shared",
+    "integrations",
+    "packages",
+    "deploy",
 ]
-TEMP_HINTS = ("tmp", "temp", "old", "draft", "backup", ".bak", ".orig", ".rej")
+TEMP_HINTS = ("tmp", "temp", "old", "draft", ".bak", ".orig", ".rej")
 CONFIG_FILES = {".env", "settings.yaml", "settings.yml", "config.yaml", "config.yml", "pyproject.toml", "package.json", "Cargo.toml"}
+IGNORED_DIRS = {
+    ".git",
+    ".mypy_cache",
+    ".next",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".vite",
+    "__pycache__",
+    "dist",
+    "node_modules",
+    "target",
+}
+
+
+def _walk_files(root: Path):
+    for current, dirs, names in os.walk(root):
+        current_path = Path(current)
+        if current_path == MIGRATION_EVIDENCE or MIGRATION_EVIDENCE in current_path.parents:
+            dirs[:] = []
+            continue
+        dirs[:] = [name for name in dirs if name not in IGNORED_DIRS and not name.startswith(".")]
+        base = current_path
+        for name in names:
+            yield base / name
 
 
 def _files() -> list[Path]:
@@ -31,7 +58,7 @@ def _files() -> list[Path]:
         root = REPO_ROOT / base
         if not root.exists():
             continue
-        files.extend([p for p in root.rglob("*") if p.is_file()])
+        files.extend(_walk_files(root))
     return files
 
 
@@ -65,8 +92,8 @@ def find_large_files(files: list[Path], threshold_mb: int = 10) -> list[dict[str
 
 def find_python_unused_imports() -> dict[str, list[str]]:
     violations: dict[str, list[str]] = {}
-    for p in REPO_ROOT.rglob("*.py"):
-        if any(part.startswith(".") for part in p.parts) or "node_modules" in p.parts:
+    for p in _walk_files(REPO_ROOT):
+        if p.suffix != ".py":
             continue
         try:
             tree = ast.parse(p.read_text(encoding="utf-8"), filename=str(p))
@@ -92,9 +119,7 @@ def find_python_unused_imports() -> dict[str, list[str]]:
 
 def find_config_sources() -> list[str]:
     found: list[str] = []
-    for p in REPO_ROOT.rglob("*"):
-        if not p.is_file():
-            continue
+    for p in _walk_files(REPO_ROOT):
         if p.name in CONFIG_FILES or p.suffix in {".env", ".ini"}:
             found.append(str(p.relative_to(REPO_ROOT)))
     return sorted(found)
@@ -102,11 +127,10 @@ def find_config_sources() -> list[str]:
 
 def architecture_violations() -> list[str]:
     violations: list[str] = []
-    layer_roots = ["gateway", "control-plane", "domain", "execution", "database"]
+    layer_roots = ["gateway", "control", "data"]
     forbidden = {
-        "domain": ("gateway", "execution", "control-plane/services"),
-        "gateway": ("database", "execution"),
-        "execution": ("gateway",),
+        "gateway": ("data",),
+        "data": ("gateway", "control"),
     }
     for layer in layer_roots:
         root = REPO_ROOT / layer

@@ -25,16 +25,8 @@ def test_legacy_eventbus_root_is_compatibility_only() -> None:
     assert not violations, "legacy EventBus implementation remains: " + ", ".join(violations)
 
 
-def test_legacy_eventbus_exports_resolve_to_canonical_owners() -> None:
-    from eventbus.interface import DomainEvent as LegacyDomainEvent
-    from eventbus.interface import EventBus as LegacyEventBus
-    from eventbus.kafka_bus import KafkaEventBus as LegacyKafkaEventBus
-    from eventbus.local_bus import LocalEventBus as LegacyLocalEventBus
-
-    assert LegacyDomainEvent is DomainEvent
-    assert LegacyEventBus is EventBus
-    assert LegacyKafkaEventBus is KafkaEventBus
-    assert LegacyLocalEventBus is LocalEventBus
+def test_legacy_eventbus_root_is_retired() -> None:
+    assert not (REPO_ROOT / "eventbus").exists()
 
 
 @pytest.mark.asyncio

@@ -17,7 +17,7 @@ Linux commands are introduced in later phases and must not be run on Windows.
 ## Platform and paths
 
 - Supported target: Debian 12 or Ubuntu 22.04/24.04 with systemd.
-- Repository default: `/opt/omertaos/OMERTAOS`.
+- Active repository release: `/opt/omertaos/current`.
 - Service account: dedicated, non-login `omertaos` user and group.
 - Configuration: `/etc/omertaos/omertaos.env`, created by an operator from
   `CAPO.env.example`; the real file and real secrets never belong in Git.
@@ -38,8 +38,9 @@ Writable state belongs under `/var/lib/omertaos`, not in the source checkout.
 | `scripts/install-node-services.sh` | Gateway and Console install/build | 4 |
 | `scripts/install-rust-runtime.sh` | Runtime build/install | 4 |
 | `scripts/{setup-systemd,first-boot,run-all,stop-all}.sh` | Lifecycle | 5 |
-| `systemd/` | Four units and aggregate target | 5 |
-| `scripts/smoke-test.sh`, `tests/` | Native/static validation | 6 |
+| `systemd/` | Install unit, four service units, and aggregate target | 5 |
+| `scripts/smoke-test.sh` | Compatibility wrapper for canonical Native acceptance | 6 |
+| `scripts/update.sh`, `scripts/rollback.sh` | Compatibility wrappers for immutable Native release switching | 8 |
 
 Only phase-owned files are added in each run. Placeholder directories contain
 their contract now; executable scripts and units are not fabricated early.
@@ -86,7 +87,7 @@ their rollback/security notes are documented in
 and limitations are documented in `../../docs/capo/application-installers.md`.
 Systemd ordering, first-boot, start/stop usage, security, and rollback are in
 `../../docs/capo/service-lifecycle.md`.
-Dual-path smoke validation, non-destructive rollback, troubleshooting, and the
+Dual-path smoke validation, versioned update/rollback, troubleshooting, and the
 remaining acceptance limitations are in
 `../../docs/capo/validation-recovery.md`.
 The final evidence, pending gates, and PR-ready handoff are in

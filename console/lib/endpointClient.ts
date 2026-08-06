@@ -27,9 +27,8 @@ async function resolveEndpoint(endpointRef: string): Promise<CapabilityEndpoint 
 function baseUrlForService(service: string): string {
   switch (service) {
     case 'gateway':
-      return process.env.NEXT_PUBLIC_GATEWAY_URL ?? '';
     case 'control':
-      return process.env.NEXT_PUBLIC_CONTROL_URL ?? '';
+      return process.env.NEXT_PUBLIC_GATEWAY_URL ?? '';
     default:
       return '';
   }

@@ -27,7 +27,7 @@ Dispatch RPCs include task/attempt IDs, lease fencing token, deadline, immutable
 ## Docker
 
 ```bash
-docker compose -f docker-compose.quickstart.yml up --build control
+docker compose --project-directory . -f deploy/docker/compose/quickstart.yml up --build control
 curl http://localhost:8000/health
 ```
 

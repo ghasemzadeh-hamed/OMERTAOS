@@ -58,7 +58,7 @@ JWT signatures, issuer/audience/expiry, API keys where enabled, and optional req
 From the repository root, start the supported dependency graph:
 
 ```bash
-docker compose -f docker-compose.quickstart.yml up --build gateway
+docker compose --project-directory . -f deploy/docker/compose/quickstart.yml up --build gateway
 curl http://localhost:8080/health
 ```
 

@@ -1,1 +1,0 @@
-"""Adapter package placeholder."""

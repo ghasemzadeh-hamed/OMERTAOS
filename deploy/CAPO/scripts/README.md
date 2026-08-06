@@ -16,22 +16,25 @@ bash deploy/CAPO/scripts/install-rust-runtime.sh --dry-run
 ```
 
 The Python installer uses the root `pyproject.toml` `control` extra and validates
-`control.app.main:app`. Console uses the committed `pnpm-lock.yaml`; Gateway
-currently has no committed lockfile and therefore uses `npm install` explicitly.
-The Rust installer uses `cargo build --locked --release` when a lockfile exists,
-reports the repository's current missing-lockfile limitation otherwise, and
-installs `runtime-daemon` without starting it or probing unsupported CLI flags.
+`control.app.main:app`. Console, Gateway, and Runtime use their committed
+lockfiles; Gateway uses `npm ci`, and Runtime requires
+`cargo build --locked --release`. Installers never start services or probe
+unsupported Runtime CLI flags.
 
 Phase 5 adds `setup-systemd.sh`, `first-boot.sh`, `run-all.sh`, and
 `stop-all.sh`. They preserve `/etc/omertaos/omertaos.env`, provide help and
 dry-run modes, and never execute systemd on the Windows automation host.
 
-Phase 6 adds the read-only `smoke-test.sh` for independent Native and Quickstart
-checks, plus `rollback.sh`. Rollback stops and disables only the CAPO target;
-it preserves source, configuration, accounts, databases, and persistent data.
+N7 adds the read-only `smoke-test.sh` for independent Native and Quickstart
+checks. N8 adds versioned `update.sh`/`rollback.sh` plus canonical
+`backup.sh`/`restore.sh` wrappers. Rollback atomically selects a verified
+immutable release and never disables the target, deletes state, or downgrades
+databases automatically.
 See `../../../docs/capo/validation-recovery.md` for the acceptance matrix and
 troubleshooting workflow.
-`first-boot.sh` leaves services stopped unless the operator supplies `--start`.
+`first-boot.sh` requires a release version and verified external backup, then
+delegates build/migration/activation to N8. Services remain stopped unless the
+operator supplies `--start`.
 
 Every script follows the safety and idempotency contract in the parent README.
 Linux-native commands must not be executed on the Windows automation host.

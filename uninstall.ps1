@@ -1,15 +1,8 @@
-$ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-if (Test-Path (Join-Path $scriptDir "docker-compose.yml")) {
-  Set-Location $scriptDir
-} elseif (Test-Path (Join-Path (Split-Path $scriptDir -Parent) "docker-compose.yml")) {
-  Set-Location (Split-Path $scriptDir -Parent)
-} else {
-  Write-Host "docker-compose.yml was not found. Run this script from the repository root or alongside it." -ForegroundColor Red
-  exit 1
-}
-
-Write-Host "Stopping and removing AION-OS Docker stack..." -ForegroundColor Yellow
-docker compose down -v
-Write-Host "AION-OS stack down and volumes removed." -ForegroundColor Green
+$composeFile = Join-Path $scriptDir 'deploy/docker/compose/full.yml'
+Set-Location $scriptDir
+& docker compose --project-directory . -f $composeFile down -v @args
+exit $LASTEXITCODE

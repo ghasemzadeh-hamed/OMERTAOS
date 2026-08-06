@@ -6,7 +6,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_quickstart_uses_canonical_runtime_daemon() -> None:
-    compose = (REPO_ROOT / "docker-compose.quickstart.yml").read_text()
+    compose = (REPO_ROOT / "deploy/docker/compose/quickstart.yml").read_text()
 
     assert "  runtime:\n" in compose
     assert "dockerfile: runtime-daemon/Dockerfile" in compose

@@ -7,11 +7,12 @@ function Require-Text([string]$Path, [string]$Pattern) {
 }
 
 $envFile = Join-Path $root 'deploy\CAPO\CAPO.env.example'
-$smoke = Join-Path $root 'deploy\CAPO\scripts\smoke-test.sh'
-$rollback = Join-Path $root 'deploy\CAPO\scripts\rollback.sh'
-$quickstart = Join-Path $root 'docker-compose.quickstart.yml'
+$smoke = Join-Path $root 'deploy\native\scripts\smoke-test.sh'
+$rollback = Join-Path $root 'deploy\native\scripts\rollback.sh'
+$update = Join-Path $root 'deploy\native\scripts\update.sh'
+$quickstart = Join-Path $root 'deploy/docker/compose/quickstart.yml'
 $units = @(
-    'omertaos-runtime.service', 'omertaos-control.service',
+    'omertaos-install.service', 'omertaos-runtime.service', 'omertaos-control.service',
     'omertaos-gateway.service', 'omertaos-console.service'
 ) | ForEach-Object { Join-Path $root "deploy\CAPO\systemd\$_" }
 
@@ -23,19 +24,26 @@ $units = @(
   '127\.0\.0\.1:3000/', '--mode native\|quickstart', 'systemctl is-active') |
     ForEach-Object { Require-Text $smoke $_ }
 
-@('systemctl stop omertaos\.target', 'systemctl disable omertaos\.target',
-  'Persistent state and configuration were preserved') |
+@('/opt/omertaos/releases', '/opt/omertaos/current', '/opt/omertaos/previous',
+  'sha256sum --check', 'no database downgrade was attempted') |
     ForEach-Object { Require-Text $rollback $_ }
+
+@('--backup PATH', 'verified external backup', 'release\.manifest\.sha256',
+  'migrate-database\.sh', 'smoke-test\.sh', 'flock') |
+    ForEach-Object { Require-Text $update $_ }
 
 @('"3000:3000"', '"8080:8080"', '"8000:8000"',
   '"127\.0\.0\.1:50051:50051"') |
     ForEach-Object { Require-Text $quickstart $_ }
 
 foreach ($unit in $units) {
-    Require-Text $unit 'User=omertaos'
-    Require-Text $unit 'EnvironmentFile=/etc/omertaos/omertaos\.env'
     Require-Text $unit 'NoNewPrivileges=true'
     Require-Text $unit 'PrivateTmp=true'
+}
+
+foreach ($unit in $units | Where-Object { $_ -notmatch 'install\.service$' }) {
+    Require-Text $unit 'User=omertaos'
+    Require-Text $unit 'EnvironmentFile=/etc/omertaos/omertaos\.env'
 }
 
 $capoFiles = Get-ChildItem (Join-Path $root 'deploy\CAPO') -File -Recurse

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`desktop-shell/` is an optional native interface built with Tauri, React, TypeScript, and Vite. It gives OMERTAOS an OS-like application surface while keeping `console/` as the primary browser-based management interface.
+`console/desktop-shell/` is an optional native presentation client built with Tauri, React, TypeScript, and Vite. It gives OMERTAOS an OS-like application surface while keeping `console/` as the canonical presentation owner.
 
 The Web Console owns the mature management routes and workflows. The Desktop Shell embeds that Console, opens it in the default browser, reports local service health, and provides lightweight native navigation. It deliberately does not duplicate Next.js pages.
 
@@ -11,7 +11,7 @@ The Web Console owns the mature management routes and workflows. The Desktop She
 Start the normal OMERTAOS services first so ports 3000, 8000, and 8080 are available. Then:
 
 ```bash
-cd desktop-shell
+cd console/desktop-shell
 npm install
 npm run tauri:dev
 ```

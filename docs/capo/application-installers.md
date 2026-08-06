@@ -1,42 +1,31 @@
-# CAPO application installers
+# Native application installers
 
-Phase 4 adds native, non-service-starting installers for the canonical chain:
+N4 provides one installer per canonical service boundary:
 
 ```text
-console/ -> gateway/ -> control/ -> runtime-daemon/
+install-console.sh -> install-gateway.sh -> install-control.sh -> install-runtime.sh
 ```
 
-## Behavior
+All four support `--dry-run` and read-only `--check`, build as the non-root
+`omertaos` account, verify their expected artifacts, and never start services.
+Control creates its Python virtualenv; Gateway uses `npm ci`; Console uses the
+committed pnpm lock and generates Prisma client code without running migrations;
+Runtime requires a Cargo lock and installs only the release binary.
 
-- `install-python-control.sh` creates or reuses the Control virtual environment,
-  installs the root project with its `control` extra, and imports
-  `control.app.main:app` as a repeatable entrypoint check.
-- `install-node-services.sh` checks Node.js 18+, installs and builds Gateway, then
-  uses Console's committed `pnpm-lock.yaml` with `--frozen-lockfile`, generates
-  its Prisma client, and builds Next.js. Gateway has no committed lockfile, so
-  the script reports that limitation and uses `npm install` instead of invalid
-  `npm ci` semantics.
-- `install-rust-runtime.sh` performs a release build from
-  `runtime-daemon/Cargo.toml` (locked when a `Cargo.lock` is present) and installs the binary in
-  `/var/lib/omertaos/bin`. It neither starts Runtime nor supplies CLI flags.
+The legacy installer names and CAPO paths are compatibility wrappers around
+`deploy/native/scripts/`. N5 separately owns database migrations/bootstrap and
+N6 owns systemd wiring. A failed N4 build must leave `/etc/omertaos`, databases,
+and `/var/lib/omertaos` persistent data intact; rebuild from the prior reviewed
+revision rather than deleting state.
 
-All scripts accept `--root`, `--help`, and `--dry-run`; component-specific paths
-can also be overridden. Defaults come from the CAPO environment contract. Run
-OS/data setup first, then run these installers as an operator able to write the
-checkout build directories and `/var/lib/omertaos`.
+Windows build evidence does not prove Linux ownership, dynamic linking, or
+installed binary execution. Those checks remain mandatory on the intended
+Debian/Ubuntu host.
 
-## Security and migration
-
-The installers do not read or print application secrets, start services, alter
-auth/permissions, or modify database schemas. Builds stay in the canonical
-source directories; the only installed artifact is the reviewed Runtime binary.
-No legacy path is moved or deleted, and Docker Quickstart remains unchanged.
-
-## Validation and limitations
-
-Windows validation is limited to static contracts, repository regression tests,
-and available local builds. Native Debian/Ubuntu execution remains pending on
-the intended Linux SSD host. A failed application install can be rolled back by
-reverting this phase and rebuilding the virtual environment, Node outputs, or
-Runtime binary from the prior commit; persistent data and configuration should
-not be deleted.
+Current D6 workstation result: locked metadata and formatting pass, but both
+`cargo test --locked --all-targets` and `cargo build --locked --release` stop
+before linking because the Windows MSVC `link.exe`/Visual C++ Build Tools are
+not installed. The system drive is also full, so Cargo cannot update cache
+last-use metadata. This is an environment blocker, not N4 acceptance; rerun on
+the intended Linux host or after provisioning the reviewed Windows linker/SDK
+and sufficient disk space.

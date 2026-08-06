@@ -14,7 +14,6 @@ def test_required_top_level_directories_exist() -> None:
         "registry",
         "data",
         "policies",
-        "observability",
         "schemas",
         "shared",
         "deploy",

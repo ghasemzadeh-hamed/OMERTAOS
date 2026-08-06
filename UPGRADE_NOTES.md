@@ -3,7 +3,7 @@
 ## Hybrid Runtime Migration
 
 Current architecture uses:
-- Python control-plane orchestration and policy layers.
+- Python Control orchestration and policy layers.
 - Rust runtime daemon for OS-boundary execution.
 
 ### Breaking expectations
@@ -15,12 +15,12 @@ Current architecture uses:
 
 - `runtime-daemon` binary/service
 - canonical `schemas/v1/protos/runtime.proto` contract compatibility
-- `control_plane/runtime_client.py` configured endpoint
+- `control/clients/runtime.py` configured endpoint
 
 ## Windows Agentic Bridge configuration
 
 - Use `integrations/windows-agentic-bridge/` as the only Bridge build and
-  operator path; the matching `execution/` tree is compatibility-only.
+  operator path; the former compatibility mirror was retired in S5.
 - Set `OMERTA_GATEWAY_URL` to the Gateway endpoint. The local default is now
   `http://localhost:8080`.
 - Remove `OMERTA_CONTROL_URL`; Bridge health and task traffic now pass through

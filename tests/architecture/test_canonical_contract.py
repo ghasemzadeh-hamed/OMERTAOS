@@ -116,8 +116,15 @@ def test_control_has_no_host_execution() -> None:
 
 def test_structure_migration_gate() -> None:
     violations = [root for root in LEGACY_ROOTS if (REPO_ROOT / root).exists()]
-    direct_console_tokens = ("CONTROL_URL", "AION_CONTROL_URL", "NEXT_PUBLIC_CONTROL_URL", "RUNTIME_URL")
-    for path in _source_files(REPO_ROOT / "console", (".ts", ".tsx", ".js", ".mjs")):
+    direct_console_tokens = (
+        "CONTROL_URL",
+        "AION_CONTROL_URL",
+        "NEXT_PUBLIC_CONTROL_URL",
+        "RUNTIME_URL",
+        "http://localhost:8000",
+        "http://control:8000",
+    )
+    for path in _source_files(REPO_ROOT / "console", (".ts", ".tsx", ".js", ".mjs", ".json")):
         source = path.read_text(encoding="utf-8")
         if any(token in source for token in direct_console_tokens):
             violations.append(f"direct Console boundary: {path.relative_to(REPO_ROOT)}")

@@ -11,15 +11,6 @@ type ServiceCheck = {
 
 const stripTrailingSlash = (value: string) => value.replace(/\/+$/, '');
 
-const controlBase = () =>
-  stripTrailingSlash(
-    process.env.CONTROL_URL ||
-      process.env.AION_CONTROL_URL ||
-      process.env.AION_CONTROL_BASE_URL ||
-      process.env.AION_CONTROL_BASE ||
-      'http://control:8000',
-  );
-
 const gatewayBase = () =>
   stripTrailingSlash(
     process.env.GATEWAY_URL ||
@@ -62,12 +53,36 @@ async function check(baseUrl: string, paths: string[] = ['/healthz', '/health'])
   };
 }
 
+async function checkGateway(): Promise<{ gateway: ServiceCheck; control: ServiceCheck }> {
+  try {
+    const res = await fetch(`${gatewayBase()}/health`, { cache: 'no-store' });
+    const payload = await res.json().catch(() => ({}));
+    const dependency = payload?.dependencies?.control;
+
+    return {
+      gateway: {
+        status: res.ok ? 'ok' : 'degraded',
+        details: `HTTP ${res.status} /health`,
+      },
+      control: {
+        status: res.ok && dependency === 'ok' ? 'ok' : 'degraded',
+        details: `Gateway dependency: ${typeof dependency === 'string' ? dependency : 'unknown'}`,
+      },
+    };
+  } catch {
+    return {
+      gateway: { status: 'degraded', details: 'unreachable via Gateway /health' },
+      control: { status: 'degraded', details: 'Gateway dependency unavailable' },
+    };
+  }
+}
+
 export async function GET() {
-  const [gateway, control, consoleSvc] = await Promise.all([
-    check(gatewayBase()),
-    check(controlBase()),
+  const [gatewayHealth, consoleSvc] = await Promise.all([
+    checkGateway(),
     check(consoleBase()),
   ]);
+  const { gateway, control } = gatewayHealth;
 
   const status: ServiceStatus = [gateway, control].some((service) => service.status === 'degraded')
     ? 'degraded'

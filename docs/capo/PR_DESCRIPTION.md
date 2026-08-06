@@ -1,5 +1,9 @@
 # feat(capo): add native deployment, validation, and recovery profile
 
+> Historical draft: refresh all check counts and Runtime results before use.
+> Current N8 uses committed Gateway/Runtime lockfiles, verified external backup
+> manifests, immutable releases, and atomic rollback rather than target disable.
+
 ## Summary
 
 Adds the seven-phase CAPO deployment profile for Debian/Ubuntu while preserving
@@ -30,7 +34,7 @@ non-destructive recovery procedure without replacing Quickstart.
 - [x] Control import and Gateway build
 - [x] Console production build, with documented local Prisma/browser-data warnings
 - [x] Runtime Cargo metadata
-- [ ] Runtime release build; crates.io was unreachable
+- [ ] Runtime locked tests and release build on the target toolchain
 - [ ] Native Debian/Ubuntu SSD smoke and reboot acceptance
 - [ ] Running Docker Quickstart smoke; local daemon was unavailable
 - [ ] Full Python regression; legacy removed-path imports fail collection
@@ -47,11 +51,11 @@ and no destructive cleanup.
 
 ## Migration and rollback
 
-There is no application schema or public API migration. Native and Quickstart
-remain independent. Roll back by previewing and running
-`deploy/CAPO/scripts/rollback.sh`, reverting CAPO commits if required, and
-preserving `/etc/omertaos`, `/var/lib/omertaos`, databases, volumes, and the
-verified external backup.
+There is no public API migration. Native and Quickstart remain independent.
+Roll back by verifying and previewing `deploy/CAPO/scripts/rollback.sh`, then
+atomically selecting the prior immutable release. Preserve `/etc/omertaos`,
+`/var/lib/omertaos`, databases, volumes, and the verified external backup;
+database downgrade is never automatic.
 
 ## Review checklist
 

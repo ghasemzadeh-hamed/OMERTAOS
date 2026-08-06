@@ -8,9 +8,9 @@ Status: candidates only; no deletion is authorized by this document.
 
 | Path | State | Evidence still required |
 |---|---|---|
-| `registry/__init__.py.rej` | `DELETE` candidate | Inspect rejected patch and Git history; confirm no unapplied change is needed |
-| `migration/logs/console-build.log` | `GENERATED` / `DELETE` candidate | Confirm no audit process consumes tracked build logs; add ignore rule if needed |
-| `pr_commit_plan.json` | `DELETE` candidate | Inspect history and automation references |
+| `registry/__init__.py.rej` | `RESOLVED S6` | Rejected hunk was obsolete legacy registry code; preserved under migration evidence and `*.rej` is ignored |
+| `migration/logs/console-build.log` | `RESOLVED S6` | Preserved under `docs/migration/evidence/`; generated logs are ignored |
+| `pr_commit_plan.json` | `RESOLVED S6` | No automation consumer found; preserved under migration evidence |
 
 ## Legacy-root candidates after migration
 
@@ -29,12 +29,13 @@ be retired only after the named migration and acceptance gates pass.
 | root `docker/`, `infra/`, deployment content in `execution/` | S4 Native and Quickstart parity pass |
 | root `ui` symlink | Console/UI-core references and builds pass |
 
-## Unknown and therefore protected
+## Former unknown roots resolved in S6
 
-`algorithms/`, `cluster/`, `desktop-shell/`, `domain/`, the `process-analytics`
-symlink, and any unique file found during a directory diff are protected as
-`UNKNOWN`. They cannot be deleted until ownership, consumers, history and a
-canonical destination are documented.
+S6 resolved ownership without discarding file contents: Desktop Shell moved to
+the Console owner, Native profiles moved under `deploy/native/`, Cluster
+headings moved to architecture documentation, and inactive placeholders,
+duplicate domain code and broken links moved under migration evidence. The
+verified external backup and Git bundle retain complete recovery history.
 
 ## Permanent deletion gate
 

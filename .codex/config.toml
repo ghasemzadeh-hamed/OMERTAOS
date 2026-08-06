@@ -1,0 +1,14 @@
+# Project-scoped Codex defaults. Codex loads this file only for a trusted repo.
+# Keep model selection unset so the active Codex surface can choose a supported
+# model without a stale repository pin.
+
+model_reasoning_effort = "medium"
+plan_mode_reasoning_effort = "high"
+model_verbosity = "low"
+
+# Normal repository edits remain available. Commands outside the workspace,
+# network access, and other elevated operations can request explicit approval.
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+project_doc_max_bytes = 32768

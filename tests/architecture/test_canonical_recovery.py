@@ -36,9 +36,7 @@ def test_recovered_compatibility_imports_resolve() -> None:
         "schemas.v1.provider",
         "control.schemas.provider",
         "control.models.registry",
-        "models.registry",
         "data.retention_mongo",
-        "database.retention_mongo",
     ]:
         importlib.import_module(module)
 
@@ -77,22 +75,15 @@ def test_retention_helper_validates_and_creates_ttl_index() -> None:
         raise AssertionError("non-positive retention must be rejected")
 
 
-def test_legacy_model_profiles_match_canonical_mirror() -> None:
-    legacy_root = REPO_ROOT / "models"
-    canonical_root = REPO_ROOT / "registry" / "models"
-    mismatches: list[str] = []
-    for legacy in legacy_root.rglob("*.yaml"):
-        relative = legacy.relative_to(legacy_root)
-        canonical = canonical_root / relative
-        if not canonical.exists() or legacy.read_bytes() != canonical.read_bytes():
-            mismatches.append(str(relative))
-    assert not mismatches, "legacy model profiles diverged from canonical registry: " + ", ".join(mismatches)
+def test_model_profiles_have_one_canonical_owner() -> None:
+    assert not (REPO_ROOT / "models").exists()
+    assert list((REPO_ROOT / "registry" / "models").rglob("*.yaml"))
 
 
 def test_current_design_documents_are_linked_from_readme() -> None:
     readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
     for path in [
-        "docs/aion-capability-audit.md",
+        "docs/migration/s6-architecture-validation.md",
         "docs/architecture/aion-canonical-design.md",
         "docs/migration/aion-capability-recovery.md",
         "docs/adr/0001-canonical-aion-ownership.md",

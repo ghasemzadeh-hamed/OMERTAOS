@@ -53,7 +53,7 @@ cd OMERTAOS
 Alternative local development startup:
 
 ```bash
-docker compose -f docker-compose.local.yml up -d
+docker compose --project-directory . -f deploy/docker/compose/local.yml up -d
 ```
 
 ## Runtime Boundary
@@ -72,13 +72,13 @@ Python must delegate OS-level execution to runtime daemon via runtime client:
 - `policies/` policy definitions and evaluator interfaces
 - `schemas/` source contracts; `shared/` generated clients and stable primitives
 
-The former Python `kernel/`, `control-plane/`, `rust-runtime/`, `database/`, `db/`,
-root `models/`, and deployment copies are migration-era paths. Do not add new
-feature behavior to them.
+The migration-era service, data, model and deployment roots were retired in
+Structure S5. New behavior belongs only to the canonical planes listed above;
+historical path mappings remain documented under `docs/migration/`.
 
 ## Redesign and recovery
 
-- [Capability audit](docs/aion-capability-audit.md)
+- [Structure S6 validation](docs/migration/s6-architecture-validation.md)
 - [Canonical design](docs/architecture/aion-canonical-design.md)
 - [Capability recovery plan](docs/migration/aion-capability-recovery.md)
 - [ADR 0001: canonical ownership](docs/adr/0001-canonical-aion-ownership.md)

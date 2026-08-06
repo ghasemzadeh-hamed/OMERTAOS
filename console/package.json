@@ -2,6 +2,7 @@
   "name": "aion-console",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.13.1",
   "scripts": {
     "dev": "pnpm prisma:generate && next dev",
     "build": "next build",
@@ -73,6 +74,6 @@
   },
   "engines": {
     "node": ">=18.18.0",
-    "pnpm": ">=8.0.0"
+    "pnpm": ">=11.13.1 <12"
   }
 }

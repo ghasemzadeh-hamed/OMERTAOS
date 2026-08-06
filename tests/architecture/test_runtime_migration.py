@@ -9,13 +9,8 @@ def _read(path: str) -> str:
     return (REPO_ROOT / path).read_text(encoding="utf-8")
 
 
-def test_legacy_runtime_binary_delegates_to_canonical_crate() -> None:
-    manifest = _read("rust-runtime/Cargo.toml")
-    main = _read("rust-runtime/src/main.rs")
-
-    assert 'runtime-daemon = { path = "../runtime-daemon" }' in manifest
-    assert "runtime_daemon::run().await" in main
-    assert "ctrl_c" not in main
+def test_legacy_runtime_root_is_retired() -> None:
+    assert not (REPO_ROOT / "rust-runtime").exists()
 
 
 def test_canonical_runtime_build_uses_vendored_protoc() -> None:
@@ -51,16 +46,5 @@ def test_canonical_runtime_exposes_one_shared_run_function() -> None:
     assert "runtime_daemon::run().await" in binary
 
 
-def test_execution_runtime_contract_is_compatibility_only() -> None:
-    source = _read("execution/runtime_contract.py")
-
-    assert "from control.clients.runtime import RuntimeEnvelope, RuntimeExecutor" in source
-    assert "RuntimeCommand = RuntimeEnvelope" in source
-    assert "class RuntimeCommand" not in source
-    assert "subprocess" not in source
-
-    python_sources = sorted(
-        path.relative_to(REPO_ROOT).as_posix()
-        for path in (REPO_ROOT / "execution").rglob("*.py")
-    )
-    assert python_sources == ["execution/runtime_contract.py"]
+def test_execution_compatibility_root_is_retired() -> None:
+    assert not (REPO_ROOT / "execution").exists()

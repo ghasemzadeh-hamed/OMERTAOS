@@ -20,6 +20,12 @@ search contract did not reach zero:
 | Python `from db` / `import db` | 0 matches |
 | `schemas/protos`, `shared/proto`, `root/protos` | 0 matches |
 
+> S6 correction (2026-07-15): the earlier literal search was a false negative.
+> Byte-identical aliases still existed under `schemas/protos`, `schemas/proto`,
+> `schemas/config`, `schemas/events`, root schema JSON files and `shared/proto`.
+> S6 retired those aliases to migration evidence and changed the architecture
+> test to require their absence.
+
 Remaining service-root matches include protected compatibility manifests/source,
 migration architecture tests, cleanup tooling and historical/current documents
 outside `docs/migration/`. Examples include `rust-runtime/Cargo.toml`, Runtime

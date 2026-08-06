@@ -1,5 +1,11 @@
 # CAPO phase status
 
+> Historical phase ledger: phase-specific limitations below describe their
+> original execution dates. The current N1-N8 contract supersedes old claims
+> that Gateway/Runtime lack lockfiles or that rollback disables the target.
+> Current rollback verifies and atomically switches immutable releases; live
+> Linux acceptance still requires a fresh recorded run.
+
 This file is the durable state machine for the seven-run CAPO automation. A phase
 is attempted exactly once and is recorded as `complete`, `failed`, or `blocked`.
 

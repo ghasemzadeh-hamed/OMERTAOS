@@ -28,18 +28,9 @@ def test_legacy_observability_roots_are_compatibility_only() -> None:
     assert not violations, "legacy observability implementation remains: " + ", ".join(violations)
 
 
-def test_legacy_exports_resolve_to_canonical_owners() -> None:
-    from observability.audit import AuditEntry as LegacyAuditEntry
-    from observability.audit import emit_audit as legacy_emit_audit
-    from observability.bus import EventBus as LegacyTelemetryBus
-    from observability.event_bus import EventBus as LegacyExporter
-    from shared.event_bus import EventBus as LegacySharedBus
-
-    assert LegacyAuditEntry is AuditEntry
-    assert legacy_emit_audit is emit_audit
-    assert LegacyTelemetryBus is TelemetryBus
-    assert LegacySharedBus is TelemetryBus
-    assert LegacyExporter is TelemetryExporter
+def test_legacy_observability_roots_are_retired() -> None:
+    assert not (REPO_ROOT / "observability").exists()
+    assert not (REPO_ROOT / "shared" / "event_bus").exists()
 
 
 def test_audit_primitive_preserves_actor_and_tenant_scope() -> None:

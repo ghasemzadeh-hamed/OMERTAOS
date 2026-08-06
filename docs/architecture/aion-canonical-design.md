@@ -80,8 +80,8 @@ queries require an explicit system scope and an audit event.
 - `registry/models/` is the only writable source for model profiles.
 - `registry/agents/` stores immutable agent-version manifests and capability needs.
 - `registry/prompts/` stores immutable prompt versions and evaluation references.
-- Root `models/` remains a compatibility mirror until all callers move; CI checks
-  that mirrored files do not diverge.
+- The former root `models/` mirror was retired in S5. Model profiles exist only
+  under `registry/models/`; providers and callers consume Registry interfaces.
 - Secrets are references such as `secret://...`, never values in manifests.
 
 ## Orchestration and automation
@@ -108,4 +108,3 @@ Legacy roots remain read-only migration sources. A legacy path can be removed on
 after imports, runtime references, Git history, generated-source status, tests,
 upgrade notes and rollback steps are documented. Compatibility wrappers must point
 from legacy to canonical code, never from canonical code into a deleted legacy tree.
-

@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "supported_platforms": ["Debian 12", "Ubuntu 22.04 LTS", "Ubuntu 24.04 LTS"],
+  "templates": {
+    "omertaos.env.example": {
+      "mode": "0644",
+      "owner": "root:root",
+      "required": ["OMERTAOS_ENV_CONTRACT_VERSION", "OMERTAOS_USER", "OMERTAOS_GROUP", "OMERTAOS_ROOT", "OMERTAOS_CONFIG_DIR", "OMERTAOS_STATE_DIR", "OMERTAOS_LOG_DIR", "OMERTAOS_BACKUP_DIR"]
+    },
+    "runtime.env.example": {
+      "mode": "0640",
+      "owner": "root:omertaos",
+      "required": ["AION_RUNTIME_BIND_ADDR", "AION_RUNTIME_HEALTH_ADDR", "OMERTA_PROFILE"]
+    },
+    "control.env.example": {
+      "mode": "0640",
+      "owner": "root:omertaos",
+      "required": ["CONTROL_HOST", "AION_CONTROL_HTTP_PORT", "AION_RUNTIME_ENDPOINT", "AION_CONTROL_POSTGRES_DSN", "AION_CONTROL_REDIS_URL", "AION_CONTROL_MODELS_DIRECTORY", "AION_CONTROL_POLICIES_DIRECTORY", "AION_CONTROL_DATA_DIR", "AION_CONTROL_SECRET_DIR", "AION_GATEWAY_ADMIN_TOKEN"]
+    },
+    "gateway.env.example": {
+      "mode": "0640",
+      "owner": "root:omertaos",
+      "required": ["AION_GATEWAY_HOST", "AION_GATEWAY_PORT", "AION_CONTROL_BASE_URL", "AION_CONTROL_GRPC", "AION_REDIS_URL", "AION_CONSOLE_ORIGIN", "AION_PROFILE", "AION_GATEWAY_ADMIN_TOKEN"]
+    },
+    "console.env.example": {
+      "mode": "0640",
+      "owner": "root:omertaos",
+      "required": ["HOSTNAME", "PORT", "NEXT_PUBLIC_GATEWAY_URL", "GATEWAY_URL", "NEXTAUTH_URL", "NEXTAUTH_SECRET", "AION_ADMIN_TOKEN", "SECRET_PROVIDER_MODE", "DATABASE_URL", "AION_ENABLE_PRISMA"],
+      "forbidden_prefixes": ["AION_CONTROL_", "AION_RUNTIME_", "CONTROL_"]
+    },
+    "installer.env.example": {
+      "mode": "0600",
+      "owner": "root:root",
+      "required": ["OMERTAOS_POSTGRES_ROLE", "OMERTAOS_POSTGRES_DATABASE", "OMERTAOS_POSTGRES_PASSWORD", "OMERTAOS_CONSOLE_POSTGRES_ROLE", "OMERTAOS_CONSOLE_POSTGRES_DATABASE", "OMERTAOS_CONSOLE_POSTGRES_PASSWORD", "OMERTAOS_CONSOLE_ADMIN_EMAIL", "OMERTAOS_CONSOLE_ADMIN_PASSWORD", "OMERTAOS_CONSOLE_ADMIN_NAME"]
+    }
+  },
+  "secret_keys": ["AION_GATEWAY_ADMIN_TOKEN", "AION_ADMIN_TOKEN", "NEXTAUTH_SECRET", "OMERTAOS_POSTGRES_PASSWORD", "OMERTAOS_CONSOLE_POSTGRES_PASSWORD", "OMERTAOS_CONSOLE_ADMIN_EMAIL", "OMERTAOS_CONSOLE_ADMIN_PASSWORD"],
+  "credential_url_keys": ["AION_CONTROL_POSTGRES_DSN", "DATABASE_URL"],
+  "loopback_keys": ["CONTROL_HOST", "AION_RUNTIME_BIND_ADDR", "AION_RUNTIME_HEALTH_ADDR", "AION_RUNTIME_ENDPOINT"],
+  "port_keys": ["AION_CONTROL_HTTP_PORT", "AION_GATEWAY_PORT", "PORT"],
+  "profiles": ["lite", "full", "enterprise"]
+}

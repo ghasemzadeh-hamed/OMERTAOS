@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from importlib import import_module
+
 import pytest
 
 from control.orchestration import Dag, ResourceRequest, Scheduler, TaskNode, TaskSpec
@@ -76,9 +78,8 @@ async def test_scheduler_rejects_duplicate_task_ids() -> None:
         )
 
 
-def test_legacy_orchestration_modules_export_canonical_types() -> None:
-    from orchestration.dag import Dag as LegacyDag
-    from orchestration.scheduler import Scheduler as LegacyScheduler
-
-    assert LegacyDag is Dag
-    assert LegacyScheduler is Scheduler
+def test_legacy_orchestration_modules_are_retired() -> None:
+    with pytest.raises(ModuleNotFoundError):
+        import_module("orchestration.dag")
+    with pytest.raises(ModuleNotFoundError):
+        import_module("orchestration.scheduler")

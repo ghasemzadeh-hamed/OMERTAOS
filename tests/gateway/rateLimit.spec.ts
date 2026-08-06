@@ -12,7 +12,11 @@ describe('rate limit middleware', () => {
   });
 
   it('allows traffic within limits', async () => {
-    const request: any = { headers: { 'x-api-key': 'key' }, ip: '127.0.0.1', log: { error: vi.fn() } };
+    const request: any = {
+      headers: { 'x-api-key': 'key' },
+      ip: '127.0.0.1',
+      log: { error: vi.fn(), warn: vi.fn() },
+    };
     const reply: any = buildReply();
     await rateLimitMiddleware(request, reply);
     expect(reply.header).toHaveBeenCalled();
@@ -20,7 +24,11 @@ describe('rate limit middleware', () => {
 
   it('throttles when exceeding limit', async () => {
     vi.spyOn(redisModule, 'withRateLimitCounter').mockResolvedValueOnce({ requests: 100, remaining: 0 });
-    const request: any = { headers: { 'x-api-key': 'key' }, ip: '127.0.0.1', log: { error: vi.fn() } };
+    const request: any = {
+      headers: { 'x-api-key': 'key' },
+      ip: '127.0.0.1',
+      log: { error: vi.fn(), warn: vi.fn() },
+    };
     const reply: any = buildReply();
     await expect(rateLimitMiddleware(request, reply)).rejects.toMatchObject({ statusCode: 429 });
     expect(reply.header).toHaveBeenCalledWith('retry-after', expect.any(String));
@@ -28,7 +36,11 @@ describe('rate limit middleware', () => {
 
   it('marks headers when redis unavailable', async () => {
     vi.spyOn(redisModule, 'withRateLimitCounter').mockRejectedValueOnce(new Error('redis down'));
-    const request: any = { headers: { 'x-api-key': 'key' }, ip: '127.0.0.1', log: { error: vi.fn() } };
+    const request: any = {
+      headers: { 'x-api-key': 'key' },
+      ip: '127.0.0.1',
+      log: { error: vi.fn(), warn: vi.fn() },
+    };
     const reply: any = buildReply();
     await rateLimitMiddleware(request, reply);
     expect(reply.header).toHaveBeenCalledWith('x-rate-limit-limit', 'unavailable');

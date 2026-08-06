@@ -1,9 +1,0 @@
-[package]
-name = "rust-runtime"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal"] }
-anyhow = "1"
-runtime-daemon = { path = "../runtime-daemon" }

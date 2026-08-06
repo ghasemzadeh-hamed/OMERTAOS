@@ -9,7 +9,7 @@ columns are complete and reviewed by a human.
 From the repository root, validate configuration and static contracts first:
 
 ```powershell
-docker compose -f docker-compose.quickstart.yml config --quiet
+docker compose --project-directory . -f deploy/docker/compose/quickstart.yml config --quiet
 powershell -NoProfile -File deploy/CAPO/tests/contract-tests.ps1
 python -m pytest tests/architecture -q
 ```
@@ -18,19 +18,22 @@ On the intended Debian/Ubuntu SSD host, run the read-only Native probe after
 first boot:
 
 ```bash
-bash deploy/CAPO/scripts/smoke-test.sh --mode native
+bash deploy/native/scripts/smoke-test.sh --mode native
 ```
 
 For a running Quickstart stack, run:
 
 ```bash
-bash deploy/CAPO/scripts/smoke-test.sh --mode quickstart
+bash deploy/native/scripts/smoke-test.sh --mode quickstart
 ```
 
-The probes require HTTP success from Control `8000`, Gateway `8080`, and
-Console `3000`. Native also requires the Runtime unit and aggregate target to
-be active. Quickstart requires its Runtime container to be running; the
-Compose healthcheck remains the authoritative gRPC readiness probe on `50051`.
+The Native probe requires PostgreSQL/Redis readiness, a successful N5 one-shot
+unit, all N6 application units and the aggregate target, Runtime's binary
+healthcheck, loopback-only Runtime/Control listeners, healthy JSON payloads,
+healthy Gateway dependencies, the canonical Console-to-Gateway-to-Control
+chain, bounded restart counts, and journald visibility. Quickstart remains a
+separate compatibility probe and requires its Runtime container to be running;
+the Compose healthcheck remains the authoritative gRPC readiness probe there.
 
 ## Troubleshooting
 
@@ -48,22 +51,38 @@ Compose healthcheck remains the authoritative gRPC readiness probe on `50051`.
   false until the endpoint and credentials are validated. The capability must
   remain explicitly degraded without weakening authorization.
 
-## Non-destructive rollback
+## Versioned update and non-destructive rollback
 
-Preview and then execute Native lifecycle rollback:
+Create a verified external backup, preview the immutable release build, and
+activate only after the preview is reviewed:
 
 ```bash
-bash deploy/CAPO/scripts/rollback.sh --dry-run
-bash deploy/CAPO/scripts/rollback.sh
+bash deploy/native/scripts/update.sh --version 1.2.3 \
+  --source /srv/omertaos-source \
+  --backup /mnt/backup/omertaos-before-1.2.3 \
+  --dry-run
+bash deploy/native/scripts/update.sh --version 1.2.3 \
+  --source /srv/omertaos-source \
+  --backup /mnt/backup/omertaos-before-1.2.3 \
+  --start
+bash deploy/native/scripts/rollback.sh --check
+bash deploy/native/scripts/rollback.sh --dry-run
+bash deploy/native/scripts/rollback.sh --start
 ```
 
-This stops and disables only `omertaos.target`. It deliberately preserves the
-repository, `/etc/omertaos/omertaos.env`, `/var/lib/omertaos`, service account,
-PostgreSQL roles/databases, Redis state, and all legacy recovery inputs. Revert
-the phase commit separately if the deployment assets themselves must be
-removed from a future checkout.
+Update builds all four services under `/opt/omertaos/releases/<version>`, writes
+a critical-artifact checksum manifest, applies only forward migrations, and
+atomically changes `/opt/omertaos/current`. The prior code remains addressable
+through `/opt/omertaos/previous`. Rollback verifies that immutable release and
+changes only these code links plus the aggregate application target.
 
-Quickstart rollback is `docker compose -f docker-compose.quickstart.yml down`
+Both flows preserve `/etc/omertaos`, `/var/lib/omertaos`, the service account,
+PostgreSQL roles/databases, Redis state, and every release. They never perform a
+database downgrade. If a forward migration is incompatible with the selected
+older code, keep services stopped and use the separately reviewed restore
+procedure with the verified external backup.
+
+Quickstart rollback is `docker compose --project-directory . -f deploy/docker/compose/quickstart.yml down`
 without `--volumes`; named volumes and data remain intact.
 
 ## Acceptance state

@@ -1,1 +1,0 @@
-../../deploy/scripts/backup.sh

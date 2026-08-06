@@ -91,7 +91,7 @@ export default function EditorPage() {
           <input
             value={path}
             onChange={(event) => setPath(event.target.value)}
-            placeholder="/config/aion.yaml"
+            placeholder="/etc/omertaos/omertaos.env"
             className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2"
           />
         </label>

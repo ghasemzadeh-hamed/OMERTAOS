@@ -23,7 +23,7 @@ Startup commands:
 
 ```bash
 # from repo root
-docker compose -f docker-compose.quickstart.yml up gateway control console
+docker compose --project-directory . -f deploy/docker/compose/quickstart.yml up gateway control console
 # or run just the console (gateway/control already running)
 cd console && pnpm dev
 ```

@@ -16,22 +16,17 @@ def _files(root: Path) -> dict[str, Path]:
     }
 
 
-def test_bridge_trees_have_no_unaccounted_unique_assets_or_source_drift() -> None:
+def test_bridge_legacy_tree_is_retired_after_canonical_inventory_check() -> None:
     canonical = _files(CANONICAL_ROOT)
-    legacy = _files(LEGACY_ROOT)
-
-    assert canonical.keys() == legacy.keys()
     assert len(canonical) == 41
-    for relative in canonical.keys() - {"README.md"}:
-        assert canonical[relative].read_bytes() == legacy[relative].read_bytes(), relative
+    assert not LEGACY_ROOT.exists()
 
 
 def test_bridge_ownership_and_active_references_are_canonical() -> None:
     canonical_readme = (CANONICAL_ROOT / "README.md").read_text(encoding="utf-8")
-    legacy_readme = (LEGACY_ROOT / "README.md").read_text(encoding="utf-8")
 
     assert "Canonical owner: `integrations/windows-agentic-bridge/`" in canonical_readme
-    assert "Compatibility mirror only" in legacy_readme
+    assert not LEGACY_ROOT.exists()
 
     active_roots = (REPO_ROOT / "console" / "app" / "integrations" / "windows-bridge", CANONICAL_ROOT)
     for root in active_roots:

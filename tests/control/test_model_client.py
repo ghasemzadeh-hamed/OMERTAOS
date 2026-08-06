@@ -96,8 +96,6 @@ def test_disabled_unknown_and_invalid_endpoint_fail_closed() -> None:
         call_openai_compatible("file:///tmp/model", None, "m", "", [], 10, 0, 1000)
 
 
-def test_legacy_model_client_exports_canonical_objects() -> None:
-    legacy = import_module("models.client")
-
-    assert legacy.call_llm is call_llm
-    assert legacy.LLMProviderDisabled is LLMProviderDisabled
+def test_legacy_model_client_is_retired() -> None:
+    with pytest.raises(ModuleNotFoundError):
+        import_module("models.client")

@@ -1,0 +1,28 @@
+[Unit]
+Description=OMERTAOS database migration and initial bootstrap
+Requires=postgresql.service redis-server.service
+After=network-online.target postgresql.service redis-server.service
+Wants=network-online.target
+Before=omertaos-runtime.service
+PartOf=omertaos.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+WorkingDirectory=/opt/omertaos/current
+ExecStart=/opt/omertaos/current/deploy/native/scripts/migrate-database.sh --root /opt/omertaos/current --venv /opt/omertaos/current/.venv/control
+ExecStart=/opt/omertaos/current/deploy/native/scripts/bootstrap-admin.sh --root /opt/omertaos/current
+RemainAfterExit=yes
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/omertaos
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+UMask=0077
+
+[Install]
+WantedBy=omertaos.target

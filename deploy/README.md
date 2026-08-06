@@ -1,25 +1,33 @@
 # Deployment
 
-OMERTAOS provides two Compose modes. `docker-compose.quickstart.yml` is a self-contained evaluation topology with development defaults and host ports for Console, Gateway and Control. `docker-compose.yml` is the configurable local/integration topology with health checks, optional Vault/observability profiles, persistent volumes, and stricter service configuration. Neither file is a production security baseline without secret, TLS, image and network hardening.
+`deploy/` is the source of truth for Native, Docker, Kubernetes, observability,
+bundle and CI deployment assets. Root and legacy copies were retired in S5;
+new deployment changes belong only here.
+
+OMERTAOS provides two primary Compose modes. `deploy/docker/compose/quickstart.yml`
+is a self-contained evaluation topology. `deploy/docker/compose/full.yml` is the
+configurable local/integration topology. Neither is a production security
+baseline without secret, TLS, image and network hardening.
 
 ```bash
 # Evaluation
-docker compose -f docker-compose.quickstart.yml up --build -d
+docker compose --project-directory . -f deploy/docker/compose/quickstart.yml up --build -d
 
 # Local/integration
 cp .env.example .env
-docker compose -f docker-compose.yml up --build -d
+docker compose --project-directory . -f deploy/docker/compose/full.yml up --build -d
 ```
 
-Kubernetes assets under `deploy/k8s/` define workloads, stateful dependencies, ingress, network policy and observability. Production should use an external secret manager, managed stateful services where appropriate, immutable digest-pinned images, non-root/read-only containers, resource requests/limits, pod disruption budgets, topology spread, autoscaling, mTLS, restrictive egress, backups and tested restore.
+Kubernetes assets under `deploy/kubernetes/` define workloads, stateful dependencies, ingress, network policy and observability. Production should use an external secret manager, managed stateful services where appropriate, immutable digest-pinned images, non-root/read-only containers, resource requests/limits, pod disruption budgets, topology spread, autoscaling, mTLS, restrictive egress, backups and tested restore.
 
 ## Scripts
 
 | Script | Purpose |
 |---|---|
 | `install.sh` | Full installation/profile setup from repository root |
-| `quick-install.sh` | Minimal supported quickstart bootstrap |
-| `deploy/scripts/restore.sh` | Restore a validated backup into a compatible deployment |
+| `deploy/native/scripts/install.sh` | Native-first installation wrapper |
+| `deploy/docker/scripts/install.sh` | Minimal Docker quickstart bootstrap |
+| `deploy/docker/scripts/restore.sh` | Restore a validated backup into a compatible deployment |
 
 Inspect flags with `--help`, run from a clean checkout, and back up before install/restore operations. Restore requires a maintenance window or documented online procedure, checksum verification, matching schema versions, and post-restore health/reconciliation checks.
 

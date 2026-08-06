@@ -67,16 +67,17 @@ artifact, or user data was changed or removed during S0.
 | Root | Tracked paths | State | Note |
 |---|---:|---|---|
 | `.github/` | 3 | `KEEP` | CI and repository automation |
-| `algorithms/` | 1 | `UNKNOWN` | Placeholder/package ownership needs evidence |
-| `cluster/` | 5 | `UNKNOWN` | Decide control metadata versus runtime execution |
-| `config/` | 6 | `SPLIT` | Route service/deployment configuration by owner |
+| `algorithms/` | 1 | `RESOLVED S6` | Inactive placeholder preserved under migration evidence |
+| `cluster/` | 5 | `RESOLVED S6` | Placeholder headings moved to `docs/architecture/cluster/` |
+| `config/` | 6 | `RESOLVED S6` | Native profiles moved to `deploy/native/env/profiles/`; inactive duplicates preserved as evidence |
 | `core/` | 4 | `SPLIT` | Inspect systemd and historical core ownership |
-| `desktop-shell/` | 37 | `UNKNOWN` | Product/integration ownership needs architecture decision |
-| `domain/` | 3 | `UNKNOWN` | Compare against canonical control/shared contracts |
-| `migration/` | 1 | `GENERATED` | Tracked build log; candidate recorded separately |
+| `desktop-shell/` | 37 | `RESOLVED S6` | Presentation client moved to `console/desktop-shell/` and direct Control access removed |
+| `domain/` | 3 | `RESOLVED S6` | Unused, overlapping code preserved under migration evidence; canonical event contract stays in `control/ports/` |
+| `migration/` | 1 | `RESOLVED S6` | Tracked build log moved to migration evidence; generated logs remain ignored |
 
-`process-analytics` is a tracked root symlink and remains `UNKNOWN` until its
-target, consumers and ownership are proven. Root compose/install wrappers and
+`process-analytics` was proven to be a broken compatibility symlink with no
+current consumer. S6 preserved the link under migration evidence; the historical
+implementation remains recoverable from Git branch history. Root compose/install wrappers and
 repository configuration files remain `KEEP` for now; consolidation is a later
 phase and must preserve Quickstart compatibility.
 

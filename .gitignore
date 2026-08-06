@@ -9,6 +9,7 @@ dist/
 !bigdata/.env.example
 __pycache__/
 *.pyc
+*.rej
 .mypy_cache/
 pytest.cache/
 target/
@@ -16,6 +17,7 @@ aion_core.egg-info/
 *.egg-info/
 *.dist-info/
 Cargo.lock
+!runtime-daemon/Cargo.lock
 .idea/
 .vscode/
 .DS_Store
@@ -27,6 +29,36 @@ artifacts/
 .artifacts/
 .secrets-out/
 .aion/
+
+# Share only the safe, reviewable Codex contract. Legacy local skills,
+# one-off repair scripts, backups, caches, logs, and storage stay local.
+!.codex/
+.codex/*
+!.codex/AGENTS.md
+!.codex/CHANGELOG.md
+!.codex/CONTEXT.md
+!.codex/RULES.md
+!.codex/SECURITY.md
+!.codex/STYLEGUIDE.md
+!.codex/TASKS.md
+!.codex/config.toml
+!.codex/environments/
+.codex/environments/*
+!.codex/environments/environment.toml
+!.codex/references/
+.codex/references/*
+!.codex/references/known-issues.md
+!.codex/scripts/
+.codex/scripts/*
+!.codex/scripts/doctor.ps1
+!.codex/scripts/doctor.sh
+!.codex/scripts/lint.ps1
+!.codex/scripts/lint.sh
+!.codex/scripts/setup.ps1
+!.codex/scripts/setup.sh
+!.codex/scripts/test.ps1
+!.codex/scripts/test.sh
+.vite/
 
 # Private keys
 *.key

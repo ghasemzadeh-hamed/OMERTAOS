@@ -1,5 +1,12 @@
 # CAPO acceptance report
 
+> Historical snapshot: this report records the 2026-07-12 CAPO review. The
+> current Native N1-N8 contract supersedes its missing-lockfile and stop/disable
+> rollback descriptions. Gateway and Runtime lockfiles now exist; N8 uses
+> immutable releases, canonical backup verification, and atomic code rollback.
+> Live Linux/systemd, Runtime build, smoke, update, and restore acceptance remain
+> pending until rerun and recorded on the intended host.
+
 Date: 2026-07-12 (Asia/Tehran)
 
 Branch: `capo`
@@ -29,7 +36,7 @@ independent and neither may be inferred from static validation.
 - Canonical Control, Gateway, Console, and Runtime build/install scripts.
 - Four non-root systemd services, aggregate target, and lifecycle scripts.
 - Read-only Native/Quickstart smoke checks, contract tests, troubleshooting,
-  and non-destructive rollback.
+  canonical backup verification, and immutable release rollback.
 
 Across Phases 1–6, CAPO added 29 tracked files with 1,529 lines relative to the
 baseline. No existing source, schema, table, data, legacy path, or public API was
@@ -71,8 +78,9 @@ documentation rather than application runtime code.
 
 1. Run installers twice on a disposable Debian/Ubuntu SSD host and confirm the
    second execution is idempotent.
-2. Run `first-boot.sh --start`, Native smoke, journald review, reboot recovery,
-   stop/start, and rollback preview/execute with an operator present.
+2. Run `first-boot.sh --version VERSION --backup PATH --start`, Native smoke,
+   journald review, reboot recovery, stop/start, update, and rollback
+   preview/execute with an operator present.
 3. Start Quickstart, run its smoke test, verify Console → Gateway → Control →
    Runtime, and stop it without deleting volumes.
 4. Restore the external backup in an isolated environment and reconcile the

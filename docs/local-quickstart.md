@@ -1,6 +1,6 @@
 # Local Docker quickstart
 
-OMERTAOS provides two local Compose entry points. `docker-compose.quickstart.yml` is the primary, minimal stack. `docker-compose.local.yml` exposes additional infrastructure ports for development and keeps Vault behind an optional profile.
+OMERTAOS provides two canonical local Compose entry points. `deploy/docker/compose/quickstart.yml` is the primary, minimal stack. `deploy/docker/compose/local.yml` exposes additional infrastructure ports for development and keeps Vault behind an optional profile. Use `--project-directory .` from the repository root so build contexts and bind mounts remain repository-relative.
 
 ## Requirements
 
@@ -35,10 +35,10 @@ The checked-in values are local placeholders only. Do not use them in production
 ## Quickstart
 
 ```bash
-docker compose -f docker-compose.quickstart.yml config
-docker compose -f docker-compose.quickstart.yml build
-docker compose -f docker-compose.quickstart.yml up -d
-docker compose -f docker-compose.quickstart.yml ps
+docker compose --project-directory . -f deploy/docker/compose/quickstart.yml config
+docker compose --project-directory . -f deploy/docker/compose/quickstart.yml build
+docker compose --project-directory . -f deploy/docker/compose/quickstart.yml up -d
+docker compose --project-directory . -f deploy/docker/compose/quickstart.yml ps
 ```
 
 Expected host ports:
@@ -63,21 +63,21 @@ curl -f http://localhost:8080/health
 curl -f http://localhost:3000/
 ```
 
-Stop the stack with `docker compose -f docker-compose.quickstart.yml down`.
+Stop the stack with `docker compose --project-directory . -f deploy/docker/compose/quickstart.yml down`.
 
 ## Extended local stack
 
-The root `docker-compose.local.yml` entry is the supported local command:
+The canonical extended local entry is:
 
 ```bash
-docker compose -f docker-compose.local.yml config
-docker compose -f docker-compose.local.yml up -d
+docker compose --project-directory . -f deploy/docker/compose/local.yml config
+docker compose --project-directory . -f deploy/docker/compose/local.yml up -d
 ```
 
 Vault is optional and starts only when explicitly selected:
 
 ```bash
-docker compose -f docker-compose.local.yml --profile vault up -d
+docker compose --project-directory . -f deploy/docker/compose/local.yml --profile vault up -d
 ```
 
 The historical `kernel/` service is disabled because that directory and Dockerfile are not present. The canonical `runtime-daemon/` runs as the `runtime` service and exposes its gRPC endpoint on loopback port 50051 for local development.
@@ -94,11 +94,11 @@ Recreate `.env` from `dev.env`. `docker compose ... config` shows the resolved v
 
 ### Port already in use
 
-Stop the process or older Compose project using 3000, 8000, 8080, or 50051. Use `docker compose -f docker-compose.quickstart.yml down` to stop an earlier OMERTAOS stack.
+Stop the process or older Compose project using 3000, 8000, 8080, or 50051. Use `docker compose --project-directory . -f deploy/docker/compose/quickstart.yml down` to stop an earlier OMERTAOS stack.
 
 ### Kernel path not found
 
-Use `docker-compose.quickstart.yml` or `docker-compose.local.yml`; these entry points do not reference the removed `kernel/` path. The primary quickstart includes the canonical Rust runtime.
+Use `deploy/docker/compose/quickstart.yml` or `deploy/docker/compose/local.yml`; these entry points do not reference the removed `kernel/` path. The primary quickstart includes the canonical Rust runtime.
 
 ### Gateway cannot reach Control
 

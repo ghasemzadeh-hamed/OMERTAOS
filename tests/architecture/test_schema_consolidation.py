@@ -18,22 +18,19 @@ def test_canonical_proto_sources_are_versioned_and_complete() -> None:
     assert "service RuntimeService" in runtime_source
 
 
-def test_legacy_proto_and_json_copies_match_canonical_sources() -> None:
-    pairs = {
-        "schemas" + "/protos/aion/v1/tasks.proto": "schemas/v1/protos/aion/v1/tasks.proto",
-        "schemas/proto/runtime.proto": "schemas/v1/protos/runtime.proto",
-        "shared" + "/proto/runtime.proto": "schemas/v1/protos/runtime.proto",
-    }
-    for path in (REPO_ROOT / "schemas").rglob("*.json"):
-        relative = path.relative_to(REPO_ROOT / "schemas")
-        if relative.parts[0] != "v1":
-            pairs[f"schemas/{relative.as_posix()}"] = f"schemas/v1/{relative.as_posix()}"
-
-    assert len(pairs) == 13
-    for legacy, canonical in pairs.items():
-        assert (REPO_ROOT / legacy).read_text(encoding="utf-8") == (
-            REPO_ROOT / canonical
-        ).read_text(encoding="utf-8")
+def test_legacy_proto_and_json_aliases_are_absent() -> None:
+    retired = (
+        "schemas/config",
+        "schemas/events",
+        "schemas/proto",
+        "schemas/protos",
+        "schemas/result.schema.json",
+        "schemas/task.schema.json",
+        "shared/proto",
+        "schemas/v1/protos/python",
+    )
+    violations = [path for path in retired if (REPO_ROOT / path).exists()]
+    assert not violations, f"retired schema aliases remain: {violations}"
 
 
 def test_recovered_python_binding_round_trips_wire_messages() -> None:
@@ -51,22 +48,12 @@ def test_recovered_python_binding_round_trips_wire_messages() -> None:
     assert [method.name for method in service.methods] == ["Submit", "Stream", "AckStream", "StatusById"]
 
 
-def test_legacy_python_bindings_export_canonical_messages() -> None:
-    from schemas.protos.python.v1 import tasks_pb2 as legacy
-    from schemas.v1.protos.python.v1 import tasks_pb2 as versioned_legacy
-
-    assert legacy.TaskRequest is tasks_pb2.TaskRequest
-    assert versioned_legacy.TaskRequest is tasks_pb2.TaskRequest
-
-
 def test_build_and_gateway_references_use_canonical_proto_tree() -> None:
     expected = {
         "runtime-daemon/build.rs": "../schemas/v1/protos/runtime.proto",
         "runtime-daemon/Dockerfile": "COPY schemas/v1/protos ./schemas/v1/protos",
         "gateway/Dockerfile": "COPY schemas/v1/protos ./protos",
-        "docker-compose.yml": "./schemas/v1/protos:/protos:ro",
-        "deploy/compose/docker-compose.local.yml": "./schemas/v1/protos:/protos:ro",
-        "execution/compose/docker-compose.local.yml": "./schemas/v1/protos:/protos:ro",
+        "deploy/docker/compose/local.yml": "./schemas/v1/protos:/protos:ro",
     }
     for path, reference in expected.items():
         assert reference in (REPO_ROOT / path).read_text(encoding="utf-8")
@@ -77,11 +64,7 @@ def test_build_and_gateway_references_use_canonical_proto_tree() -> None:
 
 
 def test_schema_compatibility_wrappers_do_not_import_removed_namespace() -> None:
-    roots = (
-        REPO_ROOT / "schemas" / "protos" / "python",
-        REPO_ROOT / "schemas" / "v1" / "protos" / "python",
-        REPO_ROOT / "shared" / "generated" / "python",
-    )
+    roots = (REPO_ROOT / "shared" / "generated" / "python",)
     violations = [
         str(path.relative_to(REPO_ROOT))
         for root in roots

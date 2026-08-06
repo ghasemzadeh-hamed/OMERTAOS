@@ -117,6 +117,29 @@ deploy/kubernetes/             Kubernetes assets after Native/Docker parity
 - S3.1 proceeded on explicit operator instruction while Gate S2 remained blocked
   by Cargo registry access; this does not mark S2 accepted.
 
+### S4 progress
+
+- S4 established `deploy/native/`, `deploy/docker/` and `deploy/kubernetes/` as
+  the maintained deployment owners, changed active Compose consumers to the
+  canonical paths, and reduced root lifecycle entrypoints to delegating wrappers.
+- The first Gate S4 run found 84 non-empty legacy deployment payloads. After the
+  operator explicitly approved S5 retirement, all five forbidden deployment
+  paths were removed and the independent Gate S4 re-run passed. See
+  `docs/migration/s4-gate-report.md`.
+- S4/S5 do not claim Linux systemd or live-stack acceptance.
+
+### S5 progress
+
+- S5 retired the approved migration-era service, supporting-layer, integration
+  and deployment roots after canonical ownership, references and Git recovery
+  history were verified.
+- The Console-to-Control health and capability bypasses were removed while the
+  system-health response shape was preserved through Gateway dependency data.
+- Architecture tests including the final Structure completion gate pass. Python,
+  Gateway, Console, Bridge and Compose validation pass; Runtime tests remain
+  blocked by crates.io access and a missing offline dependency cache. See
+  `docs/migration/s5-final-delete.md`.
+
 ## Rollback
 
 S1 changes only contracts and architecture checks. Revert its commit to roll

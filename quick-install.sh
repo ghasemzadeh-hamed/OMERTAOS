@@ -2,4 +2,4 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec "${SCRIPT_DIR}/deploy/scripts/quick-install.sh" "$@"
+exec "${SCRIPT_DIR}/deploy/docker/scripts/install.sh" "$@"

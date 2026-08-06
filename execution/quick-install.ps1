@@ -1,1 +1,0 @@
-../../deploy/scripts/quick-install.ps1
