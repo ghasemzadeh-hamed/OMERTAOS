@@ -17,6 +17,7 @@
   "dependencies": {
     "@aion/secret-provider": "file:../shared/secret-provider-node",
     "@aion/ui-core": "file:../packages/ui-core",
+    "@tauri-apps/plugin-opener": "^2.2.7",
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.1.4",
     "@hookform/resolvers": "^5.2.2",
