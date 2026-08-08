@@ -1,5 +1,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/OMERTAOS-AION-6D5DFB?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/OMERTAOS-CAPO-6D5DFB?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Type-Hybrid%20Agent%20OS-4B5563?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Architecture-Agentic%20OS-7C3AED?style=for-the-badge" />
 </p>
