@@ -47,6 +47,9 @@ importers:
       '@tanstack/react-query-devtools':
         specifier: ^5.45.1
         version: 5.90.2(@tanstack/react-query@5.90.5(react@18.2.0))(react@18.2.0)
+      '@tauri-apps/api':
+        specifier: ^2.5.0
+        version: 2.11.1
       '@tauri-apps/plugin-opener':
         specifier: ^2.2.7
         version: 2.5.4
