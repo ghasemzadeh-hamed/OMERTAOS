@@ -9,7 +9,7 @@
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" />
   </a>
-  <img src="https://img.shields.io/badge/aion--core-v0.2.0-indigo" />
+  <img src="https://img.shields.io/badge/Omerta-core-v0.2.0-indigo" />
   <img src="https://img.shields.io/badge/console-v0.1.0-black" />
   <img src="https://img.shields.io/badge/gateway-v0.1.0-gray" />
 </p>
