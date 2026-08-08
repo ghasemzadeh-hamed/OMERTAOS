@@ -30,6 +30,7 @@ async def test_profile(profile: ProxyProfile, target_url: str | None = None) -> 
             "routed_via": profile.type,
         }
     except Exception as exc:
+        error = exc
         if profile.fallback_direct and profile.type != "direct":
             try:
                 async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
@@ -41,12 +42,11 @@ async def test_profile(profile: ProxyProfile, target_url: str | None = None) -> 
                     "routed_via": "direct_fallback",
                 }
             except Exception as fallback_exc:
-                exc = fallback_exc
+                error = fallback_exc
         return {
             "ok": False,
             "status_code": None,
             "target_url": url,
             "routed_via": profile.type,
-            "error": str(exc),
+            "error": str(error),
         }
-

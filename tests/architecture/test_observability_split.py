@@ -4,7 +4,6 @@ import ast
 from datetime import UTC
 from pathlib import Path
 
-from integrations.observability.exporter import TelemetryExporter
 from shared.telemetry.audit import AuditEntry, emit_audit
 from shared.telemetry.bus import TelemetryBus
 

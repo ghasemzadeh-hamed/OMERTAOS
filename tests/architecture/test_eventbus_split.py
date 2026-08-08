@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from control.ports.event_bus import DomainEvent, EventBus
+from control.ports.event_bus import DomainEvent
 from integrations.eventbus.kafka import KafkaEventBus
 from integrations.eventbus.local import LocalEventBus
 
