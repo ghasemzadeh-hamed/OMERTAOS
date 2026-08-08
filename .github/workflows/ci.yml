@@ -113,9 +113,10 @@ jobs:
           pip install bandit
           bandit -r . -x tests -s B101,B105
       - name: Cargo audit
+        working-directory: runtime-daemon
         run: |
           cargo install cargo-audit --locked
-          cargo audit --manifest-path runtime-daemon/Cargo.toml
+          cargo audit
       - name: Trivy filesystem scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
