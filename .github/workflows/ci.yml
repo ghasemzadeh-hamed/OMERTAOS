@@ -129,6 +129,7 @@ jobs:
     strategy:
       matrix:
         platform: [linux/amd64, linux/arm64]
+        service: [console, control, gateway, runtime-daemon]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
@@ -137,10 +138,10 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile
+          file: ${{ matrix.service }}/Dockerfile
           push: false
           platforms: ${{ matrix.platform }}
-          tags: omertaos:${{ github.sha }}
+          tags: omertaos-${{ matrix.service }}:${{ github.sha }}
 
   sbom:
     runs-on: ubuntu-latest
