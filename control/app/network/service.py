@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 from datetime import UTC, datetime
 from pathlib import Path
@@ -15,6 +16,7 @@ from .healthcheck import test_profile
 from .models import ProxyProfile
 from .schemas import ProxyProfileCreate, ProxyProfileOut, ProxyProfileUpdate, ProxySecrets
 
+LOGGER = logging.getLogger(__name__)
 SENSITIVE_FIELDS = ("uuid", "password", "private_key", "public_key", "short_id")
 
 
@@ -81,7 +83,7 @@ def _delete_secrets(profile: ProxyProfile) -> None:
         try:
             _secret_provider().delete_secret(profile.secret_ref)
         except Exception:
-            pass
+            LOGGER.warning("Unable to delete proxy profile secret", exc_info=True)
 
 
 def _to_out(profile: ProxyProfile) -> ProxyProfileOut:

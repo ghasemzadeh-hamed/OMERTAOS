@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from .models import ProxyProfile
 
+CONTAINER_PROXY_LISTEN = "0.0.0.0"  # nosec B104 - sibling containers require this listener
+
 
 def build_xray_outbound(profile: ProxyProfile, secrets: dict[str, str] | None = None) -> dict[str, object]:
     if profile.type == "direct":
@@ -57,18 +59,17 @@ def build_xray_config(profile: ProxyProfile, secrets: dict[str, str] | None = No
         "inbounds": [
             {
                 "tag": "socks-in",
-                "listen": "0.0.0.0",
+                "listen": CONTAINER_PROXY_LISTEN,
                 "port": 10808,
                 "protocol": "socks",
                 "settings": {"udp": True},
             },
             {
                 "tag": "http-in",
-                "listen": "0.0.0.0",
+                "listen": CONTAINER_PROXY_LISTEN,
                 "port": 10809,
                 "protocol": "http",
             },
         ],
         "outbounds": outbounds,
     }
-

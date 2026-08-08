@@ -3,7 +3,8 @@
 
 from __future__ import annotations
 
-import subprocess
+import subprocess  # nosec B404 - invokes only the local Git executable below
+import shutil
 from pathlib import Path
 
 
@@ -59,8 +60,11 @@ FORBIDDEN_ROOTS = {
 
 
 def _git_paths(*args: str) -> set[str]:
+    git = shutil.which("git")
+    if not git:
+        raise RuntimeError("git executable is required for structure validation")
     result = subprocess.run(
-        ["git", "ls-files", *args],
+        [git, "ls-files", *args],  # nosec B603 - fixed git subcommand and arguments
         cwd=REPO_ROOT,
         check=True,
         capture_output=True,
