@@ -1,5 +1,10 @@
 # Control Plane
 
+**Document role:** component ownership contract and target processing model.
+The Python service and Runtime-client boundary are implemented as a prototype;
+the complete lifecycle below requires end-to-end validation before it is
+reported as system behavior.
+
 The Python Control Plane is OMERTAOS's orchestration authority. It owns task lifecycle state, planning, agent resolution, model routing, contextual policy evaluation, scheduling, retry decisions, and result aggregation. It does not run arbitrary commands; privileged execution is delegated to the Rust Runtime Daemon over gRPC.
 
 ## APIs

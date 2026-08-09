@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Link2, MonitorCog, Moon } from 'lucide-react';
+import { Check, Link2, Monitor, Moon } from 'lucide-react';
 import { readSettings, writeSettings } from '../lib/config';
 import type { DesktopSettings, RuntimeMode } from '../types/shell';
 
@@ -34,7 +34,7 @@ export function SettingsApp() {
         </div>
       </section>
       <section className="settings-section">
-        <div className="settings-title"><MonitorCog size={19} /><div><h3>Runtime Mode</h3><p>Describes where OMERTAOS is operating.</p></div></div>
+        <div className="settings-title"><Monitor size={19} /><div><h3>Runtime Mode</h3><p>Describes where OMERTAOS is operating.</p></div></div>
         <div className="segmented-control">
           {modes.map((mode) => <button className={settings.runtimeMode === mode ? 'active' : ''} onClick={() => update('runtimeMode', mode)} key={mode}>{mode}</button>)}
         </div>

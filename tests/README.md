@@ -1,27 +1,83 @@
-# Test strategy
+# OMERTAOS verification strategy
 
-OMERTAOS uses a test pyramid with service-local unit tests, contract tests at every boundary, integration tests against real dependencies, and a small end-to-end suite through Console/Gateway. Tests must be deterministic, tenant-isolated, parallel-safe, and emit useful artifacts without secrets.
+This directory contains cross-component tests and architecture contracts.
+Service-local unit tests remain colocated with their implementations.
 
-| Suite | Scope |
+**Document role:** current test map plus desired evidence. A test category in
+this document is not proof that complete coverage exists.
+
+## Current repository evidence
+
+| Area | Current scope |
 |---|---|
-| Unit | Pure planning, routing, policy, adapters, middleware, grant validation and sandbox helpers |
-| Integration | gRPC/HTTP contracts, databases, Redis Streams, registry/policy loading and migrations |
-| Architecture | Import/dependency rules, forbidden Console→Control access, no Python subprocess execution, canonical directory ownership |
-| Gateway | Auth/RBAC, validation, status mapping, streams, deadlines, breaker and CORS |
-| Rate limiting | Principal/tenant/IP keys, atomic windows, expiry, concurrency and fail behavior |
-| Idempotency | Same-key replay, body mismatch, concurrent reservation, TTL, backend timeout and tenant isolation |
-| Runtime | Grant denial, namespaces/cgroups/seccomp, path/network constraints, timeouts, cancellation, output limits and cleanup |
-| End-to-end | Submit → plan → policy → runtime → events → result, including failure/retry/cancel paths |
+| Architecture | Canonical roots, ownership, forbidden imports, service boundaries, migration completion, and selected deployment contracts |
+| Python/Control/Data | Targeted unit and integration-style tests under `tests/` and component trees |
+| Gateway | TypeScript build plus repository test runner |
+| Console | Vitest configuration and Playwright scenario sources |
+| Runtime | Rust unit/migration tests, including fail-closed sandbox stubs |
+| Deployment | Compose rendering, Docker builds, CAPO/static contracts, and acceptance scripts |
 
-Unit tests mock only the immediate port. Integration tests use disposable containers and seeded versioned fixtures. Runtime security tests run on compatible isolated CI workers and must verify negative cases. Load tests measure admission latency, streaming fan-out, queue age, scheduler fairness and Runtime saturation with explicit thresholds.
+The exact executed scope depends on the command and commit. Report pass, fail,
+skip, and blocked results separately.
 
-## CI flow
+## Architecture checks
 
-1. Format, lint, type-check, secret scan, and schema/breaking-change validation.
-2. Run Python, TypeScript and Rust unit tests in parallel.
-3. Generate bindings and run contract plus architecture-boundary tests.
-4. Start ephemeral Postgres, MongoDB, Redis, Qdrant, MinIO, Control, Gateway and Runtime; run integration tests.
-5. Run sandbox/security suites on privileged dedicated runners, then smoke/end-to-end tests.
-6. Build images, scan them, and publish JUnit, coverage, traces/logs and benchmark deltas.
+```bash
+python -m pytest tests/architecture -q
+```
 
-Failures must preserve sanitized service logs and Compose state. Flaky retries are diagnostic only and cannot convert a failing required check into success. Coverage is tracked by risk and changed code; policy, authorization, state transitions, retry safety and capability enforcement require branch/negative-path coverage.
+These tests protect the canonical request path and directory ownership. They do
+not start a full stack and do not prove Runtime isolation or production network
+policy.
+
+## Component checks
+
+```bash
+# Gateway
+npm run build --prefix gateway
+npm test --prefix gateway
+
+# Console
+pnpm --dir console test -- --config vitest.config.mts
+pnpm --dir console build
+
+# Runtime
+cargo fmt --check --manifest-path runtime-daemon/Cargo.toml
+cargo test --manifest-path runtime-daemon/Cargo.toml --all-targets
+```
+
+Runtime migration tests currently verify that unavailable isolation backends
+deny execution. Successful namespace, mount, seccomp, and process isolation
+requires future host-level positive and escape tests.
+
+## Current CI workflow
+
+At the time of this document revision, `.github/workflows/ci.yml` defines:
+
+1. architecture-contract tests;
+2. Python lint and Rust Clippy;
+3. Python/architecture and Rust tests;
+4. an integration job that runs `tests/integration` when present;
+5. Bandit, Cargo Audit, and Trivy jobs;
+6. multi-architecture container builds;
+7. SPDX SBOM generation.
+
+This list describes workflow configuration, not a guaranteed successful run.
+Review the GitHub Actions result for the exact commit and inspect skipped or
+failed jobs.
+
+## Evidence quality requirements
+
+Security- and research-relevant tests should:
+
+- include negative paths and tenant-boundary cases;
+- use deterministic fixtures and record random seeds;
+- avoid external network dependencies where practical;
+- redact secrets and personal data from logs;
+- preserve failure artifacts without converting flaky retries into success;
+- state host/kernel requirements;
+- report coverage only when the coverage command actually ran.
+
+Future end-to-end and benchmark work should publish workload definitions,
+environment manifests, raw observations, and analysis code. See the
+[reproducibility protocol](../docs/research/reproducibility.md).

@@ -1,5 +1,9 @@
 # Schema and Protobuf contracts
 
+**Document role:** normative contract ownership and compatibility policy.
+Generated-binding freshness and cross-version compatibility must be established
+by the relevant build/test run for the evaluated commit.
+
 `schemas/` is the source of truth for versioned service, event and configuration contracts. Generated clients are outputs and must not be edited manually.
 
 Authored contracts live under `schemas/v1/`. Generated bindings live under

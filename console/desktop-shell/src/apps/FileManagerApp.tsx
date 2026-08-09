@@ -1,8 +1,8 @@
-import { Bot, Folder, FolderCode, Home, ScrollText } from 'lucide-react';
+import { Bot, Folder, FolderCog, Home, ScrollText } from 'lucide-react';
 
 const locations = [
   { label: 'Home', icon: Home },
-  { label: 'Projects', icon: FolderCode },
+  { label: 'Projects', icon: FolderCog },
   { label: 'Agents', icon: Bot },
   { label: 'Models', icon: Folder },
   { label: 'Logs', icon: ScrollText },

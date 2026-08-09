@@ -1,44 +1,71 @@
-# Security Policy
+# Security policy
 
-We take the security of aionOS seriously. This document explains **supported versions**, **how to report vulnerabilities**, and **how we handle disclosures**.
+OMERTAOS is a research prototype. Security boundaries and fail-closed behavior
+are active research concerns, but the project is not security-certified,
+formally verified, penetration-test certified, or approved for production use.
 
-## Supported Versions
+## Supported code
 
-We actively maintain the `AION` branch and the latest tagged releases.
+| Branch or release | Status |
+|---|---|
+| `CAPO` at its current HEAD | Active research and maintenance branch |
+| Tagged releases | Supported only when explicitly identified in the release notes |
+| Other branches and historical commits | Best-effort only |
 
-| Version / Branch | Supported | Notes                    |
-| ---------------- | --------: | ------------------------ |
-| `AION` (HEAD)  |         | Active development       |
-| Latest release   |         | Receives fixes as needed |
-| Older releases   |         | Please upgrade           |
+A branch is mutable. Vulnerability reports and research results should identify
+the exact affected commit.
 
-## Reporting a Vulnerability
+## Report a vulnerability
 
-- Use **GitHub Private Vulnerability Reporting / Security Advisories** for confidential reports.
-- If thats not available, contact the maintainers privately (avoid public issues/PRs for security topics).
-- Include:
-  - Affected component(s) and version/commit
-  - Reproduction steps and PoC (if any)
-  - Impact assessment (confidentiality/integrity/availability)
-  - Suggested fixes or mitigations (optional)
+Use
+[GitHub Private Vulnerability Reporting](https://github.com/Hamedghz/OMERTAOS/security/advisories/new)
+when available. Do not disclose exploitable details in a public issue,
+discussion, or pull request.
 
-## Disclosure Process & Timelines
+Include:
 
-- **Acknowledgement:** within 3 business days.
-- **Triage:** severity and scope assessed.
-- **Fix:** we aim to provide a remediation plan or patch within **14 days** for high-severity issues (timeline may vary by complexity).
-- **Advisory:** after a fix is available and users have reasonable time to update, we may publish a security advisory with credits (if desired).
+- affected commit, component, and deployment mode;
+- prerequisites and minimal reproduction steps;
+- expected and observed behavior;
+- confidentiality, integrity, availability, and tenant-isolation impact;
+- proof-of-concept material with secrets and personal data removed;
+- suggested mitigation, if known.
 
-## Hardening Guidelines
+Maintainers will acknowledge and triage reports on a best-effort basis. A
+remediation or disclosure date depends on severity, reproducibility, affected
+users, and patch complexity; this document does not promise a fixed service
+level.
 
-- Run Gateway/Control behind TLS; restrict management endpoints.
-- Use strong API keys or SSO/OIDC in production; enforce `TENANCY_MODE` where appropriate.
-- Isolate modules; prefer WASM or locked-down subprocess profiles.
-- Store secrets in a vault, not `.env` committed to git.
-- Enable rate limiting and idempotency to reduce abuse surface.
-- Keep dependencies up-to-date; rely on CI scans (Dependabot, CodeQL/SAST if configured).
-- Consider Cosign signatures & SBOMs for modules/releases.
+## Current high-impact limitations
 
-## Non-Security Bugs
+- Runtime namespace, mount, seccomp, and isolated-process backends are not
+  implemented and execution currently fails closed.
+- Runtime signature validation is not a complete production capability-grant
+  protocol.
+- Native Linux/systemd and running Quickstart production-acceptance gates are
+  pending.
+- Distributed membership, scheduling, and federation are not implemented.
+- Development Compose examples contain placeholder credentials and disabled
+  authentication modes that must never be exposed publicly.
 
-Please file normal bugs via GitHub Issues. Only use this channel for **security** concerns.
+See the [claim ledger](docs/research/evidence-and-claims.md) for the current
+evidence boundary.
+
+## Security expectations
+
+- keep Gateway as the only external API boundary;
+- prevent Console-to-Control/Runtime and Control-to-host bypasses;
+- use explicit TLS/mTLS, CORS, authentication, and secret-provider settings in
+  non-development environments;
+- use unique, rotated credentials; never commit tokens or private keys;
+- enforce tenant and authorization context at every data and execution
+  boundary;
+- redact secrets and sensitive prompts from logs, traces, tests, and reports;
+- pin and review dependencies, images, generated artifacts, and SBOM output;
+- test negative paths, replay, expiry, cancellation, cleanup, and resource
+  limits on a compatible isolated host.
+
+## Non-security issues
+
+Use normal GitHub issues for documentation errors, feature requests, and bugs
+without a confidentiality or exploitability concern.
