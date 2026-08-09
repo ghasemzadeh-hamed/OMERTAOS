@@ -55,4 +55,3 @@ spec:
       port: 50051
       targetPort: 50051
   type: ClusterIP
-

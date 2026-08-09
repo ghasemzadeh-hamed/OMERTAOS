@@ -11,4 +11,3 @@ tar -xzf "$ARCHIVE" -C "$TMP_DIR"
 rsync -a "$TMP_DIR"/ ./
 rm -rf "$TMP_DIR"
 printf 'restore completed from %s\n' "$ARCHIVE"
-

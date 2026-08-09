@@ -21,4 +21,3 @@ spec:
   podMetricsEndpoints:
     - port: metrics
       interval: 15s
-

@@ -39,4 +39,3 @@ spec:
                 name: aion-console
                 port:
                   number: 3000
-

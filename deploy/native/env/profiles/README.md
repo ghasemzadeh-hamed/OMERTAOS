@@ -9,4 +9,3 @@ The YAML files are preserved migration inputs from the former root `config/`
 directory. Runtime services do not load them. N2 may translate their resource
 limits into installer choices, but the `.env` overlays are the canonical Native
 profile names from N1 onward.
-

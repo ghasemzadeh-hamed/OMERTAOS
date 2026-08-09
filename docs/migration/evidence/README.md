@@ -8,4 +8,3 @@ deployment entrypoints.
 The verified external backup and Git history remain the authoritative recovery
 sources. Keeping these artifacts under `docs/migration/` prevents them from
 being mistaken for canonical owners while preserving review context.
-

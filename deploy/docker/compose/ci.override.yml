@@ -26,4 +26,3 @@ services:
 networks:
   aion:
     internal: false
-
