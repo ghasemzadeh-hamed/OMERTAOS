@@ -18,7 +18,14 @@ def _files(root: Path) -> dict[str, Path]:
 
 def test_bridge_legacy_tree_is_retired_after_canonical_inventory_check() -> None:
     canonical = _files(CANONICAL_ROOT)
-    assert len(canonical) == 41
+    assert len(canonical) == 43
+    for component, package_name in (
+        ("bridge-server", "omertaos-bridge-server"),
+        ("bridge-ui", "omertaos-bridge-ui"),
+    ):
+        lock = json.loads((CANONICAL_ROOT / component / "package-lock.json").read_text(encoding="utf-8"))
+        assert lock["lockfileVersion"] == 3
+        assert lock["packages"][""]["name"] == package_name
     assert not LEGACY_ROOT.exists()
 
 
