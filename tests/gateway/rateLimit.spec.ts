@@ -31,6 +31,14 @@ describe('rate limit middleware', () => {
     };
     const reply: any = buildReply();
     await expect(rateLimitMiddleware(request, reply)).rejects.toMatchObject({ statusCode: 429 });
+    expect(redisModule.withRateLimitCounter).toHaveBeenNthCalledWith(
+      1,
+      expect.stringMatching(/^key:[a-f0-9]{16}$/),
+      expect.any(Number),
+      expect.any(Number),
+      undefined,
+      'rl:key',
+    );
     expect(reply.header).toHaveBeenCalledWith('retry-after', expect.any(String));
   });
 

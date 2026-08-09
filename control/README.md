@@ -33,6 +33,12 @@ curl http://localhost:8000/health
 
 Important configuration includes `AION_CONTROL_POSTGRES_DSN`, `AION_CONTROL_MONGO_DSN`, `AION_CONTROL_REDIS_URL`, `AION_CONTROL_QDRANT_URL`, `AION_CONTROL_MINIO_*`, `AION_CONTROL_MODELS_DIRECTORY`, `AION_CONTROL_POLICIES_DIRECTORY`, `TENANCY_MODE`, and the Runtime gRPC endpoint. Production credentials must come from the configured secret provider.
 
+When the development-only local proxy-secret fallback is explicitly enabled,
+set `AION_CONTROL_LOCAL_SECRET_KEY` to a base64-encoded AES key. Local proxy
+secrets are encrypted and authenticated on disk; the fallback fails closed when
+this key is absent. Production should use the configured external secret
+provider instead.
+
 The Runtime client reads `AION_RUNTIME_ENDPOINT` (default
 `127.0.0.1:50051`). The canonical facade is fail-closed: callers must install a
 versioned generated transport before execution, and every request has a positive

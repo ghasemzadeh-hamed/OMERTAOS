@@ -323,7 +323,7 @@ const resolveSecretProvider = async (): Promise<SecretProvider | null> => {
     }
   } else {
     console.info(
-      `SECRET_PROVIDER_MODE=${secretProviderMode}; using environment-based secret provider`,
+      'Using the configured environment-based secret provider',
     );
   }
 

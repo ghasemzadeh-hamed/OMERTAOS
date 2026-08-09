@@ -18,6 +18,7 @@ def admin_headers() -> dict[str, str]:
 def test_proxy_profile_crud_masks_secrets(monkeypatch):
     monkeypatch.setenv("AION_GATEWAY_ADMIN_TOKEN", "test-admin-token")
     monkeypatch.setenv("AION_CONTROL_DISABLE_SECRETS", "1")
+    monkeypatch.setenv("AION_CONTROL_LOCAL_SECRET_KEY", "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=")
     name = f"test-http-{uuid4()}"
 
     with TestClient(app) as client:
@@ -68,4 +69,3 @@ def test_proxy_profile_mutations_are_admin_only(monkeypatch):
         )
 
     assert response.status_code == 403
-

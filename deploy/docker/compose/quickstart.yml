@@ -73,6 +73,7 @@ services:
       context: .
       dockerfile: control/Dockerfile
     environment:
+      AION_CONTROL_LOCAL_SECRET_KEY: ${AION_CONTROL_LOCAL_SECRET_KEY:-}
       AION_DOCKER: "1"
       AION_CONTROL_POSTGRES_DSN: ${AION_CONTROL_POSTGRES_DSN:-postgresql://aion:password@postgres:5432/omerta_db}
       AION_CONTROL_MONGO_DSN: ${AION_CONTROL_MONGO_DSN:-mongodb://mongo:27017/omerta}

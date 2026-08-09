@@ -3,6 +3,7 @@ import { gatewayConfig } from '../config.js';
 import { withRateLimitCounter } from '../redis.js';
 import { tenantFromHeader } from '../auth/claims.js';
 import { createHttpError } from '../httpErrors.js';
+import { createHash } from 'node:crypto';
 
 const parseWindowMs = (window: string) => {
   const [value, unit] = window.split(' ');
@@ -37,7 +38,10 @@ export const rateLimitMiddleware = async (request: FastifyRequest, reply: Fastif
 
   const apiKey = request.headers['x-api-key'];
   const tenant = tenantFromHeader(request);
-  const identifier = typeof apiKey === 'string' ? apiKey : request.ip;
+  const identifier =
+    typeof apiKey === 'string'
+      ? `key:${createHash('sha256').update(apiKey).digest('hex').slice(0, 16)}`
+      : request.ip;
   const perKeyLimit = gatewayConfig.rateLimit.max;
   const perIpLimit = gatewayConfig.rateLimit.perIp;
 

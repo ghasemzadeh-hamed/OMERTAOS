@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import base64
 import json
+import logging
 import os
+import secrets
 from datetime import UTC, datetime
 from pathlib import Path
 
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
+from Crypto.Cipher import AES  # nosec B413
 
 from shared.secret_store.provider import SecretProviderError, get_secret_provider
 from shared.telemetry.audit import emit_audit
@@ -15,6 +19,7 @@ from .healthcheck import test_profile
 from .models import ProxyProfile
 from .schemas import ProxyProfileCreate, ProxyProfileOut, ProxyProfileUpdate, ProxySecrets
 
+LOGGER = logging.getLogger(__name__)
 SENSITIVE_FIELDS = ("uuid", "password", "private_key", "public_key", "short_id")
 
 
@@ -23,6 +28,13 @@ class LocalSecretProvider:
         root = Path(os.getenv("AION_CONTROL_SECRET_DIR", ".aion/secrets"))
         root.mkdir(parents=True, exist_ok=True)
         self.root = root
+        raw_key = os.getenv("AION_CONTROL_LOCAL_SECRET_KEY", "")
+        try:
+            self.key = base64.urlsafe_b64decode(raw_key.encode("ascii"))
+        except (ValueError, UnicodeEncodeError):
+            self.key = b""
+        if len(self.key) not in {16, 24, 32}:
+            raise SecretProviderError("AION_CONTROL_LOCAL_SECRET_KEY must be a base64 AES key")
 
     def _file(self, path: str) -> Path:
         safe = path.strip("/").replace("/", "__")
@@ -32,11 +44,25 @@ class LocalSecretProvider:
         secret_file = self._file(path)
         if not secret_file.exists():
             raise SecretProviderError(f"Secret not found at '{path}'")
-        return json.loads(secret_file.read_text(encoding="utf-8"))
+        raw = secret_file.read_bytes()
+        try:
+            if raw.lstrip().startswith(b"{"):
+                payload = json.loads(raw.decode("utf-8"))
+                self.set_secret(path, payload)
+                LOGGER.warning("Migrated a legacy plaintext local proxy secret")
+                return payload
+            blob = base64.b64decode(raw, validate=True)
+            nonce, tag, ciphertext = blob[:12], blob[12:28], blob[28:]
+            payload = AES.new(self.key, AES.MODE_GCM, nonce=nonce)
+            return json.loads(payload.decrypt_and_verify(ciphertext, tag).decode("utf-8"))
+        except (UnicodeDecodeError, ValueError, KeyError, json.JSONDecodeError) as exc:
+            raise SecretProviderError("Local proxy secret is encrypted or authenticated incorrectly") from exc
 
     def set_secret(self, path: str, payload: dict[str, str]) -> None:
         secret_file = self._file(path)
-        secret_file.write_text(json.dumps(payload), encoding="utf-8")
+        cipher = AES.new(self.key, AES.MODE_GCM, nonce=secrets.token_bytes(12))
+        ciphertext, tag = cipher.encrypt_and_digest(json.dumps(payload, separators=(",", ":")).encode("utf-8"))
+        secret_file.write_bytes(base64.b64encode(cipher.nonce + tag + ciphertext))
         try:
             secret_file.chmod(0o600)
         except OSError:
@@ -80,8 +106,11 @@ def _delete_secrets(profile: ProxyProfile) -> None:
     if profile.secret_ref:
         try:
             _secret_provider().delete_secret(profile.secret_ref)
-        except Exception:
-            pass
+        except Exception as exc:
+            LOGGER.warning(
+                "Unable to delete proxy profile secret (error_type=%s)",
+                type(exc).__name__,
+            )
 
 
 def _to_out(profile: ProxyProfile) -> ProxyProfileOut:

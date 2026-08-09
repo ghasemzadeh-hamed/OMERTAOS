@@ -11,6 +11,12 @@ from urllib.parse import urlparse
 
 PLACEHOLDERS = {"CHANGE_ME", "REPLACE_ME", "<REQUIRED>"}
 LINE = re.compile(r"^[A-Z][A-Z0-9_]*=.*$")
+SENSITIVE_VALUE = re.compile(r"(?i)(://[^:/@]+:)[^@/]+(@)")
+
+
+def _safe_error(error: str) -> str:
+    """Keep validation diagnostics useful without echoing credentials."""
+    return SENSITIVE_VALUE.sub(r"\1<redacted>\2", error)
 
 
 def parse_env(path: Path) -> dict[str, str]:
@@ -129,7 +135,7 @@ def main() -> int:
     if errors:
         print("Native environment contract FAILED")
         for error in errors:
-            print(f"- {error}")
+            print(f"- {_safe_error(error)}")
         return 1
     print("Native environment contract passed")
     return 0
