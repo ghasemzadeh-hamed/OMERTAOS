@@ -7,13 +7,13 @@ WORKDIR /workspace
 RUN corepack enable && corepack prepare pnpm@11.13.1 --activate
 
 # Copy the console manifest and the local workspace packages it depends on
-COPY console/package.json console/pnpm-lock.yaml ./console/
+COPY console/package.json console/pnpm-lock.yaml console/pnpm-workspace.yaml ./console/
 COPY shared/secret-provider-node ./shared/secret-provider-node
 COPY packages/ui-core ./packages/ui-core
 
 WORKDIR /workspace/console
 
-RUN pnpm install --frozen-lockfile --ignore-scripts
+RUN pnpm install --frozen-lockfile
 
 # Stage 2: build (Next.js + Prisma generate)
 FROM node:22-alpine AS builder
