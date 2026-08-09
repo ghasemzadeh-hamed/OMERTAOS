@@ -94,6 +94,7 @@ jobs:
       - name: Console build and tests
         run: |
           pnpm --dir console install --frozen-lockfile
+          pnpm --dir console prisma:generate
           pnpm --dir console test --config vitest.config.mts
           pnpm --dir console build
       - name: Windows Bridge build and tests
