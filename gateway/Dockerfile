@@ -1,14 +1,14 @@
-﻿FROM node:22-alpine AS deps
+﻿FROM --platform=$BUILDPLATFORM node:22-alpine AS deps
 
 WORKDIR /workspace
 
-COPY gateway/package.json ./gateway/
+COPY gateway/package.json gateway/package-lock.json ./gateway/
 COPY shared/secret-provider-node ./shared/secret-provider-node
 
 WORKDIR /workspace/gateway
-RUN npm install
+RUN npm ci
 
-FROM node:22-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
 
 WORKDIR /workspace
 COPY --from=deps /workspace/gateway/node_modules ./gateway/node_modules

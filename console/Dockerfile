@@ -4,7 +4,7 @@ FROM node:22-alpine AS deps
 WORKDIR /workspace
 
 # Enable pnpm via corepack so the image uses the same package manager version
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@11.13.1 --activate
 
 # Copy the console manifest and the local workspace packages it depends on
 COPY console/package.json console/pnpm-lock.yaml ./console/
@@ -19,7 +19,7 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 FROM node:22-alpine AS builder
 
 WORKDIR /workspace
-RUN corepack enable && corepack prepare pnpm@10.23.0 --activate
+RUN corepack enable && corepack prepare pnpm@11.13.1 --activate
 
 # Reuse installed dependencies from deps stage
 COPY --from=deps /workspace/console/node_modules ./console/node_modules

@@ -1,4 +1,4 @@
-FROM rust:1.85-bookworm AS builder
+FROM rust:1.87-bookworm AS builder
 
 WORKDIR /app
 RUN apt-get update \
@@ -7,7 +7,7 @@ RUN apt-get update \
 COPY schemas/v1/protos ./schemas/v1/protos
 COPY runtime-daemon ./runtime-daemon
 WORKDIR /app/runtime-daemon
-RUN cargo build --release
+RUN cargo build --locked --release
 
 FROM debian:bookworm-slim
 
