@@ -1,5 +1,23 @@
 # OMERTAOS technical architecture
 
+**Document role:** normative reference architecture with explicit design
+targets. The canonical ownership and selected dependency boundaries are
+repository-verified; lifecycle, security, observability, and distributed-system
+properties are not all implemented end to end. Consult the
+[claim ledger](docs/research/evidence-and-claims.md) before treating a section
+as empirical evidence.
+
+## Reading convention
+
+- **Enforced boundary:** backed by a current architecture test or static gate.
+- **Implemented prototype:** source exists, but deployment acceptance may still
+  be incomplete.
+- **Design target:** required behavior for future implementation and
+  experiments.
+
+Unless a section says otherwise, diagrams describe the intended complete
+architecture rather than a production-readiness claim.
+
 ## Layer model
 
 ```mermaid
@@ -60,9 +78,12 @@ Runtime Daemon versioned gRPC API
 - Versioned source contracts are authored only in `schemas/v1/`; generated
   clients are consumed from `shared/generated/`.
 
-Architecture CI has two duties. The no-new-legacy-import checks protect the
-contract immediately. The migration-completion gate deliberately fails while
-legacy roots or bypass endpoints remain and must not be waived to make CI green.
+Architecture CI checks canonical ownership, forbidden imports, presentation
+bypasses, subprocess boundaries, and migration completion. The Structure S6
+snapshot records that repository-owned gates passed at that commit; Runtime
+compilation was separately blocked by dependency resolution. Current results
+must always be established by rerunning `tests/architecture/` and the Runtime
+tests on the evaluated commit.
 
 ## Protocols
 
@@ -97,7 +118,14 @@ stateDiagram-v2
   Cancelled --> [*]
 ```
 
-Submission creates a task and outbox record atomically. Planning resolves an agent and decomposes work. Policy evaluation returns `allow`, `deny`, or `modify`; only an allowed, possibly narrowed plan is queued. The scheduler leases a job. Runtime verifies its signed capability grant, creates the sandbox, executes, and streams events. Control deduplicates events, aggregates outputs, persists terminal state, and stores large artifacts in MinIO.
+This is the target lifecycle. Submission creates a task and outbox record
+atomically. Planning resolves an agent and decomposes work. Policy evaluation
+returns `allow`, `deny`, or `modify`; only an allowed, possibly narrowed plan
+is queued. The scheduler leases a job. Runtime verifies its capability grant,
+creates the sandbox, executes, and streams events. Control deduplicates events,
+aggregates outputs, persists terminal state, and stores large artifacts in
+MinIO. Individual stages require implementation and end-to-end evidence before
+they can be reported as validated behavior.
 
 ## Agent selection and model routing
 
@@ -129,3 +157,10 @@ W3C trace context crosses HTTP, gRPC, event headers, and Runtime audit records. 
 ## Security boundaries
 
 Identity is verified at Gateway and propagated as signed service claims. Control evaluates contextual policy and mints least-privilege capability grants. Runtime re-verifies grant signature, audience, expiry, task/attempt binding, executable/filesystem/network constraints, and resource ceilings. Network policy prevents bypass paths. Secrets are resolved at the consuming boundary, redacted from telemetry, and never embedded in tasks or events.
+
+This paragraph defines the target security model. The current Runtime performs
+named capability checks, but signature validation is minimal and Linux
+namespace, mount, seccomp, and isolated-process backends remain fail-closed
+stubs. Accordingly, this architecture document must not be cited as proof of
+complete sandboxing, cryptographic grant enforcement, tenant isolation, or
+production security.

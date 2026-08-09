@@ -1,5 +1,9 @@
 # Policy system
 
+**Document role:** policy architecture and enforcement target. Current policy
+files and evaluators are prototype evidence; the full signed-grant flow and
+Runtime enforcement are not yet production-validated.
+
 OMERTAOS combines role-based access control (RBAC) with capability-based access control (CBAC). RBAC authorizes a principal to request an API action. Contextual policy evaluates the concrete task and resources. CBAC turns an allowed plan into a short-lived, least-privilege execution grant.
 
 ```mermaid

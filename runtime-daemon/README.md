@@ -1,6 +1,12 @@
 # Runtime Daemon
 
-The Runtime Daemon is the Rust execution boundary for OMERTAOS agents. It accepts authorized jobs from the Control Plane over gRPC, verifies task-bound capability grants, queues work, executes it in an isolated sandbox, emits audit events, and returns structured results.
+**Document role:** Runtime ownership contract with an explicit implementation
+gate.
+
+The Runtime Daemon is the intended Rust execution boundary for OMERTAOS agents.
+The current prototype exposes the canonical server and named capability checks,
+but it does not yet execute work in a completed isolated sandbox. Unsupported
+isolation paths fail closed, as described under **Current execution gate**.
 
 ```text
 gRPC admission → grant verification → bounded job queue → worker
@@ -8,9 +14,18 @@ gRPC admission → grant verification → bounded job queue → worker
                → audit/result stream → cleanup
 ```
 
-Responsibilities include sandbox creation, process and command execution, filesystem/network/device capability enforcement, CPU/memory/time/process limits, cancellation, output bounds, cleanup, and tamper-evident audit records. It does not authenticate end users, plan tasks, or choose agents/models.
+Target responsibilities include sandbox creation, process and command
+execution, filesystem/network/device capability enforcement,
+CPU/memory/time/process limits, cancellation, output bounds, cleanup, and
+tamper-evident audit records. It does not authenticate end users, plan tasks, or
+choose agents/models.
 
-Security is deny-by-default. A job must carry a valid signature, audience, expiry, task/attempt binding, lease token, executable allowlist, path/network rules, and resource ceilings. Linux deployments combine namespaces, cgroups, mount restrictions, seccomp and privilege dropping; platform-specific backends must provide equivalent semantics or reject unsupported grants.
+The target security model is deny-by-default. A job must carry a valid
+signature, audience, expiry, task/attempt binding, lease token, executable
+allowlist, path/network rules, and resource ceilings. A completed Linux backend
+would combine namespaces, cgroups, mount restrictions, seccomp, and privilege
+dropping; platform-specific backends must provide equivalent semantics or
+reject unsupported grants.
 
 The daemon targets low queue overhead and high throughput through Tokio asynchronous I/O, bounded multi-thread scheduling, backpressure, streaming output, prevalidated sandbox templates, and separate pools for workload classes. Performance never bypasses grant verification or cleanup.
 

@@ -1,5 +1,9 @@
 # Data Layer
 
+**Document role:** canonical ownership and design contract. Adapter presence
+does not by itself demonstrate every storage workflow, cross-store recovery, or
+tenant-isolation property described below.
+
 The Data Layer provides typed, tenant-aware persistence and retrieval interfaces. It prevents orchestration code from depending on vendor clients and assigns each store a specific role.
 
 | Store | Role |

@@ -1,5 +1,9 @@
 # Deployment
 
+**Document role:** deployment asset index. These assets are research and
+evaluation inputs; their presence does not establish a successful installation
+or production acceptance.
+
 `deploy/` is the source of truth for Native, Docker, Kubernetes, observability,
 bundle and CI deployment assets. Root and legacy copies were retired in S5;
 new deployment changes belong only here.
@@ -31,9 +35,17 @@ Kubernetes assets under `deploy/kubernetes/` define workloads, stateful dependen
 
 Inspect flags with `--help`, run from a clean checkout, and back up before install/restore operations. Restore requires a maintenance window or documented online procedure, checksum verification, matching schema versions, and post-restore health/reconciliation checks.
 
-## CI/CD
+## Current CI scope
 
-The pipeline lints and unit-tests each service, validates schemas and architecture boundaries, builds generated clients, runs integration/security tests, builds SBOM-producing images, scans dependencies/images/secrets, signs artifacts, and publishes immutable digests. Deployment promotes the same digest through development, staging and production, applies expand migrations, runs readiness/smoke tests, and supports rollback or forward-fix. Production promotion requires approvals and preserves audit evidence.
+The current GitHub Actions workflow defines architecture tests, Python lint,
+Rust Clippy/tests, a conditional integration-test directory, Bandit, Cargo
+Audit, Trivy filesystem scanning, multi-architecture image builds, and SPDX SBOM
+generation. Review the workflow result for the exact commit; configured jobs
+are not evidence that a run passed.
+
+Artifact signing, immutable environment promotion, production deployment,
+database migration, and production rollback are not performed by the current CI
+workflow and must not be inferred from the deployment design.
 
 ## Environment strategy
 

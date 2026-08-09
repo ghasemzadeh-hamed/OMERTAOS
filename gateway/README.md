@@ -1,5 +1,10 @@
 # Gateway service
 
+**Document role:** component ownership contract and prototype overview. Route,
+security, streaming, and resilience statements describe the intended Gateway;
+verify each behavior against current source and tests before citing it as an
+implemented result.
+
 The Gateway is the Fastify-based external API boundary for OMERTAOS. It authenticates principals, enforces RBAC and admission limits, validates requests, normalizes correlation/idempotency metadata, routes calls to Control, and exposes task events over SSE or WebSocket. It does not plan tasks or execute tools.
 
 ## API surface

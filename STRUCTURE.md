@@ -1,6 +1,12 @@
 # Repository structure
 
-This document defines the target repository topology. A directory owns one architectural concern; dependencies point inward toward contracts, never around a service boundary.
+**Document role:** current normative ownership contract.
+
+This document defines the canonical repository topology after the Structure S6
+migration. A directory owns one architectural concern; dependencies point
+inward toward contracts, never around a service boundary. Historical path
+mappings are retained under `docs/migration/` for traceability and are not
+alternate implementation owners.
 
 ```text
 OMERTAOS/
@@ -81,15 +87,16 @@ coordination; it must not access domain persistence or own database schemas.
 Control must not spawn processes or perform host-side effects. Only a versioned
 Runtime client crosses that boundary.
 
-## Migration freeze
+## Migration status
 
 The precise path mapping and retirement gates are defined in
-`docs/migration/canonical-paths.md`. Until the corresponding migration phase
-passes, legacy roots are read-only migration inputs: fixes needed to preserve an
-existing recovery path require explicit review, while new capabilities are
-forbidden. An `UNKNOWN` item from the S0 inventory cannot be moved or deleted.
+`docs/migration/canonical-paths.md`. S2 through S5 migrated and retired the
+identified duplicate owners; S6 validated the canonical topology and resolved
+the S0 unknown roots as documented in
+`docs/migration/s6-architecture-validation.md`.
 
-The Structure migration gate is intentionally failing at S1 because legacy
-roots and a direct Console-to-Control health path still exist. This is recorded
-debt, not permission to weaken or skip the gate. S2 through S5 remove violations;
-S6 proves the final topology.
+The S6 report is a dated evidence snapshot, not a permanent green status.
+Architecture tests must be rerun for every evaluated commit. Legacy content
+preserved under `docs/migration/evidence/` is historical input and must not be
+reintroduced as an active owner without an ADR, compatibility analysis, and
+review.

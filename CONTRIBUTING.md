@@ -1,75 +1,118 @@
-# Contributing to aionOS (AION)
+# Contributing to OMERTAOS
 
-First off, thank you for taking the time to contribute! This document explains how to set up your environment, coding standards, and the workflow we use.
+Thank you for contributing. OMERTAOS is an architecture-sensitive research
+prototype; changes should preserve the canonical request path:
 
-## 1) Ground Rules
+```text
+Console -> Gateway -> Control -> Runtime Daemon
+```
 
-- Be kind and respectful (see `CODE_OF_CONDUCT.md`).
-- Prefer small, focused PRs with clear scope.
-- Write tests for new features and bug fixes.
-- Avoid introducing breaking changes without discussion.
+Read [ARCHITECTURE.md](ARCHITECTURE.md), [STRUCTURE.md](STRUCTURE.md), and
+[ADR 0001](docs/adr/0001-canonical-aion-ownership.md) before changing service
+boundaries.
 
-## 2) Developer Setup (native)
+## Contribution principles
 
-See `README.md` for system requirements.
+- keep pull requests focused, reviewable, and backward-compatible;
+- place behavior in its canonical owner;
+- add positive and negative tests for changed behavior;
+- do not bypass Gateway, Control, Runtime, data, policy, or schema boundaries;
+- do not commit secrets, generated credentials, private research data, or
+  manuscript correspondence;
+- do not claim performance, security, or production readiness without
+  reproducible evidence;
+- update public documentation when behavior, configuration, contracts,
+  deployment, or evidence status changes.
+
+## Development setup
+
+Reference versions are Python 3.11, Node.js 20, pnpm 11 for Console, Rust stable,
+and Docker Compose v2.
 
 ```bash
+git clone --branch CAPO https://github.com/Hamedghz/OMERTAOS.git
+cd OMERTAOS
+
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[control,dev]"
+
+npm ci --prefix gateway
+corepack enable
+pnpm --dir console install --frozen-lockfile
+```
+
+On Windows PowerShell, activate the virtual environment with
+`.venv\Scripts\Activate.ps1`.
+
+Render deployment configuration before starting any stack:
+
+```bash
+docker compose --project-directory . -f deploy/docker/compose/quickstart.yml config
+```
+
+Do not use development credentials outside an isolated local environment.
+
+## Targeted validation
+
+Run the smallest relevant checks first:
+
+```bash
+# Architecture and Python
+python -m pytest tests/architecture -q
+
 # Gateway
-cd gateway && npm ci && npm run dev
+npm run build --prefix gateway
+npm test --prefix gateway
 
-# Control
-cd control && python3.11 -m venv .venv && source .venv/bin/activate
-python -m pip install -U pip wheel && python -m pip install -e .[dev]
-uvicorn os.control.main:app --host 0.0.0.0 --port 50052 --reload
+# Console
+pnpm --dir console test -- --config vitest.config.mts
+pnpm --dir console build
+
+# Runtime
+cargo fmt --check --manifest-path runtime-daemon/Cargo.toml
+cargo test --manifest-path runtime-daemon/Cargo.toml --all-targets
 ```
 
-Optional services: Redis/Postgres/Mongo/Qdrant/MinIO  enable only what your change needs.
+Report commands, exit codes, pass/fail/skip counts, warnings, and environmental
+blockers. A blocked dependency download or unsupported host must not be
+reported as a passing runtime test.
 
-3. Style & Linting
-   TypeScript (gateway/console): ESLint + Prettier (npm run lint, npm run format).
-   Python (control): Ruff/Black (ruff check ., black .), type hints encouraged (mypy if configured).
-   Rust (modules): cargo fmt, cargo clippy.
+## Documentation and research claims
 
-4. Tests
-   Unit: colocated with source where possible.
-   Integration/E2E: tests/ (spin gateway+control; use in-memory or local services).
-   CI runs tests and security scans (see .github/workflows).
+- link design statements to the canonical architecture document;
+- link implementation claims to source and tests;
+- tie validation results to a commit and environment;
+- update [Evidence and claims](docs/research/evidence-and-claims.md) when the
+  maturity of a major claim changes;
+- keep migration reports historical; do not rewrite past evidence as if it were
+  a current run.
 
-5. Commit & Branching
-   Conventional Commits (examples):
-   feat(gateway): add SSE idempotency window
-   fix(control): guard against empty params
-   docs(readme): clarify native setup
-   Branches: feature/<short-desc>, fix/<short-desc>, docs/<short-desc>.
-   Reference issues with Fixes #123 or Refs #123 in the PR description.
+## Commit and pull-request style
 
-6. Opening a PR
-   Ensure npm test / pytest / cargo test (as applicable) pass locally.
-   Update docs (README.md, policies/\*.yml, examples) if behavior changes.
-   Add/Update API schemas if endpoints change.
-   Fill out the PR template (if present) and include:
-   Motivation & Context
-   Changes summary
-   Testing strategy
-   Screenshots or curl examples when relevant
-   Mark as Draft if still exploring.
+Use Conventional Commits, for example:
 
-7. E2E Smoke (manual)
-
-```
-curl -X POST "http://localhost:3000/v1/tasks" \
-  -H "Content-Type: application/json" -H "X-API-Key: dev-key" \
-  -d '{"schemaVersion":"1.0","intent":"summarize","params":{"text":"Hello"}}'
-
-curl -N "http://localhost:3000/v1/stream/<TASK_ID>" -H "X-API-Key: dev-key"
+```text
+docs(research): add reproducibility protocol
+fix(runtime): reject expired capability grants
+test(architecture): prohibit direct control health access
 ```
 
-8. Security & Responsible Disclosure
-   Never commit secrets or test tokens.
-   Report vulnerabilities per SECURITY.md. Do not open public issues for security matters.
+A pull request should state:
 
-9. Governance
+- motivation and scope;
+- changed owners and boundaries;
+- tests and exact results;
+- security, migration, and rollback implications;
+- documentation and research-claim impact;
+- known limitations.
 
-See GOVERNANCE.md (if present) for maintainers roles and decision process.
+Architecture, public API, schema, authentication, Runtime isolation, and
+production-topology changes require focused human review. Contributors must not
+auto-merge or deploy changes.
 
-Thanks for helping make aionOS better!
+## Security reports
+
+Do not open public issues for vulnerabilities. Follow [SECURITY.md](SECURITY.md).
+All participants must follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).

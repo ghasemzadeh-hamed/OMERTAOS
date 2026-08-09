@@ -1,8 +1,13 @@
 # Upgrade Notes
 
+**Document role:** compatibility notes for the canonical architecture. These
+notes identify required migration direction; they do not assert that every
+Runtime isolation or deployment-acceptance gate is complete.
+
 ## Hybrid Runtime Migration
 
-Current architecture uses:
+The canonical architecture uses:
+
 - Python Control orchestration and policy layers.
 - Rust runtime daemon for OS-boundary execution.
 
