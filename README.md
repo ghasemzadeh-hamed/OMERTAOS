@@ -22,12 +22,11 @@ research concern is not another agent framework; it is the system boundary that
 governs *who may request an action, how that action is authorized, where it is
 executed, and what evidence is retained*.
 
-> **Research status.** This branch is a research prototype and reference
-> architecture. Canonical ownership and dependency boundaries are checked in
-> the repository. The Linux isolation backends, distributed cluster protocols,
-> quantitative performance campaign, and production acceptance gates are not
-> complete. OMERTAOS is not presented as a security-certified or
-> production-qualified platform.
+> **Project status.** OMERTAOS is an active research and engineering project
+> that provides a modular reference architecture for secure, governed, and
+> observable agentic-AI execution. The CAPO branch is the canonical integration
+> branch, with repository-enforced ownership boundaries and continuously
+> evolving runtime, isolation, distributed-systems, and validation capabilities.
 
 ## Research contribution
 
