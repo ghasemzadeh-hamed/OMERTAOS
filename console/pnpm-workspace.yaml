@@ -1,9 +1,12 @@
 allowBuilds:
+  '@parcel/watcher': true
   '@prisma/client': true
   '@prisma/engines': true
+  '@swc/core': true
   bcrypt: true
   esbuild: true
   prisma: true
+  sharp: true
   unrs-resolver: true
 overrides:
   brace-expansion: ^1.1.18
