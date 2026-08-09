@@ -41,7 +41,7 @@ const isDevAuthMode = gatewayConfig.environment === 'development' || isDevMode;
 const PUBLIC_SETUP_ROUTES = ['/v1/config/profile', '/v1/setup/bootstrap'];
 
 const isPublicSetupRoute = (request: FastifyRequest): boolean => {
-  const path = request.routerPath ?? request.routeOptions?.url ?? request.url;
+  const path = request.routeOptions?.url ?? request.url.split('?')[0];
   return PUBLIC_SETUP_ROUTES.includes(path);
 };
 
@@ -78,7 +78,7 @@ export const authPreHandler = (requiredRoles: string[] = []) => {
   return async (request: FastifyRequest, _reply: FastifyReply) => {
     const context = buildDefaultContext(request);
     const publicRoutes = new Set(['/healthz', '/health', '/readyz']);
-    if (publicRoutes.has(request.routerPath ?? '')) {
+    if (publicRoutes.has(request.routeOptions?.url ?? request.url.split('?')[0])) {
       request.aionContext = context;
       return;
     }

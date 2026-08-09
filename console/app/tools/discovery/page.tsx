@@ -6,7 +6,7 @@ import type { UiContext } from '@/lib/ai/uiOrchestrator';
 export default async function ToolDiscoveryPage() {
   const schema = await loadPageSchema('/tools/discovery');
   if (!schema) return <div className="p-6 text-white">Tool discovery schema missing</div>;
-  const hdrs = headers();
+  const hdrs = await headers();
   const context: UiContext = {
     role: 'admin',
     featureFlags: process.env.FEATURE_LATENTBOX_RECOMMENDATIONS ? ['FEATURE_LATENTBOX_RECOMMENDATIONS'] : [],

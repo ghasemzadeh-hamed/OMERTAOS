@@ -8,15 +8,15 @@ export function resolveGatewayBase() {
   return GATEWAY_HTTP_URL || DEFAULT_GATEWAY;
 }
 
-export function buildGatewayHeaders(initHeaders?: HeadersInit) {
+export async function buildGatewayHeaders(initHeaders?: HeadersInit) {
   const result = new Headers(initHeaders ?? {});
-  const hdrs = headers();
+  const hdrs = await headers();
   const tenantHeader = hdrs.get('x-tenant-id') || hdrs.get('tenant-id');
   if (tenantHeader) {
     result.set('tenant-id', tenantHeader);
   }
 
-  const token = cookies().get('access_token')?.value;
+  const token = (await cookies()).get('access_token')?.value;
   if (token && !result.has('authorization')) {
     result.set('authorization', `Bearer ${token}`);
   }
@@ -26,7 +26,7 @@ export function buildGatewayHeaders(initHeaders?: HeadersInit) {
 
 export async function gatewayFetch(path: string, init?: RequestInit) {
   const url = `${resolveGatewayBase()}${path}`;
-  const headers = buildGatewayHeaders(init?.headers);
+  const headers = await buildGatewayHeaders(init?.headers);
   const response = await fetch(url, {
     ...init,
     headers,

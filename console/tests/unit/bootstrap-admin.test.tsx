@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@prisma/client', () => ({
-  PrismaClient: vi.fn(() => ({})),
+  PrismaClient: class MockPrismaClient {},
   Role: { ADMIN: 'ADMIN' },
 }));
 

@@ -14,8 +14,8 @@ export type BootstrapState = {
   profile?: ProfileId | null;
 };
 
-const resolveTenantId = () => {
-  const hdrs = headers();
+const resolveTenantId = async () => {
+  const hdrs = await headers();
   return hdrs.get('tenant-id') || hdrs.get('x-tenant-id') || undefined;
 };
 
@@ -31,7 +31,7 @@ export async function getBootstrapState(): Promise<BootstrapState> {
   let setupUnknown = false;
   let profile: ProfileId | null = null;
   let role: 'user' | 'admin' = 'user';
-  const tenantId = resolveTenantId();
+  const tenantId = await resolveTenantId();
 
   try {
     setupDone = await ensureSetupState();

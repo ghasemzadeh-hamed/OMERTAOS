@@ -14,7 +14,7 @@
    ```bash
    cd ../bridge-ui
    npm install
-   npm run dev -- --host 0.0.0.0 --port 5173
+   npm run dev -- --host 127.0.0.1 --port 5173
    ```
 5. Optional: launch via helper script
    ```bash

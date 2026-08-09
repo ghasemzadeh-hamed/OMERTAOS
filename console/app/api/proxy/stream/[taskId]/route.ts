@@ -2,8 +2,9 @@ import { NextRequest } from 'next/server';
 
 const base = process.env.NEXT_PUBLIC_GATEWAY_URL ?? 'http://localhost:3000';
 
-export async function GET(request: NextRequest, { params }: { params: { taskId: string } }) {
-  const response = await fetch(`${base}/v1/stream/${params.taskId}`, {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ taskId: string }> }) {
+  const { taskId } = await params;
+  const response = await fetch(`${base}/v1/stream/${taskId}`, {
     headers: request.headers,
   });
   const stream = response.body;

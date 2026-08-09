@@ -43,6 +43,7 @@ JWT signatures, issuer/audience/expiry, API keys where enabled, and optional req
 | Variable | Meaning | Typical value |
 |---|---|---|
 | `AION_GATEWAY_HOST`, `AION_GATEWAY_PORT` | Listener | `0.0.0.0`, `8080` |
+| `AION_TRUST_PROXY` | Trust forwarded host/protocol headers | `false` |
 | `AION_CONTROL_GRPC` | Control gRPC target | `control:50051` |
 | `AION_REDIS_URL` | Cache/coordination | `redis://redis:6379/0` |
 | `AION_JWT_PUBLIC_KEY` / `AION_JWT_SECRET_PATH` | JWT verification material | secret-managed |

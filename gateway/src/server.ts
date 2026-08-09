@@ -42,7 +42,7 @@ import { logInteraction, resolveModelForAgent } from './services/selfEvolving.js
 
 const app = Fastify({
   logger: true,
-  trustProxy: true,
+  trustProxy: process.env.AION_TRUST_PROXY === 'true',
   genReqId: () => randomUUID(),
 });
 
@@ -448,13 +448,15 @@ registerNetworkRoutes(app);
 
 app.setErrorHandler((error, request, reply) => {
   request.log.error({ err: error }, 'Unhandled gateway error');
+  const gatewayError = error as { statusCode?: number; message?: string };
+  const statusCode = gatewayError.statusCode || 500;
   if (reply.raw.headersSent) {
     return reply;
   }
-  return reply.status(error.statusCode || 500).send({
+  return reply.status(statusCode).send({
     error: 'GatewayError',
-    message: error.message,
-    statusCode: error.statusCode || 500,
+    message: gatewayError.message,
+    statusCode,
   });
 });
 
