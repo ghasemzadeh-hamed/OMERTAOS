@@ -1,5 +1,38 @@
 # CAPO acceptance report
 
+## R3 current reconciliation — 2026-08-10
+
+Official branch `CAPO` is synchronized at evidence commit
+`91921367cdfa600abb91710f7d699a183af800fa`. The current lockfiles are tracked:
+
+| Lockfile | SHA-256 |
+|---|---|
+| `runtime-daemon/Cargo.lock` | `9C7EBC387FEF54CB7C2BBC70F96EA2DDF690F7636D18175FA251B96D5D5433F6` |
+| `gateway/package-lock.json` | `CECAD9E18FB37754EBDF9CAC078BDC0A10CFE939365651CEB84160746866D55F` |
+| `console/pnpm-lock.yaml` | `98FCA5264683D58F5274C14A62971FE56679AC7AD0C3A61C49722CFB0D4555B1` |
+
+CI run [`31358631289`](https://github.com/Hamedghz/OMERTAOS/actions/runs/31358631289)
+passed architecture, lint, all service builds, Python and locked Cargo tests,
+the locked Runtime release build, integration, security, seven image builds and
+six architecture-independent checks. The remaining emulated arm64 Console image
+job stayed in progress for more than three hours. R3 moves arm64 image builds to
+the native `ubuntu-24.04-arm` runner and retains the locked Linux Runtime binary
+plus its SHA-256 as a CI artifact.
+
+Current Gate status:
+
+| Gate | Status | Current evidence |
+|---|---|---|
+| S2 Core Migration | passed | Four service builds plus locked Runtime test/release build |
+| S3 Supporting Migration | passed | 63 architecture tests and deterministic retired-root guards |
+| S5 Legacy Retirement | passed (repository scope) | Explicit approval, absent retired roots, no executable dependencies |
+| S6 Architecture Validation | passed | Full Python and architecture suites plus CI boundaries |
+| Gate R | pending | Requires the R3 commit to be clean, pushed, fully green and architecture-complete |
+| Native live acceptance | pending | No current Ubuntu/systemd reboot/smoke/update/rollback/restore evidence |
+| Docker live acceptance | pending | Image build is not running-stack smoke/parity evidence |
+
+The historical report below remains immutable evidence of its original review.
+
 > Historical snapshot: this report records the 2026-07-12 CAPO review. The
 > current Native N1-N8 contract supersedes its missing-lockfile and stop/disable
 > rollback descriptions. Gateway and Runtime lockfiles now exist; N8 uses

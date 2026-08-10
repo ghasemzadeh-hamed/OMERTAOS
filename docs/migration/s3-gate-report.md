@@ -42,8 +42,13 @@ owners only.
 | Diff | `git diff --check` | Passed; line-ending warnings only |
 
 The pushed R2 commit is additionally evaluated by GitHub Actions. CI is the
-authoritative locked Runtime result for this Windows host limitation; the R2
-handoff links the exact run.
+authoritative locked Runtime result for this Windows host limitation. Commit
+`91921367cdfa600abb91710f7d699a183af800fa` is covered by CI run
+[`31358631289`](https://github.com/Hamedghz/OMERTAOS/actions/runs/31358631289):
+architecture, lint, service builds, Python/Rust tests, the locked Runtime release
+build, integration and security jobs passed. Its emulated arm64 Console image
+job did not terminate, so R3 moves arm64 image builds to GitHub's native arm64
+runner before evaluating Gate R on the R3 commit.
 
 ## Security and limitations
 

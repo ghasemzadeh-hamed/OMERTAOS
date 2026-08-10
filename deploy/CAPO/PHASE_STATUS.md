@@ -9,6 +9,29 @@
 This file is the durable state machine for the seven-run CAPO automation. A phase
 is attempted exactly once and is recorded as `complete`, `failed`, or `blocked`.
 
+## R3 release reconciliation — 2026-08-10
+
+- Official branch: `CAPO`
+- Evidence commit: `91921367cdfa600abb91710f7d699a183af800fa`
+- Remote synchronization at R3 start: local HEAD matched `origin/CAPO`
+- Lock policy: Cargo, Gateway npm and Console pnpm lockfiles are tracked; CI uses
+  locked/frozen installs and a locked Runtime test/release build
+- Runtime artifact: R3 CI retains the Linux amd64 Runtime binary and its
+  SHA-256; no local Windows Runtime binary is claimed because MSVC `link.exe`
+  is unavailable
+- Repository gates: S2, S3, S5 and S6 passed on current repository evidence
+- Gate R: pending until the R3 commit is pushed, its complete CI run is green,
+  the branch is clean/synchronized, and the architecture suite passes
+- Environment gates: Native reboot/smoke/update/rollback/restore and running
+  Docker smoke/parity remain pending; static/configuration/image-build evidence
+  does not close them
+- CI correction: the non-terminating emulated arm64 Console build is moved to
+  GitHub's native `ubuntu-24.04-arm` runner; no production deployment occurs
+
+The seven historical CAPO automation phases remain complete as originally
+recorded below. This reconciliation updates evidence; it does not add an eighth
+CAPO automation phase.
+
 ## Baseline
 
 - Branch: `capo`

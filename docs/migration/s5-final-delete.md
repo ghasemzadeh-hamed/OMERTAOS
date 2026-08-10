@@ -1,10 +1,23 @@
 # S5 final legacy retirement
 
-Date: 2026-07-15
+Original execution: 2026-07-15
 
-Branch: `capo-structure`
+Reconciled: 2026-08-10 on branch `CAPO`
 
-Status: **implementation completed with explicit operator deletion approval; Runtime acceptance remains blocked by registry access**
+Status: **passed for approved repository retirement; live environment acceptance remains pending**
+
+## R3 reconciliation
+
+The historical Cargo registry blocker below is resolved by the locked Runtime
+test and release build in CI run
+[`31358631289`](https://github.com/Hamedghz/OMERTAOS/actions/runs/31358631289)
+for commit `91921367cdfa600abb91710f7d699a183af800fa`. The architecture suite
+also proves the retired top-level roots are neither tracked nor executable
+dependencies. Gate S5 is closed for the explicitly approved repository
+retirement; this does not claim Native reboot/update/rollback/restore or a live
+Docker smoke test.
+
+## Historical execution
 
 ## Retired inputs
 

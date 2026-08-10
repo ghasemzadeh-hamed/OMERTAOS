@@ -1,10 +1,25 @@
 # Gate S2 report — Core Service Migration
 
-Date: 2026-07-12
+Original execution: 2026-07-12
 
-Branch: `capo-structure`
+Reconciled: 2026-08-10 on branch `CAPO`
 
-Status: **not passed — blocked at Runtime dependency resolution**
+Status: **passed on current locked CI evidence**
+
+## R3 reconciliation
+
+The registry outage below is retained as historical evidence. It was superseded
+at commit `91921367cdfa600abb91710f7d699a183af800fa` by CI run
+[`31358631289`](https://github.com/Hamedghz/OMERTAOS/actions/runs/31358631289):
+the `test` job passed `cargo test --locked --all-targets` and
+`cargo build --locked --release`, while `service-builds` passed the four
+canonical service builds. `runtime-daemon/Cargo.lock` is tracked with SHA-256
+`9C7EBC387FEF54CB7C2BBC70F96EA2DDF690F7636D18175FA251B96D5D5433F6`.
+
+Gate S2 is therefore closed for repository compilation and tests. Native Linux
+sandbox and service-lifecycle acceptance remain separate Native gates.
+
+## Historical execution
 
 ## Retry history
 

@@ -74,6 +74,16 @@ jobs:
         run: cargo test --locked --manifest-path runtime-daemon/Cargo.toml --all-targets
       - name: Rust release build
         run: cargo build --locked --release --manifest-path runtime-daemon/Cargo.toml
+      - name: Record Runtime artifact checksum
+        run: sha256sum runtime-daemon/target/release/runtime-daemon > runtime-daemon.sha256
+      - name: Upload locked Runtime artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: runtime-daemon-${{ github.sha }}-linux-amd64
+          path: |
+            runtime-daemon/target/release/runtime-daemon
+            runtime-daemon.sha256
+          if-no-files-found: error
 
   service-builds:
     runs-on: ubuntu-latest
@@ -164,7 +174,7 @@ jobs:
           scan-ref: .
 
   docker:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform == 'linux/arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     needs: [test, service-builds, security]
     strategy:
       matrix:
@@ -172,7 +182,6 @@ jobs:
         service: [console, control, gateway, runtime-daemon]
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-qemu-action@v4
       - uses: docker/setup-buildx-action@v3
       - name: Build compose image
         uses: docker/build-push-action@v6

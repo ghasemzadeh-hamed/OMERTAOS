@@ -1,10 +1,25 @@
 # Structure S6 architecture validation
 
-Date: 2026-07-15
+Original execution: 2026-07-15
 
-Branch: `capo-structure`
+Reconciled: 2026-08-10 on branch `CAPO`
 
-Status: **blocked on Runtime dependency resolution; all repository-owned gates pass**
+Status: **passed for Structure architecture validation; Native acceptance remains separate**
+
+## R3 reconciliation
+
+The historical dependency-resolution blocker is resolved on current CI evidence.
+At commit `91921367cdfa600abb91710f7d699a183af800fa`, architecture, lint,
+service-build, integration, security, Python tests, locked Cargo tests and the
+locked Runtime release build passed in CI run
+[`31358631289`](https://github.com/Hamedghz/OMERTAOS/actions/runs/31358631289).
+The active Python suite reports 164 passed and 2 skipped locally, and the full
+architecture suite reports 63 passed. Gate S6 is closed for repository
+architecture validation. Linux/systemd execution, reboot, live smoke, update,
+rollback and isolated restore remain Native acceptance work and are not inferred
+from CI.
+
+## Historical outcome
 
 ## Outcome
 
@@ -14,10 +29,10 @@ only the canonical top-level owners defined by `STRUCTURE.md`. Console and the
 optional Desktop Shell call Gateway only; Gateway owns the Control boundary and
 Control owns Runtime orchestration.
 
-The repository is not yet authorized to start N1. Runtime compilation and tests
-still require a successful crates.io dependency fetch or a reviewed offline
-vendor/cache. Static Cargo checks are green, but they are not a substitute for a
-compiled Runtime test.
+At the original execution date, the repository was not authorized to start N1
+because compilation had not run. That historical restriction is superseded by
+the R3 reconciliation above; current Native work still requires its own host
+gate and explicit phase approval.
 
 ## S6 corrections and migration
 
@@ -90,9 +105,9 @@ revert that single Structure commit rather than recreating legacy owners or
 deleting persistent state. Native rollback continues to preserve source,
 `/etc/omertaos/omertaos.env`, `/var/lib/omertaos`, accounts and databases.
 
-## N1 entry condition
+## Historical N1 entry condition
 
-Start N1 only after `cargo test --manifest-path runtime-daemon/Cargo.toml`
-passes with a reproducible dependency source and the resulting lock/vendor
-policy is recorded. S6 does not start N1, install packages, launch services,
-commit, push or deploy.
+The original entry condition required a reproducible compiled Runtime test. It
+is now satisfied by the tracked Cargo lockfile and locked CI test/build. This
+report still does not start Native work, install packages, launch services or
+deploy.
