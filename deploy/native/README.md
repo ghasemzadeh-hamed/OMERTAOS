@@ -1,5 +1,18 @@
 # OMERTAOS Native deployment contract
 
+## N0 acceptance host
+
+Before N1, create and validate the disposable Hyper-V Ubuntu 24.04 host with
+`host/New-OmertaN0Host.ps1`. The N0 contract and evidence format are documented
+in `docs/native/n0-acceptance-host.md`. N0 prepares only the host, restricted
+SSH access, `/etc/omertaos` ownership boundary, exact release checkout and base
+checkpoint; it does not install or start OMERTAOS services.
+
+If Hyper-V is unavailable, `host-sim/Invoke-N0Simulation.ps1` can prepare an
+experimental Ubuntu 24.04 systemd/cgroups/SSH container for contract testing.
+This fallback is isolated on an internal Docker network and is not Native host
+or reboot acceptance.
+
 N1 defines the environment boundary for a future non-containerized installation.
 It does not install packages, create databases, modify systemd, or start services.
 

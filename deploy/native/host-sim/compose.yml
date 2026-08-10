@@ -1,0 +1,58 @@
+name: omertaos-n0-sim
+
+services:
+  acceptance-host:
+    build:
+      context: ../../..
+      dockerfile: deploy/native/host-sim/Dockerfile
+    image: omertaos-n0-sim:${N0_IMAGE_TAG:-local}
+    hostname: omertaos-n0-sim
+    privileged: true
+    cgroup: host
+    restart: "no"
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - ${N0_RELEASE_PATH:?N0_RELEASE_PATH is required}:/srv/omertaos-source:ro
+      - ${N0_SSH_PUBLIC_KEY_FILE:?N0_SSH_PUBLIC_KEY_FILE is required}:/run/n0/authorized_key:ro
+      - ${N0_GUEST_ENV_FILE:?N0_GUEST_ENV_FILE is required}:/run/n0/n0.env:ro
+    networks:
+      - acceptance
+    healthcheck:
+      test: ["CMD", "/usr/local/sbin/omertaos-n0-sim-check"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 15s
+
+  ssh-relay:
+    image: omertaos-n0-sim:${N0_IMAGE_TAG:-local}
+    command: ["/usr/bin/socat", "TCP-LISTEN:2222,fork,reuseaddr", "TCP:acceptance-host:22"]
+    depends_on:
+      acceptance-host:
+        condition: service_healthy
+    user: "65534:65534"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: "no"
+    ports:
+      - 127.0.0.1:${N0_SSH_PORT:-2222}:2222
+    networks:
+      - acceptance
+      - loopback
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/acceptance-host/22'"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+networks:
+  acceptance:
+    internal: true
+  loopback: {}

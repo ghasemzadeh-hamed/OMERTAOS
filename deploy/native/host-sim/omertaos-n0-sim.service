@@ -1,0 +1,15 @@
+[Unit]
+Description=OMERTAOS N0 simulated host bootstrap
+Before=ssh.service
+After=local-fs.target
+ConditionPathExists=/run/n0/authorized_key
+ConditionPathExists=/run/n0/n0.env
+
+[Service]
+Type=oneshot
+EnvironmentFile=/run/n0/n0.env
+ExecStart=/usr/local/sbin/omertaos-n0-sim-bootstrap
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
