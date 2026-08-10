@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess  # nosec B404 - invokes only the local Git executable below
 from pathlib import Path
@@ -40,23 +41,12 @@ REQUIRED_DIRECTORIES = {
     "deploy",
     "tests",
 }
-FORBIDDEN_ROOTS = {
-    "agents",
-    "control-plane",
-    "core",
-    "database",
-    "db",
-    "docker",
-    "eventbus",
-    "execution",
-    "infra",
-    "models",
-    "observability",
-    "orchestration",
-    "protos",
-    "rust-runtime",
-    "ui",
-}
+RETIRED_ROOTS_CONTRACT = (
+    REPO_ROOT / "tests" / "architecture" / "fixtures" / "retired_roots.json"
+)
+FORBIDDEN_ROOTS = set(
+    json.loads(RETIRED_ROOTS_CONTRACT.read_text(encoding="utf-8"))["retired_roots"]
+)
 
 
 def _git_paths(*args: str) -> set[str]:

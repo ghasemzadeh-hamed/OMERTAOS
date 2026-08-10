@@ -1,1 +1,1 @@
-"""Canonical Python control-plane application package."""
+"""Canonical Python Control application package."""

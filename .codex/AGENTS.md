@@ -28,7 +28,7 @@ Primary architecture:
 
 Console / Next.js
     -> Gateway / Fastify
-    -> Control Plane / Python
+    -> Control / Python
     -> Runtime Daemon / Rust
     -> Agent Execution / Sandbox / Tools
 
@@ -51,7 +51,7 @@ Policies + Model Profiles + Agent Registry + Schemas
 
 - Preserve the current architecture.
 - Do not rewrite the whole system.
-- Do not delete legacy folders in this phase.
+- Do not restore retired migration roots or create parallel owners.
 - Prefer small, reviewable changes.
 - Keep backward compatibility where possible.
 - Do not introduce unnecessary dependencies.
@@ -68,52 +68,38 @@ Console -> Gateway -> Control -> Runtime Daemon
 Rules:
 - Console must talk to Gateway, not directly to Control.
 - Gateway is the API boundary.
-- Control is the Python control plane.
+- Control is the Python decision and orchestration owner.
 - Runtime Daemon is the Rust execution boundary.
 - Runtime execution must remain separated from UI and Gateway logic.
 - Data, Policy, Registry, Schemas, and Observability layers must remain behind this path.
 
-## Do Not Delete In This Phase
+## Protected Canonical Paths
 
-Never delete these paths unless explicitly approved and verified with git log and ripgrep:
+Never delete these paths unless explicitly approved and verified with Git history and architecture tests:
 
 - .github/
 - console/
 - gateway/
 - control/
-- control-plane/
 - runtime-daemon/
-- rust-runtime/
 - data/
-- database/
-- db/
 - registry/
-- models/
 - schemas/
-- protos
 - shared/
 - policies/
-- eventbus/
-- observability/
-- orchestration/
 - integrations/
-- execution/
 - deploy/
 - scripts/
-- config/
-- docker/
-- infra/
-- core/
 - tests/
 - docs/
 
-Never delete root setup files:
+Retired-root names belong only in the centralized architecture fixture and
+historical ADR/migration evidence. They must not reappear as tracked top-level
+paths, imports, runtime references, or current `.codex` guidance.
 
-- docker-compose.quickstart.yml
-- docker-compose.local.yml
+Never delete maintained root setup files:
+
 - docker-compose.yml
-- docker-compose.obsv.yml
-- docker-compose.vllm.yml
 - quick-install.sh
 - quick-install.ps1
 - install.sh
@@ -121,13 +107,10 @@ Never delete root setup files:
 - uninstall.sh
 - uninstall.ps1
 - .env.example
-- .env.schema
-- dev.env
 - pyproject.toml
 - requirements.txt
 - Makefile
 - README.md
-- STRUCTURE.md
 
 ## Before Changing Code
 

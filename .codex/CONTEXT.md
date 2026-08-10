@@ -12,27 +12,27 @@ Hybrid Agent OS / AI Agent Operating Layer / Distributed Multi-Agent Platform.
 - Task focus: the current user request, not a historical backlog
 - Current ownership source: `docs/migration/canonical-paths.md`
 
-Snapshot as of 2026-07-13: the CAPO seven-phase ledger is complete on its CAPO
-workflow, while the `capo-structure` history has completed S3.1 through S3.4 and
-records S3.5 through S3.7 as pending. Always verify Git and the canonical-paths
-contract before using this snapshot; do not start a pending phase unless the
-user explicitly requests it.
+Snapshot as of 2026-08-10: Structure phases S0-S6 are represented in Git
+history and the retired migration roots are absent. Always verify the current
+branch, working tree, CI evidence and `docs/migration/canonical-paths.md` before
+claiming a Gate passed. Do not infer authorization for a new phase from this
+snapshot.
 
 ## Stack
 
 - Console: Next.js / TypeScript / React / Tailwind / Prisma / NextAuth
 - Gateway: Node.js / Fastify / gRPC / Redis / JWT / OpenTelemetry / Helmet / CORS / WebSocket / SSE
-- Control Plane: Python / FastAPI / gRPC adapter
+- Control: Python / FastAPI / gRPC adapter
 - Runtime: Rust Runtime Daemon
 - Data Layer: Postgres, Redis, MongoDB, Qdrant, MinIO
-- Event / Policy / Observability: eventbus, policies, observability, audit
-- Models: model profiles under models/ and registry/models/ until canonicalization
+- Event / Policy / Observability: canonical schemas, Control ports, integrations, policies and shared telemetry
+- Models: immutable model profiles under `registry/models/`
 
 ## Target Architecture
 
 Console / Next.js
     -> Gateway / Fastify
-    -> Control Plane / Python
+    -> Control / Python
     -> Runtime Daemon / Rust
     -> Agent Execution / Sandbox / Tools
 
@@ -47,20 +47,14 @@ Policies + Model Profiles + Agent Registry + Schemas
 - console/
 - gateway/
 - control/
-- control-plane/
 - runtime-daemon/
-- rust-runtime/
 - data/
-- database/
 - registry/
-- models/
 - schemas/
 - policies/
-- eventbus/
-- observability/
-- orchestration/
 - integrations/windows-agentic-bridge/
-- execution/
+- shared/
+- deploy/
 
 ## Historical Priorities
 
@@ -100,20 +94,19 @@ are reference material, not standing authorization to execute work.
 
 ## Known Constraints
 
-- control/ should become canonical Control Plane.
-- control-plane/ is legacy or compatibility source for now.
-- runtime-daemon/ is canonical runtime layer.
-- rust-runtime/ is legacy or complementary source for now.
-- kernel/ may not exist; references to it must not break quickstart.
-- Do not perform heavy folder migration until local setup and quickstart are stable.
-- Do not delete duplicate sources before import/reference/history checks.
+- `control/` is the canonical decision and orchestration owner.
+- `runtime-daemon/` is the canonical execution boundary.
+- Retired-root names are permitted only in the centralized architecture fixture
+  and historical ADR/migration evidence.
+- Native and Docker acceptance require their own current runtime evidence.
+- Do not restore retired roots, bypass the canonical service chain, or infer
+  deploy authority from a passing Structure test.
 
 ## Acceptance Criteria For Current Phase
 
 - Doctor action reports missing/available tools.
 - Native Setup installs safe dependencies without starting long-running services.
-- Docker Validate runs:
-  docker compose -f docker-compose.quickstart.yml config
+- Docker validation renders the canonical Compose definitions under `deploy/docker/`.
 - Docker Build can be attempted manually.
-- Console, Gateway, Control paths are preserved.
-- No critical folder is deleted.
+- Console, Gateway, Control and Runtime boundaries are preserved.
+- No canonical folder is deleted or duplicated by a retired owner.

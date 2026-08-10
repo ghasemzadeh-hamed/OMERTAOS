@@ -1,75 +1,61 @@
 # Gate S3 report — Supporting Layer Migration
 
-Date: 2026-07-15
+Date: 2026-08-10
 
-Branch: `capo-structure`
+Branch: `CAPO`
 
-Status: **not passed — implementation checks are green, literal legacy-path searches remain red**
+Status: **passed — executable dependencies are clean; historical evidence is classified**
 
 ## Gate result
 
-S3.1 through S3.7 have canonical implementations, compatibility tests and
-migration notes. The executable tests/builds passed, but the literal Gate S3
-search contract did not reach zero:
+R2 replaces the old raw-literal search with an executable architecture
+contract. A name in an ADR, migration report, recovery document or centralized
+guard fixture is historical evidence; it is not treated as a runtime
+dependency. The Gate now proves these independent properties:
 
-| Check | Result |
-|---|---|
-| `control-plane` outside `docs/migration/` | 25 matches |
-| `rust-runtime` outside `docs/migration/` | 26 matches |
-| Python `from database` / `import database` | 0 matches |
-| Python `from db` / `import db` | 0 matches |
-| `schemas/protos`, `shared/proto`, `root/protos` | 0 matches |
+| Contract | Evidence | Result |
+|---|---|---|
+| No retired top-level path is tracked | `git ls-files -z` checked against the centralized fixture | Passed |
+| Canonical Python has no retired import | AST import inspection across canonical Python roots | Passed |
+| Active source/deploy has no retired runtime path | Source-aware patterns across canonical and deployment roots | Passed |
+| Console follows the canonical boundary | Direct Control/Runtime URL guard | Passed |
+| Historical names do not define ownership | Explicit ADR/CAPO/migration evidence classification | Passed |
 
-> S6 correction (2026-07-15): the earlier literal search was a false negative.
-> Byte-identical aliases still existed under `schemas/protos`, `schemas/proto`,
-> `schemas/config`, `schemas/events`, root schema JSON files and `shared/proto`.
-> S6 retired those aliases to migration evidence and changed the architecture
-> test to require their absence.
-
-Remaining service-root matches include protected compatibility manifests/source,
-migration architecture tests, cleanup tooling and historical/current documents
-outside `docs/migration/`. Examples include `rust-runtime/Cargo.toml`, Runtime
-compatibility documentation, `tests/architecture/test_runtime_migration.py` and
-`scripts/cleanup_repo.py`.
-
-Removing or renaming those references in S3 would conceal protected migration
-inputs and violate the no-deletion rule. Their retirement belongs to S5 after S4,
-Native/Quickstart evidence and explicit human approval. Therefore Gate S3 is not
-accepted even though active supporting-layer imports are canonical.
+The centralized list is
+`tests/architecture/fixtures/retired_roots.json`. Architecture tests and the
+working-tree structure audit consume this contract instead of duplicating raw
+constants. Current `.codex` guidance and doctor scripts now list canonical
+owners only.
 
 ## Validation
 
-| Area | Command / evidence | Result |
+| Area | Command / evidence | Local result |
 |---|---|---|
-| Python | Architecture, Control and Data tests excluding the final Structure gate | 94 passed, 1 deselected, 2 existing deprecation warnings |
-| Gateway | TypeScript build | Passed |
-| Bridge Server | TypeScript build | Passed |
-| Bridge Server | Vitest | 2 files / 3 tests passed |
-| Bridge UI | Vite production build | Passed; 40 modules transformed |
-| Compose | Root, Quickstart and Local configuration rendering | Passed |
-| Runtime static | Cargo format and no-dependency metadata | Passed |
-| Diff | `git diff --check` | Passed with expected Windows line-ending warnings |
+| R2 contract | `python -m pytest tests/architecture/test_canonical_contract.py -q` | Passed |
+| Architecture | `python -m pytest tests/architecture -q` | Passed |
+| Python full suite | `python -m pytest -q` | 164 passed, 2 skipped |
+| Structure | `python scripts/check_structure_consistency.py` | Passed |
+| Gateway | test and TypeScript build | 2 files / 6 tests passed; build passed |
+| Console | Vitest and production build | 6 files / 11 tests passed; build passed |
+| Bridge | server test/build and UI build | 2 files / 3 tests passed; both builds passed |
+| Runtime local | format, then locked Clippy/test/build | Format passed; Clippy blocked before code analysis because the Windows host lacks `link.exe` |
+| Diff | `git diff --check` | Passed; line-ending warnings only |
 
-The Bridge toolchain was repaired before this Gate. The unavailable
-`@microsoft/ai-mcp-sdk` dependency was replaced with official stable v1
-`@modelcontextprotocol/sdk`, Ajv validates tool inputs, the missing Vite React
-plugin and UI `index.html` were added, and stdio logs were moved off stdout.
-No lockfile existed before S3.7 and none was generated.
+The pushed R2 commit is additionally evaluated by GitHub Actions. CI is the
+authoritative locked Runtime result for this Windows host limitation; the R2
+handoff links the exact run.
 
 ## Security and limitations
 
-- Windows Bridge calls Gateway only; direct Control configuration/calls are gone.
-- Tokens remain environment-only and are not included in manifests or logs.
-- MCP input validation fails closed and execution errors return bounded messages.
-- Agent Catalog endpoints remain unavailable and were not reconstructed.
-- Windows/WSL/ODR runtime acceptance was not available on this host.
-- Gate S2 remains separately blocked until Runtime Cargo test/build can resolve
-  its registry dependencies.
+- The canonical request path remains `Console -> Gateway -> Control -> Runtime Daemon`.
+- No auth, permission, public API, schema, data or production topology changed.
+- No root, file, table, column or record was deleted.
+- Gate S3 proves Structure ownership; it does not prove Native runtime, Docker
+  runtime, feature completeness, merge readiness or production deployment.
 
 ## Migration and rollback
 
-No database or data migration is required. Revert the S3.5-S3.7 commit to restore
-the previous supporting-layer paths and Bridge dependency/configuration. Preserve
-both Windows Bridge trees, legacy service roots, configuration and persistent
-state. This report records a failed Gate and must not be used as approval for S4,
-S5, merge or production deployment.
+No database or data migration is required. Revert the single R2 commit to
+restore the previous search contract and documentation. Do not restore retired
+roots as part of rollback; Git history and the external R1 backup remain the
+recovery sources.

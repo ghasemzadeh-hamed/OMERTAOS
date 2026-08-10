@@ -71,15 +71,17 @@ deploy/kubernetes/             Kubernetes assets after Native/Docker parity
 
 ## CI invariants
 
-1. No new imports from `control-plane`, `rust-runtime`, `database` or `db` in
-   canonical source roots.
+1. No tracked retired top-level root, retired import, or retired runtime path
+   reference is permitted in canonical source and deployment roots. The names
+   are maintained once in the architecture fixture.
 2. No Console source may resolve a Control or Runtime URL.
 3. Gateway has no domain database/ORM dependency or direct data-layer import.
 4. Control has no subprocess, shell or host execution call.
-5. The legacy-root completion gate stays failing until staged migration removes
-   every listed root; documentation mentions are excluded from import checks.
-6. S5 deletion still requires human review, recovery evidence and green Native
-   plus Quickstart acceptance. A passing path search alone is insufficient.
+5. Historical mentions are evidence, not executable dependencies, and are
+   confined to ADR, CAPO recovery and migration-report roots declared by the
+   architecture contract.
+6. A passing raw text search is neither required nor sufficient: the Gate uses
+   tracked paths, parsed imports and runtime path-reference checks.
 
 ### S3 progress
 
@@ -109,11 +111,12 @@ deploy/kubernetes/             Kubernetes assets after Native/Docker parity
   removed the Bridge-to-Control bypass. The `execution/` mirror remains
   protected and source-identical; dependency/toolchain repairs brought both
   trees to 41 files. Windows/WSL acceptance is pending.
-- Gate S3 was executed after repairing and validating the Bridge Node toolchain.
-  Python, Gateway, Bridge, Compose and Runtime static checks passed, while the
-  literal `control-plane` and `rust-runtime` searches remained nonzero because
-  protected compatibility roots and non-migration historical evidence still
-  exist. See `docs/migration/s3-gate-report.md`; Gate S3 is not accepted.
+- R2 replaced the ambiguous literal search with a centralized retired-root
+  contract and deterministic checks for tracked roots, parsed imports and
+  active runtime path references. Historical ADR/migration evidence and guard
+  fixtures are classified separately. See `docs/migration/s3-gate-report.md`.
+- Gate S3 is accepted on current evidence; this does not imply Native, Docker,
+  merge or production acceptance.
 - S3.1 proceeded on explicit operator instruction while Gate S2 remained blocked
   by Cargo registry access; this does not mark S2 accepted.
 

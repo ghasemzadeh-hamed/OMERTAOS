@@ -27,23 +27,14 @@ for path in \
   "console" \
   "gateway" \
   "control" \
-  "control-plane" \
   "runtime-daemon" \
-  "rust-runtime" \
   "data" \
-  "database" \
-  "db" \
   "registry" \
-  "models" \
   "schemas" \
   "policies" \
-  "eventbus" \
-  "observability" \
-  "orchestration" \
   "integrations" \
-  "execution" \
-  "docker-compose.quickstart.yml" \
-  "docker-compose.local.yml"
+  "deploy/native" \
+  "deploy/docker"
 do
   if [ -e "$path" ]; then
     echo "OK: $path"
