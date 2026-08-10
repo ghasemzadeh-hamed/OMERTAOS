@@ -15,6 +15,9 @@ or reboot acceptance.
 
 N1 defines the environment boundary for a future non-containerized installation.
 It does not install packages, create databases, modify systemd, or start services.
+The executable host check is `scripts/validate-environment.sh`; the Docker N0
+fallback runs it through `host-sim/Invoke-N1Simulation.ps1`. Missing tools and
+paths owned by N2/N4/N8 are reported as deferred, never as installed evidence.
 
 ## Supported baseline
 
