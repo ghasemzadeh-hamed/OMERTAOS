@@ -1,0 +1,29 @@
+{
+  "retired_roots": [
+    "agents",
+    "control-plane",
+    "database",
+    "db",
+    "docker",
+    "eventbus",
+    "execution",
+    "infra",
+    "models",
+    "observability",
+    "orchestration",
+    "protos",
+    "rust-runtime",
+    "ui"
+  ],
+  "retired_import_prefixes": [
+    "control_plane",
+    "database",
+    "db",
+    "rust_runtime"
+  ],
+  "historical_evidence_roots": [
+    "docs/adr",
+    "docs/capo",
+    "docs/migration"
+  ]
+}

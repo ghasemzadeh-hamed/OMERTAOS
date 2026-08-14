@@ -1,0 +1,1 @@
+# Root bundle metadata (no artifacts)

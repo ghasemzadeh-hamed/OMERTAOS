@@ -1,0 +1,51 @@
+{
+  "auth": {
+    "title": "Sign in to aionOS",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "signin_google": "Continue with Google",
+    "back_home": "Back to landing",
+    "loading": "Loading session..."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "datasets": "Datasets",
+    "tasks": "Tasks",
+    "ci": "CI/CD",
+    "agents": "Agents",
+    "policies": "Policies",
+    "telemetry": "Telemetry",
+    "windows_bridge": "\u067e\u0644 \u0648\u06cc\u0646\u062f\u0648\u0632",
+    "settings": "Settings",
+    "sign_out": "Sign out",
+    "command_palette": "Command palette",
+    "rtl": "Toggle RTL"
+  },
+  "dashboard": {
+    "welcome": "Welcome back",
+    "active_tasks": "Active tasks",
+    "latency": "P95 latency",
+    "budget": "Budget usage",
+    "success": "Success rate"
+  },
+  "tasks": {
+    "create": "Create task",
+    "intent": "Intent",
+    "params": "Parameters",
+    "submit": "Submit task",
+    "status": "Status",
+    "streaming": "Streaming updates",
+    "rate_limited": "Rate limit reached. Please retry soon.",
+    "privacy": "Privacy mode",
+    "preferred_engine": "Preferred engine"
+  },
+  "policies": {
+    "title": "Policy editor",
+    "save": "Save",
+    "reset": "Reset",
+    "success": "Policy saved successfully",
+    "error": "Failed to save policy"
+  }
+}

@@ -1,0 +1,11 @@
+id: kimi-k2-instruct-local
+display_name: Kimi K2 Instruct (Local)
+provider: openai-compatible
+base_url: ${K2_LOCAL_BASE_URL}
+api_key_env: ""
+model: ${K2_LOCAL_INSTRUCT_MODEL}
+max_input_tokens: 128000
+max_output_tokens: 4096
+supports_tools: true
+tier: pro
+enabled: false

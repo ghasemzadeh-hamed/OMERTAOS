@@ -1,0 +1,32 @@
+[Unit]
+Description=OMERTAOS Runtime daemon
+Requires=omertaos-install.service
+After=network-online.target omertaos-install.service
+Wants=network-online.target
+PartOf=omertaos.target
+StartLimitIntervalSec=60s
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=omertaos
+Group=omertaos
+EnvironmentFile=/etc/omertaos/omertaos.env
+EnvironmentFile=/etc/omertaos/runtime.env
+WorkingDirectory=/opt/omertaos/current/runtime-daemon
+ExecStart=/opt/omertaos/current/bin/runtime-daemon
+ExecStartPre=/usr/bin/test -x /opt/omertaos/current/bin/runtime-daemon
+Restart=on-failure
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/omertaos/runtime
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+UMask=0027
+
+[Install]
+WantedBy=omertaos.target

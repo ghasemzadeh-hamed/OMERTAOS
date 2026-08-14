@@ -1,0 +1,27 @@
+kind: model
+name: qwen-2.5-max
+provider: alibaba
+version: "2.5.0"
+release_date: "2025-04-17"
+modality:
+  - text
+  - code
+license: qwen-community
+access: modelscope
+description: >-
+  Enterprise-ready multilingual language model with memory-augmented decoding.
+download:
+  url: "https://modelscope.cn/models/qwen/qwen-2.5-max"
+  method: modelscope
+  install_script: "scripts/install_model.py --model qwen-2.5-max"
+integrity:
+  sha256: "6b1b36cbb04b41490bfc0ab2bfa26f86"
+  signature: "minisign:QWEN"
+resources:
+  vram_gb: 24
+  context_tokens: 786432
+configurable: true
+compat:
+  agent_api: ">=1.2"
+auto_update: true
+admin_approval_required: true

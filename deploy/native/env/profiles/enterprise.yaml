@@ -1,0 +1,8 @@
+profile: enterprise
+cpu_quota: 2.0
+memory_mb: 8192
+gpu_enabled: true
+multi_agent: true
+cluster_enabled: true
+bigdata_enabled: true
+database: postgresql

@@ -1,0 +1,150 @@
+# Canonical paths contract
+
+Status: frozen for Structure migration
+
+Date: 2026-07-12
+
+This document is the executable handoff from S0 inventory to S2-S5 migration.
+It defines ownership; it does not authorize deletion or combine migration phases.
+
+## Service chain
+
+| Concern | Canonical source | Allowed caller / dependency | Forbidden bypass |
+|---|---|---|---|
+| Product UI | `console/` | Gateway public API only | Control, Runtime and data-store endpoints |
+| API boundary | `gateway/` | Control versioned client; ephemeral Redis admission state | Domain database, ORM or `data/` implementation imports |
+| Decisions | `control/` | Runtime client plus Data/Registry/Policy interfaces | Direct subprocess, shell, sandbox or host effects |
+| Execution | `runtime-daemon/` | Versioned schemas and narrow shared primitives | Business planning, model selection or Control-table writes |
+
+## Path mapping
+
+| Legacy input | Canonical owner | Operation | Phase / retirement evidence |
+|---|---|---|---|
+| `control-plane/` | `control/` | `MERGE` | S2 imports, Control tests and service build pass |
+| `orchestration/` | `control/orchestration/` | `MOVE` | S2 callers and scheduling tests pass |
+| `rust-runtime/` | `runtime-daemon/` | `MERGE` | S2 Cargo build/test and gRPC contract pass |
+| Runtime code in `execution/` | `runtime-daemon/` | `SPLIT` | S2 unique code and callers accounted for |
+| `database/`, `db/` | `data/` | `MERGE` | S3 imports and adapter/transaction tests pass |
+| Model metadata in `models/` | `registry/models/` | `MERGE` | S3 registry lookup/version tests pass |
+| Model clients/providers in `models/` | `control/clients/models/`, `integrations/providers/` | `SPLIT` | S3 routing/provider contracts pass |
+| `agents/` | Registry, Control, SDK, integrations or Runtime bundle | `SPLIT` | S3 every file classified by behavior |
+| `protos`, `schemas/proto*`, private service protos | `schemas/v1/protos/` | `MERGE` | S3 generation and cross-language contract tests pass |
+| Generated protobuf/client copies | `shared/generated/{python,typescript,rust}/` | `GENERATED` | Reproducible generation and clean diff pass |
+| `eventbus/` | `schemas/v1/events/`, `control/ports/`, `integrations/eventbus/` | `SPLIT` | S3 event contract and adapter tests pass |
+| `observability/` | `shared/telemetry/`, `integrations/observability/`, `deploy/observability/` | `SPLIT` | S3/S4 telemetry and deployment checks pass |
+| `execution/windows-agentic-bridge/` | `integrations/windows-agentic-bridge/` | `MERGE` | S3 full diff and bridge builds/tests pass |
+| `docker/`, `infra/`, deployment content in `execution/` | `deploy/` | `MERGE` | S4 Native and Quickstart configuration/smoke pass |
+| `ui` | `console/`, `packages/ui-core/` | `SPLIT` | Console build and package consumers pass |
+
+### S2 progress
+
+- S2.1 migrated the five `control-plane/` stubs into canonical Control clients,
+  health routing and transport facades. Legacy files are compatibility exports
+  only; the root remains protected until S5.
+- S2.2 migrated the DAG and scheduler prototypes into
+  `control/orchestration/`. The two legacy files are compatibility exports only;
+  root retirement remains gated on S5.
+- S2.3 merged safe unique behavior into `runtime-daemon/`, made the legacy crate
+  delegate to the canonical library, and changed incomplete sandbox operations
+  from synthetic success to fail-closed errors. Root retirement remains S5.
+- S2.4 classified all 121 `execution/` paths. Its only Runtime source,
+  `runtime_contract.py`, now re-exports the canonical Control Runtime contract;
+  the other 120 deployment, bundle, observability and integration assets remain
+  protected for S3/S4.
+- Gate S2 was executed after S2.4. Control, Gateway and Console passed their
+  build checks; Runtime Cargo test/build remains unproven because crates.io was
+  unreachable. See `docs/migration/s2-gate-report.md`. S2 is not accepted yet.
+
+## Source-of-truth subpaths
+
+```text
+schemas/v1/protos/             authored protobuf
+schemas/v1/events/             authored event schemas
+schemas/v1/json/               authored JSON schemas
+shared/generated/python/       generated Python bindings
+shared/generated/typescript/   generated TypeScript bindings
+shared/generated/rust/         generated Rust bindings
+deploy/native/                 systemd, installers, env and profiles
+deploy/docker/                 Compose and image definitions
+deploy/kubernetes/             Kubernetes assets after Native/Docker parity
+```
+
+## CI invariants
+
+1. No tracked retired top-level root, retired import, or retired runtime path
+   reference is permitted in canonical source and deployment roots. The names
+   are maintained once in the architecture fixture.
+2. No Console source may resolve a Control or Runtime URL.
+3. Gateway has no domain database/ORM dependency or direct data-layer import.
+4. Control has no subprocess, shell or host execution call.
+5. Historical mentions are evidence, not executable dependencies, and are
+   confined to ADR, CAPO recovery and migration-report roots declared by the
+   architecture contract.
+6. A passing raw text search is neither required nor sufficient: the Gate uses
+   tracked paths, parsed imports and runtime path-reference checks.
+
+### S3 progress
+
+- S3.1 consolidated Data implementations and shared interfaces under `data/`.
+  `database/` and `db/` contain compatibility exports/placeholders only; root
+  retirement remains S5.
+- S3.2 confirmed all 11 model profiles match `registry/models`, split the Control
+  client from provider HTTP transport, and made root `models/` compatibility-only.
+- S3.3 classified the sole root `agents/__init__.py` as compatibility-only. No
+  behavior existed to split; canonical ownership rules are recorded in
+  `docs/migration/agents-split.md` without speculative placeholder modules.
+- S3.4 consolidated authored schema/proto ownership under `schemas/v1/`, moved
+  recovered Python bindings to `shared/generated/python/`, and updated active
+  Gateway/Runtime/deployment consumers. Fresh regeneration remains blocked by
+  the unavailable compiler toolchain.
+- S3.5 split Event Bus ownership across `schemas/v1/events/`,
+  `control/ports/event_bus.py` and `integrations/eventbus/`. Root `eventbus/`
+  now contains identity-preserving compatibility exports only; durable Kafka
+  delivery remains an explicitly unwired future capability.
+- S3.6 split transport-neutral audit/telemetry primitives into
+  `shared/telemetry/`, exporter boundaries into `integrations/observability/`
+  and retained deployment ownership under `deploy/observability/`. Root
+  `observability/` and `shared/event_bus/` now contain compatibility exports
+  only; execution deployment copies remain protected for S4.
+- S3.7 compared the initial 39 Windows Bridge files, confirmed no unique legacy asset,
+  made `integrations/windows-agentic-bridge/` the sole active entrypoint and
+  removed the Bridge-to-Control bypass. The `execution/` mirror remains
+  protected and source-identical; dependency/toolchain repairs brought both
+  trees to 41 files. Windows/WSL acceptance is pending.
+- R2 replaced the ambiguous literal search with a centralized retired-root
+  contract and deterministic checks for tracked roots, parsed imports and
+  active runtime path references. Historical ADR/migration evidence and guard
+  fixtures are classified separately. See `docs/migration/s3-gate-report.md`.
+- Gate S3 is accepted on current evidence; this does not imply Native, Docker,
+  merge or production acceptance.
+- S3.1 proceeded on explicit operator instruction while Gate S2 remained blocked
+  by Cargo registry access; this does not mark S2 accepted.
+
+### S4 progress
+
+- S4 established `deploy/native/`, `deploy/docker/` and `deploy/kubernetes/` as
+  the maintained deployment owners, changed active Compose consumers to the
+  canonical paths, and reduced root lifecycle entrypoints to delegating wrappers.
+- The first Gate S4 run found 84 non-empty legacy deployment payloads. After the
+  operator explicitly approved S5 retirement, all five forbidden deployment
+  paths were removed and the independent Gate S4 re-run passed. See
+  `docs/migration/s4-gate-report.md`.
+- S4/S5 do not claim Linux systemd or live-stack acceptance.
+
+### S5 progress
+
+- S5 retired the approved migration-era service, supporting-layer, integration
+  and deployment roots after canonical ownership, references and Git recovery
+  history were verified.
+- The Console-to-Control health and capability bypasses were removed while the
+  system-health response shape was preserved through Gateway dependency data.
+- Architecture tests including the final Structure completion gate pass. Python,
+  Gateway, Console, Bridge and Compose validation pass; Runtime tests remain
+  blocked by crates.io access and a missing offline dependency cache. See
+  `docs/migration/s5-final-delete.md`.
+
+## Rollback
+
+S1 changes only contracts and architecture checks. Revert its commit to roll
+back the gate definition. Changing ownership requires a superseding ADR; do not
+silently restore a legacy root as canonical.

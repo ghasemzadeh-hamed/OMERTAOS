@@ -1,0 +1,14 @@
+[Unit]
+Description=AION Web Console
+After=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/aion/aion.env
+WorkingDirectory=/opt/aion/console
+ExecStart=/usr/bin/env npm run start
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

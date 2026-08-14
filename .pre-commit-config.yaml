@@ -1,0 +1,26 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        exclude: ^deploy/(?:k8s|kubernetes)/(?:postgres-statefulset|redis-statefulset|gateway-deployment|control-deployment|observability/prometheus|helm-chart)\.yaml$
+      - id: check-yaml
+        name: check-yaml (multi-document manifests)
+        files: ^deploy/(?:k8s|kubernetes)/(?:postgres-statefulset|redis-statefulset|gateway-deployment|control-deployment|observability/prometheus|helm-chart)\.yaml$
+        args: ["--allow-multiple-documents"]
+      - id: check-json
+      - id: check-toml
+  # Gitleaks is temporarily disabled because the upstream hook download fails in
+  # certain CI environments due to SSL verification issues. Re-enable when a
+  # stable mirror or packaged binary is available without custom trust tweaks.
+  - repo: local
+    hooks:
+    - id: sanitize-ascii
+      name: ASCII sanitizer
+      entry: python tools/sanitize_ascii.py
+      language: system
+      pass_filenames: false
+      exclude: "(^|/)aion_core\\.egg-info/"
+      stages: [pre-commit]

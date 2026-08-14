@@ -1,0 +1,37 @@
+{
+  "name": "omertaos-bridge-server",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p .",
+    "dev": "ts-node src/index.ts",
+    "lint": "tsc -p . --noEmit",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "ajv": "^8.17.1",
+    "axios": "^1.6.7",
+    "dotenv": "^16.3.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "prettier": "^3.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5",
+    "vitest": "4.1.10"
+  },
+  "overrides": {
+    "brace-expansion": "^1.1.18",
+    "fast-uri": "^3.1.5",
+    "ip-address": "^10.4.0",
+    "js-yaml": "^4.3.1",
+    "nanoid": "^3.3.17",
+    "postcss": "^8.5.26"
+  }
+}

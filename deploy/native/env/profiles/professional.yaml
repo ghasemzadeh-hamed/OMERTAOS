@@ -1,0 +1,8 @@
+profile: professional
+cpu_quota: 1.0
+memory_mb: 2048
+gpu_enabled: true
+multi_agent: true
+cluster_enabled: false
+bigdata_enabled: false
+database: postgresql

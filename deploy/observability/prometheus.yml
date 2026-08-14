@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 15s
+scrape_configs:
+  - job_name: gateway
+    static_configs:
+      - targets: ['gateway:8080']
+  - job_name: control
+    static_configs:
+      - targets: ['control:8000']
+  - job_name: modules
+    static_configs:
+      - targets: ['module-host:9090']

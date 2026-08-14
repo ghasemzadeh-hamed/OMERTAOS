@@ -1,0 +1,14 @@
+{
+  "title": "Router Performance",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Gateway RPS",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=\"gateway\"}[5m]))"
+        }
+      ]
+    }
+  ]
+}
