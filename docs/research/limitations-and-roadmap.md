@@ -13,9 +13,11 @@ for a production capability-grant protocol.
 
 ### Distributed operation
 
-The cluster package contains only minimal node-registration and resource-report
-scaffolding. Membership, failure detection, leader election, scheduling,
-federation, partition handling, and consistency behavior are design targets.
+Control contains a minimal local Runtime node registry and scheduler prototype,
+and Runtime exposes bounded registration/resource-report helpers. Authenticated
+membership, cross-Control failure detection, leader election, federation,
+partition handling, consistency behavior, signed grants, and successful
+scheduled Runtime execution remain incomplete.
 
 ### Empirical performance
 

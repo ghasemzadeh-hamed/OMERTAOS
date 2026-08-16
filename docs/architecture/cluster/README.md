@@ -15,13 +15,20 @@ without creating a third orchestration owner.
 The Runtime contains two minimal helpers:
 
 - `cluster/node_registration.rs` accepts a node identifier and currently
-  returns `true`;
-- `cluster/resource_report.rs` currently returns an empty JSON object.
+  rejects blank identifiers;
+- `cluster/resource_report.rs` reports a bounded local node/capacity snapshot
+  from process environment and host parallelism.
 
-There is no implemented membership protocol, failure detector, distributed
-scheduler, federation protocol, leader election, lease fencing, or
-partition-recovery mechanism. The topic documents below are specifications for
-future work, not operational instructions or evidence of a working cluster.
+Control contains a minimal prototype under `control/scheduling/` and
+`control/app/runtime_nodes/` for node registration, heartbeat freshness,
+draining/unreachable states, tenant/capability/capacity eligibility,
+round-robin/least-loaded placement, bounded retry checks, and persisted
+scheduling-decision evidence.
+
+There is no implemented distributed membership protocol, consensus, federation
+protocol, leader election, cross-Control lease fencing, or partition-recovery
+mechanism. The topic documents below are specifications for future work, not
+operational instructions or evidence of a production cluster.
 
 ## Topics
 

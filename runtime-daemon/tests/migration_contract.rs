@@ -1,4 +1,5 @@
 use runtime_daemon::isolation::quota::ResourceQuota;
+use runtime_daemon::cluster::{node_registration::register_node, resource_report::report_resources};
 use runtime_daemon::sandbox::{mount, namespace, process, seccomp};
 
 #[test]
@@ -38,4 +39,22 @@ fn incomplete_sandbox_backends_fail_closed() {
     assert!(mount::isolate_mounts().is_err());
     assert!(seccomp::apply_seccomp("test").is_err());
     assert!(process::spawn_isolated(&["echo".to_string()]).is_err());
+}
+
+#[test]
+fn cluster_node_registration_rejects_blank_identifiers() {
+    assert!(register_node("runtime-a"));
+    assert!(!register_node(""));
+    assert!(!register_node("   "));
+}
+
+#[test]
+fn resource_report_advertises_node_capacity_and_capabilities() {
+    let report = report_resources();
+
+    assert!(report.contains("\"node_id\""));
+    assert!(report.contains("\"total_cpu_millis\""));
+    assert!(report.contains("\"available_memory_mb\""));
+    assert!(report.contains("\"capabilities\""));
+    assert_ne!(report, "{}");
 }
