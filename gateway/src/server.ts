@@ -12,6 +12,8 @@ import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import { pathToFileURL } from 'node:url';
 import { Metadata } from '@grpc/grpc-js';
+import { WebSocket } from 'ws';
+import type { RawData } from 'ws';
 import { createControlClient } from './server/grpc.js';
 import { idempotencyMiddleware, persistIdempotency } from './middleware/idempotency.js';
 import { rateLimitMiddleware } from './middleware/rateLimit.js';
@@ -31,6 +33,7 @@ import { registerHealthRoutes } from './routes/health.js';
 import { registerClaudeRoutes } from './routes/claude.js';
 import { registerSetupRoutes } from './routes/setup.js';
 import { registerNetworkRoutes } from './routes/network.js';
+import { closeRedis } from './redis.js';
 import {
   buildDevKernelPayload,
   callDevKernel,
@@ -415,10 +418,9 @@ app.get('/v1/stream/:id', async (request, reply) => {
 });
 
 app.register(async (instance) => {
-  instance.get('/v1/ws', { websocket: true }, (connection, request) => {
-    const { socket } = connection;
+  instance.get('/v1/ws', { websocket: true }, (socket, request) => {
     socket.send(JSON.stringify({ type: 'welcome', requestId: request.id }));
-    socket.on('message', async (message: Buffer) => {
+    socket.on('message', async (message: RawData) => {
       try {
         const parsed = JSON.parse(message.toString());
         if (parsed.action === 'subscribe' && parsed.taskId) {
@@ -434,7 +436,7 @@ app.register(async (instance) => {
       }
     });
     const heartbeat = setInterval(() => {
-      if (socket.readyState === socket.OPEN) {
+      if (socket.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify({ type: 'heartbeat', ts: Date.now() }));
       }
     }, 15_000);
@@ -463,6 +465,8 @@ app.setErrorHandler((error, request, reply) => {
 export const start = async () => {
   const telemetryEnabled = await startTelemetry(gatewayConfig.telemetry.serviceName);
   app.addHook('onClose', async () => {
+    await closeRedis();
+    controlClient.close?.();
     if (telemetryEnabled) {
       await shutdownTelemetry();
     }
@@ -488,14 +492,36 @@ const shouldAutostart = (): boolean => {
 };
 
 if (shouldAutostart()) {
-  start().catch((error) => {
-    app.log.error({ err: error }, 'Gateway failed to start');
-    process.exitCode = 1;
-  });
+  start()
+    .then(() => {
+      let shutdownInProgress = false;
+      const shutdown = async (signal: NodeJS.Signals) => {
+        if (shutdownInProgress) {
+          return;
+        }
+        shutdownInProgress = true;
+        app.log.info({ signal }, 'Gateway received shutdown signal');
+        try {
+          await app.close();
+          process.exit(0);
+        } catch (error) {
+          app.log.error({ err: error }, 'Gateway failed to shut down cleanly');
+          process.exit(1);
+        }
+      };
+      process.once('SIGTERM', () => {
+        void shutdown('SIGTERM');
+      });
+      process.once('SIGINT', () => {
+        void shutdown('SIGINT');
+      });
+    })
+    .catch((error) => {
+      app.log.error({ err: error }, 'Gateway failed to start');
+      process.exitCode = 1;
+    });
 }
 
 export type GatewayServer = typeof app;
 
 export default app;
-
-

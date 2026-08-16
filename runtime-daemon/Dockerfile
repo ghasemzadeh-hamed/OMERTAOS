@@ -1,5 +1,7 @@
 FROM rust:1.87-bookworm AS builder
 
+ENV CARGO_BUILD_JOBS=1
+
 WORKDIR /app
 RUN apt-get update \
     && apt-get install -y --no-install-recommends protobuf-compiler \

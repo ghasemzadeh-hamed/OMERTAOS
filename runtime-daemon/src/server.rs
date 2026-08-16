@@ -161,7 +161,32 @@ pub async fn run_server(config: RuntimeConfig) -> Result<()> {
     let addr = config.bind_addr.parse()?;
     tonic::transport::Server::builder()
         .add_service(RuntimeServiceImpl::new(config).service())
-        .serve(addr)
+        .serve_with_shutdown(addr, shutdown_signal())
         .await?;
     Ok(())
+}
+
+async fn shutdown_signal() {
+    #[cfg(unix)]
+    {
+        use tokio::signal::unix::{signal, SignalKind};
+
+        let mut terminate = signal(SignalKind::terminate())
+            .expect("failed to install SIGTERM handler for runtime daemon");
+        tokio::select! {
+            _ = tokio::signal::ctrl_c() => {
+                tracing::info!("runtime daemon received SIGINT");
+            }
+            _ = terminate.recv() => {
+                tracing::info!("runtime daemon received SIGTERM");
+            }
+        }
+    }
+
+    #[cfg(not(unix))]
+    {
+        if let Err(err) = tokio::signal::ctrl_c().await {
+            tracing::warn!(%err, "runtime daemon shutdown signal handler failed");
+        }
+    }
 }
