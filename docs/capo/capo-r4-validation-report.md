@@ -137,6 +137,41 @@ Observed warnings:
    the non-login `omertaos` service user, and the clean release clone under
    `/srv/omertaos-source`.
 
+## Phase 7 minimal runtime-scheduling prototype
+
+Status: implemented as a local Control-owned prototype, not as distributed
+cluster production evidence.
+
+Implemented behavior:
+
+- additive Control tables for runtime nodes, task attempts, and scheduling
+  decisions;
+- `/v1/runtime/nodes` registration and discovery routes;
+- heartbeat updates with `healthy`, `degraded`, `unreachable`, and `draining`
+  states;
+- tenant, capability, capacity, freshness, and drain-state eligibility checks;
+- round-robin and least-loaded placement strategies;
+- bounded retry rejection and idempotent scheduling replay for an existing
+  `task_id`/`attempt_id`;
+- persisted scheduling-decision evidence plus audit events;
+- Runtime helper registration rejects blank node IDs and resource reports no
+  longer return `{}`.
+
+Validation:
+
+- `.venv312/bin/python -m pytest tests/control/test_runtime_scheduler.py tests/control/test_runtime_node_routes.py tests/control/test_database_migration.py -q`
+  returned 8 passed with the existing FastAPI/Starlette deprecation warnings.
+- `docker run --rm -e CARGO_BUILD_JOBS=1 -v "$PWD":/workspace -w /workspace/runtime-daemon rust:1.87-bookworm cargo test --locked --all-targets`
+  returned 4 Runtime tests passed.
+
+Boundaries:
+
+- no federation, consensus, leader election, multi-region behavior, Kubernetes
+  operator, or production certification is implemented;
+- no successful scheduled Runtime execution is claimed;
+- Runtime reports are treated as observations; Control remains the scheduler and
+  policy owner.
+
 ## Native acceptance plan
 
 Do not run these steps without explicit operator approval where noted.

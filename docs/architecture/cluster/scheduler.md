@@ -1,10 +1,12 @@
 # Cluster scheduling
 
-**Status:** design target; not implemented.
+**Status:** minimal local prototype.
 
-A future scheduler should map an authorized attempt to an eligible Runtime node
-without bypassing policy or capability constraints. Hard constraints are
-evaluated before optimization preferences.
+The current `control/scheduling/` prototype maps a requested attempt to an
+eligible Runtime node using local Control state. It evaluates hard constraints
+before optimization preferences and records each scheduling decision. It does
+not yet execute the attempt, mint a signed Runtime grant, coordinate multiple
+Control instances, or prove failover behavior.
 
 ## Candidate constraints
 
@@ -17,7 +19,8 @@ evaluated before optimization preferences.
 
 ## Candidate objectives
 
-After constraints pass, placement may consider queue age, fairness, locality,
+After constraints pass, the prototype supports round-robin and least-loaded
+placement. Future placement may consider queue age, fairness, locality,
 estimated startup cost, reliability, and fragmentation. Every decision should
 record the rule version and inputs needed for later explanation.
 
