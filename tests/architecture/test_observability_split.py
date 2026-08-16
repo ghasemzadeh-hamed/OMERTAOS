@@ -82,3 +82,22 @@ def test_control_and_deployment_use_canonical_observability_owners() -> None:
     assert (deploy_root / "otel-collector.yaml").is_file()
     assert (deploy_root / "prometheus.yml").is_file()
     assert (deploy_root / "grafana" / "router.json").is_file()
+
+
+def test_control_image_uses_reviewed_dependency_file() -> None:
+    dockerfile = (REPO_ROOT / "control" / "Dockerfile").read_text(encoding="utf-8")
+    requirements = (REPO_ROOT / "control" / "requirements.docker.txt").read_text(encoding="utf-8")
+
+    assert "COPY control/requirements.docker.txt" in dockerfile
+    assert "pip install --no-cache-dir --requirement ./control/requirements.docker.txt" in dockerfile
+    assert 'CMD ["python", "-m", "control.app.serve"]' in dockerfile
+    assert "PIP_DEFAULT_TIMEOUT=120" in dockerfile
+    assert "fastapi>=" not in dockerfile
+    assert "uvicorn[standard]>=" not in dockerfile
+
+    for line in requirements.splitlines():
+        if line.strip():
+            assert "==" in line
+
+    assert "grpcio==1.76.0" in requirements
+    assert "protobuf==6.33.6" in requirements

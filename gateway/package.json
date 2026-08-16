@@ -13,6 +13,11 @@
     "e2e": "playwright test"
   },
   "dependencies": {
+    "@aion/secret-provider": "file:../shared/secret-provider-node",
+    "@fastify/compress": "9.2.0",
+    "@fastify/cors": "11.3.0",
+    "@fastify/helmet": "13.1.0",
+    "@fastify/websocket": "11.3.0",
     "@grpc/grpc-js": "^1.10.6",
     "@grpc/proto-loader": "^0.7.8",
     "@opentelemetry/api": "^1.9.0",
@@ -23,7 +28,7 @@
     "@types/jsonwebtoken": "^9.0.5",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
-    "@aion/secret-provider": "file:../shared/secret-provider-node",
+    "dotenv": "^16.4.0",
     "fastify": "^5.11.3",
     "fastify-plugin": "^4.5.1",
     "fastify-sse-v2": "^2.1.0",
@@ -32,14 +37,10 @@
     "jsonwebtoken": "^9.0.2",
     "pino": "^8.17.0",
     "uuid": "^11.1.1",
-    "zod": "^3.23.8",
-    "@fastify/compress": "^7.0.0",
-    "@fastify/helmet": "^11.1.1",
-    "@fastify/websocket": "^8.0.0",
-    "@fastify/cors": "^9.0.0",
-    "dotenv": "^16.4.0"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@types/compression": "^1.7.5",
     "@types/cors": "^2.8.17",
     "@types/http-errors": "^2.0.4",
@@ -48,7 +49,6 @@
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "eslint": "^8.57.0",
-    "@playwright/test": "^1.56.1",
     "playwright": "^1.56.1",
     "prettier": "^3.2.5",
     "ts-node": "^10.9.2",

@@ -1,17 +1,15 @@
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PIP_DEFAULT_TIMEOUT=120 \
+    PIP_RETRIES=10
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir \
-        "fastapi>=0.115" \
-        "uvicorn[standard]>=0.30" \
-        "httpx>=0.27" \
-        "pyyaml>=6.0" \
-        "sqlalchemy>=2.0" \
-        "psycopg2-binary>=2.9"
+COPY control/requirements.docker.txt ./control/requirements.docker.txt
+
+RUN pip install --no-cache-dir --requirement ./control/requirements.docker.txt
 
 COPY control ./control
 COPY schemas ./schemas
@@ -21,4 +19,4 @@ COPY shared ./shared
 
 EXPOSE 8000 50051
 
-CMD ["uvicorn", "control.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "control.app.serve"]

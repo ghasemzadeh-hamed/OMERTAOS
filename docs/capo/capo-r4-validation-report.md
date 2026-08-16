@@ -27,15 +27,21 @@ this workspace are validation checkpoints, not upstream GitHub history.
 
 | Gate | Command | Result | Evidence level | Notes |
 |---|---|---:|---|---|
-| Architecture tests | `python -m pytest tests/architecture -q` | 63 passed | E1 | Executed with bundled Python 3.12 venv. |
-| Python tests | `python -m pytest tests/ -q` | 173 passed, 2 skipped | E1/E2 | Warnings: Starlette TestClient/httpx deprecation and FastAPI `on_event` deprecation. |
+| Architecture tests | `.venv312/bin/python -m pytest tests/architecture -q` | 68 passed | E1 | Executed with repository Python 3.12 venv after repairs. |
+| Python tests | `.venv312/bin/python -m pytest tests/ -q` | 180 passed, 2 skipped | E1/E2 | Warnings: Starlette TestClient/httpx deprecation and FastAPI `on_event` deprecation. |
 | Python lint | `ruff check .` | passed | E1 | No issues reported. |
 | Gateway install | `npm ci --prefix gateway` | passed | E1 | Required bundled Node 24; system Node 18 failed gateway tests. |
-| Gateway build | `npm run build --prefix gateway` | passed | E1 | Bundled Node 24. |
+| Gateway build | `PATH=<bundled-node>:$PATH npm run build --prefix gateway` | passed | E1 | Bundled Node 24. |
 | Gateway tests | `npm test --prefix gateway` | 2 files, 6 tests passed | E1 | Vitest. |
-| Console install | `pnpm --dir console install --frozen-lockfile` | failed | blocked | Registry/network timeouts while fetching packages such as `next`, `@prisma/client`, and `@next/swc-linux-x64-gnu`. Console tests/build were skipped because installation was incomplete. |
-| Runtime host fmt/test | `cargo fmt --check`, `cargo test` | unavailable | blocked | No host `cargo`; local rustup 1.87.0 install was stopped after slow/incomplete component downloads. |
-| Runtime Docker build | `docker compose ... build runtime` | passed | E2 build evidence | Built `omertaos-runtime:latest`; release build completed inside image. This is not a substitute for host cargo fmt/test. |
+| Console install | `node <pnpm-11.13.1>/bin/pnpm.cjs --dir console install --frozen-lockfile` | passed | E1 | Required adding `packages: ["."]` to `console/pnpm-workspace.yaml`; the rejected `desktop-shell` workspace inclusion remains out of lockfile scope. |
+| Console Prisma generate | `pnpm --dir console prisma:generate` | passed | E1 | Used the existing local placeholder `DATABASE_URL` fallback; no live DB connection claimed. |
+| Console tests | `pnpm --dir console test --config vitest.config.mts` | 6 files, 11 tests passed | E1 | Warning: baseline browser mapping data is stale. |
+| Console production build | `pnpm --dir console build` | passed | E1 | Warnings: unsupported Next App Router i18n config, stale baseline/caniuse data, sanitized empty DB URL logs during static generation. |
+| Runtime host fmt/test | `cargo fmt --check`, `cargo test` | unavailable | blocked | No host `cargo`/`rustc`. Official Rust image did not include `cargo-fmt`/`rustup`, so fmt remains unavailable. |
+| Runtime Docker cargo tests | `docker run ... rust:1.87-bookworm cargo test --locked --all-targets` | 2 passed | E1 | Ran with `CARGO_BUILD_JOBS=1`; 0 unit tests in lib/main, 2 migration contract tests passed. |
+| Runtime Docker build | `docker compose ... build runtime` | passed | E2 build evidence | Built `omertaos-runtime:latest`; release build completed inside image with one Cargo job. |
+| Control Docker build | `docker compose ... build control` | passed | E2 build evidence | Uses pinned `control/requirements.docker.txt` and starts HTTP plus minimal fail-closed gRPC adapter. |
+| Gateway Docker build | `docker compose ... build gateway` | passed | E2 build evidence | Fastify plugins updated for Fastify 5 and WebSocket API updated. |
 | Compose rendering | `docker compose --project-directory . -f deploy/docker/compose/quickstart.yml config` | passed | E1 | Syntax/interpolation only; not live acceptance. |
 | CI integration placeholder | CI conditional for `tests/integration` | passed placeholder | E0 for integration | `tests/integration` directory is absent; no integration behavior was tested. |
 | Bounded Bandit scan | `bandit -r control data integrations policies registry schemas shared scripts -x tests -s B101,B105` | no issues | E1 | Broad repo-wide Bandit scan was too slow and was interrupted. |
@@ -50,34 +56,47 @@ this workspace are validation checkpoints, not upstream GitHub history.
 
 ## Live Docker acceptance
 
-Status: partial backend acceptance only.
+Status: backend live acceptance passed with an explicit runtime-execution gap.
+Console was validated by install/test/build locally, but the Console container was
+not started in the live stack on this 8 GiB host.
 
-Executed services: `postgres`, `redis`, and one `runtime` container. Console,
-Gateway, Control, MinIO, Qdrant, and Mongo were not started.
+Executed services: `postgres`, `redis`, `qdrant`, `minio`, one `runtime`,
+`control`, and `gateway`.
 
 Passing checks:
 
-- `docker compose up -d --no-build postgres redis runtime` exited 0.
-- Postgres, Redis, and Runtime reached Docker `healthy` status.
+- `docker compose up -d --no-build gateway` started the backend dependency set
+  without rebuilding.
+- Postgres, Redis, Runtime, Control, and Gateway reached Docker `healthy`
+  status where a healthcheck is defined.
+- Control HTTP health returned `{"status":"ok","service":"control"}`.
+- Gateway HTTP health returned `{"status":"ok","service":"gateway"}` with
+  `redis` and `control` dependencies reported as `ok`.
+- Control gRPC port `50051` was reachable inside `omerta-net`.
 - Runtime connectivity passed with:
   `docker run --rm --network omerta-net -e AION_RUNTIME_HEALTH_ADDR=runtime:50051 omertaos-runtime:latest --healthcheck`.
 - Postgres readiness passed with `pg_isready`.
 - Redis readiness passed with `redis-cli ping`.
 - Persistence probe survived a normal Postgres container restart:
-  `codex_acceptance_probe.id = 'capo-r4-live-probe'`.
-- Services were stopped with `docker compose stop postgres redis runtime`.
-- The `omertaos_postgres-data` Docker volume remained present. No `down -v` was run.
+  `codex_r4_persistence_probe.id = 'capo-r4'`.
+- Gateway -> Control gRPC task submission returned HTTP 200 with application
+  status `ERROR` and code `RUNTIME_TRANSPORT_UNAVAILABLE`. This proves the
+  Gateway-to-Control transport is executable and fail-closed, but does not prove
+  Runtime execution.
+- Services were stopped with `docker compose stop`.
+- Final inspected exits: Gateway 0, Control 0, Runtime 0, Postgres 0, Redis 0,
+  MinIO 0, Qdrant 143; none were OOM-killed. Qdrant 143 is the upstream
+  container's SIGTERM exit on normal stop.
+- The `omertaos_postgres-data` and `omertaos_minio-data` Docker volumes
+  remained present. No `down -v` was run.
 
 Failed or incomplete checks:
 
-- Control image build failed during `pip install` with a
-  `files.pythonhosted.org` read timeout while downloading `psycopg2-binary`.
-- Because Control did not build, Gateway/Control/Runtime live request flow was
-  not executed.
-- Console live health and Console-to-Gateway path were not executed.
-- Runtime container stopped with exit code 137 after `docker compose stop`;
-  Postgres and Redis stopped with exit code 0. Treat runtime graceful shutdown as
-  not proven.
+- Full Console live health and browser path were not executed locally; Console
+  was built and tested outside Docker instead.
+- Runtime execution through Control remains intentionally fail-closed because
+  the versioned Control-to-Runtime transport is not implemented in this
+  milestone. Do not report this as successful distributed execution.
 
 Observed warnings:
 
@@ -85,31 +104,35 @@ Observed warnings:
   change was made.
 - Postgres local init log reported trust authentication for local connections in
   the default image initialization path.
+- Gateway logged that TLS material and JWT public key are absent in dev
+  quickstart mode. Protected task requests used the committed quickstart API-key
+  path; no production auth bypass was added.
 
 ## Claim ledger comparison
 
 | Claim | Current level | Source evidence | Executable test | Actual result | Gap |
 |---|---|---|---|---|---|
-| Canonical repository ownership boundaries exist | E1 | Architecture docs and tests | `pytest tests/architecture` | 63 passed | Does not prove runtime behavior. |
-| Python control/data contracts are testable | E1/E2 | Python tests | `pytest tests/` | 173 passed, 2 skipped | Live services not covered by this gate. |
-| Gateway can build and run unit tests | E1 | Gateway package scripts | `npm ci`, `npm run build`, `npm test` | passed | Live Gateway not started because Control build failed. |
-| Runtime daemon can be built into a container image | E2 build evidence | Runtime Dockerfile | Compose build of `runtime` | passed | Host cargo fmt/test blocked; Linux isolation success not proven. |
+| Canonical repository ownership boundaries exist | E1 | Architecture docs and tests | `pytest tests/architecture` | 68 passed | Does not prove runtime behavior. |
+| Python control/data contracts are testable | E1/E2 | Python tests | `pytest tests/` | 180 passed, 2 skipped | Runtime execution remains fail-closed. |
+| Gateway can build and run unit tests | E1 | Gateway package scripts | `npm run build`, `npm test` | passed | Uses bundled Node 24 because system Node 18 is too old for Vitest/Rolldown. |
+| Console can install, generate Prisma client, test, and build | E1 | Console package scripts | locked pnpm install, prisma generate, unit tests, build | passed | Console live container was not started. |
+| Runtime daemon can be built and tested in Docker | E1/E2 | Runtime Dockerfile and cargo tests | Compose build and Docker cargo test | passed | Host cargo fmt/test blocked; Linux isolation success not proven. |
 | Quickstart compose renders | E1 | Compose file | Compose `config` | passed | Rendering is not live acceptance. |
-| Minimal data/runtime services can start | partial E2 | Compose quickstart | Start Postgres, Redis, Runtime | healthy | Control/Gateway/Console path not executed. |
+| Backend quickstart can start | partial E2 | Compose quickstart | Start data services, Runtime, Control, Gateway | healthy | Console live container not started. |
+| Gateway-to-Control task transport is executable | partial E2 | Gateway and Control containers | POST `/v1/tasks` | HTTP 200 with fail-closed `RUNTIME_TRANSPORT_UNAVAILABLE` | Control-to-Runtime execution transport not implemented. |
 | Persistence survives normal restart | partial E2 | Postgres volume | Insert probe, restart Postgres, read probe | passed | App-level migrations and Console persistence not tested. |
 | Distributed scheduling/runtime is implemented | E0 | Research docs mark future work | none executed | not tested | Requires Phase 7 design/implementation approval. |
 | Production/native/systemd readiness | E0 | Native docs/scripts | no sudo/systemd run | not tested | Requires explicit approval for native acceptance. |
 
 ## Next blockers
 
-1. Network instability blocks reproducible Console and Control dependency
-   installation.
-2. Host Rust toolchain is unavailable; local rustup download was too slow to
-   complete in this run.
-3. Runtime shutdown under Compose ended with exit 137 and needs diagnosis before
-   claiming clean graceful shutdown.
-4. Full Console -> Gateway -> Control -> Runtime acceptance remains blocked until
-   Control and Gateway images build and start.
+1. Control-to-Runtime execution remains fail-closed; no successful Runtime task
+   execution or distributed scheduling claim is supported.
+2. Console live container health and Console-to-Gateway browser path remain
+   unexecuted on this 8 GiB host, although Console install/test/build passed.
+3. Host Rust toolchain is unavailable, and `cargo fmt --check` remains blocked.
+4. Security gates that require unavailable tools (`cargo audit`, `trivy`) remain
+   blocked.
 5. Native N1 remains blocked until an operator approves creating `/etc/omertaos`,
    the non-login `omertaos` service user, and the clean release clone under
    `/srv/omertaos-source`.
