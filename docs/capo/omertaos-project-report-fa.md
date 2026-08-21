@@ -1,8 +1,8 @@
 # گزارش کلی پروژه OMERTAOS / شاخه CAPO
 
-تاریخ تهیه: ۱۶ اوت ۲۰۲۶  
-شاخه محلی: `codex/capo-r4-validation`  
-کامیت فعلی محلی: `02fbce8dd9c21dfea59a5a185e5e9bab6b4e04a6`  
+تاریخ تهیه: ۱۶ اوت ۲۰۲۶
+شاخه محلی: `codex/capo-r4-validation`
+کامیت فعلی محلی: `02fbce8dd9c21dfea59a5a185e5e9bab6b4e04a6`
 کامیت مرجع CAPO شناسایی‌شده از GitHub API: `863e00c6398bdd03a78140e9607c032a8b1025d3`
 
 ## خلاصه مدیریتی
@@ -119,10 +119,10 @@ Docker Quickstart برای backend به صورت زنده اجرا شد: Postgre
 
 ## پیشنهاد Issueهای بعدی
 
-۱. پیاده‌سازی و اعتبارسنجی Control-to-Runtime execution transport نسخه‌دار با fail-closed error model.  
-۲. افزودن Docker live acceptance برای مسیر task واقعی با یک Runtime worker و artifactهای sanitized.  
-۳. آماده‌سازی Rust formatting/security toolchain قابل بازتولید بدون نصب system-wide.  
-۴. اجرای Console live smoke test با محدودیت RAM و ثبت partial/full acceptance.  
+۱. پیاده‌سازی و اعتبارسنجی Control-to-Runtime execution transport نسخه‌دار با fail-closed error model.
+۲. افزودن Docker live acceptance برای مسیر task واقعی با یک Runtime worker و artifactهای sanitized.
+۳. آماده‌سازی Rust formatting/security toolchain قابل بازتولید بدون نصب system-wide.
+۴. اجرای Console live smoke test با محدودیت RAM و ثبت partial/full acceptance.
 ۵. تکمیل native N1 acceptance plan با approval، rollback و restore dry-run.
 
 ## جمع‌بندی

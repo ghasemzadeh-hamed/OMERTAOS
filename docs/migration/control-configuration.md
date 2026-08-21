@@ -25,4 +25,3 @@ The migration uses SQLAlchemy `create_all` and is additive and idempotent. Exist
 ## Rollback
 
 Reverting the application code stops using the table. Leave the additive table in place so rollback is non-destructive and configuration evidence remains available. Table or row deletion requires a separate approved data migration.
-
