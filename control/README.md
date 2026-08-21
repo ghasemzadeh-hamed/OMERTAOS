@@ -15,6 +15,16 @@ The Python Control Plane is OMERTAOS's orchestration authority. It owns task lif
 
 An async FastAPI-compatible HTTP surface may provide health and administrative compatibility endpoints; service-to-service task operations use generated gRPC contracts. Handlers remain non-blocking and delegate CPU-heavy work to bounded executors.
 
+Current HTTP prototype endpoints include:
+
+- `GET /v1/config/status` for the effective and pending router configuration;
+- `POST /v1/config/propose`, `/apply`, and `/revert` for authenticated configuration changes;
+- `/v1/network/proxies` for authenticated proxy profile management;
+- `/v1/runtime/nodes` and `/v1/runtime/schedule` for the minimal node registry and scheduler;
+- `/health`, `/v1/health`, and `/v1/models` for source-backed status and model metadata.
+
+Configuration state is stored in the additive `control_configuration` table. Apply the current Control schema with `python -m control.app.network.migrate`; use `--check` for a read-only gate.
+
 ## Pipeline
 
 ```text
@@ -36,7 +46,7 @@ docker compose --project-directory . -f deploy/docker/compose/quickstart.yml up 
 curl http://localhost:8000/health
 ```
 
-Important configuration includes `AION_CONTROL_POSTGRES_DSN`, `AION_CONTROL_MONGO_DSN`, `AION_CONTROL_REDIS_URL`, `AION_CONTROL_QDRANT_URL`, `AION_CONTROL_MINIO_*`, `AION_CONTROL_MODELS_DIRECTORY`, `AION_CONTROL_POLICIES_DIRECTORY`, `TENANCY_MODE`, and the Runtime gRPC endpoint. Production credentials must come from the configured secret provider.
+Important configuration includes `AION_CONTROL_POSTGRES_DSN`, `AION_CONTROL_MONGO_DSN`, `AION_CONTROL_REDIS_URL`, `AION_CONTROL_QDRANT_URL`, `AION_CONTROL_MINIO_*`, `AION_CONTROL_MODELS_DIRECTORY`, `AION_CONTROL_POLICIES_DIRECTORY`, `TENANCY_MODE`, the Runtime gRPC endpoint, and `AION_GATEWAY_ADMIN_TOKEN` for authenticated Gateway-owned admin calls. Production credentials must come from the configured secret provider.
 
 When the development-only local proxy-secret fallback is explicitly enabled,
 set `AION_CONTROL_LOCAL_SECRET_KEY` to a base64-encoded AES key. Local proxy
@@ -45,6 +55,7 @@ this key is absent. Production should use the configured external secret
 provider instead.
 
 The Runtime client reads `AION_RUNTIME_ENDPOINT` (default
-`127.0.0.1:50051`). The canonical facade is fail-closed: callers must install a
-versioned generated transport before execution, and every request has a positive
-timeout. It never executes a command locally or reports synthetic success.
+`127.0.0.1:50051`) and uses the generated gRPC transport. The canonical facade
+is fail-closed: transport errors are reported as `RuntimeTransportUnavailable`,
+every request has a positive timeout, and Control never executes the command
+locally or reports synthetic success.

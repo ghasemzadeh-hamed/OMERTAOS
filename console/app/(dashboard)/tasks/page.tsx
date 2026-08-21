@@ -1,12 +1,11 @@
-import GlassCard from '@/components/GlassCard';
+import CapabilityUnavailablePage from "@/components/CapabilityUnavailablePage";
 
 export default function TasksPage() {
   return (
-    <GlassCard>
-      <h2 className="text-xl font-semibold mb-4">Tasks</h2>
-      <div className="opacity-80 text-sm">
-        Hook SSE from {process.env.NEXT_PUBLIC_GATEWAY_URL}/v1/stream/:id or proxy through Next.js for streaming telemetry.
-      </div>
-    </GlassCard>
+    <CapabilityUnavailablePage
+      title="Tasks"
+      description="Inspect submitted and completed work."
+      reason="Task submission is available in Chat and Agent Mode, but the running Gateway does not expose a task-list endpoint."
+    />
   );
 }

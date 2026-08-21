@@ -1,4 +1,4 @@
-import { ApiEnvelope, ChatMessage, ChatThread } from '@/types/os-chat';
+import { ApiEnvelope, ChatMessage, ChatThread } from "@/types/os-chat";
 
 let chatThreads: ChatThread[] = [];
 
@@ -21,7 +21,7 @@ export function listThreads(): ApiEnvelope<ChatThread[]> {
 export function createThread(title: string): ApiEnvelope<ChatThread> {
   const thread: ChatThread = {
     id: `thr_${Date.now()}`,
-    title: title.trim() || 'Untitled thread',
+    title: title.trim() || "Untitled thread",
     createdAtIso: new Date().toISOString(),
   };
   chatThreads = [thread, ...chatThreads];
@@ -34,11 +34,14 @@ export function getMessages(threadId: string): ApiEnvelope<ChatMessage[]> {
   return paginate(messages);
 }
 
-export function addMessage(threadId: string, contentText: string): ApiEnvelope<ChatMessage> {
+export function addMessage(
+  threadId: string,
+  contentText: string,
+): ApiEnvelope<ChatMessage> {
   const trimmed = contentText.trim();
   const userMessage: ChatMessage = {
     id: `msg_${Date.now()}`,
-    role: 'user',
+    role: "user",
     createdAtIso: new Date().toISOString(),
     contentText: trimmed,
   };
@@ -53,7 +56,7 @@ export function addAssistantMessage(
 ): ApiEnvelope<ChatMessage> {
   const message: ChatMessage = {
     id: `msg_${Date.now()}`,
-    role: 'os',
+    role: "os",
     createdAtIso: new Date().toISOString(),
     contentText,
     runId: options?.runId,
@@ -61,8 +64,4 @@ export function addAssistantMessage(
   };
   threadMessages[threadId] = [...(threadMessages[threadId] ?? []), message];
   return { ok: true, data: message };
-}
-
-export function stopThread(): ApiEnvelope<{ stopped: boolean }> {
-  return { ok: true, data: { stopped: true } };
 }

@@ -1,15 +1,23 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-import { getDatabaseDiagnostics } from '@/lib/databaseInfo';
+import { requireApiAccess } from "@/lib/apiAccess";
+import { getDatabaseDiagnostics } from "@/lib/databaseInfo";
 
-export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
-const isDockerEnv = process.env.AION_DOCKER === '1' || process.env.DOCKER === 'true';
-const isProdEnv = process.env.NODE_ENV === 'production';
+const isDockerEnv =
+  process.env.AION_DOCKER === "1" || process.env.DOCKER === "true";
+const isProdEnv = process.env.NODE_ENV === "production";
 
 export async function GET() {
-  const diagnostics = getDatabaseDiagnostics(process.env.DATABASE_URL, isDockerEnv || isProdEnv);
+  const denied = await requireApiAccess("ADMIN");
+  if (denied) return denied;
+
+  const diagnostics = getDatabaseDiagnostics(
+    process.env.DATABASE_URL,
+    isDockerEnv || isProdEnv,
+  );
 
   return NextResponse.json({
     provider: diagnostics.provider,

@@ -62,6 +62,7 @@ def test_runtime_scheduler_migration_is_additive_and_idempotent(tmp_path) -> Non
     engine = create_engine(f"sqlite:///{tmp_path / 'cluster.db'}")
 
     assert missing_tables(engine) == {
+        "control_configuration",
         "proxy_profiles",
         "runtime_nodes",
         "scheduling_decisions",
@@ -106,9 +107,20 @@ def test_round_robin_scheduler_is_capability_and_tenant_aware(db: Session) -> No
 
 def test_least_loaded_scheduler_prefers_capacity_and_health(db: Session) -> None:
     scheduler = RuntimeScheduler()
-    _register(scheduler, db, "busy", active_leases=3, available_cpu=900, available_memory=500)
-    _register(scheduler, db, "degraded", active_leases=0, available_cpu=900, available_memory=500)
-    _register(scheduler, db, "idle", active_leases=0, available_cpu=900, available_memory=500)
+    _register(
+        scheduler, db, "busy", active_leases=3, available_cpu=900, available_memory=500
+    )
+    _register(
+        scheduler,
+        db,
+        "degraded",
+        active_leases=0,
+        available_cpu=900,
+        available_memory=500,
+    )
+    _register(
+        scheduler, db, "idle", active_leases=0, available_cpu=900, available_memory=500
+    )
     scheduler.record_heartbeat(
         db,
         "degraded",
