@@ -4,6 +4,9 @@ import asyncio
 import os
 from dataclasses import dataclass
 from typing import Protocol
+
+import grpc
+
 from .grpc_transport import GrpcRuntimeTransport
 
 
@@ -52,7 +55,9 @@ class RuntimeDaemonClient:
         transport: RuntimeTransport | None = None,
         timeout_seconds: float = 10.0,
     ) -> None:
-        resolved_endpoint = endpoint or os.getenv("AION_RUNTIME_ENDPOINT", "127.0.0.1:50051")
+        resolved_endpoint = endpoint or os.getenv(
+            "AION_RUNTIME_ENDPOINT", "127.0.0.1:50051"
+        )
         if not resolved_endpoint.strip():
             raise ValueError("Runtime endpoint is required")
         if timeout_seconds <= 0:
@@ -66,11 +71,16 @@ class RuntimeDaemonClient:
             raise RuntimeTransportUnavailable(
                 "Runtime transport is not configured; refusing to report synthetic success"
             )
-        return await asyncio.wait_for(
-            self._transport.execute(
-                self.endpoint,
-                envelope,
-                timeout_seconds=self.timeout_seconds,
-            ),
-            timeout=self.timeout_seconds,
-        )
+        try:
+            return await asyncio.wait_for(
+                self._transport.execute(
+                    self.endpoint,
+                    envelope,
+                    timeout_seconds=self.timeout_seconds,
+                ),
+                timeout=self.timeout_seconds,
+            )
+        except grpc.RpcError as error:
+            raise RuntimeTransportUnavailable(
+                "Runtime transport is unavailable; refusing to report synthetic success"
+            ) from error

@@ -1,10 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const userUpsert = vi.fn();
 const completeSetup = vi.fn();
+const ensureSetupState = vi.fn();
 const hash = vi.fn();
 
-vi.mock('@/lib/prisma', () => ({
+vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: {
       upsert: userUpsert,
@@ -12,22 +13,27 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-vi.mock('@/lib/setup', () => ({
+vi.mock("@/lib/setup", () => ({
   completeSetup,
 }));
 
-vi.mock('bcrypt', () => ({
+vi.mock("@/lib/systemState", () => ({
+  ensureSetupState,
+}));
+
+vi.mock("bcrypt", () => ({
   default: {
     hash,
   },
 }));
 
-describe('setup bootstrap route', () => {
+describe("setup bootstrap route", () => {
   beforeEach(() => {
     vi.resetModules();
     userUpsert.mockReset();
     completeSetup.mockReset();
-    hash.mockReset().mockResolvedValue('hashed-password');
+    ensureSetupState.mockReset().mockResolvedValue(false);
+    hash.mockReset().mockResolvedValue("hashed-password");
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -39,63 +45,84 @@ describe('setup bootstrap route', () => {
     vi.unstubAllGlobals();
   });
 
-  it('persists the setup admin credentials before completing setup', async () => {
-    const { POST } = await import('@/app/api/system/setup/bootstrap/route');
+  it("persists the setup admin credentials before completing setup", async () => {
+    const { POST } = await import("@/app/api/system/setup/bootstrap/route");
 
     const response = await POST(
-      new Request('http://localhost/api/system/setup/bootstrap', {
-        method: 'POST',
+      new Request("http://localhost/api/system/setup/bootstrap", {
+        method: "POST",
         body: JSON.stringify({
-          username: 'admin',
-          password: 'chosen-password',
-          profile: 'user',
+          username: "admin",
+          password: "chosen-password",
+          profile: "user",
           encryptData: true,
         }),
       }),
     );
 
     await expect(response.json()).resolves.toEqual({ ok: true });
-    expect(hash).toHaveBeenCalledWith('chosen-password', 12);
+    expect(hash).toHaveBeenCalledWith("chosen-password", 12);
     expect(userUpsert).toHaveBeenCalledWith({
-      where: { email: 'admin@local' },
+      where: { email: "admin@local" },
       update: {
-        password: 'hashed-password',
-        role: 'ADMIN',
-        name: 'admin',
+        password: "hashed-password",
+        role: "ADMIN",
+        name: "admin",
       },
       create: {
-        email: 'admin@local',
-        password: 'hashed-password',
-        role: 'ADMIN',
-        name: 'admin',
+        email: "admin@local",
+        password: "hashed-password",
+        role: "ADMIN",
+        name: "admin",
       },
     });
     expect(completeSetup).toHaveBeenCalledOnce();
   });
 
-  it('does not mark setup complete when the gateway bootstrap fails', async () => {
+  it("does not mark setup complete when the gateway bootstrap fails", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 502,
       text: vi.fn().mockResolvedValue('{"detail":"gateway failed"}'),
     }) as any;
-    const { POST } = await import('@/app/api/system/setup/bootstrap/route');
+    const { POST } = await import("@/app/api/system/setup/bootstrap/route");
 
     const response = await POST(
-      new Request('http://localhost/api/system/setup/bootstrap', {
-        method: 'POST',
+      new Request("http://localhost/api/system/setup/bootstrap", {
+        method: "POST",
         body: JSON.stringify({
-          username: 'admin',
-          password: 'chosen-password',
-          profile: 'user',
+          username: "admin",
+          password: "chosen-password",
+          profile: "user",
           encryptData: true,
         }),
       }),
     );
 
     expect(response.status).toBe(502);
-    await expect(response.json()).resolves.toEqual({ error: 'gateway failed' });
+    await expect(response.json()).resolves.toEqual({ error: "gateway failed" });
     expect(userUpsert).not.toHaveBeenCalled();
     expect(completeSetup).not.toHaveBeenCalled();
+  });
+
+  it("does not allow setup credentials to be replaced after setup", async () => {
+    ensureSetupState.mockResolvedValue(true);
+    const { POST } = await import("@/app/api/system/setup/bootstrap/route");
+
+    const response = await POST(
+      new Request("http://localhost/api/system/setup/bootstrap", {
+        method: "POST",
+        body: JSON.stringify({
+          username: "attacker",
+          password: "replacement-password",
+          profile: "user",
+          encryptData: true,
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(409);
+    expect(userUpsert).not.toHaveBeenCalled();
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 });

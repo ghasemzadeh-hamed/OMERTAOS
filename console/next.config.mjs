@@ -1,20 +1,14 @@
-const locales = ['en', 'fa'];
-
 const nextConfig = {
-  transpilePackages: ['@aion/ui-core'],
+  transpilePackages: ["@aion/ui-core"],
   reactStrictMode: true,
-  i18n: {
-    locales,
-    defaultLocale: 'en',
-  },
   async headers() {
     return [
       {
-        source: '/:path*',
+        source: "/:path*",
         headers: [
           {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
           },
         ],
       },

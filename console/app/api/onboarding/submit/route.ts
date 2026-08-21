@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
 
+import { requireApiAccess } from "@/lib/apiAccess";
+
 const GATEWAY_BASE =
   process.env.NEXT_PUBLIC_GATEWAY_URL ||
   process.env.GATEWAY_BASE_URL ||
   "http://localhost:3000";
 
 export async function POST(req: Request) {
+  const denied = await requireApiAccess("ADMIN");
+  if (denied) return denied;
+
   const body = await req.json();
-    const r = await fetch(`${GATEWAY_BASE}/admin/onboarding/submit`, {
+  const r = await fetch(`${GATEWAY_BASE}/admin/onboarding/submit`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),

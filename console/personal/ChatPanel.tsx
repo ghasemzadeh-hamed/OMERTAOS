@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 type ChatMessage = {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   pending?: boolean;
   taskId?: string;
@@ -16,17 +16,23 @@ type ChatPanelProps = {
   autoConfirm?: boolean;
 };
 
-const buildHistory = (messages: ChatMessage[]): { role: string; content: string }[] =>
+const buildHistory = (
+  messages: ChatMessage[],
+): { role: string; content: string }[] =>
   messages
-    .filter((message) => message.content && (message.role === 'user' || message.role === 'assistant'))
+    .filter(
+      (message) =>
+        message.content &&
+        (message.role === "user" || message.role === "assistant"),
+    )
     .map((message) => ({ role: message.role, content: message.content }));
 
 const parseEventsText = (raw: unknown): string => {
   if (!raw) {
-    return '';
+    return "";
   }
   let events: unknown = raw;
-  if (typeof raw === 'string') {
+  if (typeof raw === "string") {
     try {
       events = JSON.parse(raw);
     } catch (error) {
@@ -34,18 +40,18 @@ const parseEventsText = (raw: unknown): string => {
     }
   }
   if (!Array.isArray(events)) {
-    return '';
+    return "";
   }
-  let final = '';
-  let deltas = '';
+  let final = "";
+  let deltas = "";
   for (const item of events) {
-    if (item && typeof item === 'object') {
+    if (item && typeof item === "object") {
       const delta = (item as Record<string, unknown>).delta;
-      if (typeof delta === 'string') {
+      if (typeof delta === "string") {
         deltas += delta;
       }
       const text = (item as Record<string, unknown>).text;
-      if (typeof text === 'string' && text.trim().length > 0) {
+      if (typeof text === "string" && text.trim().length > 0) {
         final = text;
       }
     }
@@ -53,14 +59,21 @@ const parseEventsText = (raw: unknown): string => {
   return final || deltas;
 };
 
-const ChatPanel: React.FC<ChatPanelProps> = ({ intent = 'chat', title = 'Chat', autoConfirm = false }) => {
+const ChatPanel: React.FC<ChatPanelProps> = ({
+  intent = "chat",
+  title = "Chat",
+  autoConfirm = false,
+}) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
   const sessionId = useMemo(
-    () => (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `session-${Date.now()}`),
+    () =>
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `session-${Date.now()}`,
     [],
   );
 
@@ -80,9 +93,17 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ intent = 'chat', title = 'Chat', 
     }
   };
 
-  const updateAssistantMessage = (id: string, content: string, pending: boolean) => {
+  const updateAssistantMessage = (
+    id: string,
+    content: string,
+    pending: boolean,
+  ) => {
     setMessages((prev) =>
-      prev.map((message) => (message.id === id ? { ...message, content, pending, taskId: message.taskId } : message)),
+      prev.map((message) =>
+        message.id === id
+          ? { ...message, content, pending, taskId: message.taskId }
+          : message,
+      ),
     );
   };
 
@@ -95,22 +116,32 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ intent = 'chat', title = 'Chat', 
       try {
         const payload = JSON.parse(event.data);
         const status = payload?.status ?? payload?.result?.status;
-        const agentText = typeof payload?.result?.agent === 'string' ? payload.result.agent : '';
+        const agentText =
+          typeof payload?.result?.agent === "string"
+            ? payload.result.agent
+            : "";
         const eventsText = parseEventsText(payload?.result?.events);
-        const errorText = typeof payload?.error?.message === 'string' ? payload.error.message : '';
+        const errorText =
+          typeof payload?.error?.message === "string"
+            ? payload.error.message
+            : "";
         const content = errorText || agentText || eventsText;
-        updateAssistantMessage(messageId, content, status !== 'OK' && !errorText);
-        if (status === 'OK' || errorText) {
+        updateAssistantMessage(
+          messageId,
+          content,
+          status !== "OK" && !errorText,
+        );
+        if (status === "OK" || errorText) {
           closeStream();
         }
       } catch (err) {
-        updateAssistantMessage(messageId, 'Streaming error.', false);
+        updateAssistantMessage(messageId, "Streaming error.", false);
         closeStream();
       }
     };
 
     source.onerror = () => {
-      updateAssistantMessage(messageId, 'Connection lost.', false);
+      updateAssistantMessage(messageId, "Connection lost.", false);
       closeStream();
     };
   };
@@ -124,24 +155,31 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ intent = 'chat', title = 'Chat', 
     setSending(true);
     setError(null);
 
-    const userMessage: ChatMessage = { id: `user-${Date.now()}`, role: 'user', content: text };
+    const userMessage: ChatMessage = {
+      id: `user-${Date.now()}`,
+      role: "user",
+      content: text,
+    };
     const assistantMessage: ChatMessage = {
       id: `assistant-${Date.now()}`,
-      role: 'assistant',
-      content: '',
+      role: "assistant",
+      content: "",
       pending: true,
     };
     setMessages((prev) => [...prev, userMessage, assistantMessage]);
-    setInput('');
+    setInput("");
 
-    const history = [...buildHistory(messages), { role: 'user', content: text }];
+    const history = [
+      ...buildHistory(messages),
+      { role: "user", content: text },
+    ];
 
     try {
-      const response = await fetch('/api/proxy/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/proxy/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          schemaVersion: '1.0',
+          schemaVersion: "1.0",
           intent,
           params: {
             history,
@@ -149,30 +187,40 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ intent = 'chat', title = 'Chat', 
             session_id: sessionId,
             auto_confirm: autoConfirm,
           },
-          preferredEngine: 'auto',
-          priority: 'normal',
+          preferredEngine: "auto",
+          priority: "normal",
         }),
       });
 
       const data = await response.json();
       if (!response.ok) {
-        const message = typeof data?.message === 'string' ? data.message : 'Request failed.';
+        const message =
+          typeof data?.message === "string" ? data.message : "Request failed.";
         throw new Error(message);
       }
 
       const taskId = data?.taskId as string | undefined;
-      const resultText = typeof data?.result?.agent === 'string' ? data.result.agent : '';
+      const resultText =
+        typeof data?.result?.agent === "string" ? data.result.agent : "";
       const eventsText = parseEventsText(data?.result?.events);
-      const content = resultText || eventsText;
+      const errorText =
+        typeof data?.error?.message === "string" ? data.error.message : "";
+      const content = errorText || resultText || eventsText;
+      const terminal =
+        data?.status === "OK" || data?.status === "ERROR" || Boolean(errorText);
 
-      if (taskId) {
+      if (taskId && !terminal) {
         updateAssistantMessage(assistantMessage.id, content, !content);
         subscribeToTask(taskId, assistantMessage.id);
       } else {
-        updateAssistantMessage(assistantMessage.id, content || 'No response.', false);
+        updateAssistantMessage(
+          assistantMessage.id,
+          content || "Task completed without a text response.",
+          false,
+        );
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error.';
+      const message = err instanceof Error ? err.message : "Unknown error.";
       setError(message);
       updateAssistantMessage(assistantMessage.id, message, false);
     } finally {
@@ -189,15 +237,22 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ intent = 'chat', title = 'Chat', 
       <div className="flex-1 space-y-2 overflow-y-auto p-4 text-sm">
         {messages.map((message) => (
           <div key={message.id} className="leading-relaxed">
-            <span className="font-semibold text-slate-700">{message.role === 'user' ? 'You' : 'Assistant'}:</span>{' '}
-            <span className={message.pending ? 'text-slate-400' : 'text-slate-800'}>
-              {message.content || '...'}
+            <span className="font-semibold text-slate-700">
+              {message.role === "user" ? "You" : "Assistant"}:
+            </span>{" "}
+            <span
+              className={message.pending ? "text-slate-400" : "text-slate-800"}
+            >
+              {message.content || "..."}
             </span>
           </div>
         ))}
         {error && <div className="text-xs text-red-600">{error}</div>}
       </div>
-      <form className="flex gap-2 border-t border-slate-200 p-3" onSubmit={handleSend}>
+      <form
+        className="flex gap-2 border-t border-slate-200 p-3"
+        onSubmit={handleSend}
+      >
         <input
           id="chat-input"
           className="flex-1 rounded border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
@@ -208,7 +263,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ intent = 'chat', title = 'Chat', 
         <button
           type="submit"
           className="rounded bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-          disabled={sending}
+          disabled={sending || !input.trim()}
         >
           Send
         </button>

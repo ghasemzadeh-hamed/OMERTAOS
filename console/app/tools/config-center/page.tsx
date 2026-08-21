@@ -1,235 +1,246 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
+import { Check, RefreshCcw, RotateCcw, Save } from "lucide-react";
 
-const CONTROL_BASE = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3000';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
-type ConfigState = {
-  modelDirectories: string;
-  defaultModel: string;
-  qdrantUrl: string;
-  minioEndpoint: string;
-  minioAccessKey: string;
-  minioSecretKey: string;
-  postgresDsn: string;
-  mongoDsn: string;
-  tenancyMode: string;
-  profile: string;
-  metricsEnabled: string;
-  metricsPromUrl: string;
+type RouterConfiguration = {
+  mode: "auto" | "local" | "api";
+  local_provider: string | null;
+  api_provider: string | null;
 };
 
-const initialState: ConfigState = {
-  modelDirectories: '',
-  defaultModel: '',
-  qdrantUrl: '',
-  minioEndpoint: '',
-  minioAccessKey: '',
-  minioSecretKey: '',
-  postgresDsn: '',
-  mongoDsn: '',
-  tenancyMode: '',
-  profile: '',
-  metricsEnabled: '',
-  metricsPromUrl: '',
+type ConfigurationStatus = {
+  effective: { router: RouterConfiguration };
+  proposed: { router: RouterConfiguration } | null;
+  has_pending: boolean;
+  can_revert: boolean;
+  updated_at: string;
 };
+
+const emptyRouter: RouterConfiguration = {
+  mode: "auto",
+  local_provider: null,
+  api_provider: null,
+};
+
+async function configurationRequest(
+  path: string,
+  init?: RequestInit,
+): Promise<ConfigurationStatus> {
+  const response = await fetch(`/api/system/admin/config/${path}`, {
+    ...init,
+    cache: "no-store",
+    headers: {
+      "content-type": "application/json",
+      ...(init?.headers ?? {}),
+    },
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const detail =
+      payload?.details?.detail || payload?.details || payload?.error;
+    throw new Error(
+      typeof detail === "string"
+        ? detail
+        : `Request failed with HTTP ${response.status}`,
+    );
+  }
+  return payload as ConfigurationStatus;
+}
 
 export default function ConfigCenterPage() {
-  const [form, setForm] = useState<ConfigState>(initialState);
-  const [effective, setEffective] = useState<any>({});
-  const [status, setStatus] = useState<string | null>(null);
+  const [remote, setRemote] = useState<ConfigurationStatus | null>(null);
+  const [draft, setDraft] = useState<RouterConfiguration>(emptyRouter);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const load = async () => {
-      const res = await fetch(`${CONTROL_BASE}/api/config`, { credentials: 'include' });
-      if (!res.ok) {
-        setStatus('Failed to load configuration');
-        return;
-      }
-      const data = await res.json();
-      const file = data.file || {};
-      setEffective(data.effective || {});
-      setForm({
-        modelDirectories: (file.model?.directories ?? []).join(','),
-        defaultModel: file.model?.default_model ?? '',
-        qdrantUrl: file.vector_store?.qdrant_url ?? '',
-        minioEndpoint: file.storage?.minio_endpoint ?? '',
-        minioAccessKey: file.storage?.minio_access_key ?? '',
-        minioSecretKey: file.storage?.minio_secret_key ?? '',
-        postgresDsn: file.storage?.postgres_dsn ?? '',
-        mongoDsn: file.vector_store?.mongo_dsn ?? '',
-        tenancyMode: file.TENANCY_MODE ?? '',
-        profile: file.AION_PROFILE ?? '',
-        metricsEnabled: file.AION_METRICS_ENABLED ?? '',
-        metricsPromUrl: file.AION_METRICS_PROM_URL ?? '',
-      });
-    };
-    load();
+  const acceptStatus = useCallback((status: ConfigurationStatus) => {
+    setRemote(status);
+    setDraft(
+      status.proposed?.router ?? status.effective?.router ?? emptyRouter,
+    );
   }, []);
 
-  const updateField = (key: keyof ConfigState, value: string) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      acceptStatus(await configurationRequest("status"));
+    } catch (loadError) {
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : "Unable to load configuration",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [acceptStatus]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const run = async (action: "propose" | "apply" | "revert") => {
+    setBusy(true);
+    setMessage(null);
+    setError(null);
+    try {
+      const status = await configurationRequest(action, {
+        method: "POST",
+        body: JSON.stringify(action === "propose" ? { router: draft } : {}),
+      });
+      acceptStatus(status);
+      setMessage(
+        action === "propose"
+          ? "Draft saved. Apply it to make the policy effective."
+          : action === "apply"
+            ? "Policy applied."
+            : "Last pending or applied change reverted.",
+      );
+    } catch (actionError) {
+      setError(
+        actionError instanceof Error
+          ? actionError.message
+          : "Configuration action failed",
+      );
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const save = async () => {
-    setStatus('');
-    const payload: any = {
-      model: {
-        directories: form.modelDirectories ? form.modelDirectories.split(',').map((item) => item.trim()).filter(Boolean) : [],
-        default_model: form.defaultModel || undefined,
-      },
-      vector_store: {
-        qdrant_url: form.qdrantUrl || undefined,
-        mongo_dsn: form.mongoDsn || undefined,
-      },
-      storage: {
-        minio_endpoint: form.minioEndpoint || undefined,
-        minio_access_key: form.minioAccessKey || undefined,
-        minio_secret_key: form.minioSecretKey || undefined,
-        postgres_dsn: form.postgresDsn || undefined,
-      },
-      TENANCY_MODE: form.tenancyMode || undefined,
-      AION_PROFILE: form.profile || undefined,
-      AION_METRICS_ENABLED: form.metricsEnabled || undefined,
-      AION_METRICS_PROM_URL: form.metricsPromUrl || undefined,
-    };
-    const res = await fetch(`${CONTROL_BASE}/api/config`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      setStatus(`Failed to save: ${await res.text()}`);
-      return;
-    }
-    const data = await res.json();
-    setStatus('Configuration updated');
-    setEffective(data.effective || {});
+  const update = (field: keyof RouterConfiguration, value: string | null) => {
+    setDraft((current) => ({ ...current, [field]: value || null }));
   };
 
   return (
-    <div className="space-y-5 text-right">
-      <header>
-        <h2 className="text-2xl font-semibold text-white/90">Config Center</h2>
-        <p className="text-xs text-white/60">Manage paths, databases, storage endpoints, and profile parameters.</p>
+    <div className="space-y-6 text-left">
+      <header className="flex flex-wrap items-start justify-between gap-3 border-b border-white/10 pb-4">
+        <div>
+          <h2 className="text-2xl font-semibold text-white/90">
+            Routing policy
+          </h2>
+          <p className="mt-1 text-sm text-white/60">
+            Propose, review, apply, or revert the Control-owned router
+            configuration.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => void load()}
+          disabled={loading || busy}
+        >
+          <RefreshCcw
+            className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+          />
+          Refresh
+        </Button>
       </header>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-          <h3 className="text-lg font-semibold text-white/85">Model &amp; Storage</h3>
-          <label className="block space-y-1">
-            <span className="text-xs text-white/60">Model directories (comma separated)</span>
-            <input
-              value={form.modelDirectories}
-              onChange={(event) => updateField('modelDirectories', event.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2"
-            />
-          </label>
-          <label className="block space-y-1">
-            <span className="text-xs text-white/60">Default model</span>
-            <input
-              value={form.defaultModel}
-              onChange={(event) => updateField('defaultModel', event.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2"
-            />
-          </label>
-          <label className="block space-y-1">
-            <span className="text-xs text-white/60">Qdrant URL</span>
-            <input
-              value={form.qdrantUrl}
-              onChange={(event) => updateField('qdrantUrl', event.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2"
-            />
-          </label>
-          <label className="block space-y-1">
-            <span className="text-xs text-white/60">Mongo DSN</span>
-            <input
-              value={form.mongoDsn}
-              onChange={(event) => updateField('mongoDsn', event.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2"
-            />
-          </label>
-          <label className="block space-y-1">
-            <span className="text-xs text-white/60">MinIO endpoint</span>
-            <input
-              value={form.minioEndpoint}
-              onChange={(event) => updateField('minioEndpoint', event.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2"
-            />
-          </label>
-          <div className="grid gap-2 md:grid-cols-2">
-            <label className="block space-y-1">
-              <span className="text-xs text-white/60">MinIO access key</span>
-              <input
-                value={form.minioAccessKey}
-                onChange={(event) => updateField('minioAccessKey', event.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2"
-              />
-            </label>
-            <label className="block space-y-1">
-              <span className="text-xs text-white/60">MinIO secret key</span>
-              <input
-                value={form.minioSecretKey}
-                onChange={(event) => updateField('minioSecretKey', event.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2"
-              />
-            </label>
-          </div>
-          <label className="block space-y-1">
-            <span className="text-xs text-white/60">Postgres DSN</span>
-            <input
-              value={form.postgresDsn}
-              onChange={(event) => updateField('postgresDsn', event.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2"
-            />
-          </label>
-        </section>
-        <section className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-          <h3 className="text-lg font-semibold text-white/85">Tenancy &amp; Metrics</h3>
-          <label className="block space-y-1">
-            <span className="text-xs text-white/60">Tenancy mode</span>
-            <input
-              value={form.tenancyMode}
-              onChange={(event) => updateField('tenancyMode', event.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2"
-            />
-          </label>
-          <label className="block space-y-1">
-            <span className="text-xs text-white/60">Profile</span>
-            <input
-              value={form.profile}
-              onChange={(event) => updateField('profile', event.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2"
-            />
-          </label>
-          <div className="grid gap-2 md:grid-cols-2">
-            <label className="block space-y-1">
-              <span className="text-xs text-white/60">Metrics enabled</span>
-              <input
-                value={form.metricsEnabled}
-                onChange={(event) => updateField('metricsEnabled', event.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2"
-              />
-            </label>
-            <label className="block space-y-1">
-              <span className="text-xs text-white/60">Prometheus URL</span>
-              <input
-                value={form.metricsPromUrl}
-                onChange={(event) => updateField('metricsPromUrl', event.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2"
-              />
-            </label>
-          </div>
-          <button onClick={save} className="rounded-xl bg-emerald-500/80 px-4 py-2 text-sm text-white hover:bg-emerald-500" type="button">
-            Save changes
-          </button>
-          {status && <div className="text-xs text-white/60">{status}</div>}
-        </section>
-      </div>
-      <section className="rounded-2xl border border-white/10 bg-black/40 p-4 text-xs text-emerald-100">
-        <h3 className="mb-2 text-sm font-semibold text-white/80">Effective configuration</h3>
-        <pre className="max-h-[320px] overflow-auto">{JSON.stringify(effective, null, 2)}</pre>
+
+      {error ? (
+        <p className="border border-rose-400/30 bg-rose-400/10 p-3 text-sm text-rose-200">
+          {error}
+        </p>
+      ) : null}
+      {message ? (
+        <p className="border border-emerald-400/30 bg-emerald-400/10 p-3 text-sm text-emerald-100">
+          {message}
+        </p>
+      ) : null}
+
+      <section className="grid gap-4 md:grid-cols-3">
+        <label className="space-y-1 text-sm text-white/70">
+          <span>Routing mode</span>
+          <select
+            aria-label="Routing mode"
+            value={draft.mode}
+            onChange={(event) => update("mode", event.target.value)}
+            className="h-10 w-full rounded-md border border-white/15 bg-slate-950 px-3 text-white"
+            disabled={loading || busy || !remote}
+          >
+            <option value="auto">auto</option>
+            <option value="local">local</option>
+            <option value="api">api</option>
+          </select>
+        </label>
+        <label className="space-y-1 text-sm text-white/70">
+          <span>Local provider</span>
+          <Input
+            aria-label="Local provider"
+            value={draft.local_provider ?? ""}
+            onChange={(event) => update("local_provider", event.target.value)}
+            placeholder="Not configured"
+            disabled={loading || busy || !remote}
+          />
+        </label>
+        <label className="space-y-1 text-sm text-white/70">
+          <span>API provider</span>
+          <Input
+            aria-label="API provider"
+            value={draft.api_provider ?? ""}
+            onChange={(event) => update("api_provider", event.target.value)}
+            placeholder="Not configured"
+            disabled={loading || busy || !remote}
+          />
+        </label>
       </section>
+
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => void run("propose")}
+          disabled={loading || busy || !remote}
+        >
+          <Save className="mr-2 h-4 w-4" /> Save draft
+        </Button>
+        <Button
+          type="button"
+          onClick={() => void run("apply")}
+          disabled={loading || busy || !remote?.has_pending}
+        >
+          <Check className="mr-2 h-4 w-4" /> Apply
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => void run("revert")}
+          disabled={
+            loading || busy || (!remote?.has_pending && !remote?.can_revert)
+          }
+        >
+          <RotateCcw className="mr-2 h-4 w-4" /> Revert
+        </Button>
+      </div>
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <div className="border border-white/10 bg-white/5 p-4">
+          <h3 className="text-sm font-semibold text-white/85">Effective</h3>
+          <pre className="mt-3 overflow-auto text-xs leading-6 text-emerald-100">
+            {JSON.stringify(remote?.effective ?? {}, null, 2)}
+          </pre>
+        </div>
+        <div className="border border-white/10 bg-white/5 p-4">
+          <h3 className="text-sm font-semibold text-white/85">
+            Pending proposal
+          </h3>
+          <pre className="mt-3 overflow-auto text-xs leading-6 text-amber-100">
+            {JSON.stringify(remote?.proposed ?? null, null, 2)}
+          </pre>
+        </div>
+      </section>
+
+      {remote?.updated_at ? (
+        <p className="text-xs text-white/45">
+          Last persisted update: {new Date(remote.updated_at).toLocaleString()}
+        </p>
+      ) : null}
     </div>
   );
 }
