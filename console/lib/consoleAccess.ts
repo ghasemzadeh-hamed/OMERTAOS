@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
-import { fetchProfileState } from '@/lib/profile';
 import { safeGetServerSession } from '@/lib/session';
+import { isSetupComplete } from '@/lib/setup';
 
 export async function ensureConsoleAccess() {
   const session = await safeGetServerSession();
@@ -14,13 +14,7 @@ export async function ensureConsoleAccess() {
     redirect('/login');
   }
 
-  try {
-    const profile = await fetchProfileState();
-    if (!profile.setupDone) {
-      redirect('/setup');
-    }
-  } catch (error) {
-    console.error('[console] Unable to confirm setup state', error);
+  if (!(await isSetupComplete())) {
     redirect('/setup');
   }
 

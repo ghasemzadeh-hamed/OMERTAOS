@@ -1,21 +1,14 @@
-import { headers } from 'next/headers';
-import PageRenderer from '@/lib/pageRenderer';
-import { loadPageSchema } from '@/lib/schemaLoader';
-import type { UiContext } from '@/lib/ai/uiOrchestrator';
+import RemoteCollectionPage from '@/components/RemoteCollectionPage';
 
-export default async function MyAgentsPage() {
-  const schema = await loadPageSchema('/agents/my-agents');
-  if (!schema) return <div className="p-6 text-white">My Agents schema missing</div>;
-  const hdrs = await headers();
-  const context: UiContext = {
-    role: 'admin',
-    featureFlags: [],
-    tenancyMode: 'multi',
-    tenantId: hdrs.get('tenant-id') || undefined
-  };
+export default function MyAgentsPage() {
   return (
-    <div className="p-6">
-      <PageRenderer schema={schema} context={context} />
-    </div>
+    <RemoteCollectionPage
+      endpoint="/api/system/agents"
+      title="My agents"
+      description="Inspect deployed agent instances reported by the Gateway."
+      collectionKeys={['agents', 'instances', 'items']}
+      emptyLabel="No agent instances have been deployed."
+      itemHrefBase="/agents"
+    />
   );
 }
