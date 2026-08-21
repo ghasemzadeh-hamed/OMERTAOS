@@ -4,6 +4,7 @@ import asyncio
 import os
 from dataclasses import dataclass
 from typing import Protocol
+from .grpc_transport import GrpcRuntimeTransport
 
 
 class RuntimeTransportUnavailable(RuntimeError):
@@ -57,7 +58,7 @@ class RuntimeDaemonClient:
         if timeout_seconds <= 0:
             raise ValueError("Runtime timeout must be positive")
         self.endpoint = resolved_endpoint
-        self._transport = transport
+        self._transport = transport or GrpcRuntimeTransport()
         self.timeout_seconds = timeout_seconds
 
     async def execute(self, envelope: RuntimeEnvelope) -> dict[str, object]:

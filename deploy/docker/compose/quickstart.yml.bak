@@ -54,7 +54,7 @@ services:
     ports: []
   runtime:
     build:
-      context: ../../..
+      context: .
       dockerfile: runtime-daemon/Dockerfile
     environment:
       AION_RUNTIME_BIND_ADDR: 0.0.0.0:50051
@@ -70,7 +70,7 @@ services:
     restart: unless-stopped
   control:
     build:
-      context: ../../..
+      context: .
       dockerfile: control/Dockerfile
     environment:
       AION_CONTROL_LOCAL_SECRET_KEY: ${AION_CONTROL_LOCAL_SECRET_KEY:-}
@@ -115,7 +115,7 @@ services:
     restart: unless-stopped
   gateway:
     build:
-      context: ../../..
+      context: .
       dockerfile: gateway/Dockerfile
     environment:
       CONTROL_URL: http://control:8000
@@ -170,7 +170,7 @@ services:
   console:
     image: omertaos-console
     build:
-      context: ../../..
+      context: .
       dockerfile: console/Dockerfile
     environment:
       AION_DOCKER: "1"

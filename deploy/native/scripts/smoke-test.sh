@@ -60,7 +60,7 @@ check_quickstart() {
     .dependencies.redis == "ok" and .dependencies.control == "ok"' \
     >/dev/null <<< "$gateway" || die 'Gateway or a required dependency is degraded'
   pass 'Gateway and dependencies'
-  check_service_payload Console http://127.0.0.1:3000/healthz console
+  check_service_payload Console http://127.0.0.1:3000/health console
 }
 
 check_active_unit() {
