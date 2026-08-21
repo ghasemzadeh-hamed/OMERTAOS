@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { cookies, headers } from 'next/headers';
 
 import { GATEWAY_HTTP_URL } from '@/lib/gatewayConfig';
@@ -19,6 +21,11 @@ export async function buildGatewayHeaders(initHeaders?: HeadersInit) {
   const token = (await cookies()).get('access_token')?.value;
   if (token && !result.has('authorization')) {
     result.set('authorization', `Bearer ${token}`);
+  }
+
+  const internalAdminToken = process.env.AION_ADMIN_TOKEN;
+  if (internalAdminToken && !result.has('x-aion-admin-token')) {
+    result.set('x-aion-admin-token', internalAdminToken);
   }
 
   return result;
