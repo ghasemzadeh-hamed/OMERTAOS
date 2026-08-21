@@ -26,6 +26,7 @@ export const authOptions: NextAuthOptions = {
           identifierLower,
         ]);
         if (!identifierLower.includes('@')) {
+          candidateEmails.add(`${identifierLower}@local`);
           candidateEmails.add(`${identifierLower}@localhost`);
           candidateEmails.add(`${identifierLower}@aion.local`);
         }

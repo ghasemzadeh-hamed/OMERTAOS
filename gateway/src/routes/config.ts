@@ -58,22 +58,22 @@ export const registerConfigRoutes = (app: FastifyInstance) => {
   app.post('/v1/config/propose', async (request, _reply) => {
     requireAdmin(request);
     const payload = (request.body ?? {}) as Record<string, unknown>;
-    return proxyControl('POST', '/v1/config/propose', payload);
+    return proxyControl('POST', '/config/propose', payload);
   });
 
   app.post('/v1/config/apply', async (request, _reply) => {
     requireAdmin(request);
-    return proxyControl('POST', '/v1/config/apply');
+    return proxyControl('POST', '/config/apply');
   });
 
   app.post('/v1/config/revert', async (request, _reply) => {
     requireAdmin(request);
-    return proxyControl('POST', '/v1/config/revert');
+    return proxyControl('POST', '/config/revert');
   });
 
   app.get('/v1/config/status', async (request, _reply) => {
     requireAdmin(request);
-    return proxyControl('GET', '/v1/config/status');
+    return proxyControl('GET', '/config/status');
   });
 
   // Profile selection is stored canonically inside control (backed by .aion/profile.json).
@@ -85,7 +85,7 @@ export const registerConfigRoutes = (app: FastifyInstance) => {
     }
 
     try {
-      return await proxyControl('GET', '/v1/config/profile');
+      return await proxyControl('GET', '/config/profile');
     } catch (error) {
       request.log.error({ err: error, msg: 'Failed to fetch profile from control' });
       throw error;
@@ -111,7 +111,7 @@ export const registerConfigRoutes = (app: FastifyInstance) => {
     requireAdmin(request);
     const payload = (request.body ?? {}) as Record<string, unknown>;
     try {
-      return await proxyControl('POST', '/v1/config/profile', payload);
+      return await proxyControl('POST', '/config/profile', payload);
     } catch (error) {
       request.log.error({ err: error, msg: 'Failed to persist profile to control', payload });
       throw error;
