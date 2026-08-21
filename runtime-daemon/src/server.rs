@@ -5,7 +5,10 @@ use tonic::{Request, Response, Status};
 
 use crate::audit::log_runtime_event;
 use crate::config::RuntimeConfig;
-use crate::execution::{agent_runner::run_agent, command::execute_command};
+use crate::execution::{
+    execute,
+    agent_runner::run_agent
+};
 use crate::observability::metrics::query_metrics;
 use crate::security::capability::validate_capabilities;
 
@@ -132,7 +135,13 @@ impl pb::runtime_service_server::RuntimeService for RuntimeServiceImpl {
             &ctx.agent_id,
             "authorized",
         );
-        let (code, stdout, stderr) = execute_command(&req.argv).map_err(map_error)?;
+        let (code, stdout, stderr) =
+            execute(
+                &self.config.profile,
+                &ctx,
+                &req.argv,
+            )
+    .map_err(map_error)?;
         Ok(Response::new(pb::CommandResponse {
             ok: code == 0,
             stdout,
