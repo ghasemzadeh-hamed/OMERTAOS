@@ -51,7 +51,15 @@ export async function loadNavigation(): Promise<NavigationModel> {
 
 export async function loadPageSchema(route: string): Promise<PageSchema | null> {
   const pagesDir = path.join(rootConfig, 'pages');
-  const entries = await fs.readdir(pagesDir);
+  let entries: string[];
+  try {
+    entries = await fs.readdir(pagesDir);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return null;
+    }
+    throw error;
+  }
   for (const entry of entries) {
     if (!entry.endsWith('.json')) continue;
     const contents = await fs.readFile(path.join(pagesDir, entry), 'utf-8');

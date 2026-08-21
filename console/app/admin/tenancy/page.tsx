@@ -1,21 +1,11 @@
-import { headers } from 'next/headers';
-import PageRenderer from '@/lib/pageRenderer';
-import { loadPageSchema } from '@/lib/schemaLoader';
-import type { UiContext } from '@/lib/ai/uiOrchestrator';
+import CapabilityUnavailablePage from '@/components/CapabilityUnavailablePage';
 
-export default async function AdminTenancyPage() {
-  const schema = await loadPageSchema('/admin/tenancy');
-  if (!schema) return <div className="p-6 text-white">Admin tenancy schema missing</div>;
-  const hdrs = await headers();
-  const context: UiContext = {
-    role: 'admin',
-    featureFlags: [],
-    tenancyMode: 'single',
-    tenantId: hdrs.get('tenant-id') || undefined
-  };
+export default function AdminTenancyPage() {
   return (
-    <div className="p-6">
-      <PageRenderer schema={schema} context={context} />
-    </div>
+    <CapabilityUnavailablePage
+      title="Tenancy administration"
+      description="Tenant-level configuration and isolation controls."
+      reason="The running Gateway does not expose a tenancy administration endpoint. No changes can be applied from this Console build."
+    />
   );
 }

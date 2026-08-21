@@ -1,8 +1,5 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 import { useEffect, useState } from 'react';
 
 const CONTROL_BASE = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3000';
@@ -16,29 +13,38 @@ export default function AuthToolsPage() {
   const [tokenName, setTokenName] = useState('');
   const [tokenScopes, setTokenScopes] = useState('');
   const [status, setStatus] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [available, setAvailable] = useState(false);
 
   const load = async () => {
-    const [userRes, roleRes, tokenRes] = await Promise.all([
-      fetch(`${CONTROL_BASE}/api/auth/users`, { credentials: 'include' }),
-      fetch(`${CONTROL_BASE}/api/auth/roles`, { credentials: 'include' }),
-      fetch(`${CONTROL_BASE}/api/auth/tokens`, { credentials: 'include' }),
-    ]);
-    if (userRes.ok) {
+    setLoading(true);
+    try {
+      const [userRes, roleRes, tokenRes] = await Promise.all([
+        fetch(`${CONTROL_BASE}/api/auth/users`, { credentials: 'include' }),
+        fetch(`${CONTROL_BASE}/api/auth/roles`, { credentials: 'include' }),
+        fetch(`${CONTROL_BASE}/api/auth/tokens`, { credentials: 'include' }),
+      ]);
+      const failed = [userRes, roleRes, tokenRes].find((response) => !response.ok);
+      if (failed) throw new Error(`Auth management API unavailable (HTTP ${failed.status})`);
+
       const data = await userRes.json();
       setUsers(data.users ?? []);
-    }
-    if (roleRes.ok) {
-      const data = await roleRes.json();
-      setRoles(data.roles ?? []);
-    }
-    if (tokenRes.ok) {
-      const data = await tokenRes.json();
-      setTokens(data.tokens ?? []);
+      const roleData = await roleRes.json();
+      setRoles(roleData.roles ?? []);
+      const tokenData = await tokenRes.json();
+      setTokens(tokenData.tokens ?? []);
+      setAvailable(true);
+      setStatus(null);
+    } catch (error) {
+      setAvailable(false);
+      setStatus(error instanceof Error ? error.message : 'Auth management API unavailable');
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    load();
+    void load();
   }, []);
 
   const updateRole = async (userId: string, role: string) => {
@@ -53,7 +59,7 @@ export default function AuthToolsPage() {
       return;
     }
     setStatus('Role updated');
-    load();
+    void load();
   };
 
   const createToken = async () => {
@@ -75,7 +81,7 @@ export default function AuthToolsPage() {
     setStatus(`Token created: ${data.token}`);
     setTokenName('');
     setTokenScopes('');
-    load();
+    void load();
   };
 
   return (
@@ -84,7 +90,7 @@ export default function AuthToolsPage() {
         <h2 className="text-2xl font-semibold text-white/90">Auth &amp; Role Manager</h2>
         <p className="text-xs text-white/60">Manage RBAC assignments and scoped API tokens.</p>
       </header>
-      {status && <div className="text-xs text-white/60">{status}</div>}
+      {status && <div className="border border-amber-400/30 bg-amber-400/10 p-3 text-sm text-amber-100">{status}</div>}
       <section className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
         <h3 className="text-lg font-semibold text-white/85">Users</h3>
         <div className="overflow-hidden rounded-xl border border-white/10">
@@ -103,6 +109,7 @@ export default function AuthToolsPage() {
                     <select
                       value={user.role}
                       onChange={(event) => updateRole(user.id, event.target.value)}
+                      disabled={!available}
                       className="rounded-xl border border-white/10 bg-white/5 px-3 py-2"
                     >
                       {roles.map((role) => (
@@ -128,8 +135,8 @@ export default function AuthToolsPage() {
           <span className="text-xs text-white/60">Scopes (comma separated)</span>
           <input value={tokenScopes} onChange={(event) => setTokenScopes(event.target.value)} className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2" />
         </label>
-        <button onClick={createToken} className="rounded-xl bg-emerald-500/80 px-4 py-2 text-sm text-white hover:bg-emerald-500" type="button">
-          Create token
+        <button disabled={!available || loading} onClick={createToken} className="rounded-xl bg-emerald-500/80 px-4 py-2 text-sm text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40" type="button">
+          {loading ? 'Checking API...' : 'Create token'}
         </button>
       </section>
       <section className="space-y-3 rounded-2xl border border-white/10 bg-black/50 p-4 text-xs text-emerald-100">
