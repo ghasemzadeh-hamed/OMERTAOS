@@ -39,10 +39,10 @@ export const registerSetupRoutes = (app: FastifyInstance) => {
     };
   });
 
-  app.get('/v1/setup/bootstrap', async () => proxyControl('GET', '/v1/setup/bootstrap'));
+  app.get('/v1/setup/bootstrap', async () => proxyControl('GET', '/setup/bootstrap'));
 
   app.post('/v1/setup/bootstrap', async (request) => {
     const payload = (request.body ?? {}) as Record<string, unknown>;
-    return proxyControl('POST', '/v1/setup/bootstrap', payload);
+    return proxyControl('POST', '/setup/bootstrap', payload);
   });
 };
