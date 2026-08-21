@@ -1,17 +1,11 @@
 use anyhow::Result;
 
 use crate::sandbox::{
-    mount::isolate_mounts,
-    namespace::setup_namespaces,
-    process::spawn_isolated,
+    mount::isolate_mounts, namespace::setup_namespaces, process::spawn_isolated,
     seccomp::apply_seccomp,
 };
 
-
-pub fn execute_command(
-    argv: &[String],
-) -> Result<(i32, String, String)> {
-
+pub fn execute_command(argv: &[String]) -> Result<(i32, String, String)> {
     if argv.is_empty() {
         anyhow::bail!("command must not be empty");
     }
@@ -30,9 +24,5 @@ pub fn execute_command(
 
     let _pid = spawn_isolated(argv)?;
 
-    Ok((
-        0,
-        String::new(),
-        String::new(),
-    ))
+    Ok((0, String::new(), String::new()))
 }

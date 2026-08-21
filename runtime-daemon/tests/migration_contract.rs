@@ -1,5 +1,7 @@
+use runtime_daemon::cluster::{
+    node_registration::register_node, resource_report::report_resources,
+};
 use runtime_daemon::isolation::quota::ResourceQuota;
-use runtime_daemon::cluster::{node_registration::register_node, resource_report::report_resources};
 use runtime_daemon::sandbox::{mount, namespace, process, seccomp};
 
 #[test]
