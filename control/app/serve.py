@@ -12,7 +12,8 @@ def main() -> None:
     try:
         uvicorn.run(
             "control.app.main:app",
-            host=os.getenv("AION_CONTROL_HTTP_HOST", "0.0.0.0"),
+            # Container peers require the HTTP service on every container interface.
+            host=os.getenv("AION_CONTROL_HTTP_HOST", "0.0.0.0"),  # nosec B104
             port=int(os.getenv("AION_CONTROL_HTTP_PORT", "8000")),
         )
     finally:
