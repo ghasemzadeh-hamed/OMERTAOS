@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import createError from 'http-errors';
 import jwt from 'jsonwebtoken';
+import { timingSafeEqual } from 'node:crypto';
 import { gatewayConfig } from '../config.js';
 import { resolveTenant } from './claims.js';
 
@@ -29,6 +30,13 @@ export const buildDefaultContext = (request: FastifyRequest): RequestContext => 
 
 const ensureRole = (roles: string[], required: string[]): boolean => {
   return required.some((role) => roles.includes(role));
+};
+
+const matchesInternalAdminToken = (candidate: unknown): boolean => {
+  if (typeof candidate !== 'string' || !gatewayConfig.adminToken) return false;
+  const actual = Buffer.from(gatewayConfig.adminToken);
+  const received = Buffer.from(candidate);
+  return actual.length === received.length && timingSafeEqual(actual, received);
 };
 
 const devBypassAuth = process.env.AION_ENV === 'dev' || process.env.AION_DEV_BYPASS_AUTH === '1';
@@ -102,8 +110,16 @@ export const authPreHandler = (requiredRoles: string[] = []) => {
       return;
     }
 
+    const internalAdminToken = request.headers['x-aion-admin-token'];
     const apiKey = request.headers['x-api-key'];
-    if (typeof apiKey === 'string' && gatewayConfig.apiKeys[apiKey]) {
+    if (matchesInternalAdminToken(internalAdminToken)) {
+      context.user = {
+        id: 'internal:console',
+        roles: ['user', 'manager', 'admin'],
+        tenant: resolveTenant(request, undefined).tenantId,
+      };
+      context.authType = 'api_key';
+    } else if (typeof apiKey === 'string' && gatewayConfig.apiKeys[apiKey]) {
       const keyConfig = gatewayConfig.apiKeys[apiKey];
       const tenant = resolveTenant(request, keyConfig.tenant).tenantId;
       context.user = {
