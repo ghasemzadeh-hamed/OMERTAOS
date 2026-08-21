@@ -15,6 +15,7 @@ claim.
 | Contributor | [Contributing](../CONTRIBUTING.md) -> component README -> [Test strategy](../tests/README.md) |
 | Security reviewer | [Security policy](../SECURITY.md) -> [Evidence and claims](research/evidence-and-claims.md) -> Runtime README |
 | Operator | [Deployment index](../deploy/README.md) -> CAPO/native guidance -> acceptance report |
+| COMEX reviewer or sponsor | [COMEX readiness program](comex/README.fa.md) -> [Progress and evidence ledger](comex/progress.fa.md) |
 
 ## Current normative documents
 
@@ -63,6 +64,8 @@ production deployment, security certification, or formal verification.
 
 ## Operational and historical records
 
+- `docs/comex/` defines the exhibition-readiness program and maintains its
+  dated, evidence-backed progress ledger.
 - `docs/capo/` and `deploy/CAPO/` contain CAPO installation, test, rollback,
   and acceptance material.
 - `docs/migration/` records structure migration decisions and validation
