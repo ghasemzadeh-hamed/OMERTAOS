@@ -10,6 +10,12 @@ import grpc
 from google.protobuf import descriptor_pb2, descriptor_pool, message_factory
 from google.protobuf.message import Message
 
+from control.orchestration.runtime_dispatch import (
+    RuntimeDispatchRequest,
+    RuntimeDispatchResult,
+    RuntimeTaskDispatcher,
+)
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -284,7 +290,53 @@ def _error_result(
     return result
 
 
+def _dispatch_result(
+    *,
+    request: Message,
+    dispatched: RuntimeDispatchResult,
+    tenant_id: str,
+    request_id: str,
+    trace_id: str,
+) -> Message:
+    result = TaskResult()
+    result.schema_version = request.schema_version or "1.0"
+    result.task_id = request.task_id
+    result.intent = request.intent
+    result.status = dispatched.status
+    result.engine.route = "runtime"
+    result.engine.chosen_by = "control"
+    result.engine.reason = dispatched.reason
+    if dispatched.selected_node_id:
+        result.engine.tier = dispatched.selected_node_id
+        result.metadata["runtime_node_id"] = dispatched.selected_node_id
+    if dispatched.attempt_id:
+        result.metadata["attempt_id"] = dispatched.attempt_id
+    result.metadata["tenant_id"] = tenant_id
+    result.metadata["retry_count"] = str(dispatched.retry_count)
+    result.metadata["idempotent_replay"] = str(
+        dispatched.idempotent_replay
+    ).lower()
+    if request_id:
+        result.metadata["request_id"] = request_id
+    if trace_id:
+        result.metadata["trace_id"] = trace_id
+    result.usage.latency_ms = dispatched.latency_ms
+    if dispatched.exit_code is not None:
+        result.result["exit_code"] = str(dispatched.exit_code)
+    if dispatched.stdout:
+        result.result["stdout"] = dispatched.stdout
+    if dispatched.stderr:
+        result.result["stderr"] = dispatched.stderr
+    if dispatched.error_code:
+        result.error.code = dispatched.error_code
+        result.error.message = dispatched.error_message or "Runtime dispatch failed"
+    return result
+
+
 class AionTasksGenericHandler(grpc.GenericRpcHandler):
+    def __init__(self, dispatcher: RuntimeTaskDispatcher | None = None) -> None:
+        self.dispatcher = dispatcher or RuntimeTaskDispatcher()
+
     def service(self, handler_call_details: grpc.HandlerCallDetails) -> grpc.RpcMethodHandler | None:
         methods = {
             "/aion.v1.AionTasks/Submit": grpc.unary_unary_rpc_method_handler(
@@ -311,6 +363,45 @@ class AionTasksGenericHandler(grpc.GenericRpcHandler):
         return methods.get(handler_call_details.method)
 
     def submit(self, request: Message, context: grpc.ServicerContext) -> Message:
+        if self.dispatcher.supports(request.intent):
+            tenant_id = request.metadata.get("tenant_id") or _metadata_value(
+                context, "tenant-id"
+            )
+            request_id = request.request_id or _metadata_value(
+                context, "x-request-id"
+            )
+            trace_id = _metadata_value(context, "traceparent")
+            try:
+                dispatch_request = RuntimeDispatchRequest(
+                    task_id=request.task_id,
+                    intent=request.intent,
+                    tenant_id=tenant_id,
+                    agent_id=request.metadata.get("agent_id") or "",
+                    message=request.params.get("message") or "",
+                    request_id=request_id,
+                    trace_id=trace_id,
+                    idempotency_key=_metadata_value(context, "idempotency-key")
+                    or None,
+                )
+            except ValueError as error:
+                return _error_result(
+                    task_id=request.task_id,
+                    intent=request.intent,
+                    schema_version=request.schema_version,
+                    code="RUNTIME_REQUEST_INVALID",
+                    message=str(error),
+                    tenant_id=tenant_id,
+                    request_id=request_id,
+                )
+            dispatched = self.dispatcher.dispatch(dispatch_request)
+            return _dispatch_result(
+                request=request,
+                dispatched=dispatched,
+                tenant_id=tenant_id,
+                request_id=request_id,
+                trace_id=trace_id,
+            )
+
         reason = "Runtime transport is not configured; refusing to report synthetic success"
         return _error_result(
             task_id=request.task_id,

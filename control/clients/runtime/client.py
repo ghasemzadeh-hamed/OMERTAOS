@@ -14,11 +14,20 @@ class RuntimeTransportUnavailable(RuntimeError):
     """Raised when no versioned Runtime transport has been configured."""
 
 
+class RuntimeExecutionRejected(RuntimeError):
+    """Raised when Runtime rejects an otherwise reachable execution request."""
+
+
 @dataclass(frozen=True, slots=True)
 class RuntimeEnvelope:
     tenant_id: str
     agent_id: str
     argv: tuple[str, ...]
+    task_id: str = ""
+    attempt_id: str = ""
+    request_id: str = ""
+    trace_id: str = ""
+    capabilities: tuple[str, ...] = ("terminal.execute",)
 
     def __post_init__(self) -> None:
         if not self.tenant_id.strip():
@@ -29,6 +38,20 @@ class RuntimeEnvelope:
         if not normalized_argv or any(not value for value in normalized_argv):
             raise ValueError("argv must contain non-empty arguments")
         object.__setattr__(self, "argv", normalized_argv)
+        normalized_capabilities = tuple(self.capabilities)
+        if not normalized_capabilities or any(
+            not value.strip() for value in normalized_capabilities
+        ):
+            raise ValueError("capabilities must contain non-empty values")
+        object.__setattr__(self, "capabilities", normalized_capabilities)
+        for value, name in (
+            (self.task_id, "task_id"),
+            (self.attempt_id, "attempt_id"),
+            (self.request_id, "request_id"),
+            (self.trace_id, "trace_id"),
+        ):
+            if len(value) > 255:
+                raise ValueError(f"{name} exceeds 255 characters")
 
 
 class RuntimeExecutor(Protocol):
@@ -81,6 +104,15 @@ class RuntimeDaemonClient:
                 timeout=self.timeout_seconds,
             )
         except grpc.RpcError as error:
-            raise RuntimeTransportUnavailable(
-                "Runtime transport is unavailable; refusing to report synthetic success"
+            if error.code() in {
+                grpc.StatusCode.CANCELLED,
+                grpc.StatusCode.DEADLINE_EXCEEDED,
+                grpc.StatusCode.RESOURCE_EXHAUSTED,
+                grpc.StatusCode.UNAVAILABLE,
+            }:
+                raise RuntimeTransportUnavailable(
+                    "Runtime transport is unavailable; refusing to report synthetic success"
+                ) from error
+            raise RuntimeExecutionRejected(
+                "Runtime rejected execution; refusing to weaken capability enforcement"
             ) from error

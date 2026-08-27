@@ -206,3 +206,38 @@ def test_scheduler_replays_existing_attempt_and_bounds_retry(db: Session) -> Non
     assert replay.idempotent_replay is True
     assert rejected.decision == "rejected"
     assert rejected.reason == "retry budget exhausted"
+
+
+def test_scheduler_finishes_attempt_and_releases_node_lease(db: Session) -> None:
+    scheduler = RuntimeScheduler()
+    _register(scheduler, db, "node-a")
+    scheduler.schedule(
+        db,
+        SchedulingRequest(
+            task_id="task-1",
+            attempt_id="attempt-1",
+            tenant_id="tenant-a",
+            required_capabilities=("terminal.execute",),
+        ),
+    )
+
+    finished = scheduler.finish_attempt(
+        db,
+        "task-1",
+        "attempt-1",
+        status="transport_error",
+        node_state=NodeState.unreachable,
+    )
+    replay = scheduler.finish_attempt(
+        db,
+        "task-1",
+        "attempt-1",
+        status="transport_error",
+        node_state=NodeState.unreachable,
+    )
+    node = db.get(RuntimeNode, "node-a")
+
+    assert finished.status == "transport_error"
+    assert replay.status == "transport_error"
+    assert node is not None and node.active_leases == 0
+    assert node.state == NodeState.unreachable.value
