@@ -50,6 +50,30 @@ Expected host ports:
 | Gateway | `http://localhost:8080` |
 | Runtime gRPC | `127.0.0.1:50051` |
 
+The defaults remain unchanged. When another local stack must stay running, use
+a distinct Compose project, network, image name, and host ports for every
+command in the build/up/down sequence:
+
+```bash
+export AION_DOCKER_NETWORK=omerta-r5-net
+export AION_RUNTIME_HOST_PORT=55051
+export AION_CONTROL_HOST_PORT=18000
+export AION_GATEWAY_HOST_PORT=18080
+export AION_CONSOLE_HOST_PORT=13000
+export AION_CONSOLE_IMAGE=omertaos-r5-console
+export NEXTAUTH_URL=http://localhost:13000
+export NEXT_PUBLIC_GATEWAY_URL=http://localhost:18080
+export AION_CORS_ORIGINS=http://localhost:13000
+
+docker compose --project-name omertaos-r5 --project-directory . \
+  -f deploy/docker/compose/quickstart.yml config
+```
+
+Use the same variables and `--project-name` when inspecting or stopping that
+stack. Internal service addresses such as `runtime:50051`, `control:8000`, and
+`gateway:8080` do not change. On resource-constrained hosts, build Runtime,
+Control, Gateway, and Console one at a time, then run `up -d` without `--build`.
+
 Runtime readiness is checked from inside its container before Control starts.
 Control readiness uses Python's standard-library HTTP client, so its image does
 not install an extra system curl package solely for health checks.
@@ -94,7 +118,10 @@ Recreate `.env` from `dev.env`. `docker compose ... config` shows the resolved v
 
 ### Port already in use
 
-Stop the process or older Compose project using 3000, 8000, 8080, or 50051. Use `docker compose --project-directory . -f deploy/docker/compose/quickstart.yml down` to stop an earlier OMERTAOS stack.
+Stop an older Compose project only when you own it and intend to stop it. When
+it must remain available, use the isolated project, network, port, image, and
+URL overrides shown above. Do not attach independent Quickstart runs to the
+same explicitly named Docker network.
 
 ### Kernel path not found
 

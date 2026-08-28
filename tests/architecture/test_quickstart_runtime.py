@@ -12,7 +12,7 @@ def test_quickstart_uses_canonical_runtime_daemon() -> None:
     assert "dockerfile: runtime-daemon/Dockerfile" in compose
     assert "AION_RUNTIME_BIND_ADDR: 0.0.0.0:50051" in compose
     assert "AION_CONTROL_GRPC_BIND: ${AION_CONTROL_GRPC_BIND:-0.0.0.0:50051}" in compose
-    assert '"127.0.0.1:50051:50051"' in compose
+    assert '"127.0.0.1:${AION_RUNTIME_HOST_PORT:-50051}:50051"' in compose
     assert '["CMD", "/usr/local/bin/runtime-daemon", "--healthcheck"]' in compose
     assert "runtime:\n        condition: service_healthy" in compose
     assert "  kernel:\n" not in compose
@@ -32,6 +32,22 @@ def test_quickstart_gateway_declares_development_api_key_map() -> None:
     compose = (REPO_ROOT / "deploy/docker/compose/quickstart.yml").read_text()
 
     assert "AION_GATEWAY_API_KEYS: ${AION_GATEWAY_API_KEYS:-dev-admin-token:admin}" in compose
+
+
+def test_quickstart_supports_an_isolated_local_stack() -> None:
+    compose = (REPO_ROOT / "deploy/docker/compose/quickstart.yml").read_text()
+
+    assert '"${AION_CONTROL_HOST_PORT:-8000}:8000"' in compose
+    assert '"${AION_GATEWAY_HOST_PORT:-8080}:8080"' in compose
+    assert '"${AION_CONSOLE_HOST_PORT:-3000}:3000"' in compose
+    assert "image: ${AION_CONSOLE_IMAGE:-omertaos-console}" in compose
+    assert "AION_CORS_ORIGINS: ${AION_CORS_ORIGINS:-http://localhost:3000}" in compose
+    assert "NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}" in compose
+    assert (
+        "NEXT_PUBLIC_GATEWAY_URL: "
+        "${NEXT_PUBLIC_GATEWAY_URL:-http://localhost:8080}" in compose
+    )
+    assert "name: ${AION_DOCKER_NETWORK:-omerta-net}" in compose
 
 
 def test_gateway_handles_container_stop_gracefully() -> None:
