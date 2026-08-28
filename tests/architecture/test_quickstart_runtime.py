@@ -34,6 +34,20 @@ def test_quickstart_gateway_declares_development_api_key_map() -> None:
     assert "AION_GATEWAY_API_KEYS: ${AION_GATEWAY_API_KEYS:-dev-admin-token:admin}" in compose
 
 
+def test_gateway_image_uses_locked_audited_dependency_install() -> None:
+    dockerfile_bytes = (REPO_ROOT / "gateway" / "Dockerfile").read_bytes()
+
+    assert not dockerfile_bytes.startswith(b"\xef\xbb\xbf")
+
+    dockerfile = dockerfile_bytes.decode("utf-8")
+    assert (
+        "RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci"
+        in dockerfile
+    )
+    assert "npm install" not in dockerfile
+    assert "--no-audit" not in dockerfile
+
+
 def test_quickstart_supports_an_isolated_local_stack() -> None:
     compose = (REPO_ROOT / "deploy/docker/compose/quickstart.yml").read_text()
 

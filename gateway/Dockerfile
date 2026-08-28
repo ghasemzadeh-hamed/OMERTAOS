@@ -1,4 +1,4 @@
-﻿FROM --platform=$BUILDPLATFORM node:22-alpine AS deps
+FROM --platform=$BUILDPLATFORM node:22-alpine AS deps
 
 WORKDIR /workspace
 
@@ -6,7 +6,7 @@ COPY gateway/package.json gateway/package-lock.json ./gateway/
 COPY shared/secret-provider-node ./shared/secret-provider-node
 
 WORKDIR /workspace/gateway
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci
 
 FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
 
@@ -36,4 +36,3 @@ COPY --from=builder /workspace/shared/secret-provider-node /shared/secret-provid
 EXPOSE 8080
 
 CMD ["node", "dist/server.js"]
-
