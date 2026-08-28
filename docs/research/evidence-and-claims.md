@@ -21,7 +21,8 @@
 | Runtime denies execution when required sandbox backends are unavailable. | E2 | `runtime-daemon/src/sandbox/*.rs`, `runtime-daemon/tests/migration_contract.rs` | Demonstrates fail-closed stubs; it does not demonstrate successful isolated execution. |
 | Runtime checks named capabilities before selected RPC operations. | E2 | `runtime-daemon/src/security/capability.rs`, `server.rs` | Current signature validation is minimal and does not establish a production cryptographic grant protocol. |
 | Gateway and Control form separate transport/orchestration services. | E2 | `gateway/`, `control/`, versioned contracts, service tests/builds | Full end-to-end production acceptance remains pending. |
-| Control contains a minimal Runtime node registry and scheduler prototype. | E2 | `control/scheduling/`, `control/app/runtime_nodes/`, `tests/control/test_runtime_scheduler.py`, `tests/control/test_runtime_node_routes.py` | Demonstrates single-Control registration, heartbeat, eligibility, round-robin/least-loaded selection, bounded retry and audit evidence. It does not prove distributed membership, consensus, failover, or successful Runtime execution. |
+| Control contains a minimal Runtime node registry and scheduler prototype. | E2 | `control/scheduling/`, `control/app/runtime_nodes/`, scheduler tests, R5 constrained acceptance report | Demonstrates single-Control registration, heartbeat, stale-worker detection, eligibility, round-robin/least-loaded selection, bounded retry and scheduling evidence. It does not prove distributed membership, consensus, leader failover, or multi-worker scalability. |
+| The allowlisted `runtime.echo.v1` path can execute through Control on one local Runtime worker. | E2 | R5 commits `711395a`, `681ff8f`, and `docs/capo/acceptance-report.md` | One constrained live run demonstrated selection, execution, tenant/request/trace propagation, Runtime audit fields, and fail-closed post-restart replay. Gateway/Console traversal, durable Control audit export, production isolation, and broader commands remain unproven. |
 | The system provides complete Linux namespace, mount, seccomp, and process isolation. | E0 | Backends currently return errors | Must not be claimed until implementation and negative/escape testing pass on a compatible Linux host. |
 | OMERTAOS provides distributed membership, scheduling, and federation. | E0 | Cluster documents plus minimal node-registration/resource-report stubs | These are design topics, not a working distributed subsystem. |
 | OMERTAOS has measured scalability or lower latency than alternatives. | E0 | Benchmark blueprint only | No controlled quantitative results are committed. |
@@ -36,6 +37,7 @@ Use:
 - “the Runtime prototype currently fails closed when isolation backends are
   unavailable”;
 - “the repository defines a benchmark protocol”;
+- “one constrained local worker executed the allowlisted Runtime echo path”;
 - “the design targets tenant-aware auditability.”
 
 Do not use without new evidence:
