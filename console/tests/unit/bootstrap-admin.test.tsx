@@ -15,6 +15,8 @@ afterEach(() => {
   delete process.env.DATABASE_URL;
   delete process.env.CONSOLE_ADMIN_EMAIL;
   delete process.env.CONSOLE_ADMIN_PASSWORD;
+  delete process.env.CONSOLE_ADMIN_PASSWORD_MIN_LENGTH;
+  delete process.env.CONSOLE_ADMIN_PASSWORD_MAX_LENGTH;
   delete process.env.CONSOLE_BOOTSTRAP_CHECK;
 });
 
@@ -23,12 +25,27 @@ describe('native console bootstrap', () => {
     expect(() => resolveAdminCredentials()).toThrow(/CONSOLE_ADMIN_EMAIL/);
     process.env.CONSOLE_ADMIN_EMAIL = 'admin@example.test';
     process.env.CONSOLE_ADMIN_PASSWORD = 'admin123';
-    expect(() => resolveAdminCredentials()).toThrow(/at least 16/);
+    expect(() => resolveAdminCredentials()).toThrow(/between 8 and 32/);
+    process.env.CONSOLE_ADMIN_PASSWORD = 'x'.repeat(33);
+    expect(() => resolveAdminCredentials()).toThrow(/between 8 and 32/);
+  });
+
+  it('accepts configured password bounds without lowering the eight-character floor', () => {
+    process.env.CONSOLE_ADMIN_EMAIL = 'admin@example.test';
+    process.env.CONSOLE_ADMIN_PASSWORD = 'strong-native-password';
+    process.env.CONSOLE_ADMIN_PASSWORD_MAX_LENGTH = '32';
+    expect(resolveAdminCredentials().password).toBe('strong-native-password');
+
+    process.env.CONSOLE_ADMIN_PASSWORD_MIN_LENGTH = '7';
+    expect(() => resolveAdminCredentials()).toThrow(/cannot be less than 8/);
+    process.env.CONSOLE_ADMIN_PASSWORD_MIN_LENGTH = '8';
+    process.env.CONSOLE_ADMIN_PASSWORD_MAX_LENGTH = 'not-a-number';
+    expect(() => resolveAdminCredentials()).toThrow(/must be an integer/);
   });
 
   it('is idempotent when the configured admin already exists', async () => {
     process.env.CONSOLE_ADMIN_EMAIL = 'admin@example.test';
-    process.env.CONSOLE_ADMIN_PASSWORD = 'strong-native-password';
+    process.env.CONSOLE_ADMIN_PASSWORD = 'StrongPass123!';
     const client = {
       systemState: { upsert: vi.fn() },
       user: {
@@ -45,7 +62,7 @@ describe('native console bootstrap', () => {
 
   it('fails closed when unrelated users already exist', async () => {
     process.env.CONSOLE_ADMIN_EMAIL = 'admin@example.test';
-    process.env.CONSOLE_ADMIN_PASSWORD = 'strong-native-password';
+    process.env.CONSOLE_ADMIN_PASSWORD = 'StrongPass123!';
     const client = {
       systemState: { upsert: vi.fn() },
       user: {

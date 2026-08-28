@@ -78,6 +78,10 @@ Runtime readiness is checked from inside its container before Control starts.
 The one-shot Console installer runs after PostgreSQL is healthy, and Control
 waits for it to finish so Prisma migrations cannot race Control's additive
 table initialization.
+Bootstrap passwords default to a configurable 8-32 character policy. Override
+`CONSOLE_ADMIN_PASSWORD_MIN_LENGTH` and `CONSOLE_ADMIN_PASSWORD_MAX_LENGTH`
+when a longer local credential is required; the minimum cannot be lower than 8
+and the maximum cannot exceed 72.
 Control readiness uses Python's standard-library HTTP client, so its image does
 not install an extra system curl package solely for health checks.
 

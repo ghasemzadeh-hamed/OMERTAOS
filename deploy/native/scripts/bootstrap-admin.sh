@@ -37,9 +37,14 @@ native_load_env_file "$CONSOLE_ENV" CONSOLE_CONFIG
 email="${INSTALL_CONFIG[OMERTAOS_CONSOLE_ADMIN_EMAIL]:-}"
 password="${INSTALL_CONFIG[OMERTAOS_CONSOLE_ADMIN_PASSWORD]:-}"
 name="${INSTALL_CONFIG[OMERTAOS_CONSOLE_ADMIN_NAME]:-OMERTAOS Administrator}"
+min_length="${INSTALL_CONFIG[OMERTAOS_CONSOLE_ADMIN_PASSWORD_MIN_LENGTH]:-8}"
+max_length="${INSTALL_CONFIG[OMERTAOS_CONSOLE_ADMIN_PASSWORD_MAX_LENGTH]:-32}"
 database_url="${CONSOLE_CONFIG[DATABASE_URL]:-}"
 [[ "$email" == *@* && "$email" != CHANGE_ME ]] || native_die 'an explicit Console admin email is required'
-[[ ${#password} -ge 16 && "$password" != CHANGE_ME && "$password" != admin123 ]] || native_die 'Console admin password must be non-default and at least 16 characters'
+[[ "$min_length" =~ ^[0-9]+$ && "$max_length" =~ ^[0-9]+$ ]] || native_die 'Console admin password length bounds must be integers'
+((min_length >= 8)) || native_die 'Console admin password minimum cannot be less than 8'
+((max_length >= min_length && max_length <= 72)) || native_die 'Console admin password maximum must be between the configured minimum and 72'
+[[ ${#password} -ge min_length && ${#password} -le max_length && "$password" != CHANGE_ME && "$password" != admin123 ]] || native_die "Console admin password must be non-default and between $min_length and $max_length characters"
 [[ "$database_url" == postgresql://* || "$database_url" == postgres://* ]] || native_die 'Console DATABASE_URL must use PostgreSQL'
 [[ "$database_url" != *CHANGE_ME* ]] || native_die 'N5 refuses placeholder database credentials'
 entrypoint="$ROOT/console/scripts/dist/bootstrap-admin.js"
@@ -51,11 +56,15 @@ else
   check_value=0
   "$CHECK_ONLY" && check_value=1
   native_run_service env DATABASE_URL="$database_url" CONSOLE_ADMIN_EMAIL="$email" \
-    CONSOLE_ADMIN_PASSWORD="$password" CONSOLE_ADMIN_NAME="$name" CONSOLE_BOOTSTRAP_CHECK="$check_value" SKIP_CONSOLE_SEED=0 \
+    CONSOLE_ADMIN_PASSWORD="$password" CONSOLE_ADMIN_NAME="$name" \
+    CONSOLE_ADMIN_PASSWORD_MIN_LENGTH="$min_length" CONSOLE_ADMIN_PASSWORD_MAX_LENGTH="$max_length" \
+    CONSOLE_BOOTSTRAP_CHECK="$check_value" SKIP_CONSOLE_SEED=0 \
     node "$entrypoint"
   if ! "$CHECK_ONLY"; then
     native_run_service env DATABASE_URL="$database_url" CONSOLE_ADMIN_EMAIL="$email" \
-      CONSOLE_ADMIN_PASSWORD="$password" CONSOLE_ADMIN_NAME="$name" CONSOLE_BOOTSTRAP_CHECK=1 SKIP_CONSOLE_SEED=0 \
+      CONSOLE_ADMIN_PASSWORD="$password" CONSOLE_ADMIN_NAME="$name" \
+      CONSOLE_ADMIN_PASSWORD_MIN_LENGTH="$min_length" CONSOLE_ADMIN_PASSWORD_MAX_LENGTH="$max_length" \
+      CONSOLE_BOOTSTRAP_CHECK=1 SKIP_CONSOLE_SEED=0 \
       node "$entrypoint"
   fi
 fi
