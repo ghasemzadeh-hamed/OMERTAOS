@@ -34,6 +34,15 @@ def test_quickstart_gateway_declares_development_api_key_map() -> None:
     assert "AION_GATEWAY_API_KEYS: ${AION_GATEWAY_API_KEYS:-dev-admin-token:admin}" in compose
 
 
+def test_quickstart_applies_console_migrations_before_control() -> None:
+    compose = (REPO_ROOT / "deploy/docker/compose/quickstart.yml").read_text()
+    control = compose.split("  control:\n", maxsplit=1)[1].split(
+        "  gateway:\n", maxsplit=1
+    )[0]
+
+    assert "      install:\n        condition: service_completed_successfully" in control
+
+
 def test_gateway_image_uses_locked_audited_dependency_install() -> None:
     dockerfile_bytes = (REPO_ROOT / "gateway" / "Dockerfile").read_bytes()
 

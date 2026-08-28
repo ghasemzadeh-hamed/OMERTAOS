@@ -75,6 +75,9 @@ stack. Internal service addresses such as `runtime:50051`, `control:8000`, and
 Control, Gateway, and Console one at a time, then run `up -d` without `--build`.
 
 Runtime readiness is checked from inside its container before Control starts.
+The one-shot Console installer runs after PostgreSQL is healthy, and Control
+waits for it to finish so Prisma migrations cannot race Control's additive
+table initialization.
 Control readiness uses Python's standard-library HTTP client, so its image does
 not install an extra system curl package solely for health checks.
 

@@ -96,6 +96,8 @@ services:
       ALL_PROXY: ${ALL_PROXY:-}
       NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,control,gateway,console,redis,postgres,qdrant,minio,mongo}
     depends_on:
+      install:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
