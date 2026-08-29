@@ -1,5 +1,33 @@
 # CAPO acceptance report
 
+## R6 Quickstart restart persistence — 2026-08-29
+
+Branch: `codex/capo-r5-runtime-execution`
+
+Validated commit: `5858d3696ad30a6709b60180d2690b13baf1621b`.
+The run used one Runtime worker and the preserved `omertaos-r6-fixed` volumes.
+It did not build images, run benchmarks, or modify the concurrently running
+`compose-*` stack. The isolated acceptance ports were Console `13000`, Gateway
+`18080`, Control `18000`, and Runtime `55051`; the Docker network was
+`omerta-r6-fixed-net`.
+
+| Gate | Result | Executable evidence and boundary |
+|---|---|---|
+| Resource guard | pass | Available memory was 2.0 GiB before startup, 1.8 GiB at initial health, and 1.7 GiB after restart; it remained above the 1 GiB stop threshold |
+| Quickstart startup | pass after two operator-configuration failures | An initial resumed command omitted the isolated network and encountered stale container network metadata; after recreation, the default Runtime port was occupied by the preserved `compose-*` stack. Reapplying the isolated network and port settings started the unchanged images successfully |
+| Service health | pass | Console, Gateway, Control, Runtime, PostgreSQL, and Redis were healthy after startup and again after a complete normal stop/start cycle |
+| Installer idempotency | pass | The one-shot install container exited 0 on both starts; the user-row count remained `1` |
+| Prisma migration persistence | pass | Migration count remained `2`; the sanitized migration-name fingerprint remained `e2e79dd0d4a8b0bed0724ce827291103` before and after restart |
+| Volume persistence | pass | PostgreSQL, MongoDB, and MinIO volumes remained present after the final `docker compose stop` |
+| Final shutdown | pass with note | Compose stop exited 0; Qdrant exited 143 after SIGTERM and the other containers exited 0; no volume deletion command was used |
+
+The failed startup attempts are environment/configuration evidence, not service
+acceptance. This gate establishes restart persistence and idempotent bootstrap
+for the constrained single-worker Quickstart only. It does not establish
+multi-worker scalability, Linux isolation, native systemd acceptance,
+production readiness, or security certification. No credential value was
+printed or recorded.
+
 ## R5 constrained Runtime acceptance — 2026-08-28
 
 Branch: `codex/capo-r5-runtime-execution`
