@@ -1,7 +1,13 @@
-.PHONY: dev-control doctor bundle edge-setup test status logs restart start stop setup train train-ci guard model-all run-user run-pro run-ent claude-install claude-bootstrap claude-status desktop-dev desktop-build
+.PHONY: dev-control doctor bundle edge-setup test status logs restart start stop \
+	setup train train-ci guard model-all run-user run-pro run-ent install-deps \
+	lint verify structure-audit compose-config compose-up compose-down \
+	compose-clean build-image bootstrap claude-install claude-bootstrap \
+	claude-status desktop-dev desktop-build
 
 PY ?= python3
-CLI=$(PY) -m aion_core.cli
+CLI = $(PY) -m aion_core.cli
+COMPOSE_FILE ?= deploy/docker/compose/quickstart.yml
+COMPOSE = docker compose --project-directory . -f $(COMPOSE_FILE)
 
 dev-control:
 	PYTHONPATH=$(CURDIR) uvicorn control.app.main:app --reload --port 8000
@@ -16,32 +22,34 @@ edge-setup:
 	sudo deploy/native/scripts/aion-edge-setup.sh
 
 test:
-	PYTHONPATH=$(CURDIR) pytest -q
+	PYTHONPATH=$(CURDIR) $(PY) -m pytest -q
 
 APP_DIR ?= /opt/aion/OMERTAOS
 
 status:
+	systemctl status omertaos-runtime || true
 	systemctl status omertaos-control || true
 	systemctl status omertaos-gateway || true
 	systemctl status omertaos-console || true
 
 logs:
+	journalctl -u omertaos-runtime -n 50 --no-pager
 	journalctl -u omertaos-control -n 50 --no-pager
 	journalctl -u omertaos-gateway -n 50 --no-pager
 	journalctl -u omertaos-console -n 50 --no-pager
 
 restart:
-	systemctl restart omertaos-control omertaos-gateway omertaos-console
+	systemctl restart omertaos-runtime omertaos-control omertaos-gateway omertaos-console
 
 start:
-	systemctl start omertaos-control omertaos-gateway omertaos-console
+	systemctl start omertaos-runtime omertaos-control omertaos-gateway omertaos-console
 
 stop:
-	systemctl stop omertaos-control omertaos-gateway omertaos-console
+	systemctl stop omertaos-runtime omertaos-control omertaos-gateway omertaos-console
 
 setup:
 	$(PY) -m pip install -U pip
-	$(PY) -m pip install -e .[dev]
+	$(PY) -m pip install -e .[control,dev]
 
 train:
 	$(PY) scripts/train_eval.py --config policies/training.yaml
@@ -55,44 +63,49 @@ guard:
 model-all: setup train guard
 
 run-user:
-	AION_PROFILE=user docker compose --project-directory . -f deploy/docker/compose/full.yml up -d
+	AION_PROFILE=user OMERTA_PROFILE=lite $(COMPOSE) up -d
 
 run-pro:
-	AION_PROFILE=professional docker compose --project-directory . -f deploy/docker/compose/full.yml up -d
+	AION_PROFILE=professional OMERTA_PROFILE=professional $(COMPOSE) up -d
 
 run-ent:
-	AION_PROFILE=enterprise-vip FEATURE_SEAL=1 docker compose --project-directory . -f deploy/docker/compose/full.yml up -d
+	AION_PROFILE=enterprise-vip OMERTA_PROFILE=enterprise FEATURE_SEAL=1 $(COMPOSE) up -d
 
 # Developer quality gates
 install-deps:
 	$(PY) -m pip install --upgrade pip
 	$(PY) -m pip install -r requirements.txt
 	npm ci --prefix gateway
-	npm ci --prefix console
+	corepack enable
+	corepack prepare pnpm@11.13.1 --activate
+	pnpm --dir console install --frozen-lockfile
 
 lint:
 	pre-commit run --all-files
 	npm run lint --prefix gateway --if-present
-	npm run lint --prefix console --if-present
+	pnpm --dir console build
 
 verify:
-	ci/verify.sh
+	bash deploy/ci/verify.sh
 
 structure-audit:
 	$(PY) scripts/check_structure_consistency.py
 
 # Docker Compose helpers for the quickstart stack
+compose-config:
+	$(COMPOSE) config
+
 compose-up:
-	docker compose --project-directory . -f deploy/docker/compose/quickstart.yml up --build -d
+	$(COMPOSE) up --build -d
 
 compose-down:
-	docker compose --project-directory . -f deploy/docker/compose/quickstart.yml down
+	$(COMPOSE) down
 
 compose-clean:
-	docker compose --project-directory . -f deploy/docker/compose/quickstart.yml down -v --remove-orphans
+	$(COMPOSE) down -v --remove-orphans
 
 build-image:
-	docker compose --project-directory . -f deploy/docker/compose/quickstart.yml build
+	$(COMPOSE) build
 
 bootstrap:
 	./quick-install.sh

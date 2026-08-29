@@ -2,11 +2,12 @@ cff-version: 1.2.0
 message: "If you use OMERTAOS in research, cite this software and the exact evaluated commit."
 type: software
 title: "OMERTAOS"
-abstract: "A modular system-software architecture for secure, governed, and observable agentic-AI execution."
+abstract: "An open, modular Agent Operating System reference architecture for governed AI execution across models, tools, data, and infrastructure."
 authors:
   - family-names: "Ghasemzadeh"
     given-names: "Hamed"
 repository-code: "https://github.com/Hamedghz/OMERTAOS"
+url: "https://github.com/Hamedghz/OMERTAOS"
 license: "Apache-2.0"
 keywords:
   - "agentic AI"
@@ -14,3 +15,5 @@ keywords:
   - "runtime isolation"
   - "policy enforcement"
   - "auditability"
+  - "multi-tenancy"
+  - "agent operating system"

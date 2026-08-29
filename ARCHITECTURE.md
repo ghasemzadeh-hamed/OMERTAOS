@@ -44,7 +44,7 @@ flowchart TB
     QD[(Qdrant)]
     MI[(MinIO)]
   end
-  UI -->|HTTPS| GW -->|gRPC| ORCH -->|gRPC| RD
+  UI -->|HTTPS| GW -->|HTTP / gRPC| ORCH -->|gRPC| RD
   ORCH --> PG & MG & RE & QD & MI
   GW -. ephemeral rate-limit/idempotency .-> RE
 ```
@@ -79,21 +79,20 @@ Runtime Daemon versioned gRPC API
   clients are consumed from `shared/generated/`.
 
 Architecture CI checks canonical ownership, forbidden imports, presentation
-bypasses, subprocess boundaries, and migration completion. The Structure S6
-snapshot records that repository-owned gates passed at that commit; Runtime
-compilation was separately blocked by dependency resolution. Current results
-must always be established by rerunning `tests/architecture/` and the Runtime
-tests on the evaluated commit.
+bypasses, subprocess boundaries, and migration contracts. The Structure S6
+report is a dated snapshot; current CI also builds and tests Runtime separately.
+Results must always be established by rerunning `tests/architecture/` and the
+Runtime tests on the evaluated commit.
 
 ## Protocols
 
-| Protocol | Use | Constraint |
-|---|---|---|
-| REST/JSON | External CRUD, task submission, health | Versioned `/v1`; bounded payloads and idempotency keys |
-| SSE | Ordered one-way task progress | Resume with event ID; heartbeat and bounded replay |
-| WebSocket | Bidirectional interactive sessions | Authenticated upgrade, per-message limits, backpressure |
-| gRPC/Protobuf | Gateway–Control and Control–Runtime | Deadlines, mTLS in production, compatible versioned contracts |
-| Event bus | Lifecycle, audit, telemetry and integration facts | Redis Streams default; Kafka for partitions/retention/scale |
+| Protocol      | Use                                               | Constraint                                                    |
+| ------------- | ------------------------------------------------- | ------------------------------------------------------------- |
+| REST/JSON     | External CRUD, task submission, health            | Versioned `/v1`; bounded payloads and idempotency keys        |
+| SSE           | Ordered one-way task progress                     | Resume with event ID; heartbeat and bounded replay            |
+| WebSocket     | Bidirectional interactive sessions                | Authenticated upgrade, per-message limits, backpressure       |
+| gRPC/Protobuf | Gateway–Control and Control–Runtime               | Deadlines, mTLS in production, compatible versioned contracts |
+| Event bus     | Lifecycle, audit, telemetry and integration facts | Redis Streams default; Kafka for partitions/retention/scale   |
 
 ## Task lifecycle
 
@@ -156,11 +155,12 @@ W3C trace context crosses HTTP, gRPC, event headers, and Runtime audit records. 
 
 ## Security boundaries
 
-Identity is verified at Gateway and propagated as signed service claims. Control evaluates contextual policy and mints least-privilege capability grants. Runtime re-verifies grant signature, audience, expiry, task/attempt binding, executable/filesystem/network constraints, and resource ceilings. Network policy prevents bypass paths. Secrets are resolved at the consuming boundary, redacted from telemetry, and never embedded in tasks or events.
+The target model verifies identity at Gateway and propagates signed service claims. Control evaluates contextual policy and mints least-privilege capability grants. Runtime re-verifies grant signature, audience, expiry, task/attempt binding, executable/filesystem/network constraints, and resource ceilings. Network policy prevents bypass paths. Secrets are resolved at the consuming boundary, redacted from telemetry, and never embedded in tasks or events.
 
-This paragraph defines the target security model. The current Runtime performs
-named capability checks, but signature validation is minimal and Linux
-namespace, mount, seccomp, and isolated-process backends remain fail-closed
-stubs. Accordingly, this architecture document must not be cited as proof of
-complete sandboxing, cryptographic grant enforcement, tenant isolation, or
+The current Runtime performs named capability and tenant-context checks. The
+`lite`/`personal` prototype path can execute its single allowlisted dispatch
+intent without a completed Linux sandbox; the namespace, mount, seccomp, and
+isolated-process backends used by stronger profiles remain fail-closed stubs.
+Cryptographic grant validation is not complete. This document therefore is not
+proof of complete sandboxing, grant enforcement, tenant isolation, or
 production security.

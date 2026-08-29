@@ -82,14 +82,12 @@ workflow; it is not a general task queue.
 Start with the smallest relevant command:
 
 - Python/Control/Data: `python -m pytest <affected-test-path> -q`
-- Shared architecture smoke: `python -m pytest tests/architecture -q -k
-  "not test_structure_migration_gate"`; run the intentionally red completion
-  gate only when the current Structure phase explicitly targets that gate
+- Shared architecture smoke: `python -m pytest tests/architecture -q -k "not test_structure_migration_gate"`; run the intentionally red completion gate only when the current Structure phase explicitly targets that gate
 - Gateway: `npm run build --prefix gateway` plus relevant Gateway tests
-- Console: `npm run test --prefix console -- --config vitest.config.mts`; add a
-  production build for routing, config, or shared UI changes
-- Runtime: `cargo fmt --check` and targeted `cargo test` under
-  `runtime-daemon/Cargo.toml`
+- Console: `pnpm --dir console test --config vitest.config.mts`; add
+  `pnpm --dir console build` for routing, config, or shared UI changes
+- Runtime: `cargo fmt --manifest-path runtime-daemon/Cargo.toml --check` and
+  targeted `cargo test --manifest-path runtime-daemon/Cargo.toml`
 - Compose: run `docker compose ... config` before any build; never run `up` or
   `down` unless the task explicitly requires a running stack
 - CAPO shell assets on Windows: syntax/static checks only; do not claim native

@@ -6,11 +6,11 @@ formally verified, penetration-test certified, or approved for production use.
 
 ## Supported code
 
-| Branch or release | Status |
-|---|---|
-| `CAPO` at its current HEAD | Active research and maintenance branch |
-| Tagged releases | Supported only when explicitly identified in the release notes |
-| Other branches and historical commits | Best-effort only |
+| Branch or release                     | Status                                                         |
+| ------------------------------------- | -------------------------------------------------------------- |
+| `CAPO` at its current HEAD            | Active research and maintenance branch                         |
+| Tagged releases                       | Supported only when explicitly identified in the release notes |
+| Other branches and historical commits | Best-effort only                                               |
 
 A branch is mutable. Vulnerability reports and research results should identify
 the exact affected commit.
@@ -38,13 +38,15 @@ level.
 
 ## Current high-impact limitations
 
-- Runtime namespace, mount, seccomp, and isolated-process backends are not
-  implemented and execution currently fails closed.
-- Runtime signature validation is not a complete production capability-grant
-  protocol.
-- Native Linux/systemd and running Quickstart production-acceptance gates are
-  pending.
-- Distributed membership, scheduling, and federation are not implemented.
+- The `lite`/`personal` Runtime path executes one allowlisted prototype intent
+  without a completed Linux sandbox. Namespace, mount, seccomp, and isolated
+  process backends for stronger profiles remain unimplemented and fail closed.
+- Runtime named-capability and tenant-context checks exist, but signed-grant
+  validation is not a complete production capability protocol.
+- A local development Quickstart has been exercised; native Linux/systemd and
+  production deployment acceptance remain separate, incomplete gates.
+- Tenant/capability-aware Runtime node scheduling exists as a prototype;
+  distributed membership and federation are not production implementations.
 - Development Compose examples contain placeholder credentials and disabled
   authentication modes that must never be exposed publicly.
 

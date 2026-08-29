@@ -17,9 +17,13 @@ production deployment, or changes to security-sensitive boundaries.
 Current authority is determined by repository permissions and reviewed pull
 requests, not by role titles listed in a document.
 
+`CAPO` is the active integration branch. Review expectations in this document
+apply whether or not a Git hosting branch-protection rule technically enforces
+them; repository settings and CI enforcement are separate controls.
+
 ## Decisions
 
-- routine, backward-compatible changes use normal pull-request review;
+- routine, backward-compatible changes use focused pull-request review;
 - architecture, trust-boundary, public-contract, schema, or deployment-topology
   changes require an ADR and review from affected owners;
 - security vulnerabilities follow the private process in

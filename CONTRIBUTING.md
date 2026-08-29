@@ -40,15 +40,18 @@ python -m pip install -e ".[control,dev]"
 
 npm ci --prefix gateway
 corepack enable
+corepack prepare pnpm@11.13.1 --activate
 pnpm --dir console install --frozen-lockfile
 ```
 
 On Windows PowerShell, activate the virtual environment with
 `.venv\Scripts\Activate.ps1`.
 
-Render deployment configuration before starting any stack:
+Create the local environment file, then render deployment configuration before
+starting any stack. The checked-in credentials are development placeholders.
 
 ```bash
+cp dev.env .env
 docker compose --project-directory . -f deploy/docker/compose/quickstart.yml config
 ```
 
@@ -67,12 +70,12 @@ npm run build --prefix gateway
 npm test --prefix gateway
 
 # Console
-pnpm --dir console test -- --config vitest.config.mts
+pnpm --dir console test --config vitest.config.mts
 pnpm --dir console build
 
 # Runtime
-cargo fmt --check --manifest-path runtime-daemon/Cargo.toml
-cargo test --manifest-path runtime-daemon/Cargo.toml --all-targets
+cargo fmt --manifest-path runtime-daemon/Cargo.toml --check
+cargo test --locked --manifest-path runtime-daemon/Cargo.toml --all-targets
 ```
 
 Report commands, exit codes, pass/fail/skip counts, warnings, and environmental

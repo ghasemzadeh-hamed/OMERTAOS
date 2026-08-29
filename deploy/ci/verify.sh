@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"/../.. && pwd)"
 cd "${ROOT_DIR}"
 
 log() {
@@ -42,9 +42,15 @@ if [ -d "gateway" ]; then
 fi
 
 if [ -d "console" ]; then
-  run_step "Install console dependencies" npm ci --prefix console
-  run_step "Lint console" npm run lint --prefix console --if-present
-  run_step "Build console" npm run build --prefix console --if-present
+  if ! command -v corepack >/dev/null 2>&1; then
+    echo "corepack is required for Console verification" >&2
+    exit 1
+  fi
+  run_step "Enable corepack" corepack enable
+  run_step "Activate pinned pnpm" corepack prepare pnpm@11.13.1 --activate
+  run_step "Install console dependencies" pnpm --dir console install --frozen-lockfile
+  run_step "Test console" pnpm --dir console test --config vitest.config.mts
+  run_step "Build console" pnpm --dir console build
 fi
 
 log "Verification completed"
