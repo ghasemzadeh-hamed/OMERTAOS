@@ -1,23 +1,31 @@
-import type { Metadata } from 'next';
-import '../styles/globals.css';
-import '../styles/glass.css';
-import { ThemeProvider } from '../providers/ThemeProvider';
-import { QueryProvider } from '../providers/QueryProvider';
-import { I18nProvider } from '../providers/I18nProvider';
-import { Toaster } from 'sonner';
-import { AuthProvider } from '../providers/AuthProvider';
-import TouchProvider from './(providers)/TouchProvider';
+import type { Metadata } from "next";
+import "../styles/globals.css";
+import "../styles/glass.css";
+import { ThemeProvider } from "../providers/ThemeProvider";
+import { QueryProvider } from "../providers/QueryProvider";
+import { I18nProvider } from "../providers/I18nProvider";
+import { Toaster } from "sonner";
+import { AuthProvider } from "../providers/AuthProvider";
+import TouchProvider from "./(providers)/TouchProvider";
 
 export const metadata: Metadata = {
-  title: 'aionOS Console',
-  description: 'Glass UI console for the aionOS platform',
+  title: "OMERTAOS Console",
+  description: "Operator console for the OMERTAOS platform",
+  icons: {
+    icon: "/brand/omertaos-logo.png",
+    apple: "/brand/omertaos-logo.png",
+  },
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
-export const fetchCache = 'force-no-store';
+export const fetchCache = "force-no-store";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
       <body className="min-h-screen text-white antialiased">

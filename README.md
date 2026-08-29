@@ -1,6 +1,10 @@
 # OMERTAOS
 
 <p align="center">
+  <img src="console/public/brand/omertaos-logo.png" alt="OMERTAOS logo" width="220">
+</p>
+
+<p align="center">
   <strong>An open, modular Agent Operating System for governed AI execution</strong>
 </p>
 

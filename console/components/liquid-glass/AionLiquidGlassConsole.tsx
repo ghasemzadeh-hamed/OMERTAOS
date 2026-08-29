@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import BrandLogo from "@/components/BrandLogo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -462,8 +463,12 @@ export default function AionLiquidGlassConsole(): JSX.Element {
         >
           <div className="flex items-center justify-between px-2 py-1">
             <div className="flex items-center gap-2">
-              <Bot className="h-6 w-6" />
-              {sidebarOpen && <span className="font-bold">AION-OS</span>}
+              <BrandLogo
+                size={40}
+                priority
+                className="shrink-0 border border-white/20 shadow-lg"
+              />
+              {sidebarOpen && <span className="font-bold">OMERTAOS</span>}
             </div>
             <Button
               size="icon"

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useState } from "react";
 
 import GlassPanel from "@/components/GlassPanel";
+import BrandLogo from "@/components/BrandLogo";
 
 export default function LoginForm({ defaultHint }: { defaultHint?: string }) {
   const [identifier, setIdentifier] = useState("");
@@ -45,8 +46,13 @@ export default function LoginForm({ defaultHint }: { defaultHint?: string }) {
       >
         <GlassPanel className="w-full max-w-sm space-y-6 p-6">
           <div className="text-center space-y-1">
+            <BrandLogo
+              size={120}
+              priority
+              className="mx-auto mb-4 border border-white/20 shadow-xl"
+            />
             <h1 className="text-2xl font-semibold text-white/90">
-              Sign in to AION-OS
+              Sign in to OMERTAOS
             </h1>
             <p className="text-sm text-white/60">
               Use the admin account created during setup.
