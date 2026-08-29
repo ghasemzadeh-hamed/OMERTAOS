@@ -1,5 +1,34 @@
 # CAPO acceptance report
 
+## R6.8 isolated Quickstart smoke — 2026-08-30
+
+Branch: `Radin/capo-r6-validation`
+
+Validated smoke repair commit:
+`0c53328` (`fix(deploy): target isolated quickstart smoke`). The live run reused
+the preserved single-worker `omertaos-r6-fixed` containers and images from the
+R6.7 acceptance; no image build or dependency installation was performed. This
+therefore validates the repaired read-only smoke probe and preserved stack, not
+a fresh image build of the current branch.
+
+| Gate | Result | Executable evidence and boundary |
+|---|---|---|
+| Failure reproduction | pass | The previous script rejected `--project-name` with exit 1, so it could not target the isolated acceptance project explicitly |
+| Smoke contract regression | pass | `6 passed`; includes mocked project selection, isolated ports, Runtime healthcheck, installer lookup, and invalid-port rejection |
+| Native contract regression | pass | `70 passed` |
+| Deployment architecture regression | pass | `14 passed, 57 deselected` for the focused Quickstart/deployment/CAPO selection |
+| Static validation | pass | Bash syntax, Ruff, `git diff --check`, and sanitized Compose `config --quiet` exited 0 |
+| Resource guard | pass | Available memory was 2.2 GiB before startup and 1.9 GiB during live smoke, above the 1 GiB stop threshold |
+| Positive isolated smoke | pass | The selected project reported healthy PostgreSQL, Redis, Runtime, Control, Gateway, and Console containers; installer exit 0; Runtime binary health; service payloads; Gateway dependencies; and the Console-to-Gateway-to-Control health chain |
+| Wrong-project negative probe | pass | A nonexistent project failed with exit 1 at the missing PostgreSQL container even though the independent default-port `compose-*` stack remained healthy |
+| Final shutdown | pass with note | Compose stop exited 0, persistent volumes remained present, Qdrant exited 143 after SIGTERM, and the other R6 containers exited 0 |
+
+The smoke probe remains read-only and does not start, restart, migrate,
+bootstrap, or stop services. This stage does not submit a task through Console,
+prove the Console-to-Runtime execution path, validate multiple workers, or
+change the existing isolation and production-readiness evidence boundaries. No
+credential value was printed or recorded.
+
 ## R6 Quickstart restart persistence — 2026-08-29
 
 Branch: `codex/capo-r5-runtime-execution`
