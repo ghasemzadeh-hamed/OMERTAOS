@@ -243,12 +243,51 @@ class RuntimeScheduler:
         nodes = db.scalars(select(RuntimeNode).order_by(RuntimeNode.node_id)).all()
         return [node for node in nodes if self._tenant_allowed(node, tenant_id)]
 
-    def schedule(self, db: Session, request: SchedulingRequest, *, actor: str = "system") -> SchedulingResult:
-        existing = db.scalars(
+    def get_attempt(
+        self,
+        db: Session,
+        task_id: str,
+        attempt_id: str,
+    ) -> TaskAttempt | None:
+        return db.scalars(
             select(TaskAttempt)
-            .where(TaskAttempt.task_id == request.task_id)
-            .where(TaskAttempt.attempt_id == request.attempt_id)
+            .where(TaskAttempt.task_id == task_id)
+            .where(TaskAttempt.attempt_id == attempt_id)
         ).first()
+
+    def finish_attempt(
+        self,
+        db: Session,
+        task_id: str,
+        attempt_id: str,
+        *,
+        status: str,
+        node_state: NodeState | None = None,
+        actor: str = "system",
+    ) -> TaskAttempt:
+        _require_text(status, "status")
+        attempt = self.get_attempt(db, task_id, attempt_id)
+        if attempt is None:
+            raise ValueError("runtime attempt is not registered")
+        node = attempt.node
+        if attempt.status == "leased" and node is not None:
+            node.active_leases = max(node.active_leases - 1, 0)
+        attempt.status = status
+        attempt.updated_at = _now()
+        if (
+            node is not None
+            and node_state is not None
+            and _state(node) is not NodeState.draining
+        ):
+            node.state = node_state.value
+            node.updated_at = _now()
+        db.commit()
+        db.refresh(attempt)
+        emit_audit("runtime.attempt.finish", actor, attempt.tenant_id)
+        return attempt
+
+    def schedule(self, db: Session, request: SchedulingRequest, *, actor: str = "system") -> SchedulingResult:
+        existing = self.get_attempt(db, request.task_id, request.attempt_id)
         if existing and existing.selected_node_id:
             return self._record_decision(
                 db,

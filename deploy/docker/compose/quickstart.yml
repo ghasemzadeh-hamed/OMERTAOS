@@ -54,14 +54,14 @@ services:
     ports: []
   runtime:
     build:
-      context: ../../..
+      context: .
       dockerfile: runtime-daemon/Dockerfile
     environment:
       AION_RUNTIME_BIND_ADDR: 0.0.0.0:50051
       OMERTA_PROFILE: ${OMERTA_PROFILE:-lite}
       RUST_LOG: ${RUST_LOG:-info}
     ports:
-      - "127.0.0.1:50051:50051"
+      - "127.0.0.1:${AION_RUNTIME_HOST_PORT:-50051}:50051"
     healthcheck:
       test: ["CMD", "/usr/local/bin/runtime-daemon", "--healthcheck"]
       interval: 5s
@@ -70,7 +70,7 @@ services:
     restart: unless-stopped
   control:
     build:
-      context: ../../..
+      context: .
       dockerfile: control/Dockerfile
     environment:
       AION_CONTROL_LOCAL_SECRET_KEY: ${AION_CONTROL_LOCAL_SECRET_KEY:-}
@@ -96,6 +96,8 @@ services:
       ALL_PROXY: ${ALL_PROXY:-}
       NO_PROXY: ${NO_PROXY:-localhost,127.0.0.1,control,gateway,console,redis,postgres,qdrant,minio,mongo}
     depends_on:
+      install:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
@@ -107,7 +109,7 @@ services:
       runtime:
         condition: service_healthy
     ports:
-      - "8000:8000"
+      - "${AION_CONTROL_HOST_PORT:-8000}:8000"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
       interval: 5s
@@ -116,7 +118,7 @@ services:
     restart: unless-stopped
   gateway:
     build:
-      context: ../../..
+      context: .
       dockerfile: gateway/Dockerfile
     environment:
       CONTROL_URL: http://control:8000
@@ -132,7 +134,7 @@ services:
       AION_CONTROL_API_PREFIX: /v1
       AION_CONTROL_GRPC: control:50051
       AION_REDIS_URL: redis://redis:6379/0
-      AION_CORS_ORIGINS: http://localhost:3000
+      AION_CORS_ORIGINS: ${AION_CORS_ORIGINS:-http://localhost:3000}
       AION_SELF_EVOLVING_ENABLED: "false"
       HTTP_PROXY: ${HTTP_PROXY:-}
       HTTPS_PROXY: ${HTTPS_PROXY:-}
@@ -144,7 +146,7 @@ services:
       redis:
         condition: service_healthy
     ports:
-      - "8080:8080"
+      - "${AION_GATEWAY_HOST_PORT:-8080}:8080"
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
       interval: 5s
@@ -152,14 +154,16 @@ services:
       retries: 30
     restart: unless-stopped
   install:
-    image: omertaos-console
+    image: ${AION_CONSOLE_IMAGE:-omertaos-console}
     environment:
       CONSOLE_ADMIN_EMAIL: ${CONSOLE_ADMIN_EMAIL:?CONSOLE_ADMIN_EMAIL is required}
       CONSOLE_ADMIN_PASSWORD: ${CONSOLE_ADMIN_PASSWORD:?CONSOLE_ADMIN_PASSWORD is required}
+      CONSOLE_ADMIN_PASSWORD_MIN_LENGTH: ${CONSOLE_ADMIN_PASSWORD_MIN_LENGTH:-8}
+      CONSOLE_ADMIN_PASSWORD_MAX_LENGTH: ${CONSOLE_ADMIN_PASSWORD_MAX_LENGTH:-32}
       CONSOLE_ADMIN_NAME: ${CONSOLE_ADMIN_NAME:-Console Admin}
       SKIP_CONSOLE_SEED: ${SKIP_CONSOLE_SEED:-false}
       DATABASE_URL: postgresql://aion:password@postgres:5432/omerta_db?schema=public
-      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       NEXTAUTH_SECRET: quickstart-nextauth-secret
       GATEWAY_URL: http://gateway:8080
       AION_GATEWAY_URL: http://gateway:8080
@@ -169,16 +173,16 @@ services:
     restart: "no"
     entrypoint: ["sh", "./scripts/install.sh"]
   console:
-    image: omertaos-console
+    image: ${AION_CONSOLE_IMAGE:-omertaos-console}
     build:
-      context: ../../..
+      context: .
       dockerfile: console/Dockerfile
     environment:
       AION_DOCKER: "1"
       DOCKER: "true"
-      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-quickstart-nextauth-secret}
-      NEXT_PUBLIC_GATEWAY_URL: http://localhost:8080
+      NEXT_PUBLIC_GATEWAY_URL: ${NEXT_PUBLIC_GATEWAY_URL:-http://localhost:8080}
       GATEWAY_URL: http://gateway:8080
       AION_GATEWAY_URL: http://gateway:8080
       SECRET_PROVIDER_MODE: local
@@ -198,7 +202,7 @@ services:
       install:
         condition: service_completed_successfully
     ports:
-      - "3000:3000"
+      - "${AION_CONSOLE_HOST_PORT:-3000}:3000"
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:3000/"]
       interval: 5s
@@ -213,5 +217,5 @@ volumes:
 
 networks:
   default:
-    name: omerta-net
+    name: ${AION_DOCKER_NETWORK:-omerta-net}
     driver: bridge

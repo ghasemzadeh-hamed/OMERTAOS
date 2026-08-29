@@ -3,6 +3,39 @@ import { PrismaClient, Role } from '@prisma/client';
 
 export const prisma = new PrismaClient({ log: ['warn', 'error'] });
 
+const DEFAULT_PASSWORD_MIN_LENGTH = 8;
+const DEFAULT_PASSWORD_MAX_LENGTH = 32;
+const ABSOLUTE_PASSWORD_MAX_LENGTH = 72;
+
+const readPasswordLength = (name: string, fallback: number) => {
+  const raw = process.env[name]?.trim();
+  if (!raw) return fallback;
+  if (!/^\d+$/.test(raw)) {
+    throw new Error(`[console] ${name} must be an integer.`);
+  }
+  return Number(raw);
+};
+
+export const resolveAdminPasswordPolicy = () => {
+  const minLength = readPasswordLength(
+    'CONSOLE_ADMIN_PASSWORD_MIN_LENGTH',
+    DEFAULT_PASSWORD_MIN_LENGTH,
+  );
+  const maxLength = readPasswordLength(
+    'CONSOLE_ADMIN_PASSWORD_MAX_LENGTH',
+    DEFAULT_PASSWORD_MAX_LENGTH,
+  );
+  if (minLength < DEFAULT_PASSWORD_MIN_LENGTH) {
+    throw new Error('[console] CONSOLE_ADMIN_PASSWORD_MIN_LENGTH cannot be less than 8.');
+  }
+  if (maxLength < minLength || maxLength > ABSOLUTE_PASSWORD_MAX_LENGTH) {
+    throw new Error(
+      '[console] CONSOLE_ADMIN_PASSWORD_MAX_LENGTH must be between the configured minimum and 72.',
+    );
+  }
+  return { minLength, maxLength };
+};
+
 const normalizeBoolean = (value: string | undefined) => {
   if (!value) return false;
   const normalised = value.trim().toLowerCase();
@@ -16,8 +49,18 @@ export const resolveAdminCredentials = () => {
   if (!email || !email.includes('@')) {
     throw new Error('[console] CONSOLE_ADMIN_EMAIL must be an explicit email address.');
   }
-  if (!password || password.length < 16 || password === 'admin123') {
-    throw new Error('[console] CONSOLE_ADMIN_PASSWORD must be an explicit non-default value of at least 16 characters.');
+  const { minLength, maxLength } = resolveAdminPasswordPolicy();
+  const passwordLength = password ? Array.from(password).length : 0;
+  if (
+    !password
+    || passwordLength < minLength
+    || passwordLength > maxLength
+    || password === 'admin123'
+    || password === 'CHANGE_ME'
+  ) {
+    throw new Error(
+      `[console] CONSOLE_ADMIN_PASSWORD must be an explicit non-default value between ${minLength} and ${maxLength} characters.`,
+    );
   }
   return { email, password, name };
 };

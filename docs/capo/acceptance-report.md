@@ -1,5 +1,47 @@
 # CAPO acceptance report
 
+## R5 constrained Runtime acceptance — 2026-08-28
+
+Branch: `codex/capo-r5-runtime-execution`
+
+Validated deployment/configuration commit:
+`0deccc85d6ba5601fb181ce9968b6bdd23e40014`. The Runtime dispatch source is in
+`711395a` and `681ff8f`; the build-context checkpoint is `d4ff77a`. Nothing in
+this acceptance run was pushed or merged.
+
+The run used one Runtime worker on the recorded 8 GB Linux host. Available
+memory remained above 3 GB, services and image builds were executed
+sequentially, and the existing `compose-*` stack was preserved. The R5 stack
+used separate host ports and the `omerta-r5-net` network.
+
+| Gate | Result | Executable evidence and boundary |
+|---|---|---|
+| Architecture regression | pass | `68 passed, 1 deselected`; the intentionally red completion gate was excluded |
+| Full Python regression | pass | `203 passed, 2 skipped, 3 warnings` before live acceptance |
+| Runtime image build | pass | Locked release build completed in 17 minutes; cold-build duration is not a performance benchmark |
+| Runtime image identity | pass | Image ran as `runtime`; one worker became healthy on loopback port `55051` |
+| Control image build | pass after transient network failure | Initial Python base-layer request returned HTTP 403; an independent pull succeeded and the unchanged rebuild passed |
+| Gateway image build | blocked | First `npm ci` attempt timed out fetching locked `yargs-parser@21.1.1`; a direct URL probe later returned HTTP 200; the second attempt made no progress for 15 minutes and was stopped with exit 130 |
+| Console image/live service | skipped | Gateway image gate blocked the canonical full-stack sequence; no weaker substitute was used |
+| Backend startup | partial pass | PostgreSQL, Redis, one Runtime, and Control were healthy; Qdrant and MinIO were running but have no explicit Compose readiness probe |
+| Control health | pass | `/health` and `/v1/health` returned `{"status":"ok","service":"control"}` on isolated host port `18000` |
+| Node registration and heartbeat | pass | `runtime-r5-1` registered with `terminal.execute`, tenant `tenant-r5`, then accepted a heartbeat |
+| Worker failure detection | pass in constrained scope | A heartbeat older than the 30-second threshold changed the node to `unreachable` and dispatch failed closed with `RUNTIME_NODE_UNAVAILABLE` |
+| Allowlisted execution | pass | Fresh heartbeat plus gRPC Submit selected `runtime-r5-1`; `runtime.echo.v1` returned exit code 0 and `r5-audit-ok\n` |
+| Context/audit propagation | pass at Runtime log boundary | Tenant, task, attempt, request, trace, actor, and authorized/completed outcomes were logged; the echoed payload was not logged |
+| In-process idempotency | pass | Identical replay returned `idempotent_replay=true`; Runtime audit-event count did not increase |
+| Post-restart idempotency | pass fail-closed | After normal Control restart, replay returned `RUNTIME_RESULT_REPLAY_UNAVAILABLE`; Runtime did not execute it again |
+| PostgreSQL persistence | pass | A non-sensitive probe row remained readable after normal PostgreSQL restart |
+| Shutdown and volume preservation | pass with note | `docker compose stop` preserved `omertaos_postgres-data` and `omertaos_minio-data`; Qdrant reported exit 143 after SIGTERM while the other R5 services exited 0 |
+| Full canonical request path | blocked | Current Gateway image was unavailable, so Console -> Gateway -> Control -> Runtime was not claimed |
+
+Runtime audit evidence required an acceptance-only Compose override setting
+`RUST_LOG=info`; the host exports `RUST_LOG=warn`. Control's `emit_audit`
+primitive still returns only an in-memory entry and has no durable exporter.
+Successful `lite`-profile command execution is not evidence of completed Linux
+namespace/seccomp isolation, production readiness, security certification, or
+multi-worker scalability.
+
 ## R3 current reconciliation — 2026-08-10
 
 Official branch `CAPO` is synchronized at evidence commit

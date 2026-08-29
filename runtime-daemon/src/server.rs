@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
 use anyhow::Result;
+use tonic::metadata::MetadataMap;
 use tonic::{Request, Response, Status};
 
-use crate::audit::log_runtime_event;
+use crate::audit::{log_runtime_dispatch_event, log_runtime_event, RuntimeDispatchContext};
 use crate::config::RuntimeConfig;
 use crate::execution::{agent_runner::run_agent, execute};
 use crate::observability::metrics::query_metrics;
@@ -121,20 +122,48 @@ impl pb::runtime_service_server::RuntimeService for RuntimeServiceImpl {
         &self,
         request: Request<pb::CommandRequest>,
     ) -> std::result::Result<Response<pb::CommandResponse>, Status> {
+        let dispatch_context = dispatch_context(request.metadata());
         let req = request.into_inner();
         let ctx: ExecutionContextModel = req
             .context
             .ok_or_else(|| Status::invalid_argument("context is required"))?
             .try_into()?;
+        if !dispatch_tenant_matches(&ctx, &dispatch_context) {
+            return Err(Status::permission_denied(
+                "tenant metadata does not match execution context",
+            ));
+        }
         validate_capabilities(&ctx, &["terminal.execute"]).map_err(map_error)?;
-        log_runtime_event(
+        log_runtime_dispatch_event(
             "terminal.execute",
             &ctx.tenant_id,
             &ctx.agent_id,
             "authorized",
+            &dispatch_context,
         );
-        let (code, stdout, stderr) =
-            execute(&self.config.profile, &ctx, &req.argv).map_err(map_error)?;
+        let execution = execute(&self.config.profile, &ctx, &req.argv);
+        let (code, stdout, stderr) = match execution {
+            Ok(result) => {
+                log_runtime_dispatch_event(
+                    "terminal.execute",
+                    &ctx.tenant_id,
+                    &ctx.agent_id,
+                    "completed",
+                    &dispatch_context,
+                );
+                result
+            }
+            Err(error) => {
+                log_runtime_dispatch_event(
+                    "terminal.execute",
+                    &ctx.tenant_id,
+                    &ctx.agent_id,
+                    "failed",
+                    &dispatch_context,
+                );
+                return Err(map_error(error));
+            }
+        };
         Ok(Response::new(pb::CommandResponse {
             ok: code == 0,
             stdout,
@@ -153,6 +182,31 @@ impl pb::runtime_service_server::RuntimeService for RuntimeServiceImpl {
             json: query_metrics(&req.tenant_id),
         }))
     }
+}
+
+fn dispatch_context(metadata: &MetadataMap) -> RuntimeDispatchContext {
+    RuntimeDispatchContext {
+        tenant_id: metadata_value(metadata, "tenant-id"),
+        task_id: metadata_value(metadata, "x-aion-task-id"),
+        attempt_id: metadata_value(metadata, "x-aion-attempt-id"),
+        request_id: metadata_value(metadata, "x-request-id"),
+        trace_id: metadata_value(metadata, "traceparent"),
+    }
+}
+
+fn metadata_value(metadata: &MetadataMap, key: &'static str) -> String {
+    metadata
+        .get(key)
+        .and_then(|value| value.to_str().ok())
+        .unwrap_or_default()
+        .to_owned()
+}
+
+fn dispatch_tenant_matches(
+    execution: &ExecutionContextModel,
+    dispatch: &RuntimeDispatchContext,
+) -> bool {
+    dispatch.tenant_id.is_empty() || dispatch.tenant_id == execution.tenant_id
 }
 
 fn map_error(err: anyhow::Error) -> Status {
@@ -190,5 +244,59 @@ async fn shutdown_signal() {
         if let Err(err) = tokio::signal::ctrl_c().await {
             tracing::warn!(%err, "runtime daemon shutdown signal handler failed");
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use tonic::metadata::MetadataValue;
+
+    use super::*;
+
+    #[test]
+    fn dispatch_context_reads_grpc_metadata_fields() {
+        let mut metadata = MetadataMap::new();
+        metadata.insert("tenant-id", MetadataValue::from_static("tenant-a"));
+        metadata.insert("x-aion-task-id", MetadataValue::from_static("task-a"));
+        metadata.insert("x-aion-attempt-id", MetadataValue::from_static("task-a:0"));
+        metadata.insert("x-request-id", MetadataValue::from_static("request-a"));
+        metadata.insert(
+            "traceparent",
+            MetadataValue::from_static("00-trace-a-span-a-01"),
+        );
+
+        assert_eq!(
+            dispatch_context(&metadata),
+            RuntimeDispatchContext {
+                tenant_id: "tenant-a".into(),
+                task_id: "task-a".into(),
+                attempt_id: "task-a:0".into(),
+                request_id: "request-a".into(),
+                trace_id: "00-trace-a-span-a-01".into(),
+            }
+        );
+    }
+
+    #[test]
+    fn dispatch_tenant_must_match_execution_context() {
+        let execution = ExecutionContextModel {
+            agent_id: "agent-a".into(),
+            tenant_id: "tenant-a".into(),
+            cpu_cores: 0,
+            memory_mb: 0,
+            gpu_enabled: false,
+            capabilities: vec!["terminal.execute".into()],
+        };
+        let matching = RuntimeDispatchContext {
+            tenant_id: "tenant-a".into(),
+            ..RuntimeDispatchContext::default()
+        };
+        let mismatched = RuntimeDispatchContext {
+            tenant_id: "tenant-b".into(),
+            ..RuntimeDispatchContext::default()
+        };
+
+        assert!(dispatch_tenant_matches(&execution, &matching));
+        assert!(!dispatch_tenant_matches(&execution, &mismatched));
     }
 }

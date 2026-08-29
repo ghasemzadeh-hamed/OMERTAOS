@@ -176,7 +176,10 @@ bash deploy/native/scripts/bootstrap-admin.sh --check
 
 Set `OMERTAOS_CONSOLE_ADMIN_EMAIL`, `OMERTAOS_CONSOLE_ADMIN_PASSWORD`, and an
 optional `OMERTAOS_CONSOLE_ADMIN_NAME` in root-only `installer.env`. Placeholder,
-default, or passwords shorter than 16 characters are rejected. Bootstrap creates
+default, or out-of-policy passwords are rejected. The configurable
+`OMERTAOS_CONSOLE_ADMIN_PASSWORD_MIN_LENGTH` and
+`OMERTAOS_CONSOLE_ADMIN_PASSWORD_MAX_LENGTH` bounds default to 8 and 32; the
+minimum cannot be lower than 8 and the maximum cannot exceed 72. Bootstrap creates
 the configured administrator only when the Console user table is empty; repeated
 runs never overwrite a password or add an administrator to an established user
 store. Migration uses Control's additive SQLAlchemy metadata and Console's

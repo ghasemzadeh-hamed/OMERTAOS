@@ -47,7 +47,10 @@ def test_control_schema_has_explicit_idempotent_migration() -> None:
 
 def test_bootstrap_requires_explicit_strong_credentials_and_never_rotates() -> None:
     source = (REPO_ROOT / "console" / "scripts" / "bootstrap-admin.ts").read_text(encoding="utf-8")
-    assert "password.length < 16" in source
+    assert "const DEFAULT_PASSWORD_MIN_LENGTH = 8" in source
+    assert "const DEFAULT_PASSWORD_MAX_LENGTH = 32" in source
+    assert "passwordLength < minLength" in source
+    assert "passwordLength > maxLength" in source
     assert "password === 'admin123'" in source
     assert "user.count()" in source
     assert "findUnique" in source

@@ -29,9 +29,7 @@ class GrpcRuntimeTransport:
                 context=runtime_pb2.ExecutionContext(
                     agent_id=envelope.agent_id,
                     tenant_id=envelope.tenant_id,
-                    capabilities=[
-                        "terminal.execute"
-                    ],
+                    capabilities=list(envelope.capabilities),
                 ),
                 argv=list(envelope.argv),
             )
@@ -39,6 +37,7 @@ class GrpcRuntimeTransport:
             response = await stub.ExecuteCommand(
                 request,
                 timeout=timeout_seconds,
+                metadata=_execution_metadata(envelope),
             )
 
             return {
@@ -50,3 +49,14 @@ class GrpcRuntimeTransport:
 
         finally:
             await channel.close()
+
+
+def _execution_metadata(envelope: "RuntimeEnvelope") -> tuple[tuple[str, str], ...]:
+    values = (
+        ("tenant-id", envelope.tenant_id),
+        ("x-aion-task-id", envelope.task_id),
+        ("x-aion-attempt-id", envelope.attempt_id),
+        ("x-request-id", envelope.request_id),
+        ("traceparent", envelope.trace_id),
+    )
+    return tuple((key, value) for key, value in values if value)
