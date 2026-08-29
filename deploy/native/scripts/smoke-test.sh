@@ -3,15 +3,25 @@ set -euo pipefail
 
 MODE=native
 TIMEOUT=5
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+PROJECT_NAME="${COMPOSE_PROJECT_NAME:-}"
+QUICKSTART_COMPOSE_FILE="${AION_QUICKSTART_COMPOSE_FILE:-deploy/docker/compose/quickstart.yml}"
+CONSOLE_PORT="${AION_CONSOLE_HOST_PORT:-3000}"
+GATEWAY_PORT="${AION_GATEWAY_HOST_PORT:-8080}"
+CONTROL_PORT="${AION_CONTROL_HOST_PORT:-8000}"
 
 usage() {
   cat <<'EOF'
-Usage: smoke-test.sh [--mode native|quickstart] [--timeout SECONDS] [--help]
+Usage: smoke-test.sh [--mode native|quickstart] [--timeout SECONDS]
+                     [--project-name NAME] [--help]
 
 Read-only N7 acceptance checks. Native mode verifies data services, the N5
 one-shot result, all N6 units, Runtime's binary healthcheck, listeners, HTTP
 payloads, the Console-to-Gateway-to-Control chain, restart state, and journald.
-It never starts, stops, reloads, migrates, bootstraps, or modifies a service.
+Quickstart mode honors the AION_*_HOST_PORT variables and checks the selected
+Compose project. It never starts, stops, reloads, migrates, bootstraps, or
+modifies a service.
 EOF
 }
 
@@ -22,6 +32,7 @@ while (($#)); do
   case "$1" in
     --mode) [[ $# -ge 2 ]] || die '--mode requires a value'; MODE="$2"; shift ;;
     --timeout) [[ $# -ge 2 ]] || die '--timeout requires a value'; TIMEOUT="$2"; shift ;;
+    --project-name) [[ $# -ge 2 ]] || die '--project-name requires a value'; PROJECT_NAME="$2"; shift ;;
     --help|-h) usage; exit 0 ;;
     *) die "unknown argument: $1" ;;
   esac
@@ -30,6 +41,19 @@ done
 
 [[ "$MODE" == native || "$MODE" == quickstart ]] || die 'mode must be native or quickstart'
 [[ "$TIMEOUT" =~ ^[1-9][0-9]*$ ]] || die 'timeout must be a positive integer'
+
+validate_port() {
+  local name="$1" value="$2"
+  [[ "$value" =~ ^[0-9]+$ ]] && ((value >= 1 && value <= 65535)) \
+    || die "$name must be an integer between 1 and 65535"
+}
+
+quickstart_compose() {
+  local args=(docker compose --project-directory "$REPO_ROOT")
+  [[ -z "$PROJECT_NAME" ]] || args+=(--project-name "$PROJECT_NAME")
+  args+=(-f "$QUICKSTART_COMPOSE_FILE")
+  "${args[@]}" "$@"
+}
 
 fetch_json() {
   local name="$1" url="$2" output
@@ -47,20 +71,65 @@ check_service_payload() {
   pass "$name"
 }
 
+check_compose_health() {
+  local name="$1" service="$2" container_id health
+  container_id="$(quickstart_compose ps -q "$service")"
+  [[ -n "$container_id" ]] || die "$name Quickstart container is missing"
+  health="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$container_id")" \
+    || die "$name Quickstart container is not inspectable"
+  [[ "$health" == healthy ]] || die "$name Quickstart container is not healthy: $health"
+  pass "$name Quickstart container"
+}
+
+check_quickstart_install() {
+  local container_id state
+  container_id="$(quickstart_compose ps --all -q install)"
+  [[ -n "$container_id" ]] || die 'Quickstart install container is missing'
+  state="$(docker inspect --format '{{.State.Status}}:{{.State.ExitCode}}' "$container_id")" \
+    || die 'Quickstart install container is not inspectable'
+  [[ "$state" == exited:0 ]] || die "Quickstart install container did not exit successfully: $state"
+  pass 'Quickstart install container'
+}
+
 check_quickstart() {
   for executable in curl jq; do command -v "$executable" >/dev/null || die "$executable is required"; done
   command -v docker >/dev/null || die 'docker is required for Quickstart readiness'
-  docker compose --project-directory . -f deploy/docker/compose/quickstart.yml \
-    ps --status running runtime | grep -q runtime || die 'Runtime Quickstart container is not running'
-  pass 'Runtime Quickstart container'
-  check_service_payload Control http://127.0.0.1:8000/healthz control
-  local gateway
-  gateway="$(fetch_json Gateway http://127.0.0.1:8080/health)"
+  [[ -z "$PROJECT_NAME" || "$PROJECT_NAME" =~ ^[a-z0-9][a-z0-9_-]*$ ]] \
+    || die 'project name must start with a lowercase letter or digit and contain only lowercase letters, digits, hyphens, or underscores'
+  if [[ "$QUICKSTART_COMPOSE_FILE" != /* ]]; then
+    QUICKSTART_COMPOSE_FILE="$REPO_ROOT/$QUICKSTART_COMPOSE_FILE"
+  fi
+  [[ -f "$QUICKSTART_COMPOSE_FILE" ]] || die 'Quickstart Compose file is missing'
+  validate_port AION_CONSOLE_HOST_PORT "$CONSOLE_PORT"
+  validate_port AION_GATEWAY_HOST_PORT "$GATEWAY_PORT"
+  validate_port AION_CONTROL_HOST_PORT "$CONTROL_PORT"
+
+  check_compose_health PostgreSQL postgres
+  check_compose_health Redis redis
+  check_compose_health Runtime runtime
+  check_quickstart_install
+  check_compose_health Control control
+  check_compose_health Gateway gateway
+  check_compose_health Console console
+  quickstart_compose exec -T runtime /usr/local/bin/runtime-daemon --healthcheck >/dev/null \
+    || die 'Runtime Quickstart healthcheck failed'
+  pass 'Runtime Quickstart healthcheck'
+
+  check_service_payload Control "http://127.0.0.1:${CONTROL_PORT}/healthz" control
+  local gateway console_chain
+  gateway="$(fetch_json Gateway "http://127.0.0.1:${GATEWAY_PORT}/health")"
   jq -e '.status == "ok" and .service == "gateway" and
     .dependencies.redis == "ok" and .dependencies.control == "ok"' \
     >/dev/null <<< "$gateway" || die 'Gateway or a required dependency is degraded'
   pass 'Gateway and dependencies'
-  check_service_payload Console http://127.0.0.1:3000/health console
+  check_service_payload Console "http://127.0.0.1:${CONSOLE_PORT}/health" console
+  console_chain="$(fetch_json 'Console system health' "http://127.0.0.1:${CONSOLE_PORT}/api/system/health")"
+  jq -e '.status == "ok" and
+    .services.console.status == "ok" and
+    .services.gateway.status == "ok" and
+    .services.control.status == "ok"' \
+    >/dev/null <<< "$console_chain" || die 'Canonical Console-to-Gateway-to-Control health chain is degraded'
+  pass 'Canonical Console-to-Gateway-to-Control chain'
 }
 
 check_active_unit() {

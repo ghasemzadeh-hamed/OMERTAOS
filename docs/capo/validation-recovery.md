@@ -24,8 +24,15 @@ bash deploy/native/scripts/smoke-test.sh --mode native
 For a running Quickstart stack, run:
 
 ```bash
-bash deploy/native/scripts/smoke-test.sh --mode quickstart
+bash deploy/native/scripts/smoke-test.sh --mode quickstart \
+  --project-name "${COMPOSE_PROJECT_NAME:-omertaos}"
 ```
+
+For an isolated stack, export the same `AION_CONSOLE_HOST_PORT`,
+`AION_GATEWAY_HOST_PORT`, and `AION_CONTROL_HOST_PORT` values used at startup.
+The probe resolves containers through the selected project, checks the
+one-shot installer result, and rejects unhealthy containers before probing the
+host HTTP endpoints.
 
 The Native probe requires PostgreSQL/Redis readiness, a successful N5 one-shot
 unit, all N6 application units and the aggregate target, Runtime's binary

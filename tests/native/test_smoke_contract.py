@@ -1,4 +1,6 @@
+import os
 from pathlib import Path
+import subprocess
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -64,3 +66,91 @@ def test_capo_smoke_is_a_thin_native_wrapper() -> None:
     wrapper = (REPO_ROOT / "deploy" / "CAPO" / "scripts" / "smoke-test.sh").read_text(encoding="utf-8")
     assert "deploy/native/scripts/smoke-test.sh" in wrapper
     assert len(wrapper.splitlines()) <= 7
+
+
+def _write_executable(path: Path, text: str) -> None:
+    path.write_text(text, encoding="utf-8")
+    path.chmod(0o755)
+
+
+def test_quickstart_smoke_targets_selected_project_and_isolated_ports(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    docker_log = tmp_path / "docker.log"
+    curl_log = tmp_path / "curl.log"
+
+    _write_executable(
+        bin_dir / "docker",
+        """#!/bin/sh
+printf '%s\n' "$*" >> "$SMOKE_DOCKER_LOG"
+if [ "$1" = compose ]; then
+  previous=
+  last=
+  for argument in "$@"; do previous="$last"; last="$argument"; done
+  if [ "$previous" = "-q" ]; then printf '%s-id\n' "$last"; fi
+  exit 0
+fi
+case "$*" in
+  *State.Status*State.ExitCode*) printf 'exited:0\n' ;;
+  *) printf 'healthy\n' ;;
+esac
+""",
+    )
+    _write_executable(
+        bin_dir / "curl",
+        """#!/bin/sh
+for argument in "$@"; do url="$argument"; done
+printf '%s\n' "$url" >> "$SMOKE_CURL_LOG"
+case "$url" in
+  *:18000/*) printf '{"status":"ok","service":"control"}\n' ;;
+  *:18080/*) printf '{"status":"ok","service":"gateway","dependencies":{"redis":"ok","control":"ok"}}\n' ;;
+  */api/system/health) printf '{"status":"ok","services":{"console":{"status":"ok"},"gateway":{"status":"ok"},"control":{"status":"ok"}}}\n' ;;
+  *:13000/*) printf '{"status":"ok","service":"console"}\n' ;;
+  *) exit 22 ;;
+esac
+""",
+    )
+
+    env = {
+        **os.environ,
+        "PATH": f"{bin_dir}:{os.environ['PATH']}",
+        "SMOKE_DOCKER_LOG": str(docker_log),
+        "SMOKE_CURL_LOG": str(curl_log),
+        "AION_CONSOLE_HOST_PORT": "13000",
+        "AION_GATEWAY_HOST_PORT": "18080",
+        "AION_CONTROL_HOST_PORT": "18000",
+    }
+    result = subprocess.run(
+        ["bash", str(SMOKE), "--mode", "quickstart", "--project-name", "omertaos-test"],
+        cwd=tmp_path,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "OMERTAOS quickstart smoke test passed." in result.stdout
+    docker_calls = docker_log.read_text(encoding="utf-8")
+    assert "--project-name omertaos-test" in docker_calls
+    assert f"--project-directory {REPO_ROOT}" in docker_calls
+    assert "ps --all -q install" in docker_calls
+    assert "exec -T runtime /usr/local/bin/runtime-daemon --healthcheck" in docker_calls
+    curl_calls = curl_log.read_text(encoding="utf-8")
+    assert "http://127.0.0.1:18000/healthz" in curl_calls
+    assert "http://127.0.0.1:18080/health" in curl_calls
+    assert "http://127.0.0.1:13000/api/system/health" in curl_calls
+
+
+def test_quickstart_smoke_rejects_invalid_isolated_port(tmp_path: Path) -> None:
+    result = subprocess.run(
+        ["bash", str(SMOKE), "--mode", "quickstart", "--project-name", "omertaos-test"],
+        cwd=tmp_path,
+        env={**os.environ, "AION_CONSOLE_HOST_PORT": "0"},
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 1
+    assert "AION_CONSOLE_HOST_PORT must be an integer between 1 and 65535" in result.stderr

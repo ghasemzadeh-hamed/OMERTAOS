@@ -94,6 +94,18 @@ curl -f http://localhost:8080/health
 curl -f http://localhost:3000/
 ```
 
+Run the read-only Quickstart acceptance probe against the same Compose project
+and exported host-port variables used to start the stack:
+
+```bash
+bash deploy/native/scripts/smoke-test.sh --mode quickstart \
+  --project-name omertaos-r5
+```
+
+The probe checks the selected project's PostgreSQL, Redis, Runtime, installer,
+Control, Gateway, and Console containers before checking the HTTP health chain.
+It does not start, restart, migrate, bootstrap, or stop services.
+
 Stop the stack with `docker compose --project-directory . -f deploy/docker/compose/quickstart.yml down`.
 
 ## Extended local stack
