@@ -128,7 +128,7 @@ docker compose --project-directory . \
 | ------- | ----------------------- | ---------------------------- |
 | Console | `http://localhost:3000` | Browser UI                   |
 | Gateway | `http://localhost:8080` | Public API boundary          |
-| Control | `http://localhost:8000` | Development-only direct port |
+| Control | `http://localhost:8000` | Loopback development API     |
 | Runtime | `127.0.0.1:50051`       | Loopback gRPC                |
 
 The stack also starts PostgreSQL, Redis, MongoDB, Qdrant, and MinIO internally. The one-shot `install` service applies Console migrations and seeds the admin.

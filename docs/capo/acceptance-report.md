@@ -1,5 +1,50 @@
 # CAPO acceptance report
 
+## R6.10 automatic local Runtime lifecycle — 2026-08-30
+
+Branch: `Radin/capo-r6-validation`
+
+Validated implementation commit: `ac39d51` (`feat(deploy): automate
+quickstart runtime lifecycle`). The run recreated the isolated Quickstart
+containers while preserving the existing volumes, used one Runtime worker, and
+used host ports Console `13000`, Gateway `18080`, loopback Control `18002`, and
+loopback Runtime `55051` on `omerta-r6-fixed-net`. No manual node registration
+or heartbeat command was used.
+
+| Gate | Result | Executable evidence and boundary |
+|---|---|---|
+| Lifecycle and probe tests | pass | `tests/control/test_runtime_lifecycle.py` reported `6 passed`; coverage includes bounded opt-in configuration, Runtime `QueryMetrics` readiness, invalid JSON rejection, registration, unreachable refusal, and preservation of operator draining |
+| Control regression | pass | `70 passed, 3 existing deprecation warnings` |
+| Native/Quickstart regression | pass | `70 passed` |
+| Architecture regression | pass | `71 passed, 1 intentionally excluded completion gate` |
+| Full Python regression | pass | `214 passed, 2 skipped, 1 intentionally excluded completion gate, 3 warnings` |
+| Compose rendering | pass | The rendered model selected loopback-only Control publishing and enabled the bounded 10-second local lifecycle interval; no rendered secret values were recorded |
+| Control image build | pass | The affected image rebuilt sequentially with locked cached dependencies and exit 0. Runtime, Gateway, and Console images were unchanged and deliberately not rebuilt |
+| Resource guard | pass | Available memory was 2.9 GiB before build, 3.4 GiB during final live checks, and 3.8 GiB after shutdown; it remained above the 1 GiB stop threshold |
+| Automatic registration | pass | After container recreation, PostgreSQL contained `runtime-quickstart-1` at `runtime:50051`, state `healthy`, capability `terminal.execute`, declared capacity 1000 CPU millis/512 MiB, and a heartbeat newer than 30 seconds |
+| Control host-port repair | pass on this host | Publishing Control as `127.0.0.1:18002:8000` returned a valid healthy payload. This removes unnecessary non-loopback exposure and eliminated the reset reproduced with the prior all-interface mapping |
+| Full Quickstart smoke | pass twice | Both the initial and post-recovery probes passed container health, installer exit, Runtime binary health, fresh automatic registration, Control/Gateway/Console payloads, dependencies, and the Console-to-Gateway-to-Control health chain |
+| Canonical task without manual heartbeat | pass | An authenticated Console API request traversed Gateway, Control, and Runtime and returned HTTP 200, status `OK`, and an exact deterministic echo |
+| Runtime outage detection | pass fail-closed | Runtime alone was stopped. After the 30-second freshness threshold, the next authenticated canonical task returned application status `ERROR` with `RUNTIME_NODE_UNAVAILABLE`; PostgreSQL recorded the node `unreachable` with a stale heartbeat |
+| Automatic recovery | pass | Starting the same Runtime container caused the Control supervisor to restore a fresh `healthy` heartbeat without a registration call. A new authenticated canonical task returned `OK`, followed by a second complete smoke pass |
+| Final shutdown | pass with note | `docker compose stop` exited 0, no project containers remained running, all three project volumes were preserved, and no volume-deletion command was used |
+
+The supervisor is enabled by the Quickstart Compose profile and remains opt-in
+for other Control deployments. It probes the configured Runtime gRPC API before
+registering or heartbeating, never gives Runtime an administrator credential,
+does not let Runtime choose tenant eligibility, refuses to heartbeat a persisted
+node whose endpoint differs from trusted Control configuration, and preserves
+operator draining. Declared capacity is static local configuration rather than
+measured host utilization.
+
+This stage does not demonstrate browser UI interaction, multiple workers,
+distributed membership, consensus, leader election, lease fencing, precise
+recovery-time performance, native systemd operation, successful Linux
+isolation, production readiness, or security certification. Two Python tests
+remain skipped by their existing contracts, and the intentional Structure
+completion gate was not run. No credential, cookie, token, task payload, or
+secret value was printed or recorded.
+
 ## R6.9 authenticated canonical execution — 2026-08-30
 
 Branch: `Radin/capo-r6-validation`

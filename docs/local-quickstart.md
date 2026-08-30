@@ -6,7 +6,7 @@ OMERTAOS provides two canonical local Compose entry points. `deploy/docker/compo
 
 - Docker Desktop on Windows/macOS, or Docker Engine with Compose v2 on Linux
 - At least 8 GB of available memory
-- Free host ports 3000, 8000, 8080, and loopback-only 50051 for quickstart
+- Free host ports 3000 and 8080, plus loopback-only 8000 and 50051 for quickstart
 - For the extended local stack, also free ports 5432, 6379, 27017, 6333, 9000, and 9001
 
 Confirm that the Docker daemon is running before starting:
@@ -46,7 +46,7 @@ Expected host ports:
 | Service | URL |
 |---|---|
 | Console | `http://localhost:3000` |
-| Control | `http://localhost:8000` |
+| Control | `http://localhost:8000` (loopback only) |
 | Gateway | `http://localhost:8080` |
 | Runtime gRPC | `127.0.0.1:50051` |
 
@@ -78,6 +78,19 @@ Runtime readiness is checked from inside its container before Control starts.
 The one-shot Console installer runs after PostgreSQL is healthy, and Control
 waits for it to finish so Prisma migrations cannot race Control's additive
 table initialization.
+Quickstart also enables a bounded Control-owned Runtime lifecycle supervisor.
+After a successful Runtime gRPC readiness probe, it registers the configured
+single node and refreshes its heartbeat every 10 seconds. The node id,
+capabilities, tenant eligibility, declared capacity, heartbeat interval, and
+probe timeout are configurable through the `AION_RUNTIME_*` values in
+`.env.example`. The interval is limited to 20 seconds so it remains below the
+current 30-second stale-worker threshold. Stopping Runtime stops heartbeats and
+causes scheduling to fail closed after that threshold; restarting Runtime
+restores eligibility without an operator registration call.
+
+This local supervisor is not a distributed membership protocol. Runtime does
+not receive an administrator token or self-authorize tenant eligibility, and
+operator-requested draining remains authoritative.
 Bootstrap passwords default to a configurable 8-32 character policy. Override
 `CONSOLE_ADMIN_PASSWORD_MIN_LENGTH` and `CONSOLE_ADMIN_PASSWORD_MAX_LENGTH`
 when a longer local credential is required; the minimum cannot be lower than 8
@@ -103,8 +116,9 @@ bash deploy/native/scripts/smoke-test.sh --mode quickstart \
 ```
 
 The probe checks the selected project's PostgreSQL, Redis, Runtime, installer,
-Control, Gateway, and Console containers before checking the HTTP health chain.
-It does not start, restart, migrate, bootstrap, or stop services.
+Control, Gateway, and Console containers, verifies a fresh automatic Runtime
+registration, and then checks the HTTP health chain. It does not start,
+restart, migrate, bootstrap, or stop services.
 
 Stop the stack with `docker compose --project-directory . -f deploy/docker/compose/quickstart.yml down`.
 
