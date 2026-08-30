@@ -3,9 +3,10 @@ from __future__ import annotations
 import json
 import os
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Path, Request, status
 from sqlalchemy.orm import Session
 
+from control.audit import RuntimeAuditEvent, list_runtime_audit_events
 from control.app.network.models import get_db
 from control.scheduling import (
     NodeState,
@@ -21,6 +22,8 @@ from .schemas import (
     RuntimeNodeList,
     RuntimeNodeOut,
     RuntimeNodeRegistrationIn,
+    RuntimeAuditEventOut,
+    RuntimeAuditTrailOut,
     SchedulingRequestIn,
     SchedulingResultOut,
 )
@@ -88,6 +91,24 @@ def _node_out(node: RuntimeNode) -> RuntimeNodeOut:
         active_leases=node.active_leases,
         drain_requested=node.drain_requested,
         last_heartbeat_at=node.last_heartbeat_at,
+    )
+
+
+def _audit_out(event: RuntimeAuditEvent) -> RuntimeAuditEventOut:
+    return RuntimeAuditEventOut(
+        event_id=event.event_id,
+        action=event.action,
+        actor=event.actor,
+        tenant_id=event.tenant_id,
+        task_id=event.task_id,
+        attempt_id=event.attempt_id,
+        node_id=event.node_id,
+        request_id=event.request_id,
+        trace_id=event.trace_id,
+        outcome=event.outcome,
+        reason=event.reason,
+        retry_count=event.retry_count,
+        created_at=event.created_at,
     )
 
 
@@ -160,6 +181,22 @@ def list_runtime_nodes(
 ) -> RuntimeNodeList:
     resolved_tenant = tenant_id or _tenant(request)
     return RuntimeNodeList(items=[_node_out(node) for node in scheduler.discover_workers(db, resolved_tenant)])
+
+
+@router.get("/audit/{task_id}", response_model=RuntimeAuditTrailOut)
+def get_runtime_audit_trail(
+    request: Request,
+    task_id: str = Path(min_length=1, max_length=120),
+    db: Session = Depends(get_db),
+    _: None = Depends(require_admin),
+) -> RuntimeAuditTrailOut:
+    tenant_id = _tenant(request)
+    events = list_runtime_audit_events(db, task_id=task_id, tenant_id=tenant_id)
+    return RuntimeAuditTrailOut(
+        task_id=task_id,
+        tenant_id=tenant_id,
+        items=[_audit_out(event) for event in events],
+    )
 
 
 @router.post("/schedule", response_model=SchedulingResultOut)

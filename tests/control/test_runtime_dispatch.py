@@ -3,11 +3,12 @@ from __future__ import annotations
 from collections.abc import Callable
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from control.app.network.migrate import apply_schema
+from control.audit.models import RuntimeAuditEvent
 from control.clients.runtime import (
     RuntimeEnvelope,
     RuntimeExecutionRejected,
@@ -151,6 +152,23 @@ def test_dispatch_executes_allowlisted_command_once_and_replays_cached_result(
         node = db.get(RuntimeNode, "node-a")
         assert attempt is not None and attempt.status == "completed"
         assert node is not None and node.active_leases == 0
+        events = list(
+            db.scalars(
+                select(RuntimeAuditEvent)
+                .where(RuntimeAuditEvent.task_id == "task-a")
+                .order_by(RuntimeAuditEvent.id)
+            ).all()
+        )
+        assert [event.action for event in events] == [
+            "runtime.schedule",
+            "runtime.dispatch.start",
+            "runtime.dispatch.success",
+            "runtime.dispatch.cache_replay",
+        ]
+        assert events[1].request_id == "request-a"
+        assert events[1].trace_id == "00-trace-a-span-a-01"
+        assert events[2].outcome == "completed"
+        assert events[2].actor == "agent-a"
     finally:
         db.close()
 
@@ -226,6 +244,22 @@ def test_dispatch_retries_transport_failure_on_another_eligible_node(
         assert node_a is not None and node_a.state == NodeState.unreachable.value
         assert node_a.active_leases == 0
         assert node_b is not None and node_b.active_leases == 0
+        events = list(
+            db.scalars(
+                select(RuntimeAuditEvent)
+                .where(RuntimeAuditEvent.task_id == "task-a")
+                .order_by(RuntimeAuditEvent.id)
+            ).all()
+        )
+        assert [event.action for event in events] == [
+            "runtime.schedule",
+            "runtime.dispatch.start",
+            "runtime.dispatch.unavailable",
+            "runtime.schedule",
+            "runtime.dispatch.start",
+            "runtime.dispatch.success",
+        ]
+        assert [event.retry_count for event in events] == [0, 0, 0, 1, 1, 1]
     finally:
         db.close()
 
@@ -305,3 +339,18 @@ def test_new_dispatcher_blocks_completed_attempt_without_durable_result_replay(
     assert replay.error_code == "RUNTIME_RESULT_REPLAY_UNAVAILABLE"
     assert replay.idempotent_replay is True
     assert replacement_executor.calls == []
+    db = session_factory()
+    try:
+        actions = list(
+            db.scalars(
+                select(RuntimeAuditEvent.action)
+                .where(RuntimeAuditEvent.task_id == "task-a")
+                .order_by(RuntimeAuditEvent.id)
+            ).all()
+        )
+        assert actions[-2:] == [
+            "runtime.schedule",
+            "runtime.dispatch.replay_blocked",
+        ]
+    finally:
+        db.close()

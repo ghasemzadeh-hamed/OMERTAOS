@@ -72,6 +72,20 @@ def test_runtime_node_routes_register_heartbeat_and_schedule() -> None:
         )
         assert decision.status_code == 200
         assert decision.json()["selected_node_id"] == "runtime-a"
+
+        trail = client.get("/v1/runtime/audit/task-a", headers=headers)
+        assert trail.status_code == 200
+        assert trail.json()["tenant_id"] == "tenant-a"
+        assert [item["action"] for item in trail.json()["items"]] == [
+            "runtime.schedule"
+        ]
+
+        other_tenant = client.get(
+            "/v1/runtime/audit/task-a",
+            headers={**headers, "tenant-id": "tenant-b"},
+        )
+        assert other_tenant.status_code == 200
+        assert other_tenant.json()["items"] == []
     finally:
         app.dependency_overrides.pop(get_db, None)
 
@@ -82,3 +96,4 @@ def test_runtime_node_routes_require_admin() -> None:
     response = client.get("/v1/runtime/nodes")
 
     assert response.status_code == 403
+    assert client.get("/v1/runtime/audit/task-a").status_code == 403

@@ -9,6 +9,7 @@ def test_control_schema_migration_is_additive_and_idempotent(tmp_path) -> None:
     assert missing_tables(database) == {
         "control_configuration",
         "proxy_profiles",
+        "runtime_audit_events",
         "runtime_nodes",
         "scheduling_decisions",
         "task_attempts",

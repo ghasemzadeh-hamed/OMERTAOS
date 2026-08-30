@@ -8,6 +8,7 @@ from enum import Enum
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
+from control.audit import append_runtime_audit_event
 from shared.telemetry.audit import emit_audit
 
 from .models import RuntimeNode, SchedulingDecision, TaskAttempt
@@ -264,6 +265,10 @@ class RuntimeScheduler:
         status: str,
         node_state: NodeState | None = None,
         actor: str = "system",
+        audit_action: str = "runtime.attempt.finish",
+        request_id: str | None = None,
+        trace_id: str | None = None,
+        reason: str = "runtime attempt finished",
     ) -> TaskAttempt:
         _require_text(status, "status")
         attempt = self.get_attempt(db, task_id, attempt_id)
@@ -281,6 +286,20 @@ class RuntimeScheduler:
         ):
             node.state = node_state.value
             node.updated_at = _now()
+        append_runtime_audit_event(
+            db,
+            action=audit_action,
+            actor=actor,
+            tenant_id=attempt.tenant_id,
+            task_id=attempt.task_id,
+            attempt_id=attempt.attempt_id,
+            node_id=attempt.selected_node_id,
+            request_id=request_id,
+            trace_id=trace_id,
+            outcome=status,
+            reason=reason,
+            retry_count=attempt.retry_count,
+        )
         db.commit()
         db.refresh(attempt)
         emit_audit("runtime.attempt.finish", actor, attempt.tenant_id)
@@ -328,7 +347,7 @@ class RuntimeScheduler:
         eligible, rejected = self._eligible_nodes(db, request)
         if not eligible:
             attempt.status = "pending"
-            db.commit()
+            db.flush()
             return self._record_decision(
                 db,
                 request,
@@ -345,7 +364,7 @@ class RuntimeScheduler:
         attempt.selected_node_id = selected.node_id
         attempt.status = "leased"
         attempt.updated_at = _now()
-        db.commit()
+        db.flush()
         return self._record_decision(
             db,
             request,
@@ -442,6 +461,19 @@ class RuntimeScheduler:
             trace_id=request.trace_id,
         )
         db.add(row)
+        append_runtime_audit_event(
+            db,
+            action="runtime.schedule",
+            actor=actor,
+            tenant_id=request.tenant_id,
+            task_id=request.task_id,
+            attempt_id=request.attempt_id,
+            node_id=selected_node_id,
+            trace_id=request.trace_id,
+            outcome=decision,
+            reason=reason,
+            retry_count=request.retry_count,
+        )
         db.commit()
         emit_audit("runtime.schedule", actor, request.tenant_id)
         return SchedulingResult(

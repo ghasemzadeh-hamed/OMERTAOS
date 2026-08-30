@@ -11,6 +11,7 @@ from time import perf_counter
 
 from sqlalchemy.orm import Session
 
+from control.audit import append_runtime_audit_event
 from control.app.network.models import SessionLocal, init_db
 from control.clients.runtime import (
     RuntimeDaemonClient,
@@ -156,6 +157,13 @@ class RuntimeTaskDispatcher:
             if cached is not None:
                 cached_digest, cached_result = cached
                 if cached_digest != digest:
+                    self._record_cached_audit(
+                        request,
+                        cached_result,
+                        action="runtime.dispatch.idempotency_conflict",
+                        outcome="rejected",
+                        reason="runtime request identity conflict",
+                    )
                     return _with_latency(
                         _error_result(
                             code="RUNTIME_IDEMPOTENCY_CONFLICT",
@@ -164,6 +172,13 @@ class RuntimeTaskDispatcher:
                         ),
                         started,
                     )
+                self._record_cached_audit(
+                    request,
+                    cached_result,
+                    action="runtime.dispatch.cache_replay",
+                    outcome="replayed",
+                    reason="runtime result replayed from bounded process cache",
+                )
                 return _with_latency(
                     replace(cached_result, idempotent_replay=True),
                     started,
@@ -209,6 +224,21 @@ class RuntimeTaskDispatcher:
                     db, request.task_id, attempt_id
                 )
                 status = attempt.status if attempt is not None else "unknown"
+                append_runtime_audit_event(
+                    db,
+                    action="runtime.dispatch.replay_blocked",
+                    actor=request.agent_id,
+                    tenant_id=request.tenant_id,
+                    task_id=request.task_id,
+                    attempt_id=attempt_id,
+                    node_id=scheduling.selected_node_id,
+                    request_id=request.request_id,
+                    trace_id=request.trace_id,
+                    outcome="rejected",
+                    reason="durable runtime result replay is unavailable",
+                    retry_count=retry_count,
+                )
+                db.commit()
                 return (
                     _error_result(
                         code="RUNTIME_RESULT_REPLAY_UNAVAILABLE",
@@ -239,13 +269,14 @@ class RuntimeTaskDispatcher:
 
             node = db.get(RuntimeNode, scheduling.selected_node_id)
             if node is None:
-                self.scheduler.finish_attempt(
+                self._finish_attempt(
                     db,
-                    request.task_id,
+                    request,
                     attempt_id,
                     status="transport_error",
                     node_state=NodeState.unreachable,
-                    actor=request.agent_id,
+                    audit_action="runtime.dispatch.unavailable",
+                    reason="selected runtime node disappeared before dispatch",
                 )
                 if retry_count < self.max_retries:
                     continue
@@ -261,6 +292,21 @@ class RuntimeTaskDispatcher:
                     True,
                 )
 
+            append_runtime_audit_event(
+                db,
+                action="runtime.dispatch.start",
+                actor=request.agent_id,
+                tenant_id=request.tenant_id,
+                task_id=request.task_id,
+                attempt_id=attempt_id,
+                node_id=node.node_id,
+                request_id=request.request_id,
+                trace_id=request.trace_id,
+                outcome="started",
+                reason="runtime execution started",
+                retry_count=retry_count,
+            )
+            db.commit()
             emit_audit("runtime.dispatch.start", request.agent_id, request.tenant_id)
             envelope = RuntimeEnvelope(
                 tenant_id=request.tenant_id,
@@ -275,13 +321,14 @@ class RuntimeTaskDispatcher:
             try:
                 response = asyncio.run(self._client_factory(node.endpoint).execute(envelope))
             except TimeoutError:
-                self.scheduler.finish_attempt(
+                self._finish_attempt(
                     db,
-                    request.task_id,
+                    request,
                     attempt_id,
                     status="timeout",
                     node_state=NodeState.degraded,
-                    actor=request.agent_id,
+                    audit_action="runtime.dispatch.timeout",
+                    reason="runtime execution timed out",
                 )
                 emit_audit("runtime.dispatch.timeout", request.agent_id, request.tenant_id)
                 if retry_count < self.max_retries:
@@ -299,13 +346,14 @@ class RuntimeTaskDispatcher:
                     True,
                 )
             except RuntimeTransportUnavailable:
-                self.scheduler.finish_attempt(
+                self._finish_attempt(
                     db,
-                    request.task_id,
+                    request,
                     attempt_id,
                     status="transport_error",
                     node_state=NodeState.unreachable,
-                    actor=request.agent_id,
+                    audit_action="runtime.dispatch.unavailable",
+                    reason="runtime transport failed closed",
                 )
                 emit_audit(
                     "runtime.dispatch.unavailable", request.agent_id, request.tenant_id
@@ -324,12 +372,13 @@ class RuntimeTaskDispatcher:
                     True,
                 )
             except RuntimeExecutionRejected:
-                self.scheduler.finish_attempt(
+                self._finish_attempt(
                     db,
-                    request.task_id,
+                    request,
                     attempt_id,
                     status="rejected",
-                    actor=request.agent_id,
+                    audit_action="runtime.dispatch.rejected",
+                    reason="runtime capability or execution policy rejected the request",
                 )
                 emit_audit("runtime.dispatch.rejected", request.agent_id, request.tenant_id)
                 return (
@@ -344,12 +393,13 @@ class RuntimeTaskDispatcher:
                     True,
                 )
             except Exception:
-                self.scheduler.finish_attempt(
+                self._finish_attempt(
                     db,
-                    request.task_id,
+                    request,
                     attempt_id,
                     status="failed",
-                    actor=request.agent_id,
+                    audit_action="runtime.dispatch.failed",
+                    reason="unexpected runtime dispatch failure",
                 )
                 emit_audit("runtime.dispatch.failed", request.agent_id, request.tenant_id)
                 return (
@@ -366,12 +416,13 @@ class RuntimeTaskDispatcher:
 
             parsed = _parse_runtime_response(response)
             if parsed.error_code is not None:
-                self.scheduler.finish_attempt(
+                self._finish_attempt(
                     db,
-                    request.task_id,
+                    request,
                     attempt_id,
                     status="failed",
-                    actor=request.agent_id,
+                    audit_action="runtime.dispatch.failed",
+                    reason="runtime returned an execution error",
                 )
                 emit_audit("runtime.dispatch.failed", request.agent_id, request.tenant_id)
                 return (
@@ -384,12 +435,13 @@ class RuntimeTaskDispatcher:
                     True,
                 )
 
-            self.scheduler.finish_attempt(
+            self._finish_attempt(
                 db,
-                request.task_id,
+                request,
                 attempt_id,
                 status="completed",
-                actor=request.agent_id,
+                audit_action="runtime.dispatch.success",
+                reason="runtime execution completed",
             )
             emit_audit("runtime.dispatch.success", request.agent_id, request.tenant_id)
             return (
@@ -403,6 +455,60 @@ class RuntimeTaskDispatcher:
             )
 
         raise AssertionError("bounded Runtime retry loop did not return")
+
+    def _finish_attempt(
+        self,
+        db: Session,
+        request: RuntimeDispatchRequest,
+        attempt_id: str,
+        *,
+        status: str,
+        audit_action: str,
+        reason: str,
+        node_state: NodeState | None = None,
+    ) -> None:
+        self.scheduler.finish_attempt(
+            db,
+            request.task_id,
+            attempt_id,
+            status=status,
+            node_state=node_state,
+            actor=request.agent_id,
+            audit_action=audit_action,
+            request_id=request.request_id,
+            trace_id=request.trace_id,
+            reason=reason,
+        )
+
+    def _record_cached_audit(
+        self,
+        request: RuntimeDispatchRequest,
+        result: RuntimeDispatchResult,
+        *,
+        action: str,
+        outcome: str,
+        reason: str,
+    ) -> None:
+        self._ensure_schema()
+        db = self._session_factory()
+        try:
+            append_runtime_audit_event(
+                db,
+                action=action,
+                actor=request.agent_id,
+                tenant_id=request.tenant_id,
+                task_id=request.task_id,
+                attempt_id=result.attempt_id or None,
+                node_id=result.selected_node_id,
+                request_id=request.request_id,
+                trace_id=request.trace_id,
+                outcome=outcome,
+                reason=reason,
+                retry_count=result.retry_count,
+            )
+            db.commit()
+        finally:
+            db.close()
 
     def _ensure_schema(self) -> None:
         if self._schema_ready:

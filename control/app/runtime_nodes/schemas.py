@@ -83,3 +83,25 @@ class SchedulingResultOut(BaseModel):
     eligible_nodes: list[str]
     rejected_nodes: dict[str, str]
     idempotent_replay: bool
+
+
+class RuntimeAuditEventOut(BaseModel):
+    event_id: str
+    action: str
+    actor: str
+    tenant_id: str
+    task_id: str
+    attempt_id: str | None
+    node_id: str | None
+    request_id: str | None
+    trace_id: str | None
+    outcome: str
+    reason: str
+    retry_count: int
+    created_at: datetime
+
+
+class RuntimeAuditTrailOut(BaseModel):
+    task_id: str
+    tenant_id: str
+    items: list[RuntimeAuditEventOut]

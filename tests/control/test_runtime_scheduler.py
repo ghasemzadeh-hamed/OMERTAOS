@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from control.app.network.migrate import apply_schema, missing_tables
@@ -14,7 +14,7 @@ from control.scheduling import (
     RuntimeScheduler,
     SchedulingRequest,
 )
-from control.scheduling.models import RuntimeNode
+from control.scheduling.models import RuntimeNode, SchedulingDecision, TaskAttempt
 
 
 @pytest.fixture()
@@ -64,6 +64,7 @@ def test_runtime_scheduler_migration_is_additive_and_idempotent(tmp_path) -> Non
     assert missing_tables(engine) == {
         "control_configuration",
         "proxy_profiles",
+        "runtime_audit_events",
         "runtime_nodes",
         "scheduling_decisions",
         "task_attempts",
@@ -241,3 +242,42 @@ def test_scheduler_finishes_attempt_and_releases_node_lease(db: Session) -> None
     assert replay.status == "transport_error"
     assert node is not None and node.active_leases == 0
     assert node.state == NodeState.unreachable.value
+
+
+def test_schedule_rolls_back_attempt_when_audit_persistence_fails(
+    db: Session,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scheduler = RuntimeScheduler()
+    _register(scheduler, db, "node-a")
+
+    def fail_audit(*_args: object, **_kwargs: object) -> None:
+        raise RuntimeError("audit unavailable")
+
+    monkeypatch.setattr(
+        "control.scheduling.service.append_runtime_audit_event",
+        fail_audit,
+    )
+
+    with pytest.raises(RuntimeError, match="audit unavailable"):
+        scheduler.schedule(
+            db,
+            SchedulingRequest(
+                task_id="task-atomic",
+                attempt_id="attempt-atomic",
+                tenant_id="tenant-a",
+                required_capabilities=("terminal.execute",),
+            ),
+        )
+    db.rollback()
+
+    node = db.get(RuntimeNode, "node-a")
+    assert node is not None and node.active_leases == 0
+    assert db.scalar(
+        select(TaskAttempt).where(TaskAttempt.task_id == "task-atomic")
+    ) is None
+    assert db.scalar(
+        select(SchedulingDecision).where(
+            SchedulingDecision.task_id == "task-atomic"
+        )
+    ) is None

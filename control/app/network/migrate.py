@@ -4,6 +4,7 @@ import argparse
 
 from sqlalchemy import Engine, inspect
 
+import control.audit.models  # noqa: F401
 import control.scheduling.models  # noqa: F401
 
 from .models import Base, engine
