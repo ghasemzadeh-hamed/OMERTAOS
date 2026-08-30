@@ -136,6 +136,8 @@ esac
     assert f"--project-directory {REPO_ROOT}" in docker_calls
     assert "ps --all -q install" in docker_calls
     assert "exec -T runtime /usr/local/bin/runtime-daemon --healthcheck" in docker_calls
+    assert "exec -T control python -c" in docker_calls
+    assert "Runtime Quickstart automatic registration" in result.stdout
     curl_calls = curl_log.read_text(encoding="utf-8")
     assert "http://127.0.0.1:18000/healthz" in curl_calls
     assert "http://127.0.0.1:18080/health" in curl_calls

@@ -91,6 +91,26 @@ check_quickstart_install() {
   pass 'Quickstart install container'
 }
 
+check_quickstart_runtime_registration() {
+  quickstart_compose exec -T control python -c '
+from datetime import UTC, datetime, timedelta
+import os
+from control.app.network.models import SessionLocal
+from control.scheduling.models import RuntimeNode
+node_id = os.getenv("AION_RUNTIME_NODE_ID", "runtime-quickstart-1")
+with SessionLocal() as db:
+    node = db.get(RuntimeNode, node_id)
+    if node is None or node.state != "healthy" or node.last_heartbeat_at is None:
+        raise SystemExit(1)
+    heartbeat = node.last_heartbeat_at
+    if heartbeat.tzinfo is None:
+        heartbeat = heartbeat.replace(tzinfo=UTC)
+    if datetime.now(UTC) - heartbeat > timedelta(seconds=30):
+        raise SystemExit(1)
+' >/dev/null || die 'Runtime Quickstart registration is missing or stale'
+  pass 'Runtime Quickstart automatic registration'
+}
+
 check_quickstart() {
   for executable in curl jq; do command -v "$executable" >/dev/null || die "$executable is required"; done
   command -v docker >/dev/null || die 'docker is required for Quickstart readiness'
@@ -114,6 +134,7 @@ check_quickstart() {
   quickstart_compose exec -T runtime /usr/local/bin/runtime-daemon --healthcheck >/dev/null \
     || die 'Runtime Quickstart healthcheck failed'
   pass 'Runtime Quickstart healthcheck'
+  check_quickstart_runtime_registration
 
   check_service_payload Control "http://127.0.0.1:${CONTROL_PORT}/healthz" control
   local gateway console_chain

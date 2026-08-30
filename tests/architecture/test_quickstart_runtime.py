@@ -60,7 +60,7 @@ def test_gateway_image_uses_locked_audited_dependency_install() -> None:
 def test_quickstart_supports_an_isolated_local_stack() -> None:
     compose = (REPO_ROOT / "deploy/docker/compose/quickstart.yml").read_text()
 
-    assert '"${AION_CONTROL_HOST_PORT:-8000}:8000"' in compose
+    assert '"127.0.0.1:${AION_CONTROL_HOST_PORT:-8000}:8000"' in compose
     assert '"${AION_GATEWAY_HOST_PORT:-8080}:8080"' in compose
     assert '"${AION_CONSOLE_HOST_PORT:-3000}:3000"' in compose
     assert "image: ${AION_CONSOLE_IMAGE:-omertaos-console}" in compose
@@ -71,6 +71,21 @@ def test_quickstart_supports_an_isolated_local_stack() -> None:
         "${NEXT_PUBLIC_GATEWAY_URL:-http://localhost:8080}" in compose
     )
     assert "name: ${AION_DOCKER_NETWORK:-omerta-net}" in compose
+
+
+def test_quickstart_enables_bounded_runtime_lifecycle_management() -> None:
+    compose = (REPO_ROOT / "deploy/docker/compose/quickstart.yml").read_text()
+    control = compose.split("  control:\n", maxsplit=1)[1].split(
+        "  gateway:\n", maxsplit=1
+    )[0]
+
+    assert "AION_RUNTIME_AUTO_REGISTER: ${AION_RUNTIME_AUTO_REGISTER:-true}" in control
+    assert "AION_RUNTIME_NODE_ID: ${AION_RUNTIME_NODE_ID:-runtime-quickstart-1}" in control
+    assert "AION_RUNTIME_CAPABILITIES: ${AION_RUNTIME_CAPABILITIES:-terminal.execute}" in control
+    assert (
+        "AION_RUNTIME_HEARTBEAT_INTERVAL_SECONDS: "
+        "${AION_RUNTIME_HEARTBEAT_INTERVAL_SECONDS:-10}" in control
+    )
 
 
 def test_gateway_handles_container_stop_gracefully() -> None:
