@@ -190,7 +190,13 @@ flowchart TB
 | `policies/` | Policy definitions and enforcement architecture | Policy assets/interfaces; complete grant protocol remains a target |
 | `schemas/`, `shared/` | Versioned contracts and shared generated bindings | JSON schemas, protobuf, architecture checks |
 
-The normative ownership rules are in [ARCHITECTURE.md](ARCHITECTURE.md), [STRUCTURE.md](STRUCTURE.md), and [ADR 0001](docs/adr/0001-canonical-aion-ownership.md).
+The normative ownership rules are in [ARCHITECTURE.md](ARCHITECTURE.md),
+[STRUCTURE.md](STRUCTURE.md), and
+[ADR 0001](docs/adr/0001-canonical-aion-ownership.md). The current recovery
+and validation references are the
+[canonical design](docs/architecture/aion-canonical-design.md),
+[capability recovery map](docs/migration/aion-capability-recovery.md), and
+[S6 architecture validation](docs/migration/s6-architecture-validation.md).
 
 ## Security model
 
