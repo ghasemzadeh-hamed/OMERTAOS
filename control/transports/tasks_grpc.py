@@ -367,8 +367,10 @@ class AionTasksGenericHandler(grpc.GenericRpcHandler):
             tenant_id = request.metadata.get("tenant_id") or _metadata_value(
                 context, "tenant-id"
             )
-            request_id = request.request_id or _metadata_value(
-                context, "x-request-id"
+            request_id = (
+                request.request_id
+                or _metadata_value(context, "x-correlation-id")
+                or _metadata_value(context, "x-request-id")
             )
             trace_id = _metadata_value(context, "traceparent")
             try:
@@ -410,7 +412,9 @@ class AionTasksGenericHandler(grpc.GenericRpcHandler):
             code="RUNTIME_TRANSPORT_UNAVAILABLE",
             message=reason,
             tenant_id=request.metadata.get("tenant_id") or _metadata_value(context, "tenant-id"),
-            request_id=request.request_id or _metadata_value(context, "x-request-id"),
+            request_id=request.request_id
+            or _metadata_value(context, "x-correlation-id")
+            or _metadata_value(context, "x-request-id"),
         )
 
     def status_by_id(self, request: Message, context: grpc.ServicerContext) -> Message:

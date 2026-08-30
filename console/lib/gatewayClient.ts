@@ -3,6 +3,7 @@ import 'server-only';
 import { cookies, headers } from 'next/headers';
 
 import { GATEWAY_HTTP_URL } from '@/lib/gatewayConfig';
+import { appendGatewayContextHeaders } from '@/lib/gatewayContext';
 
 const DEFAULT_GATEWAY = 'http://localhost:3000';
 
@@ -13,10 +14,7 @@ export function resolveGatewayBase() {
 export async function buildGatewayHeaders(initHeaders?: HeadersInit) {
   const result = new Headers(initHeaders ?? {});
   const hdrs = await headers();
-  const tenantHeader = hdrs.get('x-tenant-id') || hdrs.get('tenant-id');
-  if (tenantHeader) {
-    result.set('tenant-id', tenantHeader);
-  }
+  appendGatewayContextHeaders(result, hdrs);
 
   const token = (await cookies()).get('access_token')?.value;
   if (token && !result.has('authorization')) {

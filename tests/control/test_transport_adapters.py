@@ -26,6 +26,7 @@ class _FakeContext:
         return [
             _MetadataItem("tenant-id", "tenant-a"),
             _MetadataItem("x-request-id", "req-a"),
+            _MetadataItem("x-correlation-id", "correlation-a"),
             _MetadataItem("traceparent", "00-trace-a-span-a-01"),
             _MetadataItem("idempotency-key", "idem-a"),
         ]
@@ -100,7 +101,7 @@ def test_minimal_control_grpc_submit_fails_closed_without_runtime_transport() ->
     assert response.error.code == "RUNTIME_TRANSPORT_UNAVAILABLE"
     assert "synthetic success" in response.error.message
     assert response.metadata["tenant_id"] == "tenant-a"
-    assert response.metadata["request_id"] == "req-a"
+    assert response.metadata["request_id"] == "correlation-a"
 
 
 def test_control_grpc_submit_dispatches_allowlisted_runtime_intent() -> None:
@@ -120,7 +121,7 @@ def test_control_grpc_submit_dispatches_allowlisted_runtime_intent() -> None:
     assert response.result["stdout"] == "hello runtime\n"
     assert response.result["exit_code"] == "0"
     assert response.metadata["runtime_node_id"] == "node-a"
-    assert response.metadata["request_id"] == "req-a"
+    assert response.metadata["request_id"] == "correlation-a"
     assert response.metadata["trace_id"] == "00-trace-a-span-a-01"
     assert dispatcher.requests == [
         RuntimeDispatchRequest(
@@ -129,7 +130,7 @@ def test_control_grpc_submit_dispatches_allowlisted_runtime_intent() -> None:
             tenant_id="tenant-a",
             agent_id="agent-a",
             message="hello runtime",
-            request_id="req-a",
+            request_id="correlation-a",
             trace_id="00-trace-a-span-a-01",
             idempotency_key="idem-a",
         )

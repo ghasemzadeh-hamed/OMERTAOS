@@ -42,6 +42,7 @@ import {
 } from './server/devKernelProxy.js';
 import { createHttpError } from './httpErrors.js';
 import { logInteraction, resolveModelForAgent } from './services/selfEvolving.js';
+import { buildControlMetadata } from './requestMetadata.js';
 
 const app = Fastify({
   logger: true,
@@ -161,25 +162,9 @@ const summariseTaskOutput = (result: TaskResult): string => {
   }
 };
 
-const buildMetadata = (request: FastifyRequest) => {
-  const metadata = new Metadata();
-  metadata.add('x-request-id', request.id);
-  if (request.headers['authorization']) {
-    metadata.add('authorization', String(request.headers['authorization']));
-  }
-  const tenantFromHeader = resolveTenantHeader(request);
-  if (tenantFromHeader) {
-    metadata.add('tenant-id', tenantFromHeader);
-  }
-  if (request.headers['traceparent']) {
-    metadata.add('traceparent', String(request.headers['traceparent']));
-  }
-  return metadata;
-};
-
 const pollStatus = async (taskId: string, request: FastifyRequest): Promise<TaskResult | null> => {
   try {
-    const response = await invokeControlUnary('StatusById', { taskId }, buildMetadata(request));
+    const response = await invokeControlUnary('StatusById', { taskId }, buildControlMetadata(request));
     if (!response) {
       return null;
     }
@@ -365,7 +350,7 @@ app.post<{ Body: TaskRequestInput }>('/v1/tasks', async (request, reply) => {
     taskId,
   };
 
-  const response = await invokeControlUnary('Submit', payload, buildMetadata(request));
+  const response = await invokeControlUnary('Submit', payload, buildControlMetadata(request));
   const result: TaskResult = {
     schemaVersion: response.schemaVersion,
     taskId: response.taskId,
