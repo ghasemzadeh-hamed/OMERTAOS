@@ -13,7 +13,10 @@ from control.app.configuration.routes import router as configuration_router
 from control.app.health import router as health_router
 from control.app.network.models import init_db
 from control.app.network.routes import router as network_proxy_router
-from control.app.runtime_nodes.lifecycle import RuntimeLifecycleConfig, RuntimeNodeLifecycle
+from control.app.runtime_nodes.lifecycle import (
+    RuntimeLifecycleConfig,
+    RuntimeLifecycleManager,
+)
 from control.app.runtime_nodes.routes import router as runtime_nodes_router
 from control.models.registry import get_model_registry
 
@@ -21,10 +24,10 @@ from control.models.registry import get_model_registry
 @asynccontextmanager
 async def lifespan(application: FastAPI) -> AsyncIterator[None]:
     init_db()
-    config = RuntimeLifecycleConfig.from_env()
+    configs = RuntimeLifecycleConfig.all_from_env()
     task: asyncio.Task[None] | None = None
-    if config.enabled:
-        lifecycle = RuntimeNodeLifecycle(config)
+    if configs:
+        lifecycle = RuntimeLifecycleManager(configs)
         task = asyncio.create_task(lifecycle.run(), name="runtime-node-lifecycle")
         application.state.runtime_lifecycle_task = task
     try:

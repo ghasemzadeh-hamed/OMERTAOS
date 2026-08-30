@@ -25,6 +25,15 @@ logger = logging.getLogger(__name__)
 
 SessionFactory = Callable[[], Session]
 RuntimeProbe = Callable[[str, float], Awaitable[bool]]
+MAX_MANAGED_RUNTIME_NODES = 32
+_NODE_CONFIG_KEYS = {
+    "node_id",
+    "endpoint",
+    "capabilities",
+    "tenant_ids",
+    "total_cpu_millis",
+    "total_memory_mb",
+}
 
 
 def _csv(value: str) -> tuple[str, ...]:
@@ -111,6 +120,99 @@ class RuntimeLifecycleConfig:
             probe_timeout_seconds=timeout,
         )
 
+    @classmethod
+    def all_from_env(
+        cls, env: Mapping[str, str] | None = None
+    ) -> tuple["RuntimeLifecycleConfig", ...]:
+        values = os.environ if env is None else env
+        fallback = cls.from_env(values)
+        if not fallback.enabled:
+            return ()
+
+        raw = values.get("AION_RUNTIME_NODES_JSON", "").strip()
+        if not raw:
+            return (fallback,)
+        try:
+            nodes = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise ValueError("AION_RUNTIME_NODES_JSON must be valid JSON") from exc
+        if not isinstance(nodes, list) or not nodes:
+            raise ValueError("AION_RUNTIME_NODES_JSON must be a non-empty array")
+
+        limit = _positive_int(values, "AION_RUNTIME_MANAGED_NODE_LIMIT", 2)
+        if limit > MAX_MANAGED_RUNTIME_NODES:
+            raise ValueError(
+                f"AION_RUNTIME_MANAGED_NODE_LIMIT must not exceed {MAX_MANAGED_RUNTIME_NODES}"
+            )
+        if len(nodes) > limit:
+            raise ValueError("AION_RUNTIME_NODES_JSON exceeds the managed node limit")
+
+        configs = tuple(
+            cls._from_node_config(values, node, index)
+            for index, node in enumerate(nodes)
+        )
+        if len({config.node_id for config in configs}) != len(configs):
+            raise ValueError("AION_RUNTIME_NODES_JSON contains duplicate node ids")
+        if len({config.endpoint for config in configs}) != len(configs):
+            raise ValueError("AION_RUNTIME_NODES_JSON contains duplicate endpoints")
+        return configs
+
+    @classmethod
+    def _from_node_config(
+        cls,
+        env: Mapping[str, str],
+        node: object,
+        index: int,
+    ) -> "RuntimeLifecycleConfig":
+        if not isinstance(node, dict):
+            raise ValueError(f"Runtime node entry {index} must be an object")
+        unknown = set(node) - _NODE_CONFIG_KEYS
+        if unknown:
+            raise ValueError(
+                f"Runtime node entry {index} contains unsupported fields: "
+                + ", ".join(sorted(unknown))
+            )
+
+        node_id = node.get("node_id")
+        endpoint = node.get("endpoint")
+        if not isinstance(node_id, str) or not isinstance(endpoint, str):
+            raise ValueError(
+                f"Runtime node entry {index} requires string node_id and endpoint"
+            )
+
+        derived = dict(env)
+        derived["AION_RUNTIME_NODE_ID"] = node_id
+        derived["AION_RUNTIME_ENDPOINT"] = endpoint
+        for field, env_name in (
+            ("capabilities", "AION_RUNTIME_CAPABILITIES"),
+            ("tenant_ids", "AION_RUNTIME_TENANT_IDS"),
+        ):
+            if field not in node:
+                continue
+            items = node[field]
+            if not isinstance(items, list) or any(
+                not isinstance(item, str) or not item.strip() for item in items
+            ):
+                raise ValueError(
+                    f"Runtime node entry {index} field {field} must be a string array"
+                )
+            derived[env_name] = ",".join(items)
+
+        for field, env_name in (
+            ("total_cpu_millis", "AION_RUNTIME_TOTAL_CPU_MILLIS"),
+            ("total_memory_mb", "AION_RUNTIME_TOTAL_MEMORY_MB"),
+        ):
+            if field not in node:
+                continue
+            value = node[field]
+            if type(value) is not int:
+                raise ValueError(
+                    f"Runtime node entry {index} field {field} must be an integer"
+                )
+            derived[env_name] = str(value)
+
+        return cls.from_env(derived)
+
 
 async def probe_runtime(endpoint: str, timeout_seconds: float) -> bool:
     channel = grpc.aio.insecure_channel(endpoint)
@@ -146,6 +248,7 @@ class RuntimeNodeLifecycle:
         self.probe = probe
         self.schema_initializer = schema_initializer
         self._reachable: bool | None = None
+        self._schema_ready = False
 
     async def sync_once(self) -> bool:
         reachable = bool(
@@ -158,7 +261,9 @@ class RuntimeNodeLifecycle:
             self._log_reachability(False)
             return False
 
-        self.schema_initializer()
+        if not self._schema_ready:
+            self.schema_initializer()
+            self._schema_ready = True
         with self.session_factory() as db:
             node = db.get(RuntimeNode, self.config.node_id)
             if node is None:
@@ -222,3 +327,51 @@ class RuntimeNodeLifecycle:
             self.config.node_id,
             reachable,
         )
+
+
+class RuntimeLifecycleManager:
+    def __init__(
+        self,
+        configs: tuple[RuntimeLifecycleConfig, ...],
+        *,
+        scheduler: RuntimeScheduler | None = None,
+        session_factory: SessionFactory = SessionLocal,
+        probe: RuntimeProbe = probe_runtime,
+        schema_initializer: Callable[[], None] = init_db,
+    ) -> None:
+        if not configs:
+            raise ValueError("at least one Runtime lifecycle config is required")
+        shared_scheduler = scheduler or RuntimeScheduler()
+        self.lifecycles = tuple(
+            RuntimeNodeLifecycle(
+                config,
+                scheduler=shared_scheduler,
+                session_factory=session_factory,
+                probe=probe,
+                schema_initializer=schema_initializer,
+            )
+            for config in configs
+        )
+        self.interval_seconds = min(
+            config.heartbeat_interval_seconds for config in configs
+        )
+
+    async def sync_once(self) -> dict[str, bool]:
+        results: dict[str, bool] = {}
+        for lifecycle in self.lifecycles:
+            try:
+                results[lifecycle.config.node_id] = await lifecycle.sync_once()
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                logger.exception(
+                    "Runtime lifecycle synchronization failed: node=%s",
+                    lifecycle.config.node_id,
+                )
+                results[lifecycle.config.node_id] = False
+        return results
+
+    async def run(self) -> None:
+        while True:
+            await self.sync_once()
+            await asyncio.sleep(self.interval_seconds)

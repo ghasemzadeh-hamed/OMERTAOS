@@ -94,19 +94,22 @@ check_quickstart_install() {
 check_quickstart_runtime_registration() {
   quickstart_compose exec -T control python -c '
 from datetime import UTC, datetime, timedelta
-import os
 from control.app.network.models import SessionLocal
+from control.app.runtime_nodes.lifecycle import RuntimeLifecycleConfig
 from control.scheduling.models import RuntimeNode
-node_id = os.getenv("AION_RUNTIME_NODE_ID", "runtime-quickstart-1")
+configs = RuntimeLifecycleConfig.all_from_env()
+if not configs:
+    raise SystemExit(1)
 with SessionLocal() as db:
-    node = db.get(RuntimeNode, node_id)
-    if node is None or node.state != "healthy" or node.last_heartbeat_at is None:
-        raise SystemExit(1)
-    heartbeat = node.last_heartbeat_at
-    if heartbeat.tzinfo is None:
-        heartbeat = heartbeat.replace(tzinfo=UTC)
-    if datetime.now(UTC) - heartbeat > timedelta(seconds=30):
-        raise SystemExit(1)
+    for config in configs:
+        node = db.get(RuntimeNode, config.node_id)
+        if node is None or node.state != "healthy" or node.last_heartbeat_at is None:
+            raise SystemExit(1)
+        heartbeat = node.last_heartbeat_at
+        if heartbeat.tzinfo is None:
+            heartbeat = heartbeat.replace(tzinfo=UTC)
+        if datetime.now(UTC) - heartbeat > timedelta(seconds=30):
+            raise SystemExit(1)
 ' >/dev/null || die 'Runtime Quickstart registration is missing or stale'
   pass 'Runtime Quickstart automatic registration'
 }

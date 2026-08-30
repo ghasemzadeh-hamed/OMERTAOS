@@ -11,6 +11,7 @@ from sqlalchemy.pool import StaticPool
 from control.app.network.migrate import apply_schema
 from control.app.runtime_nodes.lifecycle import (
     RuntimeLifecycleConfig,
+    RuntimeLifecycleManager,
     RuntimeNodeLifecycle,
     probe_runtime,
 )
@@ -54,6 +55,52 @@ def test_runtime_lifecycle_config_is_opt_in_and_bounded() -> None:
         _config(AION_RUNTIME_HEARTBEAT_INTERVAL_SECONDS="21")
     with pytest.raises(ValueError, match="must not exceed the heartbeat interval"):
         _config(AION_RUNTIME_PROBE_TIMEOUT_SECONDS="11")
+
+
+def test_runtime_lifecycle_parses_two_unique_nodes() -> None:
+    values = {
+        "AION_RUNTIME_AUTO_REGISTER": "true",
+        "AION_RUNTIME_MANAGED_NODE_LIMIT": "2",
+        "AION_RUNTIME_NODES_JSON": (
+            '[{"node_id":"runtime-a","endpoint":"runtime-a:50051",'
+            '"capabilities":["terminal.execute"],"tenant_ids":["tenant-a"]},'
+            '{"node_id":"runtime-b","endpoint":"runtime-b:50051",'
+            '"capabilities":["terminal.execute","resource.allocate"],'
+            '"total_cpu_millis":2000,"total_memory_mb":1024}]'
+        ),
+    }
+
+    configs = RuntimeLifecycleConfig.all_from_env(values)
+
+    assert [config.node_id for config in configs] == ["runtime-a", "runtime-b"]
+    assert configs[0].tenant_ids == ("tenant-a",)
+    assert configs[1].capabilities == (
+        "terminal.execute",
+        "resource.allocate",
+    )
+    assert configs[1].total_memory_mb == 1024
+
+
+@pytest.mark.parametrize(
+    "nodes_json",
+    [
+        '[{"node_id":"runtime-a","endpoint":"runtime-a:50051"},'
+        '{"node_id":"runtime-a","endpoint":"runtime-b:50051"}]',
+        '[{"node_id":"runtime-a","endpoint":"runtime:50051"},'
+        '{"node_id":"runtime-b","endpoint":"runtime:50051"}]',
+    ],
+)
+def test_runtime_lifecycle_rejects_duplicate_identity_or_endpoint(
+    nodes_json: str,
+) -> None:
+    with pytest.raises(ValueError, match="duplicate"):
+        RuntimeLifecycleConfig.all_from_env(
+            {
+                "AION_RUNTIME_AUTO_REGISTER": "true",
+                "AION_RUNTIME_MANAGED_NODE_LIMIT": "2",
+                "AION_RUNTIME_NODES_JSON": nodes_json,
+            }
+        )
 
 
 @pytest.mark.asyncio
@@ -172,3 +219,37 @@ async def test_lifecycle_preserves_operator_drain(
         assert node is not None
         assert node.drain_requested is True
         assert node.state == "draining"
+
+
+@pytest.mark.asyncio
+async def test_lifecycle_manager_probes_nodes_sequentially(
+    session_factory: sessionmaker[Session],
+) -> None:
+    calls: list[str] = []
+
+    async def reachable(endpoint: str, _timeout: float) -> bool:
+        calls.append(endpoint)
+        return True
+
+    configs = RuntimeLifecycleConfig.all_from_env(
+        {
+            "AION_RUNTIME_AUTO_REGISTER": "true",
+            "AION_RUNTIME_MANAGED_NODE_LIMIT": "2",
+            "AION_RUNTIME_NODES_JSON": (
+                '[{"node_id":"runtime-a","endpoint":"runtime-a:50051"},'
+                '{"node_id":"runtime-b","endpoint":"runtime-b:50051"}]'
+            ),
+        }
+    )
+    manager = RuntimeLifecycleManager(
+        configs,
+        session_factory=session_factory,
+        probe=reachable,
+        schema_initializer=lambda: None,
+    )
+
+    assert await manager.sync_once() == {"runtime-a": True, "runtime-b": True}
+    assert calls == ["runtime-a:50051", "runtime-b:50051"]
+    with session_factory() as db:
+        assert db.get(RuntimeNode, "runtime-a") is not None
+        assert db.get(RuntimeNode, "runtime-b") is not None

@@ -9,6 +9,7 @@ def test_quickstart_uses_canonical_runtime_daemon() -> None:
     compose = (REPO_ROOT / "deploy/docker/compose/quickstart.yml").read_text()
 
     assert "  runtime:\n" in compose
+    assert "image: ${AION_RUNTIME_IMAGE:-omertaos-runtime}" in compose
     assert "dockerfile: runtime-daemon/Dockerfile" in compose
     assert "AION_RUNTIME_BIND_ADDR: 0.0.0.0:50051" in compose
     assert "AION_CONTROL_GRPC_BIND: ${AION_CONTROL_GRPC_BIND:-0.0.0.0:50051}" in compose
@@ -86,6 +87,24 @@ def test_quickstart_enables_bounded_runtime_lifecycle_management() -> None:
         "AION_RUNTIME_HEARTBEAT_INTERVAL_SECONDS: "
         "${AION_RUNTIME_HEARTBEAT_INTERVAL_SECONDS:-10}" in control
     )
+    assert (
+        "AION_RUNTIME_MANAGED_NODE_LIMIT: ${AION_RUNTIME_MANAGED_NODE_LIMIT:-2}"
+        in control
+    )
+
+
+def test_two_worker_override_reuses_runtime_image_without_host_exposure() -> None:
+    override = (
+        REPO_ROOT / "deploy/docker/compose/quickstart.two-workers.yml"
+    ).read_text()
+
+    assert "  runtime-secondary:\n" in override
+    assert "image: ${AION_RUNTIME_IMAGE:-omertaos-runtime}" in override
+    assert "ports: []" in override
+    assert '"endpoint":"runtime:50051"' in override
+    assert '"endpoint":"runtime-secondary:50051"' in override
+    assert '"tenant-shared","tenant-primary"' in override
+    assert '"tenant-shared","tenant-secondary"' in override
 
 
 def test_gateway_handles_container_stop_gracefully() -> None:
