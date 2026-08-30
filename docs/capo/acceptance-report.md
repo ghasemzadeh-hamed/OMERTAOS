@@ -1,5 +1,52 @@
 # CAPO acceptance report
 
+## R6.9 authenticated canonical execution — 2026-08-30
+
+Branch: `Radin/capo-r6-validation`
+
+Validated repair commit: `cc52204` (`fix(runtime): propagate canonical dispatch
+context`). Control, Gateway, and Console images were built sequentially from
+that commit. The preserved isolated project used one Runtime worker, host ports
+Console `13000`, Gateway `18080`, Control `18001`, and Runtime `55051`, plus the
+`omerta-r6-fixed-net` network. The Control port was changed from `18000` while
+diagnosing a host publishing failure; both ports exhibited the same reset.
+
+| Gate | Result | Executable evidence and boundary |
+|---|---|---|
+| Context regression tests | pass | Console allowlist `2 passed`; Gateway `4 files, 9 tests passed`; targeted Control transport `7 passed`; Runtime dispatch/transport `14 passed`. Three existing Python deprecation warnings remained |
+| Architecture regression | pass after stale-reference repair | The first run reported `69 passed, 1 failed, 1 deselected` because README omitted three current canonical design links. Commit `168840d` restored the references; the targeted test passed and the full rerun reported `70 passed, 1 deselected`. The intentionally red completion gate remained excluded |
+| Broader Console regression | pass | `10 files, 22 tests passed` after restoring the locked pnpm `11.13.1` installation; Prisma generation and the direct Next production build exited 0 |
+| Service builds | pass | Gateway and direct Console production builds passed; Control, Gateway, and Console container images then built sequentially with exit 0. The unchanged Runtime image was not rebuilt |
+| Compose rendering | pass | The isolated Quickstart configuration rendered with the selected images, network, and host ports; this was treated only as static configuration evidence |
+| Resource guard | pass | Available memory was 4.0 GiB before startup, 2.8 GiB during final live checks, and 3.0 GiB after shutdown, above the 1 GiB stop threshold |
+| Runtime registration and heartbeat | pass, manual | `runtime-r6-1` registered inside the Control network with tenant `tenant-r6` and the single `terminal.execute` capability; a fresh heartbeat reported `healthy` |
+| Authenticated canonical task | pass in constrained scope | A real NextAuth session submitted `runtime.echo.v1` through Console `/api/proxy/tasks`; Console, Gateway, Control gRPC, and one Runtime completed it with HTTP 200, application status `OK`, and an exact deterministic echo |
+| Tenant and context propagation | pass | PostgreSQL recorded tenant `tenant-r6`, the submitted idempotency key, selected node `runtime-r6-1`, status `completed`, and the submitted W3C traceparent. Runtime audit recorded matching task, tenant, agent, correlation/request, trace, and `authorized`/`completed` outcomes without logging the payload |
+| Same-request replay | pass in constrained scope | Repeating the authenticated request with the same idempotency key returned the same task id; PostgreSQL retained exactly one task attempt |
+| Service and dependency health | pass internally | Console and Gateway host health returned valid healthy payloads; Gateway reported Redis and Control healthy; Console's system endpoint reported the Console-to-Gateway-to-Control chain healthy; Control's internal HTTP health passed |
+| Quickstart smoke | partial failure | PostgreSQL, Redis, Runtime, installer, Control, Gateway, and Console container checks plus Runtime binary health passed. The next host probe failed with exit 1 because Docker's published Control port returned an empty/reset response even after isolated port change and Control recreation; internal and Gateway-to-Control probes remained HTTP 200 |
+| Final shutdown | pass with note | `docker compose stop` exited 0, all services stopped, all three project volumes were preserved, and no volume-deletion command was used. Qdrant exited 143 after SIGTERM; the other running services exited 0 |
+
+Failed toolchain attempts were not substituted silently: system Node 18 was
+incompatible with the current JavaScript gates; an initial pnpm invocation
+could not confirm a module purge without a TTY; the resulting partial module
+state lacked Rollup's optional binary; and the pnpm build wrapper's dependency
+status/network activity was interrupted with exit 130. The exact locked Console
+dependencies were restored without lockfile changes, and the direct underlying
+test and build commands subsequently passed. A host `python` invocation also
+failed with exit 127 before acceptance orchestration began; the available
+`python3` executable ran the unchanged probe successfully. Two diagnostic shell
+pipelines produced misleading zero statuses after `curl` failures; neither was
+accepted as evidence, and strict independent probes reproduced the failure.
+
+This stage demonstrates one authenticated API request through the complete
+canonical service path on one local worker. It does not demonstrate a browser
+UI click flow, automatic Runtime registration/heartbeat, multiple workers,
+scalability, successful Linux isolation, durable Control audit export,
+production readiness, or security certification. The published Control host
+port remains an unresolved environment/deployment gate. No credential, cookie,
+token, echoed payload, or secret value was printed or recorded.
+
 ## R6.8 isolated Quickstart smoke — 2026-08-30
 
 Branch: `Radin/capo-r6-validation`
