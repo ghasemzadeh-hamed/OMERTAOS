@@ -13,6 +13,14 @@ The Control service owns a new `control_configuration` table with a single durab
 
 The table does not contain provider credentials or other secrets. The accepted payload is limited to routing mode, local provider name, and API provider name.
 
+The same additive migration owns `runtime_audit_events`. It records bounded
+Runtime scheduling/dispatch metadata: action, actor, tenant, task/attempt/node,
+request/trace identifiers, outcome, controlled reason, retry count, and
+timestamp. Its schema intentionally has no task message, payload, stdout,
+stderr, idempotency key, credential, secret, or token column. The Control API
+exposes only tenant-matching trails through an administrator-guarded read
+endpoint.
+
 ## Apply and verify
 
 ```bash
@@ -24,4 +32,6 @@ The migration uses SQLAlchemy `create_all` and is additive and idempotent. Exist
 
 ## Rollback
 
-Reverting the application code stops using the table. Leave the additive table in place so rollback is non-destructive and configuration evidence remains available. Table or row deletion requires a separate approved data migration.
+Reverting the application code stops using the additive tables. Leave them in
+place so rollback is non-destructive and configuration/audit evidence remains
+available. Table or row deletion requires a separate approved data migration.

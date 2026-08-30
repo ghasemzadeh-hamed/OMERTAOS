@@ -21,9 +21,15 @@ Current HTTP prototype endpoints include:
 - `POST /v1/config/propose`, `/apply`, and `/revert` for authenticated configuration changes;
 - `/v1/network/proxies` for authenticated proxy profile management;
 - `/v1/runtime/nodes` and `/v1/runtime/schedule` for the minimal node registry and scheduler;
+- `GET /v1/runtime/audit/{task_id}` for an administrator-only, tenant-scoped
+  Runtime scheduling and dispatch trail;
 - `/health`, `/v1/health`, and `/v1/models` for source-backed status and model metadata.
 
-Configuration state is stored in the additive `control_configuration` table. Apply the current Control schema with `python -m control.app.network.migrate`; use `--check` for a read-only gate.
+Configuration state is stored in the additive `control_configuration` table.
+Runtime schedule/dispatch events are stored in the additive
+`runtime_audit_events` table without task payloads, result text, idempotency
+keys, or credentials. Apply the current Control schema with
+`python -m control.app.network.migrate`; use `--check` for a read-only gate.
 
 ## Pipeline
 

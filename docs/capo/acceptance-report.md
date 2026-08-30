@@ -1,5 +1,50 @@
 # CAPO acceptance report
 
+## R6.12 durable Runtime audit trail — 2026-08-31
+
+Branch: `Radin/capo-r6-validation`
+
+Validated implementation commit: `c5a9246` (`feat(control): persist runtime
+audit trails`). The run reused the preserved `omertaos-r6-two` PostgreSQL,
+MongoDB, and MinIO volumes but started the base Quickstart with one project
+Runtime worker. The previous secondary container remained stopped and was not
+removed. The independent pre-existing Runtime remained healthy, so no more
+than two Runtime processes were active on the host.
+
+| Gate | Result | Executable evidence and boundary |
+|---|---|---|
+| Static validation | pass | `git diff --check`, Python compile, and targeted Ruff checks exited 0 |
+| Targeted audit/migration/scheduler/dispatch/routes | pass after one regression repair | First run reported `17 passed, 1 failed`: same-process cache replay bypassed the scheduler, exposing a missing durable replay event and an incorrect test expectation. Cache replay/conflict events were added; final targeted run reported `19 passed, 3 existing warnings` |
+| Transaction rollback | pass | Injected audit persistence failure rolled back the attempt, lease increment, and scheduling decision together |
+| Control regression | pass | `77 passed, 3 existing deprecation warnings` |
+| Architecture regression | pass | `72 passed, 1 intentionally excluded Structure completion gate` |
+| Full Python regression | pass | `222 passed, 2 skipped, 1 intentionally excluded Structure completion gate, 3 warnings` |
+| Additive schema | pass | Control startup created `runtime_audit_events` on the preserved PostgreSQL database; migration tests apply the schema twice and no existing table or row is removed |
+| Control image build | pass | Only the affected Control image built, sequentially, with locked cached dependencies. Runtime, Gateway, and Console builds were skipped because their code/images were unchanged |
+| Resource guard | pass | Available memory was 3.6 GiB before startup, 3.3 GiB during live checks, and 3.6 GiB after shutdown, above the 1 GiB stop threshold |
+| Initial Quickstart smoke | pass | The base project passed PostgreSQL, Redis, Runtime, installer, Control, Gateway, Console, automatic registration, dependency, and canonical health-chain checks |
+| Tenant rejection evidence | pass after acceptance-input correction | The first intended success used unregistered `tenant-r612` and correctly returned application `ERROR`; durable audit recorded `runtime.schedule/rejected` with `no eligible runtime node`. The persisted node allowlist was preserved rather than overwritten |
+| Authenticated canonical task | pass | A unique `tenant-primary` request traversed Console -> Gateway -> Control -> one Runtime and returned status `OK` |
+| Durable reconstruction | pass | Admin-authenticated retrieval returned exactly `runtime.schedule`, `runtime.dispatch.start`, and `runtime.dispatch.success`, with matching tenant/task/attempt/node/correlation/trace and retry count 0 |
+| Access and data minimization | pass in prototype scope | A different tenant returned an empty event list, no admin credential returned HTTP 403, and the schema/API contained no message, payload, stdout, stderr, idempotency-key, credential, secret, or token field |
+| Restart persistence | pass | The same three events remained queryable after normal PostgreSQL and Control container restarts |
+| Final Quickstart smoke | pass | The complete read-only smoke probe passed again after the restarts |
+| Final shutdown | pass | `docker compose stop` left zero test-project containers running and preserved all three project volumes; no volume deletion command was used. The pre-existing Runtime remained healthy |
+
+The persistence adapter is owned by Control and leaves the shared telemetry
+primitive transport-neutral. Scheduling state, decision, and schedule audit
+event commit together; dispatch-start persistence is a fail-closed barrier
+before Runtime execution; terminal attempt state and outcome audit commit
+together. Stored reasons are controlled strings and task/result bodies are not
+accepted by the audit schema.
+
+This is prototype-level durable reconstruction, not an immutable security log.
+No retention policy, cryptographic integrity chain, external exporter,
+independent authorization review, production isolation, native systemd
+acceptance, benchmark, scalability result, production readiness, or security
+certification is claimed. No credential, cookie, token, secret, or task payload
+was printed or recorded.
+
 ## R6.11 bounded two-worker Quickstart acceptance — 2026-08-30
 
 Branch: `Radin/capo-r6-validation`

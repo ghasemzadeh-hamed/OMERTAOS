@@ -14,10 +14,10 @@ for a production capability-grant protocol.
 ### Distributed operation
 
 Control contains a minimal local Runtime node registry and scheduler prototype,
-and Runtime exposes bounded registration/resource-report helpers. Authenticated
-membership, cross-Control failure detection, leader election, federation,
-partition handling, consistency behavior, signed grants, and successful
-scheduled Runtime execution remain incomplete.
+and constrained one/two-worker runs have demonstrated local scheduling,
+execution, bounded retry, and recovery. Authenticated membership, cross-Control
+failure detection, leader election, federation, partition handling,
+consistency behavior, and signed grants remain incomplete.
 
 ### Empirical performance
 
@@ -34,9 +34,9 @@ supply-chain, side-channel, or model-level attacks.
 
 ### Deployment acceptance
 
-Compose rendering and static installation checks do not establish a working
-deployment. Native Linux/systemd and running Quickstart acceptance remain
-separate gates, as recorded in the CAPO acceptance material.
+Constrained running Quickstart acceptance exists for the recorded local host;
+it is not production deployment acceptance. Native Linux/systemd remains a
+separate unexecuted gate, as recorded in the CAPO acceptance material.
 
 ### External validity
 
@@ -49,10 +49,10 @@ environments.
 1. Implement the Runtime sandbox backends and cryptographic grant verification.
 2. Add negative escape, path, network, resource, cancellation, and cleanup
    tests on a compatible isolated Linux runner.
-3. Complete a pinned Quickstart acceptance run and a Native Linux/systemd
-   install/rollback run.
-4. Implement traceable tenant/audit propagation tests across the full request
-   path.
+3. Repeat pinned Quickstart acceptance on a clean independent host and complete
+   a Native Linux/systemd install/rollback run.
+4. Extend the current tenant-scoped Runtime audit trail with reviewed retention,
+   independent export, integrity protection, and broader negative-path evidence.
 5. Publish benchmark workloads, seeds, raw observations, environment manifests,
    and analysis notebooks/scripts.
 6. Add fault-injection experiments for Runtime loss, queue failure, provider
