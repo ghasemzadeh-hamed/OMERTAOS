@@ -61,6 +61,7 @@ export AION_CONTROL_HOST_PORT=18000
 export AION_GATEWAY_HOST_PORT=18080
 export AION_CONSOLE_HOST_PORT=13000
 export AION_CONSOLE_IMAGE=omertaos-r5-console
+export AION_RUNTIME_IMAGE=omertaos-runtime
 export NEXTAUTH_URL=http://localhost:13000
 export NEXT_PUBLIC_GATEWAY_URL=http://localhost:18080
 export AION_CORS_ORIGINS=http://localhost:13000
@@ -80,17 +81,46 @@ waits for it to finish so Prisma migrations cannot race Control's additive
 table initialization.
 Quickstart also enables a bounded Control-owned Runtime lifecycle supervisor.
 After a successful Runtime gRPC readiness probe, it registers the configured
-single node and refreshes its heartbeat every 10 seconds. The node id,
-capabilities, tenant eligibility, declared capacity, heartbeat interval, and
-probe timeout are configurable through the `AION_RUNTIME_*` values in
-`.env.example`. The interval is limited to 20 seconds so it remains below the
-current 30-second stale-worker threshold. Stopping Runtime stops heartbeats and
-causes scheduling to fail closed after that threshold; restarting Runtime
+node or bounded node list and refreshes heartbeats sequentially every 10
+seconds. The node id, capabilities, tenant eligibility, declared capacity,
+heartbeat interval, and probe timeout are configurable through the
+`AION_RUNTIME_*` values in `.env.example`. `AION_RUNTIME_NODES_JSON` is an
+optional trusted Control-owned list; when blank, the original single-node
+settings remain active. `AION_RUNTIME_MANAGED_NODE_LIMIT` defaults to 2 and is
+bounded to 32. The interval is limited to 20 seconds so it remains below the
+current 30-second stale-worker threshold. Stopping Runtime stops its heartbeats
+and causes scheduling to fail closed after that threshold; restarting Runtime
 restores eligibility without an operator registration call.
 
 This local supervisor is not a distributed membership protocol. Runtime does
 not receive an administrator token or self-authorize tenant eligibility, and
 operator-requested draining remains authoritative.
+
+### Two-worker acceptance profile
+
+The second worker is opt-in and intended for constrained local acceptance. It
+reuses the selected Runtime image, publishes no additional host port, and
+configures two trusted local nodes with separate tenant/capability/capacity
+declarations:
+
+```bash
+export AION_RUNTIME_IMAGE=omertaos-runtime
+
+docker compose --env-file .env --project-directory . \
+  --project-name omertaos-two-workers \
+  -f deploy/docker/compose/quickstart.yml \
+  -f deploy/docker/compose/quickstart.two-workers.yml config
+
+docker compose --env-file .env --project-directory . \
+  --project-name omertaos-two-workers \
+  -f deploy/docker/compose/quickstart.yml \
+  -f deploy/docker/compose/quickstart.two-workers.yml up --no-build -d
+```
+
+Build required service images one at a time before `up --no-build`. The profile
+demonstrates bounded local scheduling behavior only; it is not a benchmark or
+evidence of horizontal scalability, distributed membership, or production
+readiness.
 Bootstrap passwords default to a configurable 8-32 character policy. Override
 `CONSOLE_ADMIN_PASSWORD_MIN_LENGTH` and `CONSOLE_ADMIN_PASSWORD_MAX_LENGTH`
 when a longer local credential is required; the minimum cannot be lower than 8
@@ -120,7 +150,19 @@ Control, Gateway, and Console containers, verifies a fresh automatic Runtime
 registration, and then checks the HTTP health chain. It does not start,
 restart, migrate, bootstrap, or stop services.
 
-Stop the stack with `docker compose --project-directory . -f deploy/docker/compose/quickstart.yml down`.
+For the two-worker profile, also run the secondary binary healthcheck:
+
+```bash
+docker compose --env-file .env --project-directory . \
+  --project-name omertaos-two-workers \
+  -f deploy/docker/compose/quickstart.yml \
+  -f deploy/docker/compose/quickstart.two-workers.yml \
+  exec -T runtime-secondary /usr/local/bin/runtime-daemon --healthcheck
+```
+
+Stop the stack with the same project/files and `docker compose ... stop`.
+This preserves containers, logs, and named volumes. Never add `-v` when state
+must be retained.
 
 ## Extended local stack
 

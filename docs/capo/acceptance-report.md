@@ -1,5 +1,50 @@
 # CAPO acceptance report
 
+## R6.11 bounded two-worker Quickstart acceptance — 2026-08-30
+
+Branch: `Radin/capo-r6-validation`
+
+Validated implementation commit: `cd43d8f` (`feat(deploy): add bounded
+two-worker quickstart`). The opt-in Compose override used exactly two local
+Runtime workers, one sequential Control lifecycle manager, host ports Console
+`13100`, Gateway `18180`, loopback Control `18102`, and loopback primary Runtime
+`55151` on the isolated `omerta-r6-two-net` network. The secondary Runtime had
+no published host port. This run did not modify or delete existing volumes.
+
+| Gate | Result | Executable evidence and boundary |
+|---|---|---|
+| Targeted lifecycle/architecture tests | pass | `25 passed`; JSON list validation, duplicate rejection, sequential probing, dual registration, bounded count, image reuse, and secondary port isolation were covered |
+| Control regression | pass | `74 passed, 3 existing deprecation warnings` |
+| Native/Quickstart regression | pass | `70 passed` |
+| Architecture regression | pass | `72 passed, 1 intentionally excluded Structure completion gate` |
+| Full Python regression | pass | `219 passed, 2 skipped, 1 intentionally excluded Structure completion gate, 3 warnings` |
+| Compose rendering | pass after command repair | The first render omitted `--env-file` and stopped on required bootstrap variables; the first build omitted `--project-directory .` and stopped on a nonexistent relative context. The corrected canonical render parsed two nodes, reused one Runtime image, exposed no secondary host port, and kept Control loopback-only |
+| Sequential image builds | pass with one dependency repair | Control built first. Initial `up --no-build` stopped at create because the project-specific Gateway image was absent; Gateway then built separately and the unchanged stack started. Runtime and Console builds were skipped because their unchanged images were explicitly reused |
+| Resource guard | pass | Available memory was 3.9 GiB before startup, 3.4 GiB during live checks, and 3.9 GiB after shutdown; exactly two Runtime workers were running during acceptance |
+| Two-node lifecycle | pass | PostgreSQL recorded both trusted endpoints as `healthy` with fresh heartbeats, declared tenant/capability sets, and capacities 1000/512 and 2000/1024; lifecycle probes ran sequentially |
+| Full Quickstart smoke | pass twice | Initial and final probes passed service/container health, installer exit, automatic registration, dependencies, and the Console-to-Gateway-to-Control chain; the secondary Runtime binary healthcheck also passed directly |
+| Authenticated round-robin | pass | Two unique `tenant-shared` tasks traversed Console -> Gateway -> Control -> Runtime and completed on primary then secondary; audit rows recorded both eligible nodes and trace context |
+| Tenant-aware eligibility | pass | `tenant-primary` completed only on primary and `tenant-secondary` only on secondary; audit rows recorded the other node rejected for `tenant` |
+| Capability and capacity eligibility | pass | Admin-authenticated scheduler probes selected only secondary for `resource.allocate` and for 1500 CPU millis/800 MiB; primary rejection reasons were `capability` and `capacity` |
+| Least-loaded scheduling | pass after test-fixture repair | The first probe left two acceptance leases on secondary and therefore did not create the intended load difference. Those attempts were finished without deletion; the independent rerun made both workers eligible and selected the lower-load secondary |
+| Bounded failover | pass | Primary stopped immediately after a fresh heartbeat. Attempt `:0` selected primary and ended `transport_error`; retry `:1` rejected unreachable primary, selected secondary, and completed with retry count 1 of 1 |
+| Automatic recovery | pass | Restarting primary restored a fresh healthy heartbeat without manual registration; two subsequent shared tasks completed primary then secondary |
+| PostgreSQL restart persistence | pass | Four expected failover/recovery attempt rows remained after a normal PostgreSQL container restart |
+| Final shutdown | pass with note | `docker compose stop` left no test-project service running and preserved all three project volumes. Qdrant exited 143 on SIGTERM; other running services exited 0. The pre-existing `compose-runtime-1` was restored healthy |
+
+The node list remains trusted local Control configuration. Runtime receives no
+administrator credential and cannot self-authorize tenant eligibility. The
+manager enforces a configurable default limit of 2 and hard maximum of 32, and
+probes configured workers sequentially on this constrained host.
+
+This acceptance demonstrates bounded local multi-node scheduling and one
+worker failover for the allowlisted deterministic echo path. It does not
+measure throughput or recovery-time performance and does not establish
+scalability, distributed membership, consensus, leader election, lease
+fencing, federation, successful Linux isolation, native systemd operation,
+production readiness, or security certification. No credential, cookie,
+token, or secret value was printed or recorded.
+
 ## R6.10 automatic local Runtime lifecycle — 2026-08-30
 
 Branch: `Radin/capo-r6-validation`
