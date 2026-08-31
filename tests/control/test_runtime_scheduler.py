@@ -14,7 +14,12 @@ from control.scheduling import (
     RuntimeScheduler,
     SchedulingRequest,
 )
-from control.scheduling.models import RuntimeNode, SchedulingDecision, TaskAttempt
+from control.scheduling.models import (
+    RuntimeNode,
+    RuntimeResourceLease,
+    SchedulingDecision,
+    TaskAttempt,
+)
 
 
 @pytest.fixture()
@@ -66,6 +71,7 @@ def test_runtime_scheduler_migration_is_additive_and_idempotent(tmp_path) -> Non
         "proxy_profiles",
         "runtime_audit_events",
         "runtime_nodes",
+        "runtime_resource_leases",
         "scheduling_decisions",
         "task_attempts",
     }
@@ -255,6 +261,14 @@ def test_scheduler_finishes_attempt_and_releases_node_lease(db: Session) -> None
             required_capabilities=("terminal.execute",),
         ),
     )
+    node = db.get(RuntimeNode, "node-a")
+    lease = db.scalar(select(RuntimeResourceLease))
+
+    assert node is not None
+    assert node.active_leases == 1
+    assert node.available_cpu_millis == 900
+    assert node.available_memory_mb == 384
+    assert lease is not None and lease.status == "active"
 
     finished = scheduler.finish_attempt(
         db,
@@ -272,12 +286,83 @@ def test_scheduler_finishes_attempt_and_releases_node_lease(db: Session) -> None
         status="transport_error",
         node_state=NodeState.unreachable,
     )
+    db.expire_all()
     node = db.get(RuntimeNode, "node-a")
+    lease = db.scalar(select(RuntimeResourceLease))
 
     assert finished.status == "transport_error"
     assert replay.status == "transport_error"
     assert node is not None and node.active_leases == 0
+    assert node.available_cpu_millis == 1000
+    assert node.available_memory_mb == 512
     assert node.state == NodeState.unreachable.value
+    assert lease is not None and lease.status == "released"
+    assert lease.released_at is not None
+
+
+def test_scheduler_reserves_capacity_and_rejects_aggregate_overcommit(
+    db: Session,
+) -> None:
+    scheduler = RuntimeScheduler()
+    _register(scheduler, db, "node-a")
+
+    first = scheduler.schedule(
+        db,
+        SchedulingRequest(
+            task_id="task-1",
+            attempt_id="attempt-1",
+            tenant_id="tenant-a",
+            cpu_millis=600,
+            memory_mb=300,
+        ),
+    )
+    second = scheduler.schedule(
+        db,
+        SchedulingRequest(
+            task_id="task-2",
+            attempt_id="attempt-1",
+            tenant_id="tenant-a",
+            cpu_millis=600,
+            memory_mb=300,
+        ),
+    )
+
+    node = db.get(RuntimeNode, "node-a")
+    assert first.decision == "selected"
+    assert second.decision == "rejected"
+    assert second.rejected_nodes == {"node-a": "capacity"}
+    assert node is not None and node.active_leases == 1
+    assert node.available_cpu_millis == 400
+    assert node.available_memory_mb == 212
+
+
+def test_heartbeat_preserves_scheduler_resource_reservations(db: Session) -> None:
+    scheduler = RuntimeScheduler()
+    _register(scheduler, db, "node-a")
+    scheduler.schedule(
+        db,
+        SchedulingRequest(
+            task_id="task-1",
+            attempt_id="attempt-1",
+            tenant_id="tenant-a",
+            cpu_millis=250,
+            memory_mb=128,
+        ),
+    )
+
+    node = scheduler.record_heartbeat(
+        db,
+        "node-a",
+        RuntimeNodeHeartbeat(
+            available_cpu_millis=1000,
+            available_memory_mb=512,
+            active_leases=0,
+        ),
+    )
+
+    assert node.active_leases == 1
+    assert node.available_cpu_millis == 750
+    assert node.available_memory_mb == 384
 
 
 def test_schedule_rolls_back_attempt_when_audit_persistence_fails(
@@ -309,6 +394,9 @@ def test_schedule_rolls_back_attempt_when_audit_persistence_fails(
 
     node = db.get(RuntimeNode, "node-a")
     assert node is not None and node.active_leases == 0
+    assert node.available_cpu_millis == 1000
+    assert node.available_memory_mb == 512
+    assert db.scalar(select(RuntimeResourceLease)) is None
     assert db.scalar(
         select(TaskAttempt).where(TaskAttempt.task_id == "task-atomic")
     ) is None

@@ -11,6 +11,7 @@ def test_control_schema_migration_is_additive_and_idempotent(tmp_path) -> None:
         "proxy_profiles",
         "runtime_audit_events",
         "runtime_nodes",
+        "runtime_resource_leases",
         "scheduling_decisions",
         "task_attempts",
     }

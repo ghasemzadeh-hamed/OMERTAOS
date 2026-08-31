@@ -1,17 +1,23 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum
 
-from sqlalchemy import desc, select
+from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
 
 from control.audit import append_runtime_audit_event
 from shared.telemetry.audit import emit_audit
 
-from .models import RuntimeNode, SchedulingDecision, TaskAttempt
+from .models import (
+    RuntimeNode,
+    RuntimeResourceLease,
+    SchedulingDecision,
+    TaskAttempt,
+)
 
 
 class NodeState(str, Enum):
@@ -160,7 +166,11 @@ class RuntimeScheduler:
     ) -> RuntimeNode:
         available_cpu = registration.available_cpu_millis
         available_memory = registration.available_memory_mb
-        node = db.get(RuntimeNode, registration.node_id)
+        node = db.scalars(
+            select(RuntimeNode)
+            .where(RuntimeNode.node_id == registration.node_id)
+            .with_for_update()
+        ).first()
         if node is None:
             node = RuntimeNode(node_id=registration.node_id, endpoint=registration.endpoint)
             db.add(node)
@@ -174,8 +184,24 @@ class RuntimeScheduler:
         node.labels_json = _json_map(registration.labels)
         node.total_cpu_millis = registration.total_cpu_millis
         node.total_memory_mb = registration.total_memory_mb
-        node.available_cpu_millis = available_cpu if available_cpu is not None else registration.total_cpu_millis
-        node.available_memory_mb = available_memory if available_memory is not None else registration.total_memory_mb
+        reserved_cpu, reserved_memory, active_leases = self._active_reservations(
+            db, registration.node_id
+        )
+        reported_cpu = (
+            available_cpu if available_cpu is not None else registration.total_cpu_millis
+        )
+        reported_memory = (
+            available_memory
+            if available_memory is not None
+            else registration.total_memory_mb
+        )
+        node.available_cpu_millis = max(
+            min(reported_cpu, registration.total_cpu_millis) - reserved_cpu, 0
+        )
+        node.available_memory_mb = max(
+            min(reported_memory, registration.total_memory_mb) - reserved_memory, 0
+        )
+        node.active_leases = max(node.active_leases or 0, active_leases)
         node.drain_requested = False
         node.last_heartbeat_at = _now()
         node.updated_at = _now()
@@ -192,7 +218,11 @@ class RuntimeScheduler:
         *,
         actor: str = "system",
     ) -> RuntimeNode:
-        node = db.get(RuntimeNode, node_id)
+        node = db.scalars(
+            select(RuntimeNode)
+            .where(RuntimeNode.node_id == node_id)
+            .with_for_update()
+        ).first()
         if node is None:
             raise ValueError("runtime node is not registered")
         if node.drain_requested or heartbeat.state is NodeState.draining:
@@ -200,10 +230,23 @@ class RuntimeScheduler:
             node.drain_requested = True
         else:
             node.state = heartbeat.state.value
-        node.available_cpu_millis = heartbeat.available_cpu_millis
-        node.available_memory_mb = heartbeat.available_memory_mb
+        reserved_cpu, reserved_memory, active_leases = self._active_reservations(
+            db, node_id
+        )
+        node.available_cpu_millis = max(
+            min(heartbeat.available_cpu_millis, node.total_cpu_millis)
+            - reserved_cpu,
+            0,
+        )
+        node.available_memory_mb = max(
+            min(heartbeat.available_memory_mb, node.total_memory_mb)
+            - reserved_memory,
+            0,
+        )
         if heartbeat.active_leases is not None:
-            node.active_leases = heartbeat.active_leases
+            node.active_leases = max(heartbeat.active_leases, active_leases)
+        else:
+            node.active_leases = max(node.active_leases, active_leases)
         if heartbeat.capabilities is not None:
             node.capabilities_json = _json_list(heartbeat.capabilities)
         node.last_heartbeat_at = _now()
@@ -227,15 +270,9 @@ class RuntimeScheduler:
 
     def refresh_unreachable(self, db: Session, *, at: datetime | None = None) -> int:
         checked_at = at or _now()
-        changed = 0
-        for node in db.scalars(select(RuntimeNode)).all():
-            if _state(node) is NodeState.draining:
-                continue
-            if node.last_heartbeat_at is None or checked_at - _as_aware(node.last_heartbeat_at) > self.heartbeat_timeout:
-                if node.state != NodeState.unreachable.value:
-                    node.state = NodeState.unreachable.value
-                    node.updated_at = checked_at
-                    changed += 1
+        changed = self._refresh_node_states(
+            db.scalars(select(RuntimeNode)).all(), checked_at
+        )
         if changed:
             db.commit()
         return changed
@@ -287,12 +324,42 @@ class RuntimeScheduler:
         reason: str = "runtime attempt finished",
     ) -> TaskAttempt:
         _require_text(status, "status")
-        attempt = self.get_attempt(db, task_id, attempt_id, tenant_id)
+        self._lock_attempt_identity(db, task_id, attempt_id)
+        attempt = db.scalars(
+            select(TaskAttempt)
+            .where(TaskAttempt.task_id == task_id)
+            .where(TaskAttempt.attempt_id == attempt_id)
+            .where(TaskAttempt.tenant_id == tenant_id)
+            .with_for_update()
+        ).first()
         if attempt is None:
             raise ValueError("runtime attempt is not registered")
-        node = attempt.node
+        node = None
+        if attempt.selected_node_id is not None:
+            node = db.scalars(
+                select(RuntimeNode)
+                .where(RuntimeNode.node_id == attempt.selected_node_id)
+                .with_for_update()
+            ).first()
+        lease = db.scalars(
+            select(RuntimeResourceLease)
+            .where(RuntimeResourceLease.task_attempt_id == attempt.id)
+            .where(RuntimeResourceLease.status == "active")
+            .with_for_update()
+        ).first()
         if attempt.status == "leased" and node is not None:
             node.active_leases = max(node.active_leases - 1, 0)
+            if lease is not None:
+                node.available_cpu_millis = min(
+                    node.available_cpu_millis + lease.cpu_millis,
+                    node.total_cpu_millis,
+                )
+                node.available_memory_mb = min(
+                    node.available_memory_mb + lease.memory_mb,
+                    node.total_memory_mb,
+                )
+                lease.status = "released"
+                lease.released_at = _now()
         attempt.status = status
         attempt.updated_at = _now()
         if (
@@ -322,6 +389,7 @@ class RuntimeScheduler:
         return attempt
 
     def schedule(self, db: Session, request: SchedulingRequest, *, actor: str = "system") -> SchedulingResult:
+        self._lock_attempt_identity(db, request.task_id, request.attempt_id)
         existing = self._get_attempt_by_identity(db, request.task_id, request.attempt_id)
         if existing and existing.tenant_id != request.tenant_id:
             return self._record_decision(
@@ -388,10 +456,20 @@ class RuntimeScheduler:
 
         selected = self._select_node(db, request.strategy, eligible, request.tenant_id)
         selected.active_leases += 1
+        selected.available_cpu_millis -= request.cpu_millis
+        selected.available_memory_mb -= request.memory_mb
         attempt.selected_node_id = selected.node_id
         attempt.status = "leased"
         attempt.updated_at = _now()
         db.flush()
+        db.add(
+            RuntimeResourceLease(
+                task_attempt_id=attempt.id,
+                node_id=selected.node_id,
+                cpu_millis=request.cpu_millis,
+                memory_mb=request.memory_mb,
+            )
+        )
         return self._record_decision(
             db,
             request,
@@ -404,11 +482,14 @@ class RuntimeScheduler:
         )
 
     def _eligible_nodes(self, db: Session, request: SchedulingRequest) -> tuple[list[RuntimeNode], dict[str, str]]:
-        self.refresh_unreachable(db)
+        nodes = db.scalars(
+            select(RuntimeNode).order_by(RuntimeNode.node_id).with_for_update()
+        ).all()
+        self._refresh_node_states(nodes, _now())
         required = set(request.required_capabilities)
         eligible: list[RuntimeNode] = []
         rejected: dict[str, str] = {}
-        for node in db.scalars(select(RuntimeNode).order_by(RuntimeNode.node_id)).all():
+        for node in nodes:
             state = _state(node)
             if state in {NodeState.unreachable, NodeState.draining}:
                 rejected[node.node_id] = f"state:{state.value}"
@@ -425,6 +506,46 @@ class RuntimeScheduler:
                 continue
             eligible.append(node)
         return eligible, rejected
+
+    def _active_reservations(self, db: Session, node_id: str) -> tuple[int, int, int]:
+        cpu, memory, leases = db.execute(
+            select(
+                func.coalesce(func.sum(RuntimeResourceLease.cpu_millis), 0),
+                func.coalesce(func.sum(RuntimeResourceLease.memory_mb), 0),
+                func.count(RuntimeResourceLease.id),
+            )
+            .where(RuntimeResourceLease.node_id == node_id)
+            .where(RuntimeResourceLease.status == "active")
+        ).one()
+        return int(cpu), int(memory), int(leases)
+
+    def _lock_attempt_identity(
+        self, db: Session, task_id: str, attempt_id: str
+    ) -> None:
+        if db.get_bind().dialect.name != "postgresql":
+            return
+        identity = f"{task_id}\0{attempt_id}".encode()
+        lock_id = int.from_bytes(
+            hashlib.blake2b(identity, digest_size=8).digest(), signed=True
+        )
+        db.execute(select(func.pg_advisory_xact_lock(lock_id)))
+
+    def _refresh_node_states(
+        self, nodes: list[RuntimeNode], checked_at: datetime
+    ) -> int:
+        changed = 0
+        for node in nodes:
+            if _state(node) is NodeState.draining:
+                continue
+            if (
+                node.last_heartbeat_at is None
+                or checked_at - _as_aware(node.last_heartbeat_at)
+                > self.heartbeat_timeout
+            ) and node.state != NodeState.unreachable.value:
+                node.state = NodeState.unreachable.value
+                node.updated_at = checked_at
+                changed += 1
+        return changed
 
     def _select_node(
         self,
