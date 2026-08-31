@@ -105,3 +105,5 @@ class RuntimeAuditTrailOut(BaseModel):
     task_id: str
     tenant_id: str
     items: list[RuntimeAuditEventOut]
+    next_cursor: int | None
+    truncated: bool

@@ -1,11 +1,20 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .models import RuntimeAuditEvent
 
 MAX_AUDIT_EVENTS_PER_TASK = 100
+
+
+@dataclass(frozen=True, slots=True)
+class RuntimeAuditPage:
+    items: tuple[RuntimeAuditEvent, ...]
+    next_cursor: int | None
+    truncated: bool
 
 
 def append_runtime_audit_event(
@@ -45,13 +54,28 @@ def list_runtime_audit_events(
     *,
     task_id: str,
     tenant_id: str,
-) -> list[RuntimeAuditEvent]:
-    return list(
+    cursor: int = 0,
+    limit: int = MAX_AUDIT_EVENTS_PER_TASK,
+) -> RuntimeAuditPage:
+    if cursor < 0:
+        raise ValueError("cursor must be non-negative")
+    if limit <= 0 or limit > MAX_AUDIT_EVENTS_PER_TASK:
+        raise ValueError(f"limit must be between 1 and {MAX_AUDIT_EVENTS_PER_TASK}")
+
+    rows = list(
         db.scalars(
             select(RuntimeAuditEvent)
             .where(RuntimeAuditEvent.task_id == task_id)
             .where(RuntimeAuditEvent.tenant_id == tenant_id)
+            .where(RuntimeAuditEvent.id > cursor)
             .order_by(RuntimeAuditEvent.created_at, RuntimeAuditEvent.id)
-            .limit(MAX_AUDIT_EVENTS_PER_TASK)
+            .limit(limit + 1)
         ).all()
+    )
+    truncated = len(rows) > limit
+    items = tuple(rows[:limit])
+    return RuntimeAuditPage(
+        items=items,
+        next_cursor=items[-1].id if truncated else None,
+        truncated=truncated,
     )

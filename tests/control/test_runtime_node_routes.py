@@ -84,6 +84,8 @@ def test_runtime_node_routes_register_heartbeat_and_schedule(
         trail = client.get("/v1/runtime/audit/task-a", headers=headers)
         assert trail.status_code == 200
         assert trail.json()["tenant_id"] == "tenant-a"
+        assert trail.json()["truncated"] is False
+        assert trail.json()["next_cursor"] is None
         assert [item["action"] for item in trail.json()["items"]] == [
             "runtime.schedule"
         ]

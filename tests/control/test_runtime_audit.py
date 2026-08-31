@@ -72,17 +72,32 @@ def test_runtime_audit_listing_is_ordered_tenant_scoped_and_bounded() -> None:
         )
         db.commit()
 
-        events = list_runtime_audit_events(
+        first_page = list_runtime_audit_events(
             db,
             task_id="task-a",
             tenant_id="tenant-a",
         )
-        assert len(events) == MAX_AUDIT_EVENTS_PER_TASK
-        assert [event.retry_count for event in events] == list(
+        assert len(first_page.items) == MAX_AUDIT_EVENTS_PER_TASK
+        assert [event.retry_count for event in first_page.items] == list(
             range(MAX_AUDIT_EVENTS_PER_TASK)
         )
-        assert list_runtime_audit_events(
+        assert first_page.truncated is True
+        assert first_page.next_cursor is not None
+
+        second_page = list_runtime_audit_events(
             db,
             task_id="task-a",
-            tenant_id="tenant-c",
-        ) == []
+            tenant_id="tenant-a",
+            cursor=first_page.next_cursor,
+        )
+        assert [event.retry_count for event in second_page.items] == [100, 101]
+        assert second_page.truncated is False
+        assert second_page.next_cursor is None
+        assert (
+            list_runtime_audit_events(
+                db,
+                task_id="task-a",
+                tenant_id="tenant-c",
+            ).items
+            == ()
+        )
