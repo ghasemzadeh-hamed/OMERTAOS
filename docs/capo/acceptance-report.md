@@ -1,5 +1,47 @@
 # CAPO acceptance report
 
+## R6.13 atomic scheduler leases — 2026-08-31
+
+Branch: `Radin/capo-r6-validation`
+
+Baseline: `4163f1ce4b708c237f8b03d127e8f36753dc9e94`
+
+Implementation commit: `076db60620cf8c1b43fee921a76e47acf9a2c99a`
+
+This gate used the preserved single-worker `compose` Quickstart and canonical
+PostgreSQL database. It did not run a benchmark, add a second Runtime, delete a
+record or volume, or expose a credential.
+
+| Gate | Result | Executable evidence and boundary |
+|---|---|---|
+| Pre-fix concurrent reproduction | failed as expected | Two concurrent 600m CPU requests were both selected on a 1000m worker, availability remained 1000m/512 MB, three persisted attempts produced an `active_leases` value of 1, and a same-identity race raised `IntegrityError` instead of replaying |
+| Atomic resource model | pass | Additive `runtime_resource_leases` rows persist CPU/RAM, acquisition and release state; no existing table, column, API, or record was removed |
+| Targeted scheduler/migration tests | pass | `11 passed`; accounting, aggregate capacity, heartbeat preservation, idempotent release, audit rollback, and migration idempotency were exercised |
+| PostgreSQL concurrency regression | pass | `1 passed`; concurrent same-identity calls produced one lease plus one replay, and only one of two concurrent 600m requests was admitted |
+| Control regression | pass | `83 passed`, with three FastAPI/Starlette deprecation warnings |
+| Architecture regression | pass | `72 passed, 1 deselected`; the intentionally red Structure completion gate remained excluded |
+| Full Python regression | pass with skips | `228 passed, 2 skipped, 1 deselected, 3 warnings`; the two module-level skips are the formally retired legacy Agent Catalog and stream-service namespaces |
+| Compose render and Control image build | pass | Canonical render exited 0; the Control image built sequentially and the active `compose-control-1` service became healthy after a no-dependency recreate |
+| Live Control scheduling | pass | An authenticated Control request selected `runtime-quickstart-1`; finish returned the worker to 1000m CPU, 512 MB and zero active leases |
+| Live heartbeat reconciliation | pass | A 250m/128 MB lease remained at 750m/384 MB after a real lifecycle heartbeat, then returned to full capacity after one idempotent finish |
+| Resource guard | pass | Available RAM remained about 3.8 GiB after acceptance; one Runtime worker was used and builds/tests ran sequentially |
+
+Two environment/operator failures are retained as negative evidence. The host
+has no `python` alias (exit 127), and system `python3` has no pytest module; the
+repository `.venv312` interpreter was therefore used. An initial Control
+recreate omitted the active project name, targeted the stopped `omertaos`
+project, recreated its stopped Control container, removed its unattached
+`omerta-r5-net` network, and then failed because port 8000 belonged to the
+preserved `compose` stack. No volume was removed. The corrected command used
+`-p compose`, rebuilt only Control, and passed. The stopped
+`omertaos-control-1` container remains created and was not broadly cleaned up.
+
+R6.13 is evidence for bounded single-Control transaction correctness on the
+canonical PostgreSQL backend. It is not evidence of Runtime-side lease fencing,
+automatic reclamation after a Control crash, multi-Control serialization,
+distributed consensus, scalability, production readiness, or security
+certification.
+
 ## R6.12.2 trusted Gateway headers — 2026-08-31
 
 Branch: `Radin/capo-r6-validation`
