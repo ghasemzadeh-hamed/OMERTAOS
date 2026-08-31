@@ -1,5 +1,50 @@
 # CAPO acceptance report
 
+## R6.14 Runtime execution-lease fencing — 2026-08-31
+
+Branch: `Radin/capo-r6-validation`
+
+Baseline: `2e1833534e2eae4093c5acb423aeb57a0fac7b1b`
+
+Implementation commit: `edde9b019094d5dc521ac486a8467075ce8169b3`
+
+This gate used the preserved single-worker `compose` Quickstart and canonical
+PostgreSQL database. Builds and suites ran sequentially. No volume, persisted
+record, credential, or security control was removed.
+
+| Gate | Result | Executable evidence and boundary |
+|---|---|---|
+| Pre-fix reproduction | reproduced | Before the change, a direct Runtime command without lease metadata executed with exit code 0, and backdating an active resource lease did not cause the next lifecycle heartbeat to reclaim it |
+| Additive lease model | pass | `runtime_execution_leases` stores a monotonic generation, status, expiry, timestamps, and only the SHA-256 token hash; the raw token exists only in the bounded Control dispatch object and gRPC metadata |
+| Targeted Control and lint | pass | `46 passed`; Ruff passed. PostgreSQL concurrency reported `1 passed`, and the complete Control suite reported `90 passed` with three existing deprecation warnings |
+| Runtime regression | pass after environment workaround | The repository target directory was root-owned and Cargo failed on `.cargo-build-lock` with permission denied. Using isolated `CARGO_TARGET_DIR=/tmp/omerta-r614-target` produced `11 passed`; formatting passed and token-debug redaction was exercised |
+| Architecture and Python regression | pass with exclusions | Architecture reported `72 passed, 1 deselected`; full Python reported `235 passed, 2 skipped, 1 deselected, 3 warnings`. The intentionally red Structure completion gate remained excluded |
+| Compose render and sequential images | pass | Canonical render exited 0. Control built from cache; the locked cold Runtime release image built in 22 minutes 39 seconds. The two image builds did not overlap |
+| Missing-lease rejection | pass live | After recreating Runtime then Control, a direct Runtime request without lease metadata returned gRPC `FAILED_PRECONDITION` instead of executing |
+| Leased dispatch and generation fence | pass live | A real Control dispatcher call completed deterministic echo execution, released both leases, and restored zero active leases. A separately scheduled generation executed once; replaying identical metadata was fenced by Runtime |
+| Expiry reclamation | pass live | A test execution lease was backdated without deleting it. The lifecycle heartbeat marked the attempt, resource lease, and execution lease `expired`, restored full declared CPU/RAM, and returned the worker to zero active leases |
+| Schema, persistence, and log checks | pass | Migration check reported current schema; all ten persisted execution-lease tokens were valid 64-character hashes, with zero active resource/execution leases. Runtime logs contained no lease-token field |
+| Quickstart smoke | pass | PostgreSQL, Redis, one Runtime, installer, Control, Gateway, and Console passed; Runtime registration was fresh and the Console -> Gateway -> Control health chain was healthy |
+| Resource guard | pass | Available RAM was about 4.0 GiB before builds and 4.2 GiB after acceptance, above the 1 GiB stop threshold |
+
+Failed validation attempts are retained. The first targeted Python run reported
+`3 failed, 25 passed` because three expected-table/finish fixtures were stale;
+the fixtures were updated and the affected suites passed. A one-line live probe
+used invalid Python syntax and exited 1 before execution. The first live replay
+probe proved the Runtime rejection but then called a keyword-only cleanup
+argument positionally and exited 1; its single test lease was subsequently
+finished without deletion, and the corrected independent probe passed. No
+failed command was treated as evidence of success.
+
+R6.14 establishes bounded stale-dispatch protection for the current
+single-Control, single-Runtime prototype. The metadata token is not
+cryptographically verified against Control storage and does not authenticate
+the caller on the current unauthenticated internal gRPC transport. Runtime's
+generation fence is in memory, resets on restart, and does not cancel work that
+was already admitted. This gate is not evidence of durable post-restart
+fencing, multi-Control coordination, distributed consensus, successful Linux
+isolation, scalability, production readiness, or security certification.
+
 ## R6.13 atomic scheduler leases — 2026-08-31
 
 Branch: `Radin/capo-r6-validation`
