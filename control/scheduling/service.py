@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import secrets
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum
@@ -21,6 +20,7 @@ from .models import (
     SchedulingDecision,
     TaskAttempt,
 )
+from .lease_signing import LeaseSigner
 
 
 class NodeState(str, Enum):
@@ -163,6 +163,7 @@ class RuntimeScheduler:
         *,
         heartbeat_timeout_seconds: int = 30,
         lease_ttl_seconds: int | None = None,
+        lease_signing_key: str | None = None,
     ) -> None:
         if heartbeat_timeout_seconds <= 0:
             raise ValueError("heartbeat_timeout_seconds must be positive")
@@ -175,6 +176,11 @@ class RuntimeScheduler:
             raise ValueError("lease_ttl_seconds must be between 5 and 120")
         self.heartbeat_timeout = timedelta(seconds=heartbeat_timeout_seconds)
         self.lease_ttl = timedelta(seconds=resolved_lease_ttl)
+        self._lease_signer = (
+            LeaseSigner.from_encoded(lease_signing_key)
+            if lease_signing_key is not None
+            else None
+        )
 
     def register_node(
         self,
@@ -471,6 +477,7 @@ class RuntimeScheduler:
         return attempt
 
     def schedule(self, db: Session, request: SchedulingRequest, *, actor: str = "system") -> SchedulingResult:
+        signer = self._lease_signer or LeaseSigner.from_env()
         self.reclaim_expired_leases(db, actor=actor)
         self._lock_attempt_identity(db, request.task_id, request.attempt_id)
         existing = self._get_attempt_by_identity(db, request.task_id, request.attempt_id)
@@ -553,15 +560,24 @@ class RuntimeScheduler:
         )
         db.add(resource_lease)
         db.flush()
-        lease_token = secrets.token_urlsafe(32)
         lease_expires_at = _now() + self.lease_ttl
         execution_lease = RuntimeExecutionLease(
             resource_lease_id=resource_lease.id,
-            token_hash=hashlib.sha256(lease_token.encode()).hexdigest(),
+            token_hash="0" * 64,
             expires_at=lease_expires_at,
         )
         db.add(execution_lease)
         db.flush()
+        lease_expires_at_ms = int(lease_expires_at.timestamp() * 1000)
+        lease_token = signer.sign(
+            tenant_id=request.tenant_id,
+            task_id=request.task_id,
+            attempt_id=request.attempt_id,
+            node_id=selected.node_id,
+            generation=execution_lease.id,
+            expires_at_ms=lease_expires_at_ms,
+        )
+        execution_lease.token_hash = hashlib.sha256(lease_token.encode()).hexdigest()
         return self._record_decision(
             db,
             request,

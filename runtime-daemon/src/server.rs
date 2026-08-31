@@ -10,7 +10,7 @@ use crate::config::RuntimeConfig;
 use crate::execution::{agent_runner::run_agent, execute};
 use crate::observability::metrics::query_metrics;
 use crate::security::capability::validate_capabilities;
-use crate::security::lease::{LeaseClaim, LeaseFence};
+use crate::security::lease::{LeaseClaim, LeaseError, LeaseFence};
 
 #[allow(clippy::result_large_err)]
 pub mod pb {
@@ -54,11 +54,12 @@ pub struct RuntimeServiceImpl {
 }
 
 impl RuntimeServiceImpl {
-    pub fn new(config: RuntimeConfig) -> Self {
-        Self {
+    pub fn new(config: RuntimeConfig) -> std::result::Result<Self, LeaseError> {
+        let lease_fence = LeaseFence::open(config.lease_state_path.clone())?;
+        Ok(Self {
             config: Arc::new(config),
-            lease_fence: Arc::new(LeaseFence::default()),
-        }
+            lease_fence: Arc::new(lease_fence),
+        })
     }
 
     pub fn service(self) -> pb::runtime_service_server::RuntimeServiceServer<Self> {
@@ -151,6 +152,7 @@ impl pb::runtime_service_server::RuntimeService for RuntimeServiceImpl {
         self.lease_fence
             .claim(
                 &lease_claim,
+                self.config.lease_hmac_key.as_ref(),
                 &self.config.node_id,
                 current_time_ms(),
                 self.config.lease_max_ttl_seconds,
@@ -254,8 +256,9 @@ fn current_time_ms() -> u64 {
 
 pub async fn run_server(config: RuntimeConfig) -> Result<()> {
     let addr = config.bind_addr.parse()?;
+    let service = RuntimeServiceImpl::new(config)?;
     tonic::transport::Server::builder()
-        .add_service(RuntimeServiceImpl::new(config).service())
+        .add_service(service.service())
         .serve_with_shutdown(addr, shutdown_signal())
         .await?;
     Ok(())
@@ -361,7 +364,10 @@ mod tests {
             profile: "lite".into(),
             node_id: "runtime-a".into(),
             lease_max_ttl_seconds: 120,
-        });
+            lease_hmac_key: None,
+            lease_state_path: None,
+        })
+        .unwrap();
         let mut request = Request::new(pb::CommandRequest {
             context: Some(pb::ExecutionContext {
                 agent_id: "agent-a".into(),

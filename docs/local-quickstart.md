@@ -106,12 +106,23 @@ lease metadata. `AION_RUNTIME_LEASE_TTL_SECONDS` is bounded to 5-120 seconds;
 120 seconds. Keep the Control TTL above `AION_RUNTIME_TIMEOUT_SECONDS` and at or
 below the Runtime maximum.
 
+Before starting execution-capable services, provision one dedicated
+`AION_RUNTIME_LEASE_HMAC_KEY` in `.env`. It must be base64 encoding of 32-64
+random bytes and is shared only by Control and Runtime. For example, an operator
+may generate a new value locally with `openssl rand -base64 32`; never paste the
+value into logs, chat, source control, or command history. Do not reuse the
+Gateway admin token, database password, or Control local encryption key.
+Quickstart persists the Runtime generation fence in the `runtime-state` volume;
+normal `stop`/`start` or container recreation preserves it. Do not use
+`docker compose down -v`.
+
 This local supervisor is not a distributed membership protocol. Runtime does
 not receive an administrator token or self-authorize tenant eligibility, and
-operator-requested draining remains authoritative. Lease metadata is not a
-replacement for authenticated transport: the Quickstart gRPC boundary remains
-an internal-network prototype, and production still requires workload identity
-or mTLS.
+operator-requested draining remains authoritative. The lease HMAC authenticates
+Control-issued dispatch metadata but is not caller identity or a replacement
+for authenticated transport. The Quickstart gRPC boundary remains an
+internal-network prototype, and production still requires workload identity or
+mTLS.
 
 ### Two-worker acceptance profile
 

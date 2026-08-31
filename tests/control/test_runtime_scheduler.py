@@ -22,6 +22,7 @@ from control.scheduling.models import (
     SchedulingDecision,
     TaskAttempt,
 )
+from control.scheduling.lease_signing import LeaseSigningError
 
 
 @pytest.fixture()
@@ -327,6 +328,32 @@ def test_scheduler_persists_only_execution_lease_token_hash(db: Session) -> None
         result.lease_token.encode()
     ).hexdigest()
     assert result.lease_token not in repr(result)
+
+
+def test_scheduler_without_signing_key_fails_before_reserving_capacity(
+    db: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv("AION_RUNTIME_LEASE_HMAC_KEY", raising=False)
+    scheduler = RuntimeScheduler()
+    node = _register(scheduler, db, "node-a")
+
+    with pytest.raises(LeaseSigningError, match="is required"):
+        scheduler.schedule(
+            db,
+            SchedulingRequest(
+                task_id="task-no-signing-key",
+                attempt_id="attempt-1",
+                tenant_id="tenant-a",
+            ),
+        )
+
+    db.refresh(node)
+    assert node.active_leases == 0
+    assert node.available_cpu_millis == node.total_cpu_millis
+    assert node.available_memory_mb == node.total_memory_mb
+    assert db.scalar(select(TaskAttempt)) is None
+    assert db.scalar(select(RuntimeResourceLease)) is None
+    assert db.scalar(select(RuntimeExecutionLease)) is None
 
 
 def test_scheduler_reclaims_expired_execution_lease(db: Session) -> None:

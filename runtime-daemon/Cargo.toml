@@ -17,6 +17,9 @@ thiserror = "2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
 anyhow = "1"
+base64 = "0.22"
+hmac = "0.12"
+sha2 = "0.10"
 
 [build-dependencies]
 tonic-build = "0.12"

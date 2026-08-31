@@ -1,11 +1,15 @@
-use serde::Deserialize;
+use std::path::PathBuf;
 
-#[derive(Debug, Clone, Deserialize)]
+use crate::security::lease::LeaseHmacKey;
+
+#[derive(Debug, Clone)]
 pub struct RuntimeConfig {
     pub bind_addr: String,
     pub profile: String,
     pub node_id: String,
     pub lease_max_ttl_seconds: u64,
+    pub lease_hmac_key: Option<LeaseHmacKey>,
+    pub lease_state_path: Option<PathBuf>,
 }
 
 impl Default for RuntimeConfig {
@@ -21,6 +25,14 @@ impl Default for RuntimeConfig {
                 .and_then(|value| value.parse().ok())
                 .filter(|value| (5..=300).contains(value))
                 .unwrap_or(120),
+            lease_hmac_key: std::env::var("AION_RUNTIME_LEASE_HMAC_KEY")
+                .ok()
+                .filter(|value| !value.is_empty())
+                .and_then(|value| LeaseHmacKey::from_encoded(&value).ok()),
+            lease_state_path: std::env::var("AION_RUNTIME_LEASE_STATE_PATH")
+                .ok()
+                .filter(|value| !value.is_empty())
+                .map(PathBuf::from),
         }
     }
 }

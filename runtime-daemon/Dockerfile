@@ -13,7 +13,8 @@ RUN cargo build --locked --release
 
 FROM debian:bookworm-slim
 
-RUN useradd --system --uid 10001 --create-home runtime
+RUN useradd --system --uid 10001 --create-home runtime \
+    && install -d -o runtime -g runtime -m 0700 /var/lib/omerta/runtime
 COPY --from=builder /app/runtime-daemon/target/release/runtime-daemon /usr/local/bin/runtime-daemon
 
 USER runtime
