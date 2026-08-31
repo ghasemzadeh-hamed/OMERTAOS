@@ -1,5 +1,35 @@
 # CAPO acceptance report
 
+## R6.12.2 trusted Gateway headers — 2026-08-31
+
+Branch: `Radin/capo-r6-validation`
+
+Validated implementation commit: `db32030` (`fix(security): authenticate
+trusted control headers`). Control now uses one constant-time Gateway service
+token verifier for Configuration, Network, and Runtime administrative routes.
+Gateway sends that token on Network reads before Control consumes forwarded
+roles for admin versus enabled-only view filtering.
+
+| Gate | Result | Executable evidence and boundary |
+|---|---|---|
+| Targeted Control security tests | pass | `7 passed, 3 existing deprecation warnings`; covered forged admin/user roles, wrong and raw tokens, valid Bearer access, enabled-only user/public views, full admin view, mutations, and Runtime route regression |
+| Gateway tests | pass after environment correction | The first invocation used the host Node version and Vitest stopped before collection because `node:util.styleText` was unavailable. Re-running with the bundled compatible Node reported `5 files passed, 10 tests passed` and verified that Network reads carry service authentication before role context |
+| Gateway static gates | pass | Production TypeScript build and ESLint exited 0; no dependency or lockfile changed |
+| Control regression | pass | `80 passed, 3 existing deprecation warnings` |
+| Architecture regression | pass | `72 passed, 1 intentionally excluded Structure completion gate` |
+| Full Python regression | pass | `225 passed, 2 skipped, 1 intentionally excluded Structure completion gate, 3 warnings` |
+| Compose render and sequential builds | pass | Canonical `config --quiet` exited 0; Control and Gateway images built one at a time from locked cached dependencies |
+| Limited recreate and smoke | pass | Only Control and Gateway were recreated with `--no-deps --wait`; PostgreSQL, Redis, Runtime, Console, and all volumes remained in place. The complete Quickstart smoke and Console -> Gateway -> Control health chain passed |
+| Live negative authentication | pass | Role-only Configuration and Network requests returned HTTP 403, and a raw service token without the Bearer scheme returned HTTP 403 |
+| Live positive authentication | pass | Bearer service-token Configuration access, Network enabled-only user filtering, Network admin view, and authenticated Gateway Configuration/Network paths returned HTTP 200. No token or proxy payload was printed |
+| Resource guard and final state | pass | Available memory remained about 3.7 GiB, all six existing application/data containers were healthy, and no volume deletion or broad shutdown command was used |
+
+This closes the reproduced role-header trust issue for the current
+Configuration, Network, and Runtime administrative compatibility routes. It
+does not establish mTLS, workload identity, network segmentation, independent
+authorization review, production hardening, penetration testing, or security
+certification.
+
 ## R6.12.1 Runtime boundary repairs — 2026-08-31
 
 Branch: `Radin/capo-r6-validation`

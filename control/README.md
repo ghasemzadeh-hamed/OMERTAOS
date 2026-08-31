@@ -17,9 +17,11 @@ An async FastAPI-compatible HTTP surface may provide health and administrative c
 
 Current HTTP prototype endpoints include:
 
-- `GET /v1/config/status` for the effective and pending router configuration;
-- `POST /v1/config/propose`, `/apply`, and `/revert` for authenticated configuration changes;
-- `/v1/network/proxies` for authenticated proxy profile management;
+- `GET /v1/config/status` and the configuration mutation routes for
+  Gateway-service-token-authenticated router configuration;
+- `/v1/network/proxies` for Gateway-service-token-authenticated proxy profile
+  management; forwarded roles are trusted only after service authentication,
+  and non-admin views contain enabled profiles only;
 - `/v1/runtime/nodes` and `/v1/runtime/schedule` for the minimal node registry and scheduler;
 - `GET /v1/runtime/audit/{task_id}` for a Gateway-service-token-authenticated,
   tenant-scoped Runtime scheduling and dispatch trail with bounded cursor
