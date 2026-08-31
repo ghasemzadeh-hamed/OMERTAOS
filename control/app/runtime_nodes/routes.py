@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
-import secrets
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, status
 from sqlalchemy.orm import Session
@@ -13,6 +11,7 @@ from control.audit import (
     list_runtime_audit_events,
 )
 from control.app.network.models import get_db
+from control.app.service_auth import require_gateway_service_token
 from control.scheduling import (
     NodeState,
     RuntimeNodeHeartbeat,
@@ -53,19 +52,8 @@ def _tenant(request: Request) -> str:
     )
 
 
-def _is_admin(request: Request) -> bool:
-    token = (request.headers.get("authorization") or "").removeprefix("Bearer ")
-    configured = (
-        os.getenv("AION_GATEWAY_ADMIN_TOKEN") or os.getenv("AION_ADMIN_TOKEN") or ""
-    )
-    return bool(configured and secrets.compare_digest(token, configured))
-
-
 def require_admin(request: Request) -> None:
-    if not _is_admin(request):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required"
-        )
+    require_gateway_service_token(request)
 
 
 def _load_json_list(raw: str) -> list[str]:

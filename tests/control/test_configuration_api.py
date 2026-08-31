@@ -49,8 +49,30 @@ def test_configuration_propose_apply_and_revert(monkeypatch):
         assert reverted.json()["effective"] == initial_effective
 
 
-def test_configuration_requires_admin():
+def test_configuration_requires_trusted_gateway_token(monkeypatch):
+    monkeypatch.setenv("AION_GATEWAY_ADMIN_TOKEN", "test-admin-token")
     with TestClient(app) as client:
-        response = client.get("/v1/config/status", headers={"x-aion-roles": "user"})
+        user_role = client.get(
+            "/v1/config/status",
+            headers={"x-aion-roles": "user"},
+        )
+        forged_admin = client.get(
+            "/v1/config/status",
+            headers={"x-aion-roles": "admin"},
+        )
+        wrong_token = client.get(
+            "/v1/config/status",
+            headers={
+                "authorization": "Bearer wrong-token",
+                "x-aion-roles": "admin",
+            },
+        )
+        raw_token = client.get(
+            "/v1/config/status",
+            headers={"authorization": "test-admin-token"},
+        )
 
-    assert response.status_code == 403
+    assert user_role.status_code == 403
+    assert forged_admin.status_code == 403
+    assert wrong_token.status_code == 403
+    assert raw_token.status_code == 403

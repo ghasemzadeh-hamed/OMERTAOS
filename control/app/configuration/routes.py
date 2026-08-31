@@ -1,19 +1,14 @@
 from __future__ import annotations
 
-import os
-import secrets
-
 from fastapi import (
     APIRouter,
     Depends,
-    Header,
-    HTTPException,
     Request,
-    status as http_status,
 )
 from sqlalchemy.orm import Session
 
 from control.app.network.models import get_db, init_db
+from control.app.service_auth import require_gateway_service_token
 
 from .schemas import ConfigurationProposal
 from .service import apply, propose, revert, status
@@ -21,27 +16,8 @@ from .service import apply, propose, revert, status
 router = APIRouter(prefix="/v1/config", tags=["configuration"])
 
 
-def _roles(x_aion_roles: str | None = Header(default=None)) -> set[str]:
-    return {
-        role.strip().lower() for role in (x_aion_roles or "").split(",") if role.strip()
-    }
-
-
-def _is_admin(request: Request, roles: set[str]) -> bool:
-    token = (request.headers.get("authorization") or "").removeprefix("Bearer ")
-    configured = (
-        os.getenv("AION_GATEWAY_ADMIN_TOKEN") or os.getenv("AION_ADMIN_TOKEN") or ""
-    )
-    token_matches = bool(configured and secrets.compare_digest(token, configured))
-    return "admin" in roles or token_matches
-
-
-def require_admin(request: Request, roles: set[str] = Depends(_roles)) -> None:
-    if not _is_admin(request, roles):
-        raise HTTPException(
-            status_code=http_status.HTTP_403_FORBIDDEN,
-            detail="Admin privileges required",
-        )
+def require_admin(request: Request) -> None:
+    require_gateway_service_token(request)
 
 
 def _actor(request: Request) -> str:

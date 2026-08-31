@@ -16,9 +16,9 @@ const requireAdmin = (request: FastifyRequest) => {
   }
 };
 
-const controlHeaders = (request: FastifyRequest, includeServiceToken: boolean) => {
+export const buildNetworkControlHeaders = (request: FastifyRequest) => {
   const headers: Record<string, string> = { 'content-type': 'application/json' };
-  if (includeServiceToken && gatewayConfig.adminToken) {
+  if (gatewayConfig.adminToken) {
     headers.authorization = `Bearer ${gatewayConfig.adminToken}`;
   }
   const roles = request.aionContext.user?.roles ?? [];
@@ -40,11 +40,10 @@ const proxyControl = async <T>(
   method: ControlMethod,
   path: string,
   body?: unknown,
-  includeServiceToken = true,
 ): Promise<T> => {
   const response = await fetch(`${gatewayConfig.controlBaseUrl}${path}`, {
     method,
-    headers: controlHeaders(request, includeServiceToken),
+    headers: buildNetworkControlHeaders(request),
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   if (!response.ok) {
@@ -59,7 +58,7 @@ const proxyControl = async <T>(
 
 export const registerNetworkRoutes = (app: FastifyInstance) => {
   app.get('/v1/network/proxies', async (request) => {
-    return proxyControl(request, 'GET', '/network/proxies', undefined, false);
+    return proxyControl(request, 'GET', '/network/proxies');
   });
 
   app.post('/v1/network/proxies', async (request) => {
@@ -69,7 +68,7 @@ export const registerNetworkRoutes = (app: FastifyInstance) => {
 
   app.get('/v1/network/proxies/:id', async (request) => {
     const { id } = request.params as { id: string };
-    return proxyControl(request, 'GET', `/network/proxies/${encodeURIComponent(id)}`, undefined, false);
+    return proxyControl(request, 'GET', `/network/proxies/${encodeURIComponent(id)}`);
   });
 
   app.put('/v1/network/proxies/:id', async (request) => {
