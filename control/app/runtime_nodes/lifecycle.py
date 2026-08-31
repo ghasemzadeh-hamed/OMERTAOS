@@ -290,6 +290,19 @@ class RuntimeNodeLifecycle:
                     "Runtime lifecycle endpoint differs from the persisted node; refusing heartbeat"
                 )
                 return False
+            else:
+                node.capabilities_json = json.dumps(
+                    list(self.config.capabilities), separators=(",", ":")
+                )
+                node.tenant_ids_json = json.dumps(
+                    list(self.config.tenant_ids), separators=(",", ":")
+                )
+                node.total_cpu_millis = self.config.total_cpu_millis
+                node.total_memory_mb = self.config.total_memory_mb
+                node.software_version = "quickstart"
+                node.contract_version = "runtime.v1"
+                node.trust_zone = "local-quickstart"
+                node.labels_json = '{"managed_by":"control-runtime-lifecycle"}'
 
             self.scheduler.record_heartbeat(
                 db,
@@ -297,7 +310,6 @@ class RuntimeNodeLifecycle:
                 RuntimeNodeHeartbeat(
                     available_cpu_millis=self.config.total_cpu_millis,
                     available_memory_mb=self.config.total_memory_mb,
-                    active_leases=0,
                     state=NodeState.healthy,
                     capabilities=self.config.capabilities,
                 ),

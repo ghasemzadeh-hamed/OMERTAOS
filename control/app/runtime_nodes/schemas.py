@@ -31,7 +31,7 @@ class RuntimeNodeRegistrationIn(BaseModel):
 class RuntimeNodeHeartbeatIn(BaseModel):
     available_cpu_millis: int = Field(ge=0)
     available_memory_mb: int = Field(ge=0)
-    active_leases: int = Field(default=0, ge=0)
+    active_leases: int | None = Field(default=None, ge=0)
     state: NodeStateOut = NodeStateOut.healthy
     capabilities: list[str] | None = None
 

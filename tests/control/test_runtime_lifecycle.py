@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Iterator
 from types import SimpleNamespace
 
@@ -171,6 +172,54 @@ async def test_reachable_runtime_is_registered_and_heartbeated(
         assert node.capabilities_json == '["terminal.execute"]'
         assert node.last_heartbeat_at is not None
     assert calls == [("runtime:50051", 3.0)]
+
+
+@pytest.mark.asyncio
+async def test_lifecycle_reconciles_trusted_config_without_resetting_leases(
+    session_factory: sessionmaker[Session],
+) -> None:
+    async def reachable(_endpoint: str, _timeout: float) -> bool:
+        return True
+
+    initial = RuntimeNodeLifecycle(
+        _config(),
+        session_factory=session_factory,
+        probe=reachable,
+        schema_initializer=lambda: None,
+    )
+    updated = RuntimeNodeLifecycle(
+        _config(
+            AION_RUNTIME_CAPABILITIES="terminal.execute,resource.allocate",
+            AION_RUNTIME_TENANT_IDS="tenant-c",
+            AION_RUNTIME_TOTAL_CPU_MILLIS="2000",
+            AION_RUNTIME_TOTAL_MEMORY_MB="1024",
+        ),
+        session_factory=session_factory,
+        probe=reachable,
+        schema_initializer=lambda: None,
+    )
+
+    assert await initial.sync_once() is True
+    with session_factory() as db:
+        node = db.get(RuntimeNode, "runtime-a")
+        assert node is not None
+        node.active_leases = 2
+        db.commit()
+
+    assert await updated.sync_once() is True
+    with session_factory() as db:
+        node = db.get(RuntimeNode, "runtime-a")
+        assert node is not None
+        assert set(json.loads(node.capabilities_json)) == {
+            "terminal.execute",
+            "resource.allocate",
+        }
+        assert json.loads(node.tenant_ids_json) == ["tenant-c"]
+        assert node.total_cpu_millis == 2000
+        assert node.available_cpu_millis == 2000
+        assert node.total_memory_mb == 1024
+        assert node.available_memory_mb == 1024
+        assert node.active_leases == 2
 
 
 @pytest.mark.asyncio

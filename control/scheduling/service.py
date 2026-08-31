@@ -51,7 +51,7 @@ class RuntimeNodeRegistration:
 class RuntimeNodeHeartbeat:
     available_cpu_millis: int
     available_memory_mb: int
-    active_leases: int = 0
+    active_leases: int | None = None
     state: NodeState = NodeState.healthy
     capabilities: tuple[str, ...] | None = None
 
@@ -60,7 +60,7 @@ class RuntimeNodeHeartbeat:
             raise ValueError("available_cpu_millis must be non-negative")
         if self.available_memory_mb < 0:
             raise ValueError("available_memory_mb must be non-negative")
-        if self.active_leases < 0:
+        if self.active_leases is not None and self.active_leases < 0:
             raise ValueError("active_leases must be non-negative")
 
 
@@ -202,7 +202,8 @@ class RuntimeScheduler:
             node.state = heartbeat.state.value
         node.available_cpu_millis = heartbeat.available_cpu_millis
         node.available_memory_mb = heartbeat.available_memory_mb
-        node.active_leases = heartbeat.active_leases
+        if heartbeat.active_leases is not None:
+            node.active_leases = heartbeat.active_leases
         if heartbeat.capabilities is not None:
             node.capabilities_json = _json_list(heartbeat.capabilities)
         node.last_heartbeat_at = _now()
