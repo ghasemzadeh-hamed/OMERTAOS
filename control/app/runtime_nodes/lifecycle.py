@@ -265,6 +265,9 @@ class RuntimeNodeLifecycle:
             self.schema_initializer()
             self._schema_ready = True
         with self.session_factory() as db:
+            self.scheduler.reclaim_expired_leases(
+                db, actor="runtime-lifecycle"
+            )
             node = db.get(RuntimeNode, self.config.node_id)
             if node is None:
                 self.scheduler.register_node(

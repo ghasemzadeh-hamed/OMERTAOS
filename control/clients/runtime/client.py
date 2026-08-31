@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Protocol
 
 import grpc
@@ -18,6 +18,10 @@ class RuntimeExecutionRejected(RuntimeError):
     """Raised when Runtime rejects an otherwise reachable execution request."""
 
 
+class RuntimeLeaseRejected(RuntimeError):
+    """Raised when Runtime rejects a missing, expired, or fenced lease."""
+
+
 @dataclass(frozen=True, slots=True)
 class RuntimeEnvelope:
     tenant_id: str
@@ -28,6 +32,10 @@ class RuntimeEnvelope:
     request_id: str = ""
     trace_id: str = ""
     capabilities: tuple[str, ...] = ("terminal.execute",)
+    node_id: str = ""
+    lease_token: str = field(default="", repr=False)
+    lease_generation: int = 0
+    lease_expires_at_ms: int = 0
 
     def __post_init__(self) -> None:
         if not self.tenant_id.strip():
@@ -49,9 +57,14 @@ class RuntimeEnvelope:
             (self.attempt_id, "attempt_id"),
             (self.request_id, "request_id"),
             (self.trace_id, "trace_id"),
+            (self.node_id, "node_id"),
         ):
             if len(value) > 255:
                 raise ValueError(f"{name} exceeds 255 characters")
+        if len(self.lease_token) > 128:
+            raise ValueError("lease_token exceeds 128 characters")
+        if self.lease_generation < 0 or self.lease_expires_at_ms < 0:
+            raise ValueError("lease metadata must be non-negative")
 
 
 class RuntimeExecutor(Protocol):
@@ -112,6 +125,10 @@ class RuntimeDaemonClient:
             }:
                 raise RuntimeTransportUnavailable(
                     "Runtime transport is unavailable; refusing to report synthetic success"
+                ) from error
+            if error.code() is grpc.StatusCode.FAILED_PRECONDITION:
+                raise RuntimeLeaseRejected(
+                    "Runtime rejected a missing, expired, or fenced execution lease"
                 ) from error
             raise RuntimeExecutionRejected(
                 "Runtime rejected execution; refusing to weaken capability enforcement"

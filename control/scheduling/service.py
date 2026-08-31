@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import secrets
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum
@@ -13,6 +15,7 @@ from control.audit import append_runtime_audit_event
 from shared.telemetry.audit import emit_audit
 
 from .models import (
+    RuntimeExecutionLease,
     RuntimeNode,
     RuntimeResourceLease,
     SchedulingDecision,
@@ -108,6 +111,9 @@ class SchedulingResult:
     eligible_nodes: tuple[str, ...]
     rejected_nodes: dict[str, str]
     idempotent_replay: bool = False
+    lease_token: str | None = field(default=None, repr=False)
+    lease_generation: int | None = None
+    lease_expires_at: datetime | None = None
 
 
 def _require_text(value: str, field_name: str) -> None:
@@ -152,10 +158,23 @@ def _state(node: RuntimeNode) -> NodeState:
 
 
 class RuntimeScheduler:
-    def __init__(self, *, heartbeat_timeout_seconds: int = 30) -> None:
+    def __init__(
+        self,
+        *,
+        heartbeat_timeout_seconds: int = 30,
+        lease_ttl_seconds: int | None = None,
+    ) -> None:
         if heartbeat_timeout_seconds <= 0:
             raise ValueError("heartbeat_timeout_seconds must be positive")
+        resolved_lease_ttl = lease_ttl_seconds
+        if resolved_lease_ttl is None:
+            resolved_lease_ttl = int(
+                os.getenv("AION_RUNTIME_LEASE_TTL_SECONDS", "45")
+            )
+        if resolved_lease_ttl < 5 or resolved_lease_ttl > 120:
+            raise ValueError("lease_ttl_seconds must be between 5 and 120")
         self.heartbeat_timeout = timedelta(seconds=heartbeat_timeout_seconds)
+        self.lease_ttl = timedelta(seconds=resolved_lease_ttl)
 
     def register_node(
         self,
@@ -322,6 +341,7 @@ class RuntimeScheduler:
         request_id: str | None = None,
         trace_id: str | None = None,
         reason: str = "runtime attempt finished",
+        lease_generation: int | None = None,
     ) -> TaskAttempt:
         _require_text(status, "status")
         self._lock_attempt_identity(db, task_id, attempt_id)
@@ -344,24 +364,86 @@ class RuntimeScheduler:
         lease = db.scalars(
             select(RuntimeResourceLease)
             .where(RuntimeResourceLease.task_attempt_id == attempt.id)
-            .where(RuntimeResourceLease.status == "active")
             .with_for_update()
         ).first()
-        if attempt.status == "leased" and node is not None:
-            node.active_leases = max(node.active_leases - 1, 0)
-            if lease is not None:
-                node.available_cpu_millis = min(
-                    node.available_cpu_millis + lease.cpu_millis,
-                    node.total_cpu_millis,
+        execution_lease = None
+        if lease is not None:
+            execution_lease = db.scalars(
+                select(RuntimeExecutionLease)
+                .where(RuntimeExecutionLease.resource_lease_id == lease.id)
+                .with_for_update()
+            ).first()
+        finished_at = _now()
+        if attempt.status == status:
+            db.commit()
+            db.refresh(attempt)
+            return attempt
+        lease_is_current = (
+            attempt.status == "leased"
+            and lease is not None
+            and lease.status == "active"
+            and (
+                execution_lease is None
+                or (
+                    execution_lease.status == "active"
+                    and lease_generation == execution_lease.id
+                    and _as_aware(execution_lease.expires_at) > finished_at
                 )
-                node.available_memory_mb = min(
-                    node.available_memory_mb + lease.memory_mb,
-                    node.total_memory_mb,
+            )
+        )
+        if not lease_is_current:
+            if (
+                attempt.status == "leased"
+                and lease is not None
+                and lease.status == "active"
+                and execution_lease is not None
+                and execution_lease.status == "active"
+                and _as_aware(execution_lease.expires_at) <= finished_at
+            ):
+                self._release_resources(node, lease, finished_at, status="expired")
+                execution_lease.status = "expired"
+                execution_lease.finished_at = finished_at
+                attempt.status = "expired"
+                attempt.updated_at = finished_at
+                append_runtime_audit_event(
+                    db,
+                    action="runtime.lease.expired",
+                    actor=actor,
+                    tenant_id=attempt.tenant_id,
+                    task_id=attempt.task_id,
+                    attempt_id=attempt.attempt_id,
+                    node_id=attempt.selected_node_id,
+                    request_id=request_id,
+                    trace_id=trace_id,
+                    outcome="expired",
+                    reason="runtime execution lease expired before completion",
+                    retry_count=attempt.retry_count,
                 )
-                lease.status = "released"
-                lease.released_at = _now()
+            append_runtime_audit_event(
+                db,
+                action="runtime.attempt.finish_fenced",
+                actor=actor,
+                tenant_id=attempt.tenant_id,
+                task_id=attempt.task_id,
+                attempt_id=attempt.attempt_id,
+                node_id=attempt.selected_node_id,
+                request_id=request_id,
+                trace_id=trace_id,
+                outcome="rejected",
+                reason="runtime attempt lease is no longer current",
+                retry_count=attempt.retry_count,
+            )
+            db.commit()
+            db.refresh(attempt)
+            emit_audit("runtime.attempt.finish_fenced", actor, attempt.tenant_id)
+            return attempt
+        if attempt.status == "leased" and lease is not None:
+            self._release_resources(node, lease, finished_at, status="released")
+        if execution_lease is not None:
+            execution_lease.status = "released"
+            execution_lease.finished_at = finished_at
         attempt.status = status
-        attempt.updated_at = _now()
+        attempt.updated_at = finished_at
         if (
             node is not None
             and node_state is not None
@@ -389,6 +471,7 @@ class RuntimeScheduler:
         return attempt
 
     def schedule(self, db: Session, request: SchedulingRequest, *, actor: str = "system") -> SchedulingResult:
+        self.reclaim_expired_leases(db, actor=actor)
         self._lock_attempt_identity(db, request.task_id, request.attempt_id)
         existing = self._get_attempt_by_identity(db, request.task_id, request.attempt_id)
         if existing and existing.tenant_id != request.tenant_id:
@@ -462,14 +545,23 @@ class RuntimeScheduler:
         attempt.status = "leased"
         attempt.updated_at = _now()
         db.flush()
-        db.add(
-            RuntimeResourceLease(
-                task_attempt_id=attempt.id,
-                node_id=selected.node_id,
-                cpu_millis=request.cpu_millis,
-                memory_mb=request.memory_mb,
-            )
+        resource_lease = RuntimeResourceLease(
+            task_attempt_id=attempt.id,
+            node_id=selected.node_id,
+            cpu_millis=request.cpu_millis,
+            memory_mb=request.memory_mb,
         )
+        db.add(resource_lease)
+        db.flush()
+        lease_token = secrets.token_urlsafe(32)
+        lease_expires_at = _now() + self.lease_ttl
+        execution_lease = RuntimeExecutionLease(
+            resource_lease_id=resource_lease.id,
+            token_hash=hashlib.sha256(lease_token.encode()).hexdigest(),
+            expires_at=lease_expires_at,
+        )
+        db.add(execution_lease)
+        db.flush()
         return self._record_decision(
             db,
             request,
@@ -479,7 +571,102 @@ class RuntimeScheduler:
             tuple(node.node_id for node in eligible),
             rejected,
             actor,
+            lease_token=lease_token,
+            lease_generation=execution_lease.id,
+            lease_expires_at=lease_expires_at,
         )
+
+    def reclaim_expired_leases(
+        self,
+        db: Session,
+        *,
+        at: datetime | None = None,
+        limit: int = 100,
+        actor: str = "runtime-lifecycle",
+    ) -> int:
+        if limit <= 0 or limit > 1000:
+            raise ValueError("limit must be between 1 and 1000")
+        checked_at = at or _now()
+        candidates = db.execute(
+            select(
+                TaskAttempt.task_id,
+                TaskAttempt.attempt_id,
+                TaskAttempt.tenant_id,
+            )
+            .join(
+                RuntimeResourceLease,
+                RuntimeResourceLease.task_attempt_id == TaskAttempt.id,
+            )
+            .join(
+                RuntimeExecutionLease,
+                RuntimeExecutionLease.resource_lease_id
+                == RuntimeResourceLease.id,
+            )
+            .where(TaskAttempt.status == "leased")
+            .where(RuntimeResourceLease.status == "active")
+            .where(RuntimeExecutionLease.status == "active")
+            .where(RuntimeExecutionLease.expires_at <= checked_at)
+            .order_by(RuntimeExecutionLease.expires_at, RuntimeExecutionLease.id)
+            .limit(limit)
+        ).all()
+        reclaimed_tenants: list[str] = []
+        for task_id, attempt_id, tenant_id in candidates:
+            self._lock_attempt_identity(db, task_id, attempt_id)
+            attempt = db.scalars(
+                select(TaskAttempt)
+                .where(TaskAttempt.task_id == task_id)
+                .where(TaskAttempt.attempt_id == attempt_id)
+                .where(TaskAttempt.tenant_id == tenant_id)
+                .with_for_update()
+            ).first()
+            if attempt is None or attempt.status != "leased":
+                continue
+            node = db.scalars(
+                select(RuntimeNode)
+                .where(RuntimeNode.node_id == attempt.selected_node_id)
+                .with_for_update()
+            ).first()
+            lease = db.scalars(
+                select(RuntimeResourceLease)
+                .where(RuntimeResourceLease.task_attempt_id == attempt.id)
+                .with_for_update()
+            ).first()
+            if lease is None or lease.status != "active":
+                continue
+            execution_lease = db.scalars(
+                select(RuntimeExecutionLease)
+                .where(RuntimeExecutionLease.resource_lease_id == lease.id)
+                .with_for_update()
+            ).first()
+            if (
+                execution_lease is None
+                or execution_lease.status != "active"
+                or _as_aware(execution_lease.expires_at) > checked_at
+            ):
+                continue
+            self._release_resources(node, lease, checked_at, status="expired")
+            execution_lease.status = "expired"
+            execution_lease.finished_at = checked_at
+            attempt.status = "expired"
+            attempt.updated_at = checked_at
+            append_runtime_audit_event(
+                db,
+                action="runtime.lease.expired",
+                actor=actor,
+                tenant_id=attempt.tenant_id,
+                task_id=attempt.task_id,
+                attempt_id=attempt.attempt_id,
+                node_id=attempt.selected_node_id,
+                outcome="expired",
+                reason="runtime execution lease expired and capacity was reclaimed",
+                retry_count=attempt.retry_count,
+            )
+            reclaimed_tenants.append(attempt.tenant_id)
+        if reclaimed_tenants:
+            db.commit()
+            for tenant_id in reclaimed_tenants:
+                emit_audit("runtime.lease.expired", actor, tenant_id)
+        return len(reclaimed_tenants)
 
     def _eligible_nodes(self, db: Session, request: SchedulingRequest) -> tuple[list[RuntimeNode], dict[str, str]]:
         nodes = db.scalars(
@@ -518,6 +705,28 @@ class RuntimeScheduler:
             .where(RuntimeResourceLease.status == "active")
         ).one()
         return int(cpu), int(memory), int(leases)
+
+    def _release_resources(
+        self,
+        node: RuntimeNode | None,
+        lease: RuntimeResourceLease,
+        released_at: datetime,
+        *,
+        status: str,
+    ) -> None:
+        if node is not None:
+            node.active_leases = max(node.active_leases - 1, 0)
+            node.available_cpu_millis = min(
+                node.available_cpu_millis + lease.cpu_millis,
+                node.total_cpu_millis,
+            )
+            node.available_memory_mb = min(
+                node.available_memory_mb + lease.memory_mb,
+                node.total_memory_mb,
+            )
+            node.updated_at = released_at
+        lease.status = status
+        lease.released_at = released_at
 
     def _lock_attempt_identity(
         self, db: Session, task_id: str, attempt_id: str
@@ -594,6 +803,9 @@ class RuntimeScheduler:
         actor: str,
         *,
         idempotent_replay: bool = False,
+        lease_token: str | None = None,
+        lease_generation: int | None = None,
+        lease_expires_at: datetime | None = None,
     ) -> SchedulingResult:
         row = SchedulingDecision(
             task_id=request.task_id,
@@ -635,6 +847,9 @@ class RuntimeScheduler:
             eligible_nodes=eligible_nodes,
             rejected_nodes=rejected_nodes,
             idempotent_replay=idempotent_replay,
+            lease_token=lease_token,
+            lease_generation=lease_generation,
+            lease_expires_at=lease_expires_at,
         )
 
 

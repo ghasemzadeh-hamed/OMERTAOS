@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterator
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -17,7 +18,13 @@ from control.app.runtime_nodes.lifecycle import (
     probe_runtime,
 )
 from control.app.runtime_nodes import lifecycle as lifecycle_module
-from control.scheduling.models import RuntimeNode
+from control.scheduling import RuntimeScheduler, SchedulingRequest
+from control.scheduling.models import (
+    RuntimeExecutionLease,
+    RuntimeNode,
+    RuntimeResourceLease,
+    TaskAttempt,
+)
 
 
 def _config(**overrides: str) -> RuntimeLifecycleConfig:
@@ -220,6 +227,54 @@ async def test_lifecycle_reconciles_trusted_config_without_resetting_leases(
         assert node.total_memory_mb == 1024
         assert node.available_memory_mb == 1024
         assert node.active_leases == 2
+
+
+@pytest.mark.asyncio
+async def test_lifecycle_reclaims_expired_execution_lease(
+    session_factory: sessionmaker[Session],
+) -> None:
+    async def reachable(_endpoint: str, _timeout: float) -> bool:
+        return True
+
+    scheduler = RuntimeScheduler(lease_ttl_seconds=5)
+    lifecycle = RuntimeNodeLifecycle(
+        _config(),
+        scheduler=scheduler,
+        session_factory=session_factory,
+        probe=reachable,
+        schema_initializer=lambda: None,
+    )
+    assert await lifecycle.sync_once() is True
+    with session_factory() as db:
+        scheduled = scheduler.schedule(
+            db,
+            SchedulingRequest(
+                task_id="task-expired",
+                attempt_id="attempt-1",
+                tenant_id="tenant-a",
+                cpu_millis=250,
+                memory_mb=128,
+            ),
+        )
+        execution_lease = db.get(
+            RuntimeExecutionLease, scheduled.lease_generation
+        )
+        assert execution_lease is not None
+        execution_lease.expires_at = datetime.now(UTC) - timedelta(seconds=1)
+        db.commit()
+
+    assert await lifecycle.sync_once() is True
+    with session_factory() as db:
+        node = db.get(RuntimeNode, "runtime-a")
+        attempt = db.scalar(
+            select(TaskAttempt).where(TaskAttempt.task_id == "task-expired")
+        )
+        resource_lease = db.scalar(select(RuntimeResourceLease))
+        assert node is not None and node.active_leases == 0
+        assert node.available_cpu_millis == 1000
+        assert node.available_memory_mb == 512
+        assert attempt is not None and attempt.status == "expired"
+        assert resource_lease is not None and resource_lease.status == "expired"
 
 
 @pytest.mark.asyncio

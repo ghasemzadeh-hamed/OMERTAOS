@@ -3,6 +3,7 @@ from .client import (
     RuntimeEnvelope,
     RuntimeExecutionRejected,
     RuntimeExecutor,
+    RuntimeLeaseRejected,
     RuntimeTransport,
     RuntimeTransportUnavailable,
 )
@@ -12,6 +13,7 @@ __all__ = [
     "RuntimeEnvelope",
     "RuntimeExecutionRejected",
     "RuntimeExecutor",
+    "RuntimeLeaseRejected",
     "RuntimeTransport",
     "RuntimeTransportUnavailable",
 ]

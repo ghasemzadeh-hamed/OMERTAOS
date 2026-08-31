@@ -80,6 +80,8 @@ def test_runtime_node_routes_register_heartbeat_and_schedule(
         )
         assert decision.status_code == 200
         assert decision.json()["selected_node_id"] == "runtime-a"
+        assert "lease_token" not in decision.json()
+        assert "lease_generation" not in decision.json()
 
         trail = client.get("/v1/runtime/audit/task-a", headers=headers)
         assert trail.status_code == 200

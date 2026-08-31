@@ -22,6 +22,7 @@ pub mod sandbox {
 }
 pub mod security {
     pub mod capability;
+    pub mod lease;
     pub mod signature;
 }
 pub mod server;

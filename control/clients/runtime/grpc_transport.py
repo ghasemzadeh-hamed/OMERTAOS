@@ -58,5 +58,15 @@ def _execution_metadata(envelope: "RuntimeEnvelope") -> tuple[tuple[str, str], .
         ("x-aion-attempt-id", envelope.attempt_id),
         ("x-request-id", envelope.request_id),
         ("traceparent", envelope.trace_id),
+        ("x-aion-node-id", envelope.node_id),
+        ("x-aion-lease-token", envelope.lease_token),
+        (
+            "x-aion-lease-generation",
+            str(envelope.lease_generation) if envelope.lease_generation else "",
+        ),
+        (
+            "x-aion-lease-expires-at-ms",
+            str(envelope.lease_expires_at_ms) if envelope.lease_expires_at_ms else "",
+        ),
     )
     return tuple((key, value) for key, value in values if value)

@@ -87,6 +87,38 @@ class RuntimeResourceLease(Base):
 
     attempt: Mapped[TaskAttempt] = relationship(back_populates="resource_lease")
     node: Mapped[RuntimeNode] = relationship(back_populates="resource_leases")
+    execution_lease: Mapped["RuntimeExecutionLease | None"] = relationship(
+        back_populates="resource_lease", uselist=False
+    )
+
+
+class RuntimeExecutionLease(Base):
+    __tablename__ = "runtime_execution_leases"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    resource_lease_id: Mapped[int] = mapped_column(
+        ForeignKey("runtime_resource_leases.id"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(24), nullable=False, default="active", index=True
+    )
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    finished_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+    resource_lease: Mapped[RuntimeResourceLease] = relationship(
+        back_populates="execution_lease"
+    )
 
 
 class SchedulingDecision(Base):

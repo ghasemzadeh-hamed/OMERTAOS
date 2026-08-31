@@ -11,6 +11,7 @@ from control.clients.runtime import (
     RuntimeDaemonClient,
     RuntimeEnvelope,
     RuntimeExecutionRejected,
+    RuntimeLeaseRejected,
     RuntimeTransportUnavailable,
 )
 from control.clients.runtime import grpc_transport as grpc_transport_module
@@ -155,6 +156,7 @@ async def test_runtime_client_enforces_timeout() -> None:
     ("status", "expected_error"),
     [
         (grpc.StatusCode.UNAVAILABLE, RuntimeTransportUnavailable),
+        (grpc.StatusCode.FAILED_PRECONDITION, RuntimeLeaseRejected),
         (grpc.StatusCode.PERMISSION_DENIED, RuntimeExecutionRejected),
     ],
 )
@@ -198,6 +200,10 @@ async def test_grpc_transport_propagates_execution_context_metadata(
         request_id="request-1",
         trace_id="00-trace-1-span-1-01",
         capabilities=("terminal.execute",),
+        node_id="runtime-1",
+        lease_token="abcdefghijklmnopqrstuvwxyzABCDEFG_1234567890",
+        lease_generation=7,
+        lease_expires_at_ms=2_000_000_000_000,
     )
 
     result = await GrpcRuntimeTransport().execute(
@@ -217,7 +223,15 @@ async def test_grpc_transport_propagates_execution_context_metadata(
         ("x-aion-attempt-id", "task-1:0"),
         ("x-request-id", "request-1"),
         ("traceparent", "00-trace-1-span-1-01"),
+        ("x-aion-node-id", "runtime-1"),
+        (
+            "x-aion-lease-token",
+            "abcdefghijklmnopqrstuvwxyzABCDEFG_1234567890",
+        ),
+        ("x-aion-lease-generation", "7"),
+        ("x-aion-lease-expires-at-ms", "2000000000000"),
     )
+    assert envelope.lease_token not in repr(envelope)
     assert channel.closed is True
 
 

@@ -97,9 +97,21 @@ trusted capability, tenant-eligibility, and declared-capacity configuration.
 The probe does not report Runtime lease usage, so it preserves Control's active
 lease count rather than resetting it.
 
+Control issues short-lived execution leases with a default 45-second TTL and
+reclaims expired capacity during lifecycle synchronization or the next
+scheduling transaction. Runtime accepts the first valid generation for a
+tenant/task pair and rejects missing, expired, repeated, older, or wrong-node
+lease metadata. `AION_RUNTIME_LEASE_TTL_SECONDS` is bounded to 5-120 seconds;
+`AION_RUNTIME_LEASE_MAX_TTL_SECONDS` bounds Runtime admission and defaults to
+120 seconds. Keep the Control TTL above `AION_RUNTIME_TIMEOUT_SECONDS` and at or
+below the Runtime maximum.
+
 This local supervisor is not a distributed membership protocol. Runtime does
 not receive an administrator token or self-authorize tenant eligibility, and
-operator-requested draining remains authoritative.
+operator-requested draining remains authoritative. Lease metadata is not a
+replacement for authenticated transport: the Quickstart gRPC boundary remains
+an internal-network prototype, and production still requires workload identity
+or mTLS.
 
 ### Two-worker acceptance profile
 

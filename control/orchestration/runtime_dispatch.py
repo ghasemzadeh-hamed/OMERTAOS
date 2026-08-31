@@ -18,6 +18,7 @@ from control.clients.runtime import (
     RuntimeEnvelope,
     RuntimeExecutionRejected,
     RuntimeExecutor,
+    RuntimeLeaseRejected,
     RuntimeTransportUnavailable,
 )
 from control.scheduling import NodeState, RuntimeScheduler, SchedulingRequest
@@ -124,6 +125,8 @@ class RuntimeTaskDispatcher:
             raise ValueError("Runtime retries must be between 0 and 1")
 
         self.scheduler = scheduler or RuntimeScheduler()
+        if self.scheduler.lease_ttl.total_seconds() <= resolved_timeout:
+            raise ValueError("Runtime lease TTL must exceed the execution timeout")
         self._session_factory = session_factory
         self._schema_initializer = schema_initializer
         self._client_factory = client_factory or (
@@ -224,6 +227,23 @@ class RuntimeTaskDispatcher:
                     db, request.task_id, attempt_id, request.tenant_id
                 )
                 status = attempt.status if attempt is not None else "unknown"
+                if status == "expired" and retry_count < self.max_retries:
+                    append_runtime_audit_event(
+                        db,
+                        action="runtime.dispatch.reclaimed_retry",
+                        actor=request.agent_id,
+                        tenant_id=request.tenant_id,
+                        task_id=request.task_id,
+                        attempt_id=attempt_id,
+                        node_id=scheduling.selected_node_id,
+                        request_id=request.request_id,
+                        trace_id=request.trace_id,
+                        outcome="retrying",
+                        reason="expired runtime lease was reclaimed",
+                        retry_count=retry_count,
+                    )
+                    db.commit()
+                    continue
                 append_runtime_audit_event(
                     db,
                     action="runtime.dispatch.replay_blocked",
@@ -277,6 +297,7 @@ class RuntimeTaskDispatcher:
                     node_state=NodeState.unreachable,
                     audit_action="runtime.dispatch.unavailable",
                     reason="selected runtime node disappeared before dispatch",
+                    lease_generation=scheduling.lease_generation,
                 )
                 if retry_count < self.max_retries:
                     continue
@@ -317,6 +338,14 @@ class RuntimeTaskDispatcher:
                 request_id=request.request_id,
                 trace_id=request.trace_id,
                 capabilities=(RUNTIME_EXECUTE_CAPABILITY,),
+                node_id=node.node_id,
+                lease_token=scheduling.lease_token or "",
+                lease_generation=scheduling.lease_generation or 0,
+                lease_expires_at_ms=(
+                    int(scheduling.lease_expires_at.timestamp() * 1000)
+                    if scheduling.lease_expires_at is not None
+                    else 0
+                ),
             )
             try:
                 response = asyncio.run(self._client_factory(node.endpoint).execute(envelope))
@@ -329,6 +358,7 @@ class RuntimeTaskDispatcher:
                     node_state=NodeState.degraded,
                     audit_action="runtime.dispatch.timeout",
                     reason="runtime execution timed out",
+                    lease_generation=scheduling.lease_generation,
                 )
                 emit_audit("runtime.dispatch.timeout", request.agent_id, request.tenant_id)
                 if retry_count < self.max_retries:
@@ -354,6 +384,7 @@ class RuntimeTaskDispatcher:
                     node_state=NodeState.unreachable,
                     audit_action="runtime.dispatch.unavailable",
                     reason="runtime transport failed closed",
+                    lease_generation=scheduling.lease_generation,
                 )
                 emit_audit(
                     "runtime.dispatch.unavailable", request.agent_id, request.tenant_id
@@ -371,6 +402,30 @@ class RuntimeTaskDispatcher:
                     ),
                     True,
                 )
+            except RuntimeLeaseRejected:
+                self._finish_attempt(
+                    db,
+                    request,
+                    attempt_id,
+                    status="fenced",
+                    audit_action="runtime.dispatch.fenced",
+                    reason="runtime rejected an expired or fenced execution lease",
+                    lease_generation=scheduling.lease_generation,
+                )
+                emit_audit("runtime.dispatch.fenced", request.agent_id, request.tenant_id)
+                if retry_count < self.max_retries:
+                    continue
+                return (
+                    _error_result(
+                        code="RUNTIME_LEASE_REJECTED",
+                        message="Runtime rejected the execution lease",
+                        reason="runtime lease was expired or fenced",
+                        attempt_id=attempt_id,
+                        selected_node_id=node.node_id,
+                        retry_count=retry_count,
+                    ),
+                    True,
+                )
             except RuntimeExecutionRejected:
                 self._finish_attempt(
                     db,
@@ -379,6 +434,7 @@ class RuntimeTaskDispatcher:
                     status="rejected",
                     audit_action="runtime.dispatch.rejected",
                     reason="runtime capability or execution policy rejected the request",
+                    lease_generation=scheduling.lease_generation,
                 )
                 emit_audit("runtime.dispatch.rejected", request.agent_id, request.tenant_id)
                 return (
@@ -400,6 +456,7 @@ class RuntimeTaskDispatcher:
                     status="failed",
                     audit_action="runtime.dispatch.failed",
                     reason="unexpected runtime dispatch failure",
+                    lease_generation=scheduling.lease_generation,
                 )
                 emit_audit("runtime.dispatch.failed", request.agent_id, request.tenant_id)
                 return (
@@ -416,14 +473,27 @@ class RuntimeTaskDispatcher:
 
             parsed = _parse_runtime_response(response)
             if parsed.error_code is not None:
-                self._finish_attempt(
+                finished = self._finish_attempt(
                     db,
                     request,
                     attempt_id,
                     status="failed",
                     audit_action="runtime.dispatch.failed",
                     reason="runtime returned an execution error",
+                    lease_generation=scheduling.lease_generation,
                 )
+                if not finished:
+                    return (
+                        _error_result(
+                            code="RUNTIME_LEASE_REJECTED",
+                            message="Runtime result arrived after its lease was fenced",
+                            reason="stale runtime result was rejected",
+                            attempt_id=attempt_id,
+                            selected_node_id=node.node_id,
+                            retry_count=retry_count,
+                        ),
+                        True,
+                    )
                 emit_audit("runtime.dispatch.failed", request.agent_id, request.tenant_id)
                 return (
                     replace(
@@ -435,14 +505,27 @@ class RuntimeTaskDispatcher:
                     True,
                 )
 
-            self._finish_attempt(
+            finished = self._finish_attempt(
                 db,
                 request,
                 attempt_id,
                 status="completed",
                 audit_action="runtime.dispatch.success",
                 reason="runtime execution completed",
+                lease_generation=scheduling.lease_generation,
             )
+            if not finished:
+                return (
+                    _error_result(
+                        code="RUNTIME_LEASE_REJECTED",
+                        message="Runtime result arrived after its lease was fenced",
+                        reason="stale runtime result was rejected",
+                        attempt_id=attempt_id,
+                        selected_node_id=node.node_id,
+                        retry_count=retry_count,
+                    ),
+                    True,
+                )
             emit_audit("runtime.dispatch.success", request.agent_id, request.tenant_id)
             return (
                 replace(
@@ -466,8 +549,9 @@ class RuntimeTaskDispatcher:
         audit_action: str,
         reason: str,
         node_state: NodeState | None = None,
-    ) -> None:
-        self.scheduler.finish_attempt(
+        lease_generation: int | None = None,
+    ) -> bool:
+        attempt = self.scheduler.finish_attempt(
             db,
             request.task_id,
             attempt_id,
@@ -479,7 +563,9 @@ class RuntimeTaskDispatcher:
             request_id=request.request_id,
             trace_id=request.trace_id,
             reason=reason,
+            lease_generation=lease_generation,
         )
+        return attempt.status == status
 
     def _record_cached_audit(
         self,

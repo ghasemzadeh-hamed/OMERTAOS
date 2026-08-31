@@ -42,6 +42,14 @@ The local quickstart builds the daemon as the `runtime` service and binds gRPC t
 The container healthcheck uses `runtime-daemon --healthcheck` to verify that the
 configured gRPC listener accepts connections before dependent services start.
 
+`ExecuteCommand` requires node-bound lease metadata with a bounded expiry and a
+monotonic generation. The daemon keeps only the highest claimed generation per
+tenant/task in process memory and rejects repeated or older admissions. It does
+not log the raw lease token. This is bounded stale-dispatch protection, not
+cryptographic caller authentication, persistent fencing across an unexpired
+daemon restart, or cancellation of work already admitted under an older lease.
+`AION_RUNTIME_LEASE_MAX_TTL_SECONDS` defaults to 120 seconds.
+
 Expose the gRPC listener only on the internal service network and require mTLS in production.
 
 ## Current execution gate

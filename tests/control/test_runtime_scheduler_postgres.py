@@ -97,6 +97,8 @@ def test_postgres_scheduler_serializes_identity_and_capacity() -> None:
             tenant_id=tenant_id,
             status="completed",
             actor="scheduler-concurrency-test",
+            lease_generation=shared_results[0].lease_generation
+            or shared_results[1].lease_generation,
         )
 
     capacity_requests = [
@@ -133,6 +135,11 @@ def test_postgres_scheduler_serializes_identity_and_capacity() -> None:
             tenant_id=tenant_id,
             status="completed",
             actor="scheduler-concurrency-test",
+            lease_generation=next(
+                result.lease_generation
+                for result in capacity_results
+                if result.decision == "selected"
+            ),
         )
         db.expire_all()
         node = db.get(RuntimeNode, node_id)

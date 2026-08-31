@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from sqlalchemy import create_engine, select
@@ -23,8 +24,9 @@ from control.scheduling import (
     NodeState,
     RuntimeNodeRegistration,
     RuntimeScheduler,
+    SchedulingRequest,
 )
-from control.scheduling.models import RuntimeNode
+from control.scheduling.models import RuntimeExecutionLease, RuntimeNode
 
 
 class RecordingExecutor:
@@ -37,6 +39,30 @@ class RecordingExecutor:
         if isinstance(self.response, BaseException):
             raise self.response
         return self.response
+
+
+class ReclaimingExecutor:
+    def __init__(
+        self,
+        scheduler: RuntimeScheduler,
+        session_factory: Callable[[], Session],
+    ) -> None:
+        self.scheduler = scheduler
+        self.session_factory = session_factory
+
+    async def execute(self, envelope: RuntimeEnvelope) -> dict[str, object]:
+        db = self.session_factory()
+        try:
+            execution_lease = db.get(
+                RuntimeExecutionLease, envelope.lease_generation
+            )
+            assert execution_lease is not None
+            execution_lease.expires_at = datetime.now(UTC) - timedelta(seconds=1)
+            db.commit()
+            assert self.scheduler.reclaim_expired_leases(db) == 1
+        finally:
+            db.close()
+        return {"ok": True, "stdout": "stale\n", "stderr": "", "code": 0}
 
 
 @pytest.fixture()
@@ -144,6 +170,11 @@ def test_dispatch_executes_allowlisted_command_once_and_replays_cached_result(
     )
     assert executor.calls[0].task_id == "task-a"
     assert executor.calls[0].trace_id == "00-trace-a-span-a-01"
+    assert executor.calls[0].node_id == "node-a"
+    assert executor.calls[0].lease_token
+    assert executor.calls[0].lease_generation > 0
+    assert executor.calls[0].lease_expires_at_ms > 0
+    assert executor.calls[0].lease_token not in repr(executor.calls[0])
     assert audit_actions == ["runtime.dispatch.start", "runtime.dispatch.success"]
 
     db = session_factory()
@@ -152,6 +183,9 @@ def test_dispatch_executes_allowlisted_command_once_and_replays_cached_result(
         node = db.get(RuntimeNode, "node-a")
         assert attempt is not None and attempt.status == "completed"
         assert node is not None and node.active_leases == 0
+        execution_lease = db.scalar(select(RuntimeExecutionLease))
+        assert execution_lease is not None
+        assert execution_lease.status == "released"
         events = list(
             db.scalars(
                 select(RuntimeAuditEvent)
@@ -354,3 +388,66 @@ def test_new_dispatcher_blocks_completed_attempt_without_durable_result_replay(
         ]
     finally:
         db.close()
+
+
+def test_dispatcher_retries_after_expired_lease_reclamation(
+    session_factory: Callable[[], Session],
+) -> None:
+    scheduler = RuntimeScheduler(lease_ttl_seconds=5)
+    _register(session_factory, scheduler, "node-a")
+    db = session_factory()
+    try:
+        stale = scheduler.schedule(
+            db,
+            SchedulingRequest(
+                task_id="task-a",
+                attempt_id="task-a:0",
+                tenant_id="tenant-a",
+                required_capabilities=("terminal.execute",),
+                max_retries=1,
+            ),
+        )
+        execution_lease = db.get(RuntimeExecutionLease, stale.lease_generation)
+        assert execution_lease is not None
+        execution_lease.expires_at = datetime.now(UTC) - timedelta(seconds=1)
+        db.commit()
+    finally:
+        db.close()
+    executor = RecordingExecutor(
+        {"ok": True, "stdout": "recovered\n", "stderr": "", "code": 0}
+    )
+    dispatcher = _dispatcher(
+        session_factory,
+        scheduler,
+        {"node-a:50051": executor},
+        max_retries=1,
+    )
+
+    result = dispatcher.dispatch(_request())
+
+    assert result.status == "OK"
+    assert result.retry_count == 1
+    assert result.attempt_id == "task-a:1"
+    assert len(executor.calls) == 1
+
+
+def test_dispatcher_rejects_result_reclaimed_during_execution(
+    session_factory: Callable[[], Session],
+) -> None:
+    scheduler = RuntimeScheduler(lease_ttl_seconds=5)
+    _register(session_factory, scheduler, "node-a")
+    executor = ReclaimingExecutor(scheduler, session_factory)
+    dispatcher = RuntimeTaskDispatcher(
+        scheduler=scheduler,
+        session_factory=session_factory,
+        schema_initializer=lambda: None,
+        client_factory=lambda _endpoint: executor,
+        timeout_seconds=0.5,
+        max_retries=0,
+    )
+
+    result = dispatcher.dispatch(_request("task-stale-result"))
+
+    assert result.status == "ERROR"
+    assert result.error_code == "RUNTIME_LEASE_REJECTED"
+    assert result.stdout == ""

@@ -68,3 +68,9 @@ The Runtime client reads `AION_RUNTIME_ENDPOINT` (default
 is fail-closed: transport errors are reported as `RuntimeTransportUnavailable`,
 every request has a positive timeout, and Control never executes the command
 locally or reports synthetic success.
+
+Runtime scheduling creates a short-lived execution lease whose raw token is
+passed only in gRPC metadata; PostgreSQL stores only its SHA-256 digest. Expired
+leases are reclaimed in bounded batches, and late completions cannot overwrite
+an expired attempt. Configure `AION_RUNTIME_LEASE_TTL_SECONDS` between 5 and
+120 seconds and keep it above the execution timeout.

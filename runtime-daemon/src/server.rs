@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use anyhow::Result;
 use tonic::metadata::MetadataMap;
@@ -9,6 +10,7 @@ use crate::config::RuntimeConfig;
 use crate::execution::{agent_runner::run_agent, execute};
 use crate::observability::metrics::query_metrics;
 use crate::security::capability::validate_capabilities;
+use crate::security::lease::{LeaseClaim, LeaseFence};
 
 #[allow(clippy::result_large_err)]
 pub mod pb {
@@ -48,12 +50,14 @@ impl TryFrom<pb::ExecutionContext> for ExecutionContextModel {
 #[derive(Debug)]
 pub struct RuntimeServiceImpl {
     config: Arc<RuntimeConfig>,
+    lease_fence: Arc<LeaseFence>,
 }
 
 impl RuntimeServiceImpl {
     pub fn new(config: RuntimeConfig) -> Self {
         Self {
             config: Arc::new(config),
+            lease_fence: Arc::new(LeaseFence::default()),
         }
     }
 
@@ -134,6 +138,24 @@ impl pb::runtime_service_server::RuntimeService for RuntimeServiceImpl {
             ));
         }
         validate_capabilities(&ctx, &["terminal.execute"]).map_err(map_error)?;
+        let lease_claim = LeaseClaim::parse(
+            &dispatch_context.tenant_id,
+            &dispatch_context.task_id,
+            &dispatch_context.attempt_id,
+            &dispatch_context.node_id,
+            &dispatch_context.lease_token,
+            &dispatch_context.lease_generation,
+            &dispatch_context.lease_expires_at_ms,
+        )
+        .map_err(map_lease_error)?;
+        self.lease_fence
+            .claim(
+                &lease_claim,
+                &self.config.node_id,
+                current_time_ms(),
+                self.config.lease_max_ttl_seconds,
+            )
+            .map_err(map_lease_error)?;
         log_runtime_dispatch_event(
             "terminal.execute",
             &ctx.tenant_id,
@@ -191,6 +213,10 @@ fn dispatch_context(metadata: &MetadataMap) -> RuntimeDispatchContext {
         attempt_id: metadata_value(metadata, "x-aion-attempt-id"),
         request_id: metadata_value(metadata, "x-request-id"),
         trace_id: metadata_value(metadata, "traceparent"),
+        node_id: metadata_value(metadata, "x-aion-node-id"),
+        lease_token: metadata_value(metadata, "x-aion-lease-token"),
+        lease_generation: metadata_value(metadata, "x-aion-lease-generation"),
+        lease_expires_at_ms: metadata_value(metadata, "x-aion-lease-expires-at-ms"),
     }
 }
 
@@ -211,6 +237,19 @@ fn dispatch_tenant_matches(
 
 fn map_error(err: anyhow::Error) -> Status {
     Status::internal(err.to_string())
+}
+
+fn map_lease_error(_err: crate::security::lease::LeaseError) -> Status {
+    Status::failed_precondition("runtime execution lease is missing, expired, or fenced")
+}
+
+fn current_time_ms() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis()
+        .try_into()
+        .unwrap_or(u64::MAX)
 }
 
 pub async fn run_server(config: RuntimeConfig) -> Result<()> {
@@ -252,6 +291,7 @@ mod tests {
     use tonic::metadata::MetadataValue;
 
     use super::*;
+    use pb::runtime_service_server::RuntimeService;
 
     #[test]
     fn dispatch_context_reads_grpc_metadata_fields() {
@@ -264,6 +304,16 @@ mod tests {
             "traceparent",
             MetadataValue::from_static("00-trace-a-span-a-01"),
         );
+        metadata.insert("x-aion-node-id", MetadataValue::from_static("runtime-a"));
+        metadata.insert(
+            "x-aion-lease-token",
+            MetadataValue::from_static("abcdefghijklmnopqrstuvwxyzABCDEFG_1234567890"),
+        );
+        metadata.insert("x-aion-lease-generation", MetadataValue::from_static("7"));
+        metadata.insert(
+            "x-aion-lease-expires-at-ms",
+            MetadataValue::from_static("20000"),
+        );
 
         assert_eq!(
             dispatch_context(&metadata),
@@ -273,6 +323,10 @@ mod tests {
                 attempt_id: "task-a:0".into(),
                 request_id: "request-a".into(),
                 trace_id: "00-trace-a-span-a-01".into(),
+                node_id: "runtime-a".into(),
+                lease_token: "abcdefghijklmnopqrstuvwxyzABCDEFG_1234567890".into(),
+                lease_generation: "7".into(),
+                lease_expires_at_ms: "20000".into(),
             }
         );
     }
@@ -298,5 +352,43 @@ mod tests {
 
         assert!(dispatch_tenant_matches(&execution, &matching));
         assert!(!dispatch_tenant_matches(&execution, &mismatched));
+    }
+
+    #[tokio::test]
+    async fn execute_command_fails_closed_without_execution_lease() {
+        let service = RuntimeServiceImpl::new(RuntimeConfig {
+            bind_addr: "127.0.0.1:0".into(),
+            profile: "lite".into(),
+            node_id: "runtime-a".into(),
+            lease_max_ttl_seconds: 120,
+        });
+        let mut request = Request::new(pb::CommandRequest {
+            context: Some(pb::ExecutionContext {
+                agent_id: "agent-a".into(),
+                tenant_id: "tenant-a".into(),
+                cpu_cores: 0,
+                memory_mb: 0,
+                gpu_enabled: false,
+                capabilities: vec!["terminal.execute".into()],
+            }),
+            argv: vec!["/usr/bin/printf".into(), "blocked".into()],
+        });
+        request
+            .metadata_mut()
+            .insert("tenant-id", MetadataValue::from_static("tenant-a"));
+        request
+            .metadata_mut()
+            .insert("x-aion-task-id", MetadataValue::from_static("task-a"));
+        request
+            .metadata_mut()
+            .insert("x-aion-attempt-id", MetadataValue::from_static("task-a:0"));
+
+        let error = service.execute_command(request).await.unwrap_err();
+
+        assert_eq!(error.code(), tonic::Code::FailedPrecondition);
+        assert_eq!(
+            error.message(),
+            "runtime execution lease is missing, expired, or fenced"
+        );
     }
 }

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -16,6 +17,7 @@ from control.scheduling import (
 )
 from control.scheduling.models import (
     RuntimeNode,
+    RuntimeExecutionLease,
     RuntimeResourceLease,
     SchedulingDecision,
     TaskAttempt,
@@ -70,6 +72,7 @@ def test_runtime_scheduler_migration_is_additive_and_idempotent(tmp_path) -> Non
         "control_configuration",
         "proxy_profiles",
         "runtime_audit_events",
+        "runtime_execution_leases",
         "runtime_nodes",
         "runtime_resource_leases",
         "scheduling_decisions",
@@ -252,7 +255,7 @@ def test_scheduler_rejects_cross_tenant_attempt_identity_replay(db: Session) -> 
 def test_scheduler_finishes_attempt_and_releases_node_lease(db: Session) -> None:
     scheduler = RuntimeScheduler()
     _register(scheduler, db, "node-a")
-    scheduler.schedule(
+    scheduling = scheduler.schedule(
         db,
         SchedulingRequest(
             task_id="task-1",
@@ -277,6 +280,7 @@ def test_scheduler_finishes_attempt_and_releases_node_lease(db: Session) -> None
         tenant_id="tenant-a",
         status="transport_error",
         node_state=NodeState.unreachable,
+        lease_generation=scheduling.lease_generation,
     )
     replay = scheduler.finish_attempt(
         db,
@@ -298,6 +302,102 @@ def test_scheduler_finishes_attempt_and_releases_node_lease(db: Session) -> None
     assert node.state == NodeState.unreachable.value
     assert lease is not None and lease.status == "released"
     assert lease.released_at is not None
+
+
+def test_scheduler_persists_only_execution_lease_token_hash(db: Session) -> None:
+    scheduler = RuntimeScheduler()
+    _register(scheduler, db, "node-a")
+
+    result = scheduler.schedule(
+        db,
+        SchedulingRequest(
+            task_id="task-token",
+            attempt_id="attempt-1",
+            tenant_id="tenant-a",
+        ),
+    )
+    execution_lease = db.scalar(select(RuntimeExecutionLease))
+
+    assert result.lease_token is not None
+    assert result.lease_generation is not None
+    assert result.lease_expires_at is not None
+    assert execution_lease is not None
+    assert execution_lease.id == result.lease_generation
+    assert execution_lease.token_hash == hashlib.sha256(
+        result.lease_token.encode()
+    ).hexdigest()
+    assert result.lease_token not in repr(result)
+
+
+def test_scheduler_reclaims_expired_execution_lease(db: Session) -> None:
+    scheduler = RuntimeScheduler(lease_ttl_seconds=5)
+    _register(scheduler, db, "node-a")
+    result = scheduler.schedule(
+        db,
+        SchedulingRequest(
+            task_id="task-expired",
+            attempt_id="attempt-1",
+            tenant_id="tenant-a",
+            cpu_millis=250,
+            memory_mb=128,
+        ),
+    )
+    execution_lease = db.get(RuntimeExecutionLease, result.lease_generation)
+    assert execution_lease is not None
+    execution_lease.expires_at = datetime.now(UTC) - timedelta(seconds=1)
+    db.commit()
+
+    assert scheduler.reclaim_expired_leases(db) == 1
+
+    attempt = scheduler.get_attempt(
+        db, "task-expired", "attempt-1", "tenant-a"
+    )
+    node = db.get(RuntimeNode, "node-a")
+    resource_lease = db.scalar(select(RuntimeResourceLease))
+    db.refresh(execution_lease)
+    assert attempt is not None and attempt.status == "expired"
+    assert node is not None and node.active_leases == 0
+    assert node.available_cpu_millis == 1000
+    assert node.available_memory_mb == 512
+    assert resource_lease is not None and resource_lease.status == "expired"
+    assert execution_lease.status == "expired"
+    assert execution_lease.finished_at is not None
+
+
+def test_scheduler_fences_stale_completion_generation(db: Session) -> None:
+    scheduler = RuntimeScheduler()
+    _register(scheduler, db, "node-a")
+    result = scheduler.schedule(
+        db,
+        SchedulingRequest(
+            task_id="task-fenced",
+            attempt_id="attempt-1",
+            tenant_id="tenant-a",
+        ),
+    )
+    assert result.lease_generation is not None
+
+    fenced = scheduler.finish_attempt(
+        db,
+        "task-fenced",
+        "attempt-1",
+        tenant_id="tenant-a",
+        status="completed",
+        lease_generation=result.lease_generation + 1,
+    )
+    node = db.get(RuntimeNode, "node-a")
+    assert fenced.status == "leased"
+    assert node is not None and node.active_leases == 1
+
+    completed = scheduler.finish_attempt(
+        db,
+        "task-fenced",
+        "attempt-1",
+        tenant_id="tenant-a",
+        status="completed",
+        lease_generation=result.lease_generation,
+    )
+    assert completed.status == "completed"
 
 
 def test_scheduler_reserves_capacity_and_rejects_aggregate_overcommit(
