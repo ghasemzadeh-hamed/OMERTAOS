@@ -92,6 +92,11 @@ current 30-second stale-worker threshold. Stopping Runtime stops its heartbeats
 and causes scheduling to fail closed after that threshold; restarting Runtime
 restores eligibility without an operator registration call.
 
+For an already registered managed node, each successful probe reconciles the
+trusted capability, tenant-eligibility, and declared-capacity configuration.
+The probe does not report Runtime lease usage, so it preserves Control's active
+lease count rather than resetting it.
+
 This local supervisor is not a distributed membership protocol. Runtime does
 not receive an administrator token or self-authorize tenant eligibility, and
 operator-requested draining remains authoritative.

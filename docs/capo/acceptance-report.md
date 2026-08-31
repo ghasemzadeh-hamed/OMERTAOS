@@ -1,5 +1,37 @@
 # CAPO acceptance report
 
+## R6.12.1 Runtime boundary repairs — 2026-08-31
+
+Branch: `Radin/capo-r6-validation`
+
+Validated implementation commits: `78b02b1` (`fix(control): enforce runtime
+tenant and admin boundaries`), `2637cb7` (`fix(control): reconcile runtime
+lifecycle state`), and `b0181ee` (`fix(control): paginate runtime audit trails`).
+Only the existing `compose` Control image was rebuilt, sequentially, and only
+its container was normally recreated. PostgreSQL, Redis, Runtime, Gateway,
+Console, containers, and persistent volumes were retained.
+
+| Gate | Result | Executable evidence and boundary |
+|---|---|---|
+| Independent defect reproduction | pass | In-memory Control execution reproduced role-header-only admin access, cross-tenant attempt replay, heartbeat lease reset, stale tenant/capacity configuration, and silent oldest-100 audit truncation before repair |
+| Targeted repair suites | pass after one test correction | Auth/scheduler/dispatch reported `17 passed`; lifecycle/scheduler/routes reported `21 passed`; audit/routes reported `4 passed`. The first lifecycle run had `1 failed` because the new assertion assumed capability JSON order; structural set comparison replaced that stale assumption |
+| Control regression | pass | `79 passed, 3 existing deprecation warnings` |
+| Architecture regression | pass | `72 passed, 1 intentionally excluded Structure completion gate` |
+| Full Python regression | pass | `224 passed, 2 skipped, 1 intentionally excluded Structure completion gate, 3 warnings` |
+| Static and Compose validation | pass with pre-existing note | Targeted Ruff lint and format checks, `git diff --check`, and canonical Compose `config --quiet` exited 0. A broader format probe identified the untouched pre-existing `control/audit/models.py` formatting difference; no unrelated formatting was applied |
+| Sequential Control build/recreate | pass | The Control image rebuilt from locked cached dependencies and only `compose-control-1` was recreated with `--no-deps --wait`; it returned healthy without restarting data or Runtime services |
+| Quickstart smoke | pass | PostgreSQL, Redis, Runtime, installer, Control, Gateway, Console, automatic registration, binary healthcheck, dependencies, and Console -> Gateway -> Control health chain passed |
+| Service-token boundary | pass in local prototype scope | A role-header-only Runtime admin request returned HTTP 403; the configured service token succeeded. No token value was printed or recorded |
+| Tenant collision boundary | pass | A second tenant using the same task/attempt identity was rejected without a selected node or idempotent replay |
+| Lifecycle reconciliation and lease preservation | pass | A fresh live heartbeat reconciled trusted tenant/capability/capacity values and preserved an active validation lease; normal attempt finish restored the baseline lease count |
+| Audit pagination | pass | A live tenant-scoped trail queried with limit 1 returned explicit truncation and a cursor; the next cursor returned the remaining event |
+| Resource guard and final state | pass | Available memory was about 3.7 GiB before and after validation. The six existing application/data containers remained healthy and no volume deletion command was used |
+
+These repairs close the reproduced local prototype defects but do not establish
+independent authorization review, concurrent scheduler correctness, lease
+fencing, immutable audit integrity, production isolation, native systemd
+acceptance, scalability, production readiness, or security certification.
+
 ## R6.12 durable Runtime audit trail — 2026-08-31
 
 Branch: `Radin/capo-r6-validation`

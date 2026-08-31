@@ -21,8 +21,9 @@ Current HTTP prototype endpoints include:
 - `POST /v1/config/propose`, `/apply`, and `/revert` for authenticated configuration changes;
 - `/v1/network/proxies` for authenticated proxy profile management;
 - `/v1/runtime/nodes` and `/v1/runtime/schedule` for the minimal node registry and scheduler;
-- `GET /v1/runtime/audit/{task_id}` for an administrator-only, tenant-scoped
-  Runtime scheduling and dispatch trail;
+- `GET /v1/runtime/audit/{task_id}` for a Gateway-service-token-authenticated,
+  tenant-scoped Runtime scheduling and dispatch trail with bounded cursor
+  pagination;
 - `/health`, `/v1/health`, and `/v1/models` for source-backed status and model metadata.
 
 Configuration state is stored in the additive `control_configuration` table.
