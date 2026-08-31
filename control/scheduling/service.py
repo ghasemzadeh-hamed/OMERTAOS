@@ -249,6 +249,20 @@ class RuntimeScheduler:
         db: Session,
         task_id: str,
         attempt_id: str,
+        tenant_id: str,
+    ) -> TaskAttempt | None:
+        return db.scalars(
+            select(TaskAttempt)
+            .where(TaskAttempt.task_id == task_id)
+            .where(TaskAttempt.attempt_id == attempt_id)
+            .where(TaskAttempt.tenant_id == tenant_id)
+        ).first()
+
+    def _get_attempt_by_identity(
+        self,
+        db: Session,
+        task_id: str,
+        attempt_id: str,
     ) -> TaskAttempt | None:
         return db.scalars(
             select(TaskAttempt)
@@ -262,6 +276,7 @@ class RuntimeScheduler:
         task_id: str,
         attempt_id: str,
         *,
+        tenant_id: str,
         status: str,
         node_state: NodeState | None = None,
         actor: str = "system",
@@ -271,7 +286,7 @@ class RuntimeScheduler:
         reason: str = "runtime attempt finished",
     ) -> TaskAttempt:
         _require_text(status, "status")
-        attempt = self.get_attempt(db, task_id, attempt_id)
+        attempt = self.get_attempt(db, task_id, attempt_id, tenant_id)
         if attempt is None:
             raise ValueError("runtime attempt is not registered")
         node = attempt.node
@@ -306,7 +321,18 @@ class RuntimeScheduler:
         return attempt
 
     def schedule(self, db: Session, request: SchedulingRequest, *, actor: str = "system") -> SchedulingResult:
-        existing = self.get_attempt(db, request.task_id, request.attempt_id)
+        existing = self._get_attempt_by_identity(db, request.task_id, request.attempt_id)
+        if existing and existing.tenant_id != request.tenant_id:
+            return self._record_decision(
+                db,
+                request,
+                "rejected",
+                None,
+                "attempt identity is not available",
+                (),
+                {},
+                actor,
+            )
         if existing and existing.selected_node_id:
             return self._record_decision(
                 db,

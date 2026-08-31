@@ -12,7 +12,10 @@ from control.app.runtime_nodes.routes import get_db
 from control.app.network.migrate import apply_schema
 
 
-def test_runtime_node_routes_register_heartbeat_and_schedule() -> None:
+def test_runtime_node_routes_register_heartbeat_and_schedule(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("AION_GATEWAY_ADMIN_TOKEN", "test-admin-token")
     engine = create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},
@@ -31,7 +34,12 @@ def test_runtime_node_routes_register_heartbeat_and_schedule() -> None:
     app.dependency_overrides[get_db] = override_db
     try:
         client = TestClient(app)
-        headers = {"x-aion-roles": "admin", "tenant-id": "tenant-a", "x-request-id": "req-a"}
+        headers = {
+            "authorization": "Bearer test-admin-token",
+            "x-aion-roles": "admin",
+            "tenant-id": "tenant-a",
+            "x-request-id": "req-a",
+        }
         registration = client.post(
             "/v1/runtime/nodes",
             headers=headers,
@@ -90,10 +98,18 @@ def test_runtime_node_routes_register_heartbeat_and_schedule() -> None:
         app.dependency_overrides.pop(get_db, None)
 
 
-def test_runtime_node_routes_require_admin() -> None:
+def test_runtime_node_routes_require_admin(monkeypatch) -> None:
+    monkeypatch.setenv("AION_GATEWAY_ADMIN_TOKEN", "test-admin-token")
     client = TestClient(app)
 
     response = client.get("/v1/runtime/nodes")
 
     assert response.status_code == 403
     assert client.get("/v1/runtime/audit/task-a").status_code == 403
+    assert (
+        client.get(
+            "/v1/runtime/nodes",
+            headers={"x-aion-roles": "admin"},
+        ).status_code
+        == 403
+    )

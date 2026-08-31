@@ -148,7 +148,7 @@ def test_dispatch_executes_allowlisted_command_once_and_replays_cached_result(
 
     db = session_factory()
     try:
-        attempt = scheduler.get_attempt(db, "task-a", "task-a:0")
+        attempt = scheduler.get_attempt(db, "task-a", "task-a:0", "tenant-a")
         node = db.get(RuntimeNode, "node-a")
         assert attempt is not None and attempt.status == "completed"
         assert node is not None and node.active_leases == 0

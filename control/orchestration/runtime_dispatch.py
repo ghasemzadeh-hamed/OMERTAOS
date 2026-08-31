@@ -221,7 +221,7 @@ class RuntimeTaskDispatcher:
             )
             if scheduling.idempotent_replay:
                 attempt = self.scheduler.get_attempt(
-                    db, request.task_id, attempt_id
+                    db, request.task_id, attempt_id, request.tenant_id
                 )
                 status = attempt.status if attempt is not None else "unknown"
                 append_runtime_audit_event(
@@ -471,6 +471,7 @@ class RuntimeTaskDispatcher:
             db,
             request.task_id,
             attempt_id,
+            tenant_id=request.tenant_id,
             status=status,
             node_state=node_state,
             actor=request.agent_id,

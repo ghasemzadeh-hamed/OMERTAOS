@@ -209,6 +209,40 @@ def test_scheduler_replays_existing_attempt_and_bounds_retry(db: Session) -> Non
     assert rejected.reason == "retry budget exhausted"
 
 
+def test_scheduler_rejects_cross_tenant_attempt_identity_replay(db: Session) -> None:
+    scheduler = RuntimeScheduler()
+    _register(scheduler, db, "node-a", tenants=("tenant-a", "tenant-b"))
+    first = scheduler.schedule(
+        db,
+        SchedulingRequest(
+            task_id="task-shared",
+            attempt_id="attempt-shared",
+            tenant_id="tenant-a",
+        ),
+    )
+
+    collision = scheduler.schedule(
+        db,
+        SchedulingRequest(
+            task_id="task-shared",
+            attempt_id="attempt-shared",
+            tenant_id="tenant-b",
+        ),
+    )
+
+    assert first.selected_node_id == "node-a"
+    assert collision.decision == "rejected"
+    assert collision.selected_node_id is None
+    assert collision.idempotent_replay is False
+    assert collision.reason == "attempt identity is not available"
+    assert scheduler.get_attempt(
+        db,
+        "task-shared",
+        "attempt-shared",
+        "tenant-b",
+    ) is None
+
+
 def test_scheduler_finishes_attempt_and_releases_node_lease(db: Session) -> None:
     scheduler = RuntimeScheduler()
     _register(scheduler, db, "node-a")
@@ -226,6 +260,7 @@ def test_scheduler_finishes_attempt_and_releases_node_lease(db: Session) -> None
         db,
         "task-1",
         "attempt-1",
+        tenant_id="tenant-a",
         status="transport_error",
         node_state=NodeState.unreachable,
     )
@@ -233,6 +268,7 @@ def test_scheduler_finishes_attempt_and_releases_node_lease(db: Session) -> None
         db,
         "task-1",
         "attempt-1",
+        tenant_id="tenant-a",
         status="transport_error",
         node_state=NodeState.unreachable,
     )

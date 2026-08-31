@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 import os
+import secrets
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Path, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Request, status
 from sqlalchemy.orm import Session
 
 from control.audit import RuntimeAuditEvent, list_runtime_audit_events
@@ -32,10 +33,6 @@ router = APIRouter(prefix="/v1/runtime", tags=["runtime-nodes"])
 scheduler = RuntimeScheduler()
 
 
-def _roles(x_aion_roles: str | None = Header(default=None)) -> set[str]:
-    return {role.strip() for role in (x_aion_roles or "").split(",") if role.strip()}
-
-
 def _actor(request: Request) -> str:
     return request.headers.get("x-aion-user-id") or request.headers.get("x-request-id") or "system"
 
@@ -44,14 +41,14 @@ def _tenant(request: Request) -> str:
     return request.headers.get("tenant-id") or request.headers.get("x-tenant-id") or "default"
 
 
-def _is_admin(request: Request, roles: set[str]) -> bool:
-    token = (request.headers.get("authorization") or "").replace("Bearer ", "", 1)
-    configured = os.getenv("AION_GATEWAY_ADMIN_TOKEN") or os.getenv("AION_ADMIN_TOKEN")
-    return "admin" in roles or bool(configured and token == configured)
+def _is_admin(request: Request) -> bool:
+    token = (request.headers.get("authorization") or "").removeprefix("Bearer ")
+    configured = os.getenv("AION_GATEWAY_ADMIN_TOKEN") or os.getenv("AION_ADMIN_TOKEN") or ""
+    return bool(configured and secrets.compare_digest(token, configured))
 
 
-def require_admin(request: Request, roles: set[str] = Depends(_roles)) -> None:
-    if not _is_admin(request, roles):
+def require_admin(request: Request) -> None:
+    if not _is_admin(request):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required")
 
 
